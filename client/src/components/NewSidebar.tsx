@@ -33,6 +33,7 @@ import {
   Bell,
   MapPin,
   ThumbsUp,
+  Shield,
   Store,
   LogIn,
   ChevronsLeft,
@@ -708,6 +709,16 @@ export function NewSidebar({
                       show={true}
                     >
                       가격 관리
+                    </NavItem>
+
+                    <NavItem
+                      href="/admin/content-moderation"
+                      icon={<Shield className="w-5 h-5 mr-2" />}
+                      active={isActive("/admin/content-moderation")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      콘텐츠 검열
                     </NavItem>
 
                     <NavItem

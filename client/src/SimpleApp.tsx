@@ -251,7 +251,7 @@ function AppLayout({ children }: { children: ReactNode }) {
   usePageLoadingDetector();
 
   return (
-    <ErrorBoundary showDogLoading>
+    <ErrorBoundary>
       <div className="bg-background text-foreground min-h-screen font-sans flex flex-col">
         {/* 글로벌 로딩바 */}
         <RouteLoadingBar />
@@ -343,6 +343,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/substitute-overview" component={SubstituteTrainerOverview} />
                   <Route path="/admin/payment" component={lazy(() => import('./pages/admin/PaymentManagement'))} />
                   <Route path="/admin/payment-integration" component={PaymentIntegration} />
+                  <Route path="/admin/content-moderation" component={lazy(() => import('./pages/admin/AdminContentModeration'))} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">

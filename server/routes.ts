@@ -9813,6 +9813,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
+  // 콘텐츠 검열 라우트 추가
+  import('./content-moderation.js').then(contentModerationModule => {
+    app.use('/api/admin/content-moderation', contentModerationModule.default);
+    console.log('[Content Moderation] 콘텐츠 검열 라우트가 등록되었습니다.');
+  }).catch(error => {
+    console.error('[Content Moderation] 라우트 등록 실패:', error);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
