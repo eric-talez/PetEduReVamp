@@ -82,7 +82,7 @@ import AdminContentModeration from "./pages/admin/AdminContentModeration";
 import ContentModerationTest from "./pages/admin/ContentModerationTest";
 import ApiManagement from "./pages/admin/ApiManagement";
 import NavigationProgress from "./components/NavigationProgress";
-import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
+import { SimpleLoading } from "./components/ui/simple-loading";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -358,7 +358,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       console.log("[DEBUG] 업체 등록 관리 라우트 접근");
                       const BusinessRegistration = lazy(() => import('./pages/admin/BusinessRegistration'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">업체 등록 관리 로딩 중...</div>}>
                           <ProtectedAdminRoute component={BusinessRegistration} />
                         </Suspense>
                       );
@@ -371,7 +371,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       console.log("[DEBUG] 리뷰 관리 라우트 접근");
                       const ReviewManagement = lazy(() => import('./pages/admin/ReviewManagement'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">리뷰 관리 로딩 중...</div>}>
                           <ProtectedAdminRoute component={ReviewManagement} />
                         </Suspense>
                       );
@@ -384,7 +384,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       console.log("[DEBUG] 정보 수정 요청 관리 라우트 접근");
                       const InfoCorrectionRequests = lazy(() => import('./pages/admin/InfoCorrectionRequests'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">정보 수정 요청 관리 로딩 중...</div>}>
                           <ProtectedAdminRoute component={InfoCorrectionRequests} />
                         </Suspense>
                       );
@@ -441,7 +441,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       const CourseDetail = lazy(() => import('./pages/courses/detail'));
                       const courseId = params?.id || '';
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">강의 정보 로딩 중...</div>}>
                           <CourseDetail courseId={courseId} />
                         </Suspense>
                       );
@@ -453,7 +453,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       const CoursePreview = lazy(() => import('./pages/courses/preview'));
                       const courseId = params?.id || '';
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">미리보기 로딩 중...</div>}>
                           <CoursePreview courseId={courseId} />
                         </Suspense>
                       );
@@ -514,7 +514,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       return (
                         <Suspense fallback={<div className="p-8 flex justify-center items-center">
                           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                          <SimpleLoadingInline size="sm" />
+                          <span className="ml-2">설정 로딩 중...</span>
                         </div>}>
                           <ProtectedRoute component={Settings} />
                         </Suspense>
@@ -550,7 +550,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       const InstituteDetail = lazy(() => import('./pages/institutes/detail'));
                       const instituteId = params?.id || '';
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">기관 정보 로딩 중...</div>}>
                           <InstituteDetail instituteId={instituteId} />
                         </Suspense>
                       );
@@ -563,7 +563,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const LocationsPage = lazy(() => import('./pages/location/index'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">위치 찾기 로딩 중...</div>}>
                           <LocationsPage />
                         </Suspense>
                       );
@@ -607,7 +607,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const VideoCallReserve = lazy(() => import('./pages/video-call/reserve'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">상담 예약 페이지 로딩 중...</div>}>
                           <VideoCallReserve />
                         </Suspense>
                       );
@@ -619,7 +619,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const ConsultationPage = lazy(() => import('./pages/consultation'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">상담 현황 로딩 중...</div>}>
                           <ConsultationPage />
                         </Suspense>
                       );
@@ -743,7 +743,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const TrainerReferrals = lazy(() => import('./pages/trainer/referralCodeManagement'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">추천 코드 관리 로딩 중...</div>}>
                           <TrainerReferrals />
                         </Suspense>
                       );
@@ -754,7 +754,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const TrainerSettings = lazy(() => import('./pages/trainer/Settings'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">설정 페이지 로딩 중...</div>}>
                           <TrainerSettings />
                         </Suspense>
                       );
@@ -771,7 +771,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteDashboard = lazy(() => import('./pages/institute-admin/InstituteDashboard'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">기관 대시보드 로딩 중...</div>}>
                           <InstituteDashboard />
                         </Suspense>
                       );
@@ -781,7 +781,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
                           <InstituteTrainers />
                         </Suspense>
                       );
@@ -791,7 +791,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteCourses = lazy(() => import('./pages/institute-admin/InstituteCourses'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">강좌 관리 로딩 중...</div>}>
                           <InstituteCourses />
                         </Suspense>
                       );
@@ -801,7 +801,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteFacility = lazy(() => import('./pages/institute-admin/InstituteFacility'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">시설 관리 로딩 중...</div>}>
                           <InstituteFacility />
                         </Suspense>
                       );
@@ -811,7 +811,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteStats = lazy(() => import('./pages/institute-admin/InstituteStats'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">회원 관리 로딩 중...</div>}>
                           <InstituteStats />
                         </Suspense>
                       );
@@ -821,7 +821,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstitutePetAssignments = lazy(() => import('./pages/institute-admin/InstitutePetAssignments'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">반려견 배정 로딩 중...</div>}>
                           <InstitutePetAssignments />
                         </Suspense>
                       );
@@ -831,7 +831,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteSettings = lazy(() => import('./pages/institute-admin/InstituteSettings'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">기관 설정 로딩 중...</div>}>
                           <InstituteSettings />
                         </Suspense>
                       );
@@ -847,7 +847,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
                           <InstituteTrainers />
                         </Suspense>
                       );
@@ -857,7 +857,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteMembers = lazy(() => import('./pages/institute-admin/InstituteMembers'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">회원 관리 로딩 중...</div>}>
                           <InstituteMembers />
                         </Suspense>
                       );
@@ -868,7 +868,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteMyPoints = lazy(() => import('./pages/institute-admin/MyPoints'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">내 포인트 로딩 중...</div>}>
                           <ProtectedRoute component={InstituteMyPoints} requiredRoles={['institute-admin']} />
                         </Suspense>
                       );
@@ -891,7 +891,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const MyCoursesPage = lazy(() => import('./pages/my-courses'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">내 강의 페이지 로딩 중...</div>}>
                           <MyCoursesPage />
                         </Suspense>
                       );
@@ -901,7 +901,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const MyTrainersPage = lazy(() => import('./pages/my-trainers'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">담당 훈련사 페이지 로딩 중...</div>}>
                           <MyTrainersPage />
                         </Suspense>
                       );
@@ -911,7 +911,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const MyPetsPage = lazy(() => import('./pages/my-pets'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">내 반려견 페이지 로딩 중...</div>}>
                           <MyPetsPage />
                         </Suspense>
                       );
@@ -921,7 +921,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const HealthRecordPage = lazy(() => import('./pages/pet-care/health-record'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">건강 기록 페이지 로딩 중...</div>}>
                           <HealthRecordPage />
                         </Suspense>
                       );
@@ -931,7 +931,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const PetDetailPage = lazy(() => import('./pages/pet-care/pet-detail'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">반려동물 상세 페이지 로딩 중...</div>}>
                           <PetDetailPage />
                         </Suspense>
                       );
@@ -941,7 +941,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const NotebookPage = lazy(() => import('./pages/notebook'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">알림장 페이지 로딩 중...</div>}>
                           <NotebookPage />
                         </Suspense>
                       );
@@ -951,7 +951,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const EducationSchedulePage = lazy(() => import('./pages/education-schedule'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">교육 일정 페이지 로딩 중...</div>}>
                           <EducationSchedulePage />
                         </Suspense>
                       );
@@ -961,7 +961,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const EducationSchedulePage = lazy(() => import('./pages/education-schedule'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">교육 일정 페이지 로딩 중...</div>}>
                           <EducationSchedulePage />
                         </Suspense>
                       );
@@ -971,7 +971,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const AnalyticsPage = lazy(() => import('./pages/analytics'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">분석 및 보고서 페이지 로딩 중...</div>}>
                           <AnalyticsPage />
                         </Suspense>
                       );
@@ -981,7 +981,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const SubscriptionsPage = lazy(() => import('./pages/subscriptions'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">구독 관리 페이지 로딩 중...</div>}>
                           <SubscriptionsPage />
                         </Suspense>
                       );
@@ -993,7 +993,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const AlertsPage = lazy(() => import('./pages/alerts'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">알림 페이지 로딩 중...</div>}>
                           <AlertsPage />
                         </Suspense>
                       );
@@ -1003,7 +1003,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const MessagesPage = lazy(() => import('./pages/messages'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">메시지 페이지 로딩 중...</div>}>
                           <MessagesPage />
                         </Suspense>
                       );
@@ -1015,7 +1015,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const AIChatbotPage = lazy(() => import('./pages/ai-chatbot'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">AI 챗봇 페이지 로딩 중...</div>}>
                           <AIChatbotPage />
                         </Suspense>
                       );
@@ -1027,7 +1027,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const VideoLectureSystem = lazy(() => import('./pages/video-lectures/VideoLectureSystem'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">영상강의 시스템 로딩 중...</div>}>
                           <VideoLectureSystem />
                         </Suspense>
                       );
@@ -1039,7 +1039,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const VideoLecturePlayer = lazy(() => import('./pages/video-lectures/VideoLecturePlayer'));
                       return (
-                        <Suspense fallback={<SimpleLoading />}>
+                        <Suspense fallback={<div className="p-8 text-center">영상 플레이어 로딩 중...</div>}>
                           <VideoLecturePlayer />
                         </Suspense>
                       );
@@ -1279,7 +1279,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InstituteDashboard = lazy(() => import('./pages/institute-admin/InstituteDashboard'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">기관 대시보드 로딩 중...</div>}>
                 <InstituteDashboard />
               </Suspense>
             );
@@ -1291,7 +1291,7 @@ function AuthenticatedRoutes() {
           {() => {
             const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">메뉴 관리 로딩 중...</div>}>
                 <AdminMenuManagement />
               </Suspense>
             );
@@ -1303,7 +1303,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
                 <InstituteTrainers />
               </Suspense>
             );
@@ -1313,7 +1313,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InstituteCourses = lazy(() => import('./pages/institute-admin/InstituteCourses'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">강좌 관리 로딩 중...</div>}>
                 <InstituteCourses />
               </Suspense>
             );
@@ -1323,7 +1323,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InstituteFacility = lazy(() => import('./pages/institute-admin/InstituteFacility'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">시설 관리 로딩 중...</div>}>
                 <InstituteFacility />
               </Suspense>
             );
@@ -1333,7 +1333,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InstituteMembers = lazy(() => import('./pages/institute-admin/InstituteMembers'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">회원 관리 로딩 중...</div>}>
                 <InstituteMembers />
               </Suspense>
             );
@@ -1343,7 +1343,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InstituteStats = lazy(() => import('./pages/institute-admin/InstituteStats'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">통계 로딩 중...</div>}>
                 <InstituteStats />
               </Suspense>
             );
@@ -1353,7 +1353,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InstitutePetAssignments = lazy(() => import('./pages/institute-admin/InstitutePetAssignments'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">반려견 배정 로딩 중...</div>}>
                 <InstitutePetAssignments />
               </Suspense>
             );
@@ -1363,7 +1363,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InstituteSettings = lazy(() => import('./pages/institute-admin/InstituteSettings'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">기관 설정 로딩 중...</div>}>
                 <InstituteSettings />
               </Suspense>
             );
@@ -1379,7 +1379,7 @@ function AuthenticatedRoutes() {
         <Route path="/community/create" component={() => {
           const CreatePost = lazy(() => import('./pages/community/create'));
           return (
-            <Suspense fallback={<SimpleLoading />}>
+            <Suspense fallback={<div className="p-8 text-center">게시글 작성 페이지 로딩 중...</div>}>
               <CreatePost />
             </Suspense>
           );
@@ -1403,7 +1403,7 @@ function AuthenticatedRoutes() {
             // ShopIndex 컴포넌트를 동적으로 임포트
             const ShopIndex = lazy(() => import('./pages/shop/index'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
                 <ShopIndex />
               </Suspense>
             );
@@ -1416,7 +1416,7 @@ function AuthenticatedRoutes() {
             console.log("상품 상세 페이지 접근");
             const ProductDetail = lazy(() => import('./pages/shop/product-detail'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">상품 정보 로딩 중...</div>}>
                 <ProductDetail />
               </Suspense>
             );
@@ -1429,7 +1429,7 @@ function AuthenticatedRoutes() {
             console.log("장바구니 페이지 접근");
             const Cart = lazy(() => import('./pages/shop/cart'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
                 <Cart />
               </Suspense>
             );
@@ -1442,7 +1442,7 @@ function AuthenticatedRoutes() {
             console.log("결제 페이지 접근");
             const Checkout = lazy(() => import('./pages/shop/checkout'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">결제 페이지 로딩 중...</div>}>
                 <Checkout />
               </Suspense>
             );
@@ -1455,7 +1455,7 @@ function AuthenticatedRoutes() {
             console.log("주문 완료 페이지 접근");
             const OrderComplete = lazy(() => import('./pages/shop/order-complete'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">주문 완료 정보 로딩 중...</div>}>
                 <OrderComplete />
               </Suspense>
             );
@@ -1468,7 +1468,7 @@ function AuthenticatedRoutes() {
             console.log("주문 내역 페이지 접근");
             const OrderHistory = lazy(() => import('./pages/shop/order-history'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">주문 내역 로딩 중...</div>}>
                 <OrderHistory />
               </Suspense>
             );
@@ -1489,7 +1489,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <SimpleLoadingInline size="sm" />
+                <span className="ml-2">알림 로딩 중...</span>
               </div>}>
                 <ProtectedRoute component={AlertsPage} />
               </Suspense>
@@ -1503,7 +1503,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <SimpleLoadingInline size="sm" />
+                <span className="ml-2">위치 서비스 로딩 중...</span>
               </div>}>
                 <Locations />
               </Suspense>
@@ -1541,7 +1541,7 @@ function AuthenticatedRoutes() {
           {() => {
             const CourseManagement = lazy(() => import('./pages/trainer/courses'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={CourseManagement} />
               </Suspense>
             );
@@ -1551,7 +1551,7 @@ function AuthenticatedRoutes() {
           {() => {
             const ReferralManagement = lazy(() => import('./pages/referral/ReferralCodeManagement'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={ReferralManagement} />
               </Suspense>
             );
@@ -1561,7 +1561,7 @@ function AuthenticatedRoutes() {
           {() => {
             const StudentManagement = lazy(() => import('./pages/trainer/students'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={StudentManagement} />
               </Suspense>
             );
@@ -1571,7 +1571,7 @@ function AuthenticatedRoutes() {
           {() => {
             const TrainerStats = lazy(() => import('./pages/trainer/stats'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerStats} />
               </Suspense>
             );
@@ -1581,7 +1581,7 @@ function AuthenticatedRoutes() {
           {() => {
             const TrainerClasses = lazy(() => import('./pages/trainer/classes'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerClasses} />
               </Suspense>
             );
@@ -1591,7 +1591,7 @@ function AuthenticatedRoutes() {
           {() => {
             const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerEarnings} />
               </Suspense>
             );
@@ -1752,7 +1752,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={
                 <div className="flex justify-center items-center h-screen">
-                  <DogLoading message="구독 관리 로딩중" size="medium" showTips={true} />
+                  <DogLoading message="구독 관리 로딩 중..." size="medium" showTips={true} />
                 </div>
               }>
                 <ProtectedRoute component={SubscriptionsPage} />
@@ -1803,7 +1803,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={
                 <div className="p-8 flex justify-center items-center">
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                  <SimpleLoadingInline size="sm" />
+                  <span className="ml-2">AI 챗봇 로딩 중...</span>
                 </div>
               }>
                 <AIChatbot />
@@ -1899,7 +1899,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <SimpleLoadingInline size="sm" />
+                <span className="ml-2">관리자 대시보드 로딩 중...</span>
               </div>}>
                 <ProtectedAdminRoute component={AdminDashboard} />
               </Suspense>
@@ -1974,7 +1974,7 @@ function AuthenticatedRoutes() {
           {() => {
             const InfoCorrectionRequests = lazy(() => import('./pages/admin/InfoCorrectionRequests'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">정보 수정 요청 관리 로딩 중...</div>}>
                 <ProtectedAdminRoute component={InfoCorrectionRequests} />
               </Suspense>
             );
@@ -1985,7 +1985,7 @@ function AuthenticatedRoutes() {
           {() => {
             const ReviewManagement = lazy(() => import('./pages/admin/ReviewManagement'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">리뷰 관리 로딩 중...</div>}>
                 <ProtectedAdminRoute component={ReviewManagement} />
               </Suspense>
             );
@@ -2013,7 +2013,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <SimpleLoadingInline size="sm" />
+                <span className="ml-2">심층 분석 대시보드 로딩 중...</span>
               </div>}>
                 <ProtectedAdminRoute component={AnalyticsPage} />
               </Suspense>
@@ -2213,7 +2213,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={
                 <div className="flex justify-center items-center h-screen">
-                  <DogLoading message="AI 반려동물 분석 페이지 로딩중" size="medium" showTips={true} />
+                  <DogLoading message="AI 반려동물 분석 페이지 로딩 중..." size="medium" showTips={true} />
                 </div>
               }>
                 <AIAnalysisPage />
@@ -2229,7 +2229,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={
                 <div className="flex justify-center items-center h-screen">
-                  <DogLoading message="분석 데이터 로딩중" size="medium" showTips={true} />
+                  <DogLoading message="분석 데이터 로딩 중..." size="medium" showTips={true} />
                 </div>
               }>
                 <AnalyticsPage />
@@ -2245,7 +2245,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={
                 <div className="flex justify-center items-center h-screen">
-                  <DogLoading message="교육 일정 로딩중" size="medium" showTips={true} />
+                  <DogLoading message="교육 일정 로딩 중..." size="medium" showTips={true} />
                 </div>
               }>
                 <EducationSchedulePage />
@@ -2261,7 +2261,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={
                 <div className="flex justify-center items-center h-screen">
-                  <DogLoading message="교육 일정 로딩중" size="medium" showTips={true} />
+                  <DogLoading message="교육 일정 로딩 중..." size="medium" showTips={true} />
                 </div>
               }>
                 <EducationSchedulePage />
@@ -2275,7 +2275,7 @@ function AuthenticatedRoutes() {
           {() => {
             const TrainerCourses = lazy(() => import('./pages/trainer/courses'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">강의 관리 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerCourses} />
               </Suspense>
             );
@@ -2285,7 +2285,7 @@ function AuthenticatedRoutes() {
           {() => {
             const TrainerNotebook = lazy(() => import('./pages/trainer/notebook'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">훈련 노트 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerNotebook} />
               </Suspense>
             );
@@ -2295,7 +2295,7 @@ function AuthenticatedRoutes() {
           {() => {
             const TrainerStudents = lazy(() => import('./pages/trainer/students'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">수강생 관리 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerStudents} />
               </Suspense>
             );
@@ -2305,7 +2305,7 @@ function AuthenticatedRoutes() {
           {() => {
             const TrainerStats = lazy(() => import('./pages/trainer/stats'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">통계 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerStats} />
               </Suspense>
             );
@@ -2315,7 +2315,7 @@ function AuthenticatedRoutes() {
           {() => {
             const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">수익 관리 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerEarnings} />
               </Suspense>
             );
@@ -2349,7 +2349,7 @@ function UnauthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <SimpleLoadingInline size="sm" />
+                <span className="ml-2">체험 서비스 로딩 중...</span>
               </div>}>
                 <TalezExperiencePage />
               </Suspense>
@@ -2365,7 +2365,7 @@ function UnauthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <SimpleLoadingInline size="sm" />
+                <span className="ml-2">위치 서비스 로딩 중...</span>
               </div>}>
                 <LocationsPage />
               </Suspense>
@@ -2381,7 +2381,7 @@ function UnauthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <SimpleLoadingInline size="sm" />
+                <span className="ml-2">AI 챗봇 로딩 중...</span>
               </div>}>
                 <AIChatbot />
               </Suspense>
@@ -2396,7 +2396,7 @@ function UnauthenticatedRoutes() {
             // ShopIndex 컴포넌트를 동적으로 임포트
             const ShopIndex = lazy(() => import('./pages/shop/index'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
                 <ShopIndex />
               </Suspense>
             );
@@ -2409,7 +2409,7 @@ function UnauthenticatedRoutes() {
             console.log("상품 상세 페이지 접근");
             const ProductDetail = lazy(() => import('./pages/shop/product-detail'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">상품 정보 로딩 중...</div>}>
                 <ProductDetail />
               </Suspense>
             );
@@ -2422,7 +2422,7 @@ function UnauthenticatedRoutes() {
             console.log("장바구니 페이지 접근");
             const Cart = lazy(() => import('./pages/shop/cart'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
                 <Cart />
               </Suspense>
             );
@@ -2435,7 +2435,7 @@ function UnauthenticatedRoutes() {
             console.log("결제 페이지 접근");
             const Checkout = lazy(() => import('./pages/shop/checkout'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">결제 페이지 로딩 중...</div>}>
                 <Checkout />
               </Suspense>
             );
@@ -2448,7 +2448,7 @@ function UnauthenticatedRoutes() {
             console.log("주문 완료 페이지 접근");
             const OrderComplete = lazy(() => import('./pages/shop/order-complete'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">주문 완료 정보 로딩 중...</div>}>
                 <OrderComplete />
               </Suspense>
             );
@@ -2472,7 +2472,7 @@ function UnauthenticatedRoutes() {
           {() => {
             const GuidePage = lazy(() => import('./pages/help/guide'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">이용 가이드 로딩 중...</div>}>
                 <GuidePage />
               </Suspense>
             );
@@ -2482,7 +2482,7 @@ function UnauthenticatedRoutes() {
           {() => {
             const AboutPage = lazy(() => import('./pages/help/about'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">회사 소개 로딩 중...</div>}>
                 <AboutPage />
               </Suspense>
             );
@@ -2492,7 +2492,7 @@ function UnauthenticatedRoutes() {
           {() => {
             const ContactPage = lazy(() => import('./pages/help/contact'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">문의하기 페이지 로딩 중...</div>}>
                 <ContactPage />
               </Suspense>
             );
@@ -2504,7 +2504,7 @@ function UnauthenticatedRoutes() {
           {() => {
             const AchievementsPage = lazy(() => import('./pages/profile/achievements'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">성취 배지 로딩 중...</div>}>
                 <AchievementsPage />
               </Suspense>
             );
@@ -2517,7 +2517,7 @@ function UnauthenticatedRoutes() {
           {() => {
             const NotFound = lazy(() => import('./pages/NotFound'));
             return (
-              <Suspense fallback={<SimpleLoading />}>
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <NotFound />
               </Suspense>
             );

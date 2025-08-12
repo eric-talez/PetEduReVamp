@@ -955,21 +955,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   size="sm" 
                   aria-label="로그인 페이지로 이동"
                   onClick={() => {
-                    // 로딩 표시를 위한 오버레이 요소 생성
-                    const overlay = document.createElement('div');
-                    overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
-                    overlay.innerHTML = `
-                      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex items-center">
-                        <div class="animate-spin w-6 h-6 border-3 border-primary border-t-transparent rounded-full mr-3"></div>
-                        <p>페이지 이동 중...</p>
-                      </div>
-                    `;
-                    document.body.appendChild(overlay);
-                    
-                    // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
-                    setTimeout(() => {
-                      window.location.href = "/auth";
-                    }, 300);
+                    window.location.href = "/auth";
                   }}
                 >
                   로그인
@@ -979,21 +965,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   size="sm" 
                   aria-label="회원가입 페이지로 이동"
                   onClick={() => {
-                    // 로딩 표시를 위한 오버레이 요소 생성
-                    const overlay = document.createElement('div');
-                    overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
-                    overlay.innerHTML = `
-                      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex items-center">
-                        <div class="animate-spin w-6 h-6 border-3 border-primary border-t-transparent rounded-full mr-3"></div>
-                        <p>페이지 이동 중...</p>
-                      </div>
-                    `;
-                    document.body.appendChild(overlay);
-                    
-                    // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
-                    setTimeout(() => {
-                      window.location.href = "/auth?tab=register";
-                    }, 300);
+                    window.location.href = "/auth?tab=register";
                   }}
                 >
                   회원가입
