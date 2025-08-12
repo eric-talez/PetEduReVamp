@@ -78,6 +78,7 @@ import InstituteRestManagement from "./pages/institute/RestManagement";
 import SubstituteClassBoard from "./pages/trainer/SubstituteClassBoard";
 import SubstituteTrainerManagement from "./pages/institute/SubstituteTrainerManagement";
 import SubstituteTrainerOverview from "./pages/admin/SubstituteTrainerOverview";
+import AdminContentModeration from "./pages/admin/AdminContentModeration";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -343,7 +344,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/substitute-overview" component={SubstituteTrainerOverview} />
                   <Route path="/admin/payment" component={lazy(() => import('./pages/admin/PaymentManagement'))} />
                   <Route path="/admin/payment-integration" component={PaymentIntegration} />
-                  <Route path="/admin/content-moderation" component={lazy(() => import('./pages/admin/AdminContentModeration'))} />
+                  <Route path="/admin/content-moderation" component={AdminContentModeration} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
