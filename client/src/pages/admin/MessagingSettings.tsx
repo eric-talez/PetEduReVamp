@@ -35,6 +35,7 @@ const initialSettings: MessagingSettings = {
 };
 
 export default function MessagingSettingsPage() {
+  console.log("[DEBUG] MessagingSettingsPage component loaded!");
   const { userName } = useGlobalAuth();
   const { toast } = useToast();
   const [settings, setSettings] = useState<MessagingSettings>(initialSettings);
