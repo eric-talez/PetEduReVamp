@@ -50,7 +50,7 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
             <a
               href={href}
               className={cn(
-                "sidebar-link flex items-center justify-center py-3 text-base font-medium rounded-md transition-all duration-200 ease-in-out px-2 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[2.75rem]",
+                "sidebar-link flex items-center justify-center py-3 text-xs font-medium rounded-md transition-all duration-200 ease-in-out px-2 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[2.75rem]",
                 active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
               )}
               onClick={handleClick}
@@ -92,7 +92,7 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center py-3 text-base font-medium rounded-md transition-all duration-200 ease-in-out px-3 group shadow-sm hover:shadow-md min-h-[2.75rem]",
+        "sidebar-link flex items-center py-3 text-xs font-medium rounded-md transition-all duration-200 ease-in-out px-3 group shadow-sm hover:shadow-md min-h-[2.75rem]",
         active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       )}
