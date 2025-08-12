@@ -77,7 +77,7 @@ export default function MessagingSettingsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Admin-Id': userName || 'admin'
+          'X-Admin-Id': encodeURIComponent(userName || 'admin')
         },
         body: JSON.stringify(settings)
       });
