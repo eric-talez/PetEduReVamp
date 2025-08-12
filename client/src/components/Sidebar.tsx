@@ -271,7 +271,7 @@ export function Sidebar({
         tools: false,
         trainer: false,   // 권한이 있어도 기본 닫힌 상태
         institute: false, // 권한이 있어도 기본 닫힌 상태
-        admin: false,     // 권한이 있어도 기본 닫힌 상태
+        admin: isAdmin,   // 관리자는 기본적으로 열린 상태
         // 로그인 상태에 따라 메뉴 그룹 표시/숨김 처리
         myLearning: false,
         features: false
