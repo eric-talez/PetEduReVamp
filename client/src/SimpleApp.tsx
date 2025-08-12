@@ -1948,6 +1948,21 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+
+        <Route path="/admin/messaging-settings">
+          {() => {
+            console.log("[DEBUG] Admin messaging settings route accessed!");
+            console.log("[DEBUG] Current path:", window.location.pathname);
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">메시징 설정 로딩 중...</span>
+              </div>}>
+                <ProtectedAdminRoute component={MessagingSettings} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/reports/analytics">
           {() => {
             const AnalyticsReportPage = lazy(() => import('./pages/admin/reports/analytics'));
@@ -2046,20 +2061,7 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
-        <Route path="/admin/messaging-settings">
-          {() => {
-            console.log("[DEBUG] Admin messaging settings route accessed!");
-            console.log("[DEBUG] Current path:", window.location.pathname);
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <span className="ml-2">메시징 설정 로딩 중...</span>
-              </div>}>
-                <ProtectedAdminRoute component={MessagingSettings} />
-              </Suspense>
-            );
-          }}
-        </Route>
+
 
 
         <Route path="/admin/facility">
