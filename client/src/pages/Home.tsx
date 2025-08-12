@@ -617,14 +617,27 @@ export default function Home() {
                       </div>
                       <div className="mt-2 text-xs text-green-600 dark:text-green-400">실제 데이터</div>
                       <div className="mt-1">
-                        <div className="flex items-center gap-1 mb-1">
-                          {[65, 78, 82, 89, 95, 102, 108].map((height, index) => (
-                            <div key={index} className="flex-1 bg-blue-200 dark:bg-blue-700 rounded-sm" style={{height: `${height / 5}px`}}></div>
+                        <div className="flex items-end gap-1 mb-1 h-8">
+                          {[65, 78, 82, 89, 95, 102, 108].map((value, index) => (
+                            <div key={index} className="flex-1 relative group">
+                              <div 
+                                className="bg-blue-200 dark:bg-blue-700 rounded-sm transition-colors hover:bg-blue-300 dark:hover:bg-blue-600" 
+                                style={{height: `${value / 5}px`}}
+                              ></div>
+                              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                {value}명
+                              </div>
+                            </div>
                           ))}
                         </div>
-                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
                           {['월', '화', '수', '목', '금', '토', '일'].map((day, index) => (
                             <span key={index} className="flex-1 text-center">{day}</span>
+                          ))}
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mt-1">
+                          {[65, 78, 82, 89, 95, 102, 108].map((value, index) => (
+                            <span key={index} className="flex-1 text-center font-medium">{value}</span>
                           ))}
                         </div>
                       </div>
@@ -643,14 +656,27 @@ export default function Home() {
                       </div>
                       <div className="mt-2 text-xs text-green-600 dark:text-green-400">왕짱스쿨</div>
                       <div className="mt-1">
-                        <div className="flex items-center gap-1 mb-1">
-                          {[18, 22, 25, 28, 24, 30, 32].map((height, index) => (
-                            <div key={index} className="flex-1 bg-green-200 dark:bg-green-700 rounded-sm" style={{height: `${height}px`}}></div>
+                        <div className="flex items-end gap-1 mb-1 h-8">
+                          {[18, 22, 25, 28, 24, 30, 32].map((value, index) => (
+                            <div key={index} className="flex-1 relative group">
+                              <div 
+                                className="bg-green-200 dark:bg-green-700 rounded-sm transition-colors hover:bg-green-300 dark:hover:bg-green-600" 
+                                style={{height: `${value}px`}}
+                              ></div>
+                              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                {value}명
+                              </div>
+                            </div>
                           ))}
                         </div>
-                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
                           {['월', '화', '수', '목', '금', '토', '일'].map((day, index) => (
                             <span key={index} className="flex-1 text-center">{day}</span>
+                          ))}
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mt-1">
+                          {[18, 22, 25, 28, 24, 30, 32].map((value, index) => (
+                            <span key={index} className="flex-1 text-center font-medium">{value}</span>
                           ))}
                         </div>
                       </div>
@@ -669,14 +695,27 @@ export default function Home() {
                       </div>
                       <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">실제현황</div>
                       <div className="mt-1">
-                        <div className="flex items-center gap-1 mb-1">
-                          {[8, 6, 12, 9, 15, 11, 18].map((height, index) => (
-                            <div key={index} className="flex-1 bg-purple-200 dark:bg-purple-700 rounded-sm" style={{height: `${height + 10}px`}}></div>
+                        <div className="flex items-end gap-1 mb-1 h-8">
+                          {[8, 6, 12, 9, 15, 11, 18].map((value, index) => (
+                            <div key={index} className="flex-1 relative group">
+                              <div 
+                                className="bg-purple-200 dark:bg-purple-700 rounded-sm transition-colors hover:bg-purple-300 dark:hover:bg-purple-600" 
+                                style={{height: `${value + 10}px`}}
+                              ></div>
+                              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                {value}마리
+                              </div>
+                            </div>
                           ))}
                         </div>
-                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
                           {['월', '화', '수', '목', '금', '토', '일'].map((day, index) => (
                             <span key={index} className="flex-1 text-center">{day}</span>
+                          ))}
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mt-1">
+                          {[8, 6, 12, 9, 15, 11, 18].map((value, index) => (
+                            <span key={index} className="flex-1 text-center font-medium">{value}</span>
                           ))}
                         </div>
                       </div>

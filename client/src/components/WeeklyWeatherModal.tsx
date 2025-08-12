@@ -184,19 +184,11 @@ export function WeeklyWeatherModal({ isOpen, onClose, location = { name: "서울
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-xl">주간 날씨 정보</DialogTitle>
-              <DialogDescription className="text-sm mt-1">
-                {location.name} {location.region} 지역의 7일간 날씨 정보입니다
-              </DialogDescription>
-            </div>
-            <DialogClose asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <X className="h-4 w-4" />
-                <span className="sr-only">닫기</span>
-              </Button>
-            </DialogClose>
+          <div>
+            <DialogTitle className="text-xl">주간 날씨 정보</DialogTitle>
+            <DialogDescription className="text-sm mt-1">
+              {location.name} {location.region} 지역의 7일간 날씨 정보입니다
+            </DialogDescription>
           </div>
         </DialogHeader>
         
