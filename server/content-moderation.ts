@@ -60,20 +60,20 @@ const checkContent = (content: string, title?: string): { flagged: boolean; keyw
     if (!filter.isActive) continue;
     
     try {
-      let regex: RegExp;
+      let isMatched = false;
       
       if (filter.isRegex) {
-        // 이미 정규식인 경우, 이중 백슬래시 제거
-        const cleanKeyword = filter.keyword.replace(/\\\\b/g, '\\b').replace(/\\\\/g, '\\');
-        regex = new RegExp(cleanKeyword, 'gi');
+        // 정규식 패턴 사용
+        const regex = new RegExp(filter.keyword, 'gi');
+        isMatched = regex.test(textToCheck);
       } else {
-        // 일반 텍스트는 특수문자 이스케이프
-        regex = new RegExp(filter.keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        // 간단한 텍스트 포함 검사 (대소문자 무시)
+        isMatched = textToCheck.toLowerCase().includes(filter.keyword.toLowerCase());
       }
       
-      console.log(`[Content Check] 키워드 "${filter.keyword}" 검사 중...`);
+      console.log(`[Content Check] 키워드 "${filter.keyword}" 검사 중... 결과: ${isMatched}`);
       
-      if (regex.test(textToCheck)) {
+      if (isMatched) {
         console.log(`[Content Check] 키워드 매칭됨: "${filter.keyword}"`);
         flaggedKeywords.push(filter.keyword);
         
@@ -85,7 +85,7 @@ const checkContent = (content: string, title?: string): { flagged: boolean; keyw
         }
       }
     } catch (error) {
-      console.error(`[Content Check] 정규식 오류: ${filter.keyword}`, error);
+      console.error(`[Content Check] 키워드 검사 오류: ${filter.keyword}`, error);
     }
   }
   

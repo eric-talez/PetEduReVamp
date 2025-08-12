@@ -52,7 +52,8 @@ import {
   CheckCircle,
   XCircle,
   Edit,
-  Save
+  Save,
+  TestTube
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -80,6 +81,12 @@ interface ModerationLog {
   createdAt: string;
 }
 
+interface ContentCheckResult {
+  flagged: boolean;
+  keywords: string[];
+  severity: 'low' | 'medium' | 'high';
+}
+
 interface PendingPost {
   id: number;
   title: string;
@@ -103,6 +110,13 @@ const AdminContentModeration: React.FC = () => {
   });
   const [editingKeyword, setEditingKeyword] = useState<FilterKeyword | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // 테스트 관련 상태
+  const [testTitle, setTestTitle] = useState('');
+  const [testContent, setTestContent] = useState('');
+  const [testResult, setTestResult] = useState<ContentCheckResult | null>(null);
+  const [isTestLoading, setIsTestLoading] = useState(false);
+  const [testError, setTestError] = useState<string | null>(null);
 
   // 기본 키워드 세트
   const defaultKeywords = {
@@ -259,6 +273,68 @@ const AdminContentModeration: React.FC = () => {
     }
   };
 
+  const getSeverityBadgeColor = (severity: string) => {
+    switch (severity) {
+      case 'high': return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const testContentCheck = async () => {
+    setIsTestLoading(true);
+    setTestError(null);
+    setTestResult(null);
+
+    try {
+      const response = await fetch('/api/admin/content-moderation/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: testTitle.trim(),
+          content: testContent.trim()
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setTestResult(data);
+    } catch (err) {
+      setTestError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+    } finally {
+      setIsTestLoading(false);
+    }
+  };
+
+  const testSamples = [
+    {
+      title: '정상적인 게시글',
+      content: '반려견 훈련에 대한 유익한 정보를 공유하고 싶습니다. 기본 명령어부터 시작해보세요.',
+      description: '정상 콘텐츠'
+    },
+    {
+      title: '부적절한 게시글',
+      content: '이 글에는 폭행이나 협박 같은 부적절한 내용이 포함되어 있습니다.',
+      description: '폭력성 키워드 포함'
+    },
+    {
+      title: '스팸 게시글',
+      content: '100%당첨! 무조건적중하는 카지노 사이트입니다! 바카라에서 큰돈을 벌어보세요!',
+      description: '스팸 키워드 포함'
+    },
+    {
+      title: '개인정보 유출',
+      content: '제 주민등록번호는 123456-1234567이고 계좌번호는 123-456-789입니다.',
+      description: '개인정보 키워드 포함'
+    }
+  ];
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -273,10 +349,11 @@ const AdminContentModeration: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="keywords">필터 키워드</TabsTrigger>
           <TabsTrigger value="pending">대기 게시글</TabsTrigger>
           <TabsTrigger value="logs">검열 로그</TabsTrigger>
+          <TabsTrigger value="test">테스트</TabsTrigger>
         </TabsList>
 
         {/* 필터 키워드 관리 */}
@@ -529,6 +606,130 @@ const AdminContentModeration: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* 콘텐츠 검열 테스트 */}
+        <TabsContent value="test" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* 테스트 입력 섹션 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TestTube className="w-5 h-5" />
+                  콘텐츠 테스트
+                </CardTitle>
+                <CardDescription>
+                  콘텐츠 필터링 시스템을 테스트해보세요
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">제목</label>
+                  <Input
+                    value={testTitle}
+                    onChange={(e) => setTestTitle(e.target.value)}
+                    placeholder="게시글 제목을 입력하세요"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">내용</label>
+                  <Textarea
+                    value={testContent}
+                    onChange={(e) => setTestContent(e.target.value)}
+                    placeholder="게시글 내용을 입력하세요"
+                    rows={6}
+                  />
+                </div>
+
+                <Button 
+                  onClick={testContentCheck}
+                  disabled={isTestLoading || (!testTitle.trim() && !testContent.trim())}
+                  className="w-full"
+                >
+                  {isTestLoading ? '검사 중...' : '콘텐츠 검사'}
+                </Button>
+
+                {testError && (
+                  <div className="border border-red-200 bg-red-50 p-3 rounded">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <span className="text-red-800 text-sm">{testError}</span>
+                    </div>
+                  </div>
+                )}
+
+                {testResult && (
+                  <div className={`border-2 p-4 rounded ${testResult.flagged ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}`}>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        {testResult.flagged ? (
+                          <XCircle className="w-5 h-5 text-red-600" />
+                        ) : (
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        )}
+                        <span className={`font-medium ${testResult.flagged ? 'text-red-800' : 'text-green-800'}`}>
+                          {testResult.flagged ? '부적절한 콘텐츠 감지됨' : '콘텐츠 검사 통과'}
+                        </span>
+                        <Badge className={getSeverityBadgeColor(testResult.severity)}>
+                          {testResult.severity.toUpperCase()}
+                        </Badge>
+                      </div>
+                      {testResult.keywords.length > 0 && (
+                        <div>
+                          <span className="text-sm font-medium">감지된 키워드: </span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {testResult.keywords.map((keyword, index) => (
+                              <Badge key={index} variant="danger" className="text-xs">
+                                {keyword}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 샘플 테스트 섹션 */}
+            <Card>
+              <CardHeader>
+                <CardTitle>샘플 테스트</CardTitle>
+                <CardDescription>
+                  미리 준비된 샘플로 빠르게 테스트해보세요
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {testSamples.map((sample, index) => (
+                  <div key={index} className="border rounded-lg p-3 hover:bg-gray-50">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm">{sample.title}</h4>
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{sample.content}</p>
+                        <Badge variant="outline" className="text-xs mt-2">
+                          {sample.description}
+                        </Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setTestTitle(sample.title);
+                          setTestContent(sample.content);
+                          setTestResult(null);
+                          setTestError(null);
+                        }}
+                      >
+                        사용
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
