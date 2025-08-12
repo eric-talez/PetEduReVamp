@@ -26,6 +26,9 @@ export default function Register() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [gender, setGender] = useState<"male" | "female" | "">("");
   const [userRole, setUserRole] = useState<UserRole>("pet-owner");
   const [instituteCode, setInstituteCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -82,10 +85,37 @@ export default function Register() {
     setIsLoading(true);
     
     // 입력 검증
-    if (!username || !password || !confirmPassword || !email || !name) {
+    if (!username || !password || !confirmPassword || !email || !name || !phoneNumber || !birthDate || !gender) {
       toast({
         title: "입력 오류",
-        description: "모든 필드를 입력해주세요.",
+        description: "모든 필수 필드를 입력해주세요.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // 생년월일 유효성 검증
+    const birth = new Date(birthDate);
+    const today = new Date();
+    const age = today.getFullYear() - birth.getFullYear();
+    
+    if (age < 14 || age > 100) {
+      toast({
+        title: "생년월일 오류",
+        description: "올바른 생년월일을 입력해주세요. (만 14세 이상)",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // 휴대폰 번호 유효성 검증
+    const phoneRegex = /^010-\d{4}-\d{4}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      toast({
+        title: "휴대폰 번호 오류",
+        description: "휴대폰 번호는 010-0000-0000 형식으로 입력해주세요.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -179,6 +209,56 @@ export default function Register() {
                 onChange={(e) => setName(e.target.value)}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">휴대폰 번호</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="010-0000-0000"
+                value={phoneNumber}
+                onChange={(e) => {
+                  let value = e.target.value.replace(/[^0-9]/g, '');
+                  if (value.length >= 3) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                  }
+                  if (value.length >= 8) {
+                    value = value.slice(0, 8) + '-' + value.slice(8, 12);
+                  }
+                  setPhoneNumber(value);
+                }}
+                maxLength={13}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="birthDate">생년월일</Label>
+              <Input
+                id="birthDate"
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gender">성별</Label>
+              <Select
+                value={gender}
+                onValueChange={(value) => setGender(value as "male" | "female")}
+              >
+                <SelectTrigger id="gender">
+                  <SelectValue placeholder="성별을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">남성</SelectItem>
+                  <SelectItem value="female">여성</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="space-y-2">

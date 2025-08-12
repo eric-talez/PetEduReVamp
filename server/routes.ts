@@ -460,9 +460,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 회원가입 API
   app.post('/api/register', async (req, res) => {
     try {
-      const { username, password, email, name, userRole, instituteCode } = req.body;
+      const { username, password, email, name, phoneNumber, birthDate, gender, age, userRole, instituteCode } = req.body;
 
-      if (!username || !password || !email || !name) {
+      if (!username || !password || !email || !name || !phoneNumber || !birthDate || !gender) {
         return res.status(400).json({
           success: false,
           message: '필수 정보를 모두 입력해주세요.'
@@ -484,6 +484,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username,
         email,
         name,
+        phoneNumber,
+        birthDate,
+        age: age || new Date().getFullYear() - new Date(birthDate).getFullYear(),
+        gender,
         role: userRole || 'pet-owner',
         password, // 실제 환경에서는 해시 처리 필요
         instituteCode: userRole === 'institute-admin' ? instituteCode : null,
