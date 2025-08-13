@@ -58,24 +58,33 @@ export const KakaoMapImproved: React.FC<KakaoMapProps> = ({
       try {
         // Kakao Maps API 로드
         window.kakao.maps.load(() => {
-          console.log('Kakao Maps SDK 로드 대기 중...');
+          console.log('Kakao Maps SDK 초기화 시작...');
           
-          const options = {
-            center: new window.kakao.maps.LatLng(center.latitude, center.longitude),
-            level: 3
-          };
+          try {
+            const options = {
+              center: new window.kakao.maps.LatLng(center.latitude, center.longitude),
+              level: 3
+            };
 
-          const kakaoMap = new window.kakao.maps.Map(mapContainer.current!, options);
-          setMap(kakaoMap);
+            console.log('지도 생성 중...', options);
+            const kakaoMap = new window.kakao.maps.Map(mapContainer.current!, options);
+            setMap(kakaoMap);
 
-          // 인포윈도우 생성
-          const kakaoInfoWindow = new window.kakao.maps.InfoWindow({
-            zIndex: 1,
-          });
-          setInfoWindow(kakaoInfoWindow);
+            // 인포윈도우 생성
+            const kakaoInfoWindow = new window.kakao.maps.InfoWindow({
+              zIndex: 1,
+            });
+            setInfoWindow(kakaoInfoWindow);
 
-          setIsLoading(false);
-          console.log('카카오맵 초기화 성공');
+            setIsLoading(false);
+            setHasError(false);
+            console.log('카카오맵 초기화 성공');
+          } catch (mapError) {
+            console.error('지도 생성 실패:', mapError);
+            setIsLoading(false);
+            setHasError(true);
+            setErrorMessage(`지도 생성 실패: ${mapError.message}`);
+          }
         });
       } catch (error) {
         console.error('카카오맵 초기화 실패:', error);
@@ -98,14 +107,24 @@ export const KakaoMapImproved: React.FC<KakaoMapProps> = ({
     
     script.onload = () => {
       console.log('카카오맵 스크립트 로드 완료');
-      setTimeout(initializeMap, 200);
+      if (window.kakao && window.kakao.maps) {
+        console.log('Kakao Maps SDK 확인됨');
+        setTimeout(initializeMap, 100);
+      } else {
+        console.error('Kakao Maps SDK가 로드되지 않음');
+        setHasError(true);
+        setErrorMessage('카카오맵 SDK 로드 실패');
+        setIsLoading(false);
+      }
     };
 
     script.onerror = (event) => {
       console.error('카카오맵 API 로드 실패:', event);
+      console.error('API Key:', KAKAO_MAPS_API_KEY?.substring(0, 8) + '...');
+      console.error('Script URL:', script.src);
       setIsLoading(false);
       setHasError(true);
-      setErrorMessage('카카오맵 스크립트 로드에 실패했습니다. API 키를 확인해주세요.');
+      setErrorMessage(`카카오맵 스크립트 로드 실패. API 키 문제 가능성: ${KAKAO_MAPS_API_KEY?.substring(0, 8)}...`);
     };
 
     document.head.appendChild(script);
