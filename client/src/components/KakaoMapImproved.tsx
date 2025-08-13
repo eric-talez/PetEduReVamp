@@ -43,11 +43,14 @@ export const KakaoMapImproved: React.FC<KakaoMapProps> = ({
   // 카카오맵 API 로드 및 지도 초기화
   useEffect(() => {
     if (!KAKAO_MAPS_API_KEY) {
-      console.log('카카오맵 API 키가 없습니다. 폴백 모드로 전환합니다.');
+      console.error('카카오맵 API 키가 없습니다. 폴백 모드로 전환합니다.');
       setIsLoading(false);
       setHasError(true);
+      setErrorMessage('카카오맵 API 키가 설정되지 않았습니다.');
       return;
     }
+
+    console.log('카카오맵 초기화 시작. API Key 확인됨:', KAKAO_MAPS_API_KEY?.substring(0, 8) + '...');
 
     const initializeMap = () => {
       if (!mapContainer.current || !window.kakao?.maps) return;
@@ -91,18 +94,18 @@ export const KakaoMapImproved: React.FC<KakaoMapProps> = ({
     // 스크립트 로드
     const script = document.createElement('script');
     script.async = true;
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAPS_API_KEY}&libraries=services,clusterer,drawing&autoload=false`;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAPS_API_KEY}&libraries=services,clusterer,drawing&autoload=false`;
     
     script.onload = () => {
       console.log('카카오맵 스크립트 로드 완료');
-      setTimeout(initializeMap, 100);
+      setTimeout(initializeMap, 200);
     };
 
-    script.onerror = () => {
-      console.error('카카오맵 API 로드 실패');
+    script.onerror = (event) => {
+      console.error('카카오맵 API 로드 실패:', event);
       setIsLoading(false);
       setHasError(true);
-      setErrorMessage('카카오맵 스크립트 로드에 실패했습니다.');
+      setErrorMessage('카카오맵 스크립트 로드에 실패했습니다. API 키를 확인해주세요.');
     };
 
     document.head.appendChild(script);
