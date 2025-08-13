@@ -72,7 +72,7 @@ export const MapFallback: React.FC<MapFallbackProps> = ({
               <p className="font-medium mb-2">🔧 설정 방법:</p>
               <ol className="list-decimal list-inside space-y-1 text-xs">
                 <li>카카오 개발자 콘솔 접속</li>
-                <li>앱 설정 > 플랫폼 > Web 추가</li>
+                <li>앱 설정 &gt; 플랫폼 &gt; Web 추가</li>
                 <li>지도/로컬 서비스 활성화</li>
                 <li>도메인 등록 (localhost:5000)</li>
               </ol>

@@ -48,8 +48,16 @@ function PlaceSearch() {
       // 실제 카카오맵 API 호출
       const response = await fetch(`/api/locations?search=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) {
-        throw new Error('검색 요청 실패');
+        throw new Error(`검색 요청 실패: ${response.status}`);
       }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('JSON이 아닌 응답:', text.substring(0, 200));
+        throw new Error('잘못된 응답 형식');
+      }
+      
       const results = await response.json();
       
       // API 응답을 Place 형태로 변환

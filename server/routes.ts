@@ -1789,12 +1789,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Location/Places search API (Kakao Maps integration)
+  // Location/Places search API (Kakao Maps integration) - 활성화된 버전
   app.get('/api/locations', async (req, res) => {
     const { search } = req.query;
     const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
     
+    console.log(`[Location API] 요청받음 - search: "${search}", API 키 존재: ${!!KAKAO_REST_API_KEY}`);
+    
     if (!search || typeof search !== 'string') {
+      console.log('[Location API] 검색어 누락 - 400 응답');
       return res.status(400).json({ error: '검색어가 필요합니다.' });
     }
 
@@ -1804,6 +1807,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
+      console.log(`[Kakao API] 검색어: "${search}", API 키: ${KAKAO_REST_API_KEY.substring(0, 8)}...`);
+      
       const params = new URLSearchParams({
         query: search,
         page: '1',
@@ -1817,11 +1822,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
 
+      console.log(`[Kakao API] 응답 상태: ${response.status}`);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`카카오 API 오류: ${response.status} ${response.statusText} - ${errorText}`);
         throw new Error(`카카오 API 오류: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log(`[Kakao API] 응답 데이터 documents 길이: ${data.documents?.length}`);
       
       // 카카오 장소 데이터를 앱 형식으로 변환
       const places = data.documents.map((place: any) => ({
@@ -1839,7 +1849,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sourceUrl: place.place_url
       }));
 
-      console.log(`[위치 API] 검색어: "${search}", 결과: ${places.length}개`);
+      console.log(`[Location API] 최종 응답: ${places.length}개 장소`);
       res.json(places);
       
     } catch (error) {
@@ -6666,75 +6676,7 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // === Location API Routes ===
-
-  // 위치 찾기 API (기관 + 훈련사 + 기타 위치)
-  app.get('/api/locations', async (req, res) => {
-    try {
-      const { search, type, certification } = req.query;
-      
-      // 기관 데이터 가져오기
-      const institutes = await storage.getInstitutes();
-      
-      // 기관을 위치 형식으로 변환
-      let locations = institutes.map(institute => ({
-        id: institute.id,
-        name: institute.name,
-        type: 'institute',
-        address: institute.address,
-        description: institute.description,
-        phone: institute.phone,
-        website: institute.website,
-        rating: institute.rating || 4.5,
-        reviewCount: institute.reviewCount || 0,
-        certification: institute.isVerified,
-        latitude: institute.latitude,
-        longitude: institute.longitude,
-        facilities: institute.facilities || [],
-        operatingHours: institute.operatingHours,
-        isActive: institute.isActive
-      }));
-
-      // 필터링
-      if (search) {
-        const searchTerm = search.toString().trim();
-        console.log(`[위치 검색] 검색어: "${searchTerm}"`);
-        console.log(`[위치 검색] 검색 전 위치 수: ${locations.length}`);
-        
-        locations = locations.filter(location => {
-          const nameMatch = location.name && location.name.includes(searchTerm);
-          const addressMatch = location.address && location.address.includes(searchTerm);
-          const descMatch = location.description && location.description.includes(searchTerm);
-          
-          const isMatch = nameMatch || addressMatch || descMatch;
-          
-          if (isMatch) {
-            console.log(`[위치 검색] 매칭됨: ${location.name} (이름:${nameMatch}, 주소:${addressMatch}, 설명:${descMatch})`);
-          }
-          
-          return isMatch;
-        });
-        
-        console.log(`[위치 검색] 검색 후 위치 수: ${locations.length}`);
-      }
-
-      if (type && type !== 'all') {
-        locations = locations.filter(location => location.type === type);
-      }
-
-      if (certification === 'true') {
-        locations = locations.filter(location => location.certification);
-      }
-
-      res.json(locations);
-    } catch (error) {
-      console.error('위치 목록 조회 실패:', error);
-      res.status(500).json({
-        success: false,
-        message: '위치 목록을 불러오는 중 오류가 발생했습니다.'
-      });
-    }
-  });
+  // === Internal Location API (별도 엔드포인트로 이동) ===
 
   // === Institute API Routes ===
 
