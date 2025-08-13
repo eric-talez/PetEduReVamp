@@ -1792,7 +1792,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Location/Places search API (Kakao Maps integration)
   app.get('/api/locations', async (req, res) => {
     const { search } = req.query;
-    const KAKAO_REST_API_KEY = process.env.VITE_KAKAO_MAPS_API_KEY;
+    const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
     
     if (!search || typeof search !== 'string') {
       return res.status(400).json({ error: '검색어가 필요합니다.' });
