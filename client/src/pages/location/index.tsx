@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { apiRequest } from '@/lib/queryClient';
-import KakaoMap from '@/components/KakaoMap';
+import KakaoMapImproved from '@/components/KakaoMapImproved';
 
 /**
  * 위치 마커 컴포넌트
@@ -45,13 +45,36 @@ function PlaceSearch() {
 
     setIsSearching(true);
     try {
-      // 실제 위치 API 호출
+      // 실제 카카오맵 API 호출
       const response = await fetch(`/api/locations?search=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) {
         throw new Error('검색 요청 실패');
       }
       const results = await response.json();
-      setSearchResults(results);
+      
+      // API 응답을 Place 형태로 변환
+      const places: Place[] = results.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        location: {
+          latitude: item.latitude,
+          longitude: item.longitude,
+          address: item.address
+        },
+        type: item.type || 'shop',
+        rating: item.rating,
+        distance: item.distance,
+        photo: item.photo,
+        contact: item.phone,
+        openingHours: item.openingHours,
+        description: item.description || item.category_name,
+        isCertified: item.certification || false,
+        certificationLevel: item.certificationLevel || 'standard',
+        petFriendlyLevel: 'medium',
+        features: item.features || []
+      }));
+      
+      setSearchResults(places);
       
       console.log(`[위치 검색] 검색어: "${searchTerm}", 결과: ${results.length}개`);
     } catch (error) {
@@ -1153,7 +1176,7 @@ function LocationPageContent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <KakaoMap 
+          <KakaoMapImproved 
             center={currentLocation || { latitude: 37.5665, longitude: 126.978 }}
             places={nearbyPlaces}
             onPlaceSelect={setSelectedPlace}
