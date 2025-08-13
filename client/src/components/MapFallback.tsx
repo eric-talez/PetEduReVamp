@@ -59,35 +59,46 @@ export const MapFallback: React.FC<MapFallbackProps> = ({
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-orange-600" />
             <div>
-              <CardTitle className="text-base text-orange-800">지도 로드 오류</CardTitle>
+              <CardTitle className="text-base text-orange-800">카카오맵 설정 필요</CardTitle>
               <CardDescription className="text-orange-600 text-sm">
-                {error || "카카오맵을 불러오는데 문제가 발생했습니다"}
+                카카오 개발자 콘솔에서 웹 플랫폼 지도 서비스를 활성화해주세요 (HTTP 404 오류)
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="flex gap-2">
-            {onRefresh && (
+          <div className="space-y-3">
+            <div className="text-sm text-orange-700 bg-orange-50 p-3 rounded border">
+              <p className="font-medium mb-2">🔧 설정 방법:</p>
+              <ol className="list-decimal list-inside space-y-1 text-xs">
+                <li>카카오 개발자 콘솔 접속</li>
+                <li>앱 설정 > 플랫폼 > Web 추가</li>
+                <li>지도/로컬 서비스 활성화</li>
+                <li>도메인 등록 (localhost:5000)</li>
+              </ol>
+            </div>
+            <div className="flex gap-2">
+              {onRefresh && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onRefresh}
+                  className="text-orange-700 border-orange-300 hover:bg-orange-100"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  다시 시도
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={onRefresh}
+                onClick={openInKakaoMap}
                 className="text-orange-700 border-orange-300 hover:bg-orange-100"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                다시 시도
+                <ExternalLink className="h-4 w-4 mr-2" />
+                카카오맵에서 보기
               </Button>
-            )}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={openInKakaoMap}
-              className="text-orange-700 border-orange-300 hover:bg-orange-100"
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              카카오맵에서 보기
-            </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

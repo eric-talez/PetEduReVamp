@@ -103,6 +103,7 @@ export const KakaoMapImproved: React.FC<KakaoMapProps> = ({
     // 스크립트 로드
     const script = document.createElement('script');
     script.async = true;
+    script.crossOrigin = 'anonymous';
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAPS_API_KEY}&libraries=services,clusterer,drawing&autoload=false`;
     
     script.onload = () => {
@@ -122,9 +123,32 @@ export const KakaoMapImproved: React.FC<KakaoMapProps> = ({
       console.error('카카오맵 API 로드 실패:', event);
       console.error('API Key:', KAKAO_MAPS_API_KEY?.substring(0, 8) + '...');
       console.error('Script URL:', script.src);
+      
+      // 더 자세한 오류 정보 확인을 위해 fetch로 테스트
+      fetch(script.src)
+        .then(response => {
+          console.error('HTTP 상태:', response.status);
+          return response.text();
+        })
+        .then(text => {
+          console.error('응답 내용:', text.substring(0, 200));
+          if (text.includes('errorType')) {
+            const errorMatch = text.match(/"errorType":"([^"]+)"/);
+            const messageMatch = text.match(/"message":"([^"]+)"/);
+            const errorType = errorMatch ? errorMatch[1] : 'Unknown';
+            const message = messageMatch ? messageMatch[1] : '알 수 없는 오류';
+            setErrorMessage(`카카오 API 오류: ${errorType} - ${message}`);
+          } else {
+            setErrorMessage('카카오맵 스크립트 로드 실패');
+          }
+        })
+        .catch(fetchError => {
+          console.error('Fetch 오류:', fetchError);
+          setErrorMessage('네트워크 오류로 인한 카카오맵 로드 실패');
+        });
+      
       setIsLoading(false);
       setHasError(true);
-      setErrorMessage(`카카오맵 스크립트 로드 실패. API 키 문제 가능성: ${KAKAO_MAPS_API_KEY?.substring(0, 8)}...`);
     };
 
     document.head.appendChild(script);
