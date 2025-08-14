@@ -13,8 +13,8 @@ import { AccessibleNavItem } from "./AccessibleNavItem";
 import { SidebarMenuGroup } from "./SidebarMenuGroup";
 import { ScrollReveal } from "@/components/ui/AnimatedContent";
 import { useQuery } from "@tanstack/react-query";
-const TalezSymbol = "/talez-symbol.png";
-const TalezLogoType = "/talez-logo-type.png";
+const TalezSymbol = "/logo-compact.svg";
+const TalezLogoType = "/logo.svg";
 
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import {
