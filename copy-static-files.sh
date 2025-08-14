@@ -12,7 +12,7 @@ fi
 # public 폴더 복사 (있는 경우)
 if [ -d "public" ]; then
   echo "📁 public 폴더 복사 중..."
-  cp -r public/* dist/ 2>/dev/null || true
+  cp -r public/* dist/public 2>/dev/null || true
 fi
 
 # uploads 폴더 복사 (있는 경우)
