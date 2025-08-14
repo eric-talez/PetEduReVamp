@@ -251,7 +251,7 @@ jobs:
           echo "✅ Production deployment completed successfully!"
           echo "📊 PM2 Status:"
           pm2 status
-EOF
+        EOF
         
         # Clean up temporary SSH key
         rm -f /tmp/ec2_key.pem
