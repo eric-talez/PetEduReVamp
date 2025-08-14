@@ -1,4 +1,4 @@
-name: Deploy to AWS EC2
+name: Build and Deploy to AWS EC2
 
 on:
   push:
@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  # Step 1: 빌드 테스트
+  build-test:
     runs-on: ubuntu-latest
     
     steps:
@@ -22,6 +23,42 @@ jobs:
         node-version: '20'
         cache: 'npm'
 
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run build test
+      run: |
+        echo "🔨 빌드 테스트 시작..."
+        npm run build
+        echo "✅ 빌드 테스트 완료"
+
+    - name: Run copy static files
+      run: |
+        chmod +x copy-static-files.sh
+        ./copy-static-files.sh
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: dist/
+        retention-days: 1
+
+  # Step 2: AWS 운영서버 배포
+  deploy-production:
+    needs: build-test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-files
+        path: dist/
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -29,7 +66,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Deploy to EC2
+    - name: Deploy to AWS EC2 Production
       env:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_USER: ${{ secrets.EC2_USER }}
@@ -37,6 +74,8 @@ jobs:
         SECURITY_GROUP_ID: ${{ secrets.SECURITY_GROUP_ID }}
         GH_USERNAME: ${{ secrets.GH_USERNAME }}
       run: |
+        echo "🚀 AWS EC2 운영서버 배포 시작..."
+        
         # EC2 키 파일 생성
         echo "$EC2_KEY" > ec2_key.pem
         chmod 600 ec2_key.pem
@@ -44,82 +83,77 @@ jobs:
         # SSH 연결 설정
         ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
         
-        # EC2에 배포 스크립트 실행
+        # 빌드된 파일을 tar로 압축하여 전송
+        tar -czf build-package.tar.gz -C dist .
+        scp -i ec2_key.pem -o StrictHostKeyChecking=no build-package.tar.gz $EC2_USER@$EC2_HOST:~/
+        
+        # EC2에서 배포 실행
         ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
           set -e
           
-          echo "🚀 배포 시작..."
+          echo "📦 운영서버 배포 시작..."
           
-          # 홈 디렉토리의 funnytalez_www 폴더로 이동
+          # 홈 디렉토리의 funnytalez_www 폴더에서 Git pull
+          echo "📥 최신 소스 업데이트..."
           cd ~/funnytalez_www
-          
-          # Git pull로 최신 소스 가져오기
-          echo "📥 소스 업데이트 중..."
           git pull origin main
-          
-          # 의존성 설치
-          echo "📦 의존성 설치 중..."
           npm install
-          
-          # 빌드 실행
-          echo "🔨 빌드 실행 중..."
           npm run build
-          
-          # 정적 파일 복사
-          echo "📂 정적 파일 복사 중..."
           ./copy-static-files.sh
           
           # 현재 시간으로 백업 파일명 생성
           BACKUP_NAME="funnytalez_$(date +%Y%m%d%H%M%S).zip"
           echo "💾 백업 생성: $BACKUP_NAME"
           
-          # 백업 디렉토리 생성 (없는 경우)
+          # 백업 디렉토리 생성
           sudo mkdir -p /var/www/backup
           
-          # 운영 소스 백업 (파일이 있는 경우만)
+          # 기존 운영 소스 백업
           if [ -d "/var/www/funnytalez" ] && [ "$(ls -A /var/www/funnytalez 2>/dev/null)" ]; then
-            sudo zip -r "/var/www/backup/$BACKUP_NAME" /var/www/funnytalez/ 2>/dev/null || echo "⚠️ 백업 중 일부 파일 제외됨"
+            sudo zip -r "/var/www/backup/$BACKUP_NAME" /var/www/funnytalez/ 2>/dev/null || echo "⚠️ 백업 중 일부 파일 제외"
             echo "✅ 백업 완료: /var/www/backup/$BACKUP_NAME"
-          else
-            echo "ℹ️ 기존 운영 폴더가 비어있거나 없음 - 백업 생략"
           fi
           
-          # 운영 폴더 정리
-          echo "🗑️ 운영 폴더 정리 중..."
-          sudo rm -rf /var/www/funnytalez/* /var/www/funnytalez/.[^.]* 2>/dev/null || true
+          # 운영 폴더 정리 (rm -rf {.,}* 방식)
+          echo "🗑️ 운영 폴더 정리..."
+          sudo rm -rf /var/www/funnytalez/{.,}* 2>/dev/null || true
           
-          # 새 소스를 운영 폴더로 이동
-          echo "📁 새 소스 배포 중..."
+          # 새 소스를 운영 폴더로 이동 (mv {.,}* 방식)
+          echo "📁 새 소스 배포..."
           sudo mkdir -p /var/www/funnytalez
-          sudo cp -r ~/funnytalez_www/* /var/www/funnytalez/ 2>/dev/null || true
-          sudo cp -r ~/funnytalez_www/.[^.]* /var/www/funnytalez/ 2>/dev/null || true
+          cd ~/funnytalez_www
+          sudo mv {.,}* /var/www/funnytalez/ 2>/dev/null || true
           
           # 권한 설정
           sudo chown -R www-data:www-data /var/www/funnytalez
           sudo chmod -R 755 /var/www/funnytalez
           
-          # PM2로 서비스 재시작
-          echo "🔄 서비스 재시작 중..."
+          # PM2 서비스 재시작
+          echo "🔄 PM2 서비스 재시작..."
           pm2 restart talez-service || pm2 start /var/www/funnytalez/ecosystem.config.cjs --name talez-service
           
-          echo "✅ 배포 완료!"
-          
-          # 배포 상태 확인
-          echo "📊 배포 상태 확인..."
+          echo "✅ 운영서버 배포 완료!"
           pm2 status talez-service
+          
+          # 정리
+          rm -f ~/build-package.tar.gz
           
         EOF
         
-        # 임시 키 파일 삭제
-        rm -f ec2_key.pem
+        # 로컬 정리
+        rm -f ec2_key.pem build-package.tar.gz
         
-        echo "🎉 GitHub Actions 배포 완료!"
+        echo "🎉 AWS EC2 배포 완료!"
 
-    - name: Notify deployment status
+    - name: Deployment Summary
       if: always()
       run: |
+        echo "📊 배포 결과:"
         if [ ${{ job.status }} == 'success' ]; then
-          echo "✅ 배포 성공: ${{ github.sha }}"
+          echo "✅ 배포 성공"
+          echo "🔗 커밋: ${{ github.sha }}"
+          echo "📅 시간: $(date)"
         else
-          echo "❌ 배포 실패: ${{ github.sha }}"
+          echo "❌ 배포 실패"
+          echo "🔗 커밋: ${{ github.sha }}"
         fi

@@ -1,11 +1,8 @@
-name: Docker Build and Push
+# DEPRECATED - 사용하지 않음. deploy.yml 사용
+name: Docker Build and Push (DEPRECATED)
 
 on:
-  push:
-    branches: [ main ]
-    tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch: # 수동 실행만 허용
 
 jobs:
   docker:

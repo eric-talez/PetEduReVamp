@@ -1,9 +1,8 @@
-name: Netlify Deployment
+# DEPRECATED - 사용하지 않음. deploy.yml 사용
+name: Netlify Deployment (DEPRECATED)
 
 on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch: # 수동 실행만 허용
 
 jobs:
   deploy:

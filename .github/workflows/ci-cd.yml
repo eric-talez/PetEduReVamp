@@ -1,10 +1,8 @@
-name: Talez CI/CD Pipeline
+# DEPRECATED - 사용하지 않음. deploy.yml 사용
+name: Talez CI/CD Pipeline (DEPRECATED)
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+  workflow_dispatch: # 수동 실행만 허용
 
 jobs:
   build-and-test:
