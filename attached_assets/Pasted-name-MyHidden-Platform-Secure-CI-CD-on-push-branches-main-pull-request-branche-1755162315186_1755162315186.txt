@@ -1,21 +1,17 @@
-name: Build and Deploy to AWS EC2
+name: MyHidden Platform Secure CI/CD
 
 on:
   push:
-    branches: [ main, master ]
-  workflow_dispatch:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  # Step 1: 빌드 테스트
-  build-test:
+  build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GH_TOKEN }}
-        fetch-depth: 0
+    - uses: actions/checkout@v4
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -24,48 +20,33 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
-    - name: Run build test
-      run: |
-        echo "🔨 빌드 테스트 시작..."
-        npm run build
-        echo "✅ 빌드 테스트 완료"
+    - name: Lint
+      run: npm run lint || echo "Linting failed but continuing"
 
-    - name: Run copy static files
-      run: |
-        chmod +x copy-static-files.sh
-        ./copy-static-files.sh
+    - name: Build
+      run: npm run build:fast
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-files
-        path: dist/
-        retention-days: 1
+    - name: Run tests
+      run: npm test || echo "Tests failed but continuing"
 
-  # Step 2: AWS 운영서버 배포
-  deploy-production:
-    needs: build-test
+  deploy:
+    needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build-files
-        path: dist/
-
-    - name: Configure AWS credentials
+    - uses: actions/checkout@v4
+    
+    - name: Setup AWS CLI
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
-
+    
     - name: Get GitHub Actions Runner IP
       id: get-ip
       run: |
@@ -96,70 +77,64 @@ jobs:
       run: |
         echo "⏳ Waiting 10 seconds for security group update to propagate..."
         sleep 10
-
-    - name: Deploy to AWS EC2 Production
-      env:
-        EC2_HOST: ${{ secrets.EC2_HOST }}
-        EC2_USER: ${{ secrets.EC2_USER }}
-        EC2_KEY: ${{ secrets.EC2_KEY }}
-        SECURITY_GROUP_ID: ${{ secrets.SECURITY_GROUP_ID }}
-        GH_USERNAME: ${{ secrets.GH_USERNAME }}
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    
+    - name: Deploy to AWS EC2 Production Server
+      id: deploy
       run: |
-        echo "🚀 AWS EC2 운영서버 배포 시작..."
+        echo "🚀 Starting deployment to EC2 instance..."
         
-        # SSH 디렉토리 생성
-        mkdir -p ~/.ssh
-        
-        # EC2 키 파일 생성
-        echo "$EC2_KEY" > /tmp/ec2_key.pem
+        # Create temporary SSH key file
+        echo "${{ secrets.EC2_KEY }}" > /tmp/ec2_key.pem
         chmod 600 /tmp/ec2_key.pem
         
-        # EC2에서 배포 실행
+        # SSH connection with proper error handling
         ssh -i /tmp/ec2_key.pem \
           -o StrictHostKeyChecking=no \
           -o ConnectTimeout=30 \
           -o ServerAliveInterval=10 \
           -o ServerAliveCountMax=3 \
-          $EC2_USER@$EC2_HOST << 'EOF'
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           
           set -e  # Exit on any error
           
-          echo "📦 운영서버 배포 시작..."
+          # Set GitHub credentials for private repository access
+          export GH_USERNAME="${{ secrets.GH_USERNAME }}"
+          export GH_TOKEN="${{ secrets.GH_TOKEN }}"
+          
           echo "📍 Current working directory: $(pwd)"
           echo "👤 Current user: $(whoami)"
           
-          # 홈 디렉토리의 funnytalez_www 폴더 처리
-          if [ ! -d "$HOME/funnytalez_www" ]; then
+          # Navigate to application directory
+          if [ ! -d "$HOME/myhidden_www" ]; then
             echo "📁 Creating application directory..."
-            mkdir -p $HOME/funnytalez_www
-            cd $HOME/funnytalez_www
-            echo "🔐 Cloning repository with authentication..."
-            git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git .
+            mkdir -p $HOME/myhidden_www
+            cd $HOME/myhidden_www
+            echo "🔐 Cloning private repository with authentication..."
+            git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/bogurs/MyHiddenRenewal-seupeuringbuteucoejong.git .
           else
             echo "📂 Application directory exists, navigating and updating..."
-            cd $HOME/funnytalez_www
+            cd $HOME/myhidden_www
             
             # Check if this is a git repository
             if [ ! -d ".git" ]; then
               echo "🔧 Directory exists but not a git repository, removing and cloning..."
               cd $HOME
-              rm -rf funnytalez_www
-              mkdir -p funnytalez_www
-              cd funnytalez_www
-              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git .
+              rm -rf myhidden_www
+              mkdir -p myhidden_www
+              cd myhidden_www
+              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/bogurs/MyHiddenRenewal-seupeuringbuteucoejong.git .
             else
               echo "🔍 Existing git repository found, updating remote URL..."
-              git remote set-url origin https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git
+              git remote set-url origin https://${GH_USERNAME}:${GH_TOKEN}@github.com/bogurs/MyHiddenRenewal-seupeuringbuteucoejong.git
             fi
           fi
           
-          echo "🔄 Pulling latest code from GitHub repository..."
+          echo "🔄 Pulling latest code from private GitHub repository..."
           
           # Try multiple pull strategies
           if git pull origin main; then
             echo "✅ Successfully pulled from origin main"
-          elif git pull https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git main; then
+          elif git pull https://${GH_USERNAME}:${GH_TOKEN}@github.com/bogurs/MyHiddenRenewal-seupeuringbuteucoejong.git main; then
             echo "✅ Successfully pulled using full URL"
           else
             echo "⚠️ Standard pull failed, attempting force pull..."
@@ -168,10 +143,10 @@ jobs:
             else
               echo "🔄 All git operations failed, removing directory and re-cloning..."
               cd $HOME
-              rm -rf funnytalez_www
-              mkdir -p funnytalez_www
-              cd funnytalez_www
-              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git .
+              rm -rf myhidden_www
+              mkdir -p myhidden_www
+              cd myhidden_www
+              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/bogurs/MyHiddenRenewal-seupeuringbuteucoejong.git .
               echo "✅ Fresh clone completed"
             fi
           fi
@@ -189,54 +164,54 @@ jobs:
           
           # Install dependencies and build
           echo "📦 Installing dependencies..."
-          npm install
+          npm ci
           
           echo "🏗️ Building production assets..."
-          npm run build
+          bash scripts/build-prod.sh
           
-          echo "📂 Running copy static files..."
-          ./copy-static-files.sh
+          # Create server public directory and copy assets if script exists
+          if [ -f "scripts/copy-assets.js" ]; then
+            echo "📁 Creating server public directory..."
+            mkdir -p server/public
+            echo "📋 Copying assets..."
+            node scripts/copy-assets.js
+          fi
           
           # Create backup of current production files
           BACKUP_TIMESTAMP=$(date +"%Y%m%d%H%M%S")
-          BACKUP_PATH="/var/www/backup/funnytalez_${BACKUP_TIMESTAMP}.zip"
+          BACKUP_PATH="/var/www/backup/myhidden_${BACKUP_TIMESTAMP}.zip"
           
-          echo "💾 Creating backup: ${BACKUP_PATH}"
-          sudo mkdir -p /var/www/backup
-          
-          if [ -d "/var/www/funnytalez" ] && [ "$(ls -A /var/www/funnytalez 2>/dev/null)" ]; then
-            sudo zip -r "${BACKUP_PATH}" /var/www/funnytalez/ 2>/dev/null || echo "⚠️ 백업 중 일부 파일 제외"
-            echo "✅ 백업 완료: ${BACKUP_PATH}"
-          else
-            echo "ℹ️ 기존 운영 폴더가 비어있거나 없음 - 백업 생략"
+          if [ -d "/var/www/myhidden" ]; then
+            echo "💾 Creating backup: ${BACKUP_PATH}"
+            mkdir -p /var/www/backup
+            cd /var/www/myhidden
+            nohup zip -r "${BACKUP_PATH}" . -x ".*" 2>/dev/null &
           fi
           
-          # Clear production directory (rm -rf {.,}* 방식)
+          # Clear production directory
           echo "🗑️ Clearing production directory..."
-          sudo mkdir -p /var/www/funnytalez
-          cd /var/www/funnytalez
-          sudo rm -rf {.,}* 2>/dev/null || true
+          rm -rf /var/www/myhidden/*
           
-          # Copy new files to production directory (mv {.,}* 방식)
+          # Copy new files to production directory
           echo "🚀 Copying new files to production..."
-          cd ~/funnytalez_www
-          sudo cp -r {.,}* /var/www/funnytalez/ 2>/dev/null || true
+          cd ~/myhidden_www
+          cp -r * /var/www/myhidden/
           
-          # Set proper permissions
-          sudo chown -R www-data:www-data /var/www/funnytalez
-          sudo chmod -R 755 /var/www/funnytalez
+          # Navigate to production directory
+          cd /var/www/myhidden
           
-          # Navigate to production directory for PM2 operations
-          cd /var/www/funnytalez
+          # Install production dependencies
+          echo "📦 Installing production dependencies..."
+          # npm install --production
           
           # Restart PM2 process
           echo "🔄 Managing PM2 process..."
-          if pm2 list | grep -q "talez-service"; then
+          if pm2 list | grep -q "myhidden-backend-www"; then
             echo "🔄 Restarting existing PM2 process..."
-            pm2 restart talez-service
+            pm2 restart myhidden-backend-www
           else
             echo "🆕 Starting new PM2 process..."
-            pm2 start ecosystem.config.cjs --name talez-service
+            pm2 start npm --name "myhidden-backend-www" -- run start
           fi
           
           # Save PM2 configuration
@@ -250,8 +225,8 @@ jobs:
         # Clean up temporary SSH key
         rm -f /tmp/ec2_key.pem
         
-        echo "🎉 AWS EC2 배포 완료!"
-
+        echo "deployment-status=success" >> $GITHUB_OUTPUT
+    
     - name: Remove SSH access from Security Group
       if: always() && steps.add-ssh-access.outputs.security-rule-added == 'true'
       run: |
@@ -269,21 +244,15 @@ jobs:
           --output text || echo "⚠️ Failed to remove SSH rule, may need manual cleanup"
         
         echo "✅ SSH access removed successfully"
-
+    
     - name: Deployment Summary
       if: always()
       run: |
-        echo "📊 배포 결과 요약:"
+        echo "📋 Deployment Summary:"
         echo "- Runner IP: ${{ steps.get-ip.outputs.runner-ip }}"
         echo "- EC2 Host: ${{ secrets.EC2_HOST }}"
         echo "- Security Group: ${{ secrets.SECURITY_GROUP_ID }}"
         echo "- GitHub Username: ${{ secrets.GH_USERNAME }}"
-        if [ ${{ job.status }} == 'success' ]; then
-          echo "✅ 배포 성공"
-          echo "🔗 커밋: ${{ github.sha }}"
-          echo "📅 시간: $(date)"
-        else
-          echo "❌ 배포 실패"
-          echo "🔗 커밋: ${{ github.sha }}"
-        fi
+        echo "- Private Repository: bogurs/MyHiddenRenewal-seupeuringbuteucoejong"
+        echo "- Deployment Status: ${{ steps.deploy.outputs.deployment-status || 'failed' }}"
         echo "- SSH Access Removed: ${{ steps.add-ssh-access.outputs.security-rule-added == 'true' && 'Yes' || 'No' }}"
