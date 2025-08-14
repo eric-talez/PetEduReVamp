@@ -44,7 +44,7 @@ TALEZ is built with a strong emphasis on modularity, scalability, and performanc
 - **Admin Dashboard**: Comprehensive management for users, trainers, institutes, content, curriculum, revenue, and registrations. Enhanced visual analytics with circular progress bars.
 - **Location Services**: Naver Maps integration for pet-related facilities with reservation functionality.
 - **Design System**: Consistent UI/UX with enhanced typography system, improved font sizes (16px base), accessibility-focused design with 44px minimum touch targets, unified button styles, and enhanced visual elements including an AI-focused design for experience sections. Color scheme adheres to Figma specifications: Primary: #2BAA61, Secondary: #FFA726, Information: #29B5F6, Danger: #E74D3C.
-- **Deployment Strategy**: Production-ready Docker containerization with multi-stage builds, PM2 cluster mode for high availability, Nginx reverse proxy with SSL termination, automated backup system, comprehensive monitoring scripts, and one-click deployment automation. Fully configured for immediate commercial launch.
+- **Deployment Strategy**: Production-ready Docker containerization with multi-stage builds, PM2 cluster mode for high availability, Nginx reverse proxy with SSL termination, automated backup system, comprehensive monitoring scripts, and one-click deployment automation. GitHub Actions CI/CD pipeline for AWS EC2 deployment with automated backup and rollback capabilities. Fully configured for immediate commercial launch.
 
 ## External Dependencies
 - **Database**: PostgreSQL (via Neon serverless)
