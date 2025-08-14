@@ -135,7 +135,7 @@ jobs:
             mkdir -p $HOME/funnytalez_www
             cd $HOME/funnytalez_www
             echo "🔐 Cloning repository with authentication..."
-            git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git .
+            git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
           else
             echo "📂 Application directory exists, navigating and updating..."
             cd $HOME/funnytalez_www
@@ -147,10 +147,10 @@ jobs:
               rm -rf funnytalez_www
               mkdir -p funnytalez_www
               cd funnytalez_www
-              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git .
+              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
             else
               echo "🔍 Existing git repository found, updating remote URL..."
-              git remote set-url origin https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git
+              git remote set-url origin https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git
             fi
           fi
           
@@ -159,7 +159,7 @@ jobs:
           # Try multiple pull strategies
           if git pull origin main; then
             echo "✅ Successfully pulled from origin main"
-          elif git pull https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git main; then
+          elif git pull https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git main; then
             echo "✅ Successfully pulled using full URL"
           else
             echo "⚠️ Standard pull failed, attempting force pull..."
@@ -171,7 +171,7 @@ jobs:
               rm -rf funnytalez_www
               mkdir -p funnytalez_www
               cd funnytalez_www
-              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/funnytalez.git .
+              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
               echo "✅ Fresh clone completed"
             fi
           fi
