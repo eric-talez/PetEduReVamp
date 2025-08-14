@@ -229,7 +229,7 @@ jobs:
           sudo cp -r {.,}* /var/www/funnytalez/ 2>/dev/null || true
           
           # Set proper permissions
-          sudo chown -R www-data:www-data /var/www/funnytalez
+          sudo chown -R $EC2_USER:$EC2_USER /var/www/funnytalez
           sudo chmod -R 755 /var/www/funnytalez
           
           # Navigate to production directory for PM2 operations
