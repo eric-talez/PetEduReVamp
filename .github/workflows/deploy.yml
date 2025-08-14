@@ -115,42 +115,48 @@ jobs:
         echo "$EC2_KEY" > /tmp/ec2_key.pem
         chmod 600 /tmp/ec2_key.pem
         
-        # EC2에서 배포 실행
+        # EC2에서 배포 실행 (환경변수 전달)
         ssh -i /tmp/ec2_key.pem \
           -o StrictHostKeyChecking=no \
           -o ConnectTimeout=30 \
           -o ServerAliveInterval=10 \
           -o ServerAliveCountMax=3 \
-          $EC2_USER@$EC2_HOST << 'EOF'
+          $EC2_USER@$EC2_HOST << EOF
           
           set -e  # Exit on any error
           
+          # Set GitHub credentials for private repository access
+          export GH_USERNAME="${{ secrets.GH_USERNAME }}"
+          export GH_TOKEN="${{ secrets.GH_TOKEN }}"
+          
           echo "📦 운영서버 배포 시작..."
-          echo "📍 Current working directory: $(pwd)"
-          echo "👤 Current user: $(whoami)"
+          echo "📍 Current working directory: \$(pwd)"
+          echo "👤 Current user: \$(whoami)"
+          echo "🔑 GitHub Username: \${GH_USERNAME}"
+          echo "🔐 GitHub Token 설정됨: \$([ -n "\$GH_TOKEN" ] && echo "YES" || echo "NO")"
           
           # 홈 디렉토리의 funnytalez_www 폴더 처리
-          if [ ! -d "$HOME/funnytalez_www" ]; then
+          if [ ! -d "\$HOME/funnytalez_www" ]; then
             echo "📁 Creating application directory..."
-            mkdir -p $HOME/funnytalez_www
-            cd $HOME/funnytalez_www
+            mkdir -p \$HOME/funnytalez_www
+            cd \$HOME/funnytalez_www
             echo "🔐 Cloning repository with authentication..."
-            git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
+            git clone https://\${GH_USERNAME}:\${GH_TOKEN}@github.com/\${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
           else
             echo "📂 Application directory exists, navigating and updating..."
-            cd $HOME/funnytalez_www
+            cd \$HOME/funnytalez_www
             
             # Check if this is a git repository
             if [ ! -d ".git" ]; then
               echo "🔧 Directory exists but not a git repository, removing and cloning..."
-              cd $HOME
+              cd \$HOME
               rm -rf funnytalez_www
               mkdir -p funnytalez_www
               cd funnytalez_www
-              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
+              git clone https://\${GH_USERNAME}:\${GH_TOKEN}@github.com/\${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
             else
               echo "🔍 Existing git repository found, updating remote URL..."
-              git remote set-url origin https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git
+              git remote set-url origin https://\${GH_USERNAME}:\${GH_TOKEN}@github.com/\${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git
             fi
           fi
           
@@ -159,7 +165,7 @@ jobs:
           # Try multiple pull strategies
           if git pull origin main; then
             echo "✅ Successfully pulled from origin main"
-          elif git pull https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git main; then
+          elif git pull https://\${GH_USERNAME}:\${GH_TOKEN}@github.com/\${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git main; then
             echo "✅ Successfully pulled using full URL"
           else
             echo "⚠️ Standard pull failed, attempting force pull..."
@@ -167,17 +173,17 @@ jobs:
               echo "✅ Force pulled latest changes"
             else
               echo "🔄 All git operations failed, removing directory and re-cloning..."
-              cd $HOME
+              cd \$HOME
               rm -rf funnytalez_www
               mkdir -p funnytalez_www
               cd funnytalez_www
-              git clone https://${GH_USERNAME}:${GH_TOKEN}@github.com/${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
+              git clone https://\${GH_USERNAME}:\${GH_TOKEN}@github.com/\${GH_USERNAME}/PetEduRevampseupeuringbuteucoejong.git .
               echo "✅ Fresh clone completed"
             fi
           fi
           
           # Verify we're in the right directory and show current status
-          echo "📍 Current directory: $(pwd)"
+          echo "📍 Current directory: \$(pwd)"
           echo "📁 Directory contents:"
           ls -la
           
@@ -198,15 +204,15 @@ jobs:
           ./copy-static-files.sh
           
           # Create backup of current production files
-          BACKUP_TIMESTAMP=$(date +"%Y%m%d%H%M%S")
-          BACKUP_PATH="/var/www/backup/funnytalez_${BACKUP_TIMESTAMP}.zip"
+          BACKUP_TIMESTAMP=\$(date +"%Y%m%d%H%M%S")
+          BACKUP_PATH="/var/www/backup/funnytalez_\${BACKUP_TIMESTAMP}.zip"
           
-          echo "💾 Creating backup: ${BACKUP_PATH}"
+          echo "💾 Creating backup: \${BACKUP_PATH}"
           sudo mkdir -p /var/www/backup
           
-          if [ -d "/var/www/funnytalez" ] && [ "$(ls -A /var/www/funnytalez 2>/dev/null)" ]; then
-            sudo zip -r "${BACKUP_PATH}" /var/www/funnytalez/ 2>/dev/null || echo "⚠️ 백업 중 일부 파일 제외"
-            echo "✅ 백업 완료: ${BACKUP_PATH}"
+          if [ -d "/var/www/funnytalez" ] && [ "\$(ls -A /var/www/funnytalez 2>/dev/null)" ]; then
+            sudo zip -r "\${BACKUP_PATH}" /var/www/funnytalez/ 2>/dev/null || echo "⚠️ 백업 중 일부 파일 제외"
+            echo "✅ 백업 완료: \${BACKUP_PATH}"
           else
             echo "ℹ️ 기존 운영 폴더가 비어있거나 없음 - 백업 생략"
           fi
@@ -245,7 +251,7 @@ jobs:
           echo "✅ Production deployment completed successfully!"
           echo "📊 PM2 Status:"
           pm2 status
-        EOF
+EOF
         
         # Clean up temporary SSH key
         rm -f /tmp/ec2_key.pem
