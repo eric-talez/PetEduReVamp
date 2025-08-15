@@ -28,7 +28,9 @@ import {
 
 interface AIServiceStatus {
   openai: { available: boolean; latency?: number };
+  claude: { available: boolean; latency?: number };
   gemini: { available: boolean; latency?: number };
+  perplexity: { available: boolean; latency?: number };
 }
 
 interface AIUsageStats {
@@ -41,7 +43,9 @@ interface AIUsageStats {
 
 interface AIConfiguration {
   openaiApiKey: string;
+  claudeApiKey: string;
   geminiApiKey: string;
+  perplexityApiKey: string;
   defaultModel: string;
   rateLimitPerMinute: number;
   dailyLimitPerUser: number;
@@ -49,20 +53,34 @@ interface AIConfiguration {
   enableCostOptimization: boolean;
   enableFallback: boolean;
   enableUsageTracking: boolean;
+  aiWeights: {
+    behavior: { openai: number; claude: number; gemini: number; perplexity: number };
+    health: { openai: number; claude: number; gemini: number; perplexity: number };
+    training: { openai: number; claude: number; gemini: number; perplexity: number };
+    news: { openai: number; claude: number; gemini: number; perplexity: number };
+  };
 }
 
 export default function AIApiManagement() {
   const [isEditing, setIsEditing] = useState(false);
   const [config, setConfig] = useState<AIConfiguration>({
     openaiApiKey: '',
+    claudeApiKey: '',
     geminiApiKey: '',
+    perplexityApiKey: '',
     defaultModel: 'cost', // cost or quality
     rateLimitPerMinute: 10,
     dailyLimitPerUser: 50,
     monthlyBudget: 100,
     enableCostOptimization: true,
     enableFallback: true,
-    enableUsageTracking: true
+    enableUsageTracking: true,
+    aiWeights: {
+      behavior: { openai: 0.4, claude: 0.4, gemini: 0.15, perplexity: 0.05 },
+      health: { openai: 0.3, claude: 0.3, gemini: 0.25, perplexity: 0.15 },
+      training: { openai: 0.35, claude: 0.35, gemini: 0.2, perplexity: 0.1 },
+      news: { openai: 0.1, claude: 0.1, gemini: 0.2, perplexity: 0.6 }
+    }
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -82,16 +100,6 @@ export default function AIApiManagement() {
   // AI 설정 조회
   const { data: currentConfig } = useQuery({
     queryKey: ['/api/admin/ai-config'],
-    onSuccess: (data) => {
-      if (data && !isEditing) {
-        setConfig({
-          ...config,
-          ...data,
-          openaiApiKey: data.openaiApiKey ? '••••••••' : '',
-          geminiApiKey: data.geminiApiKey ? '••••••••' : ''
-        });
-      }
-    }
   });
 
   // AI 설정 업데이트
@@ -145,6 +153,12 @@ export default function AIApiManagement() {
     if (updateData.geminiApiKey === '••••••••') {
       delete updateData.geminiApiKey;
     }
+    if (updateData.claudeApiKey === '••••••••') {
+      delete updateData.claudeApiKey;
+    }
+    if (updateData.perplexityApiKey === '••••••••') {
+      delete updateData.perplexityApiKey;
+    }
 
     updateConfigMutation.mutate(updateData);
   };
@@ -163,7 +177,7 @@ export default function AIApiManagement() {
       );
     } else {
       return (
-        <Badge variant="destructive">
+        <Badge variant="danger">
           <XCircle className="w-3 h-3 mr-1" />
           오류
         </Badge>
@@ -209,7 +223,7 @@ export default function AIApiManagement() {
               <span className="ml-2">상태 확인 중...</span>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-4 gap-4">
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-green-100 rounded-lg">
@@ -220,7 +234,20 @@ export default function AIApiManagement() {
                     <p className="text-sm text-muted-foreground">GPT 모델</p>
                   </div>
                 </div>
-                {getServiceStatusBadge('openai', serviceStatus?.services?.openai)}
+                {getServiceStatusBadge('openai', serviceStatus?.openai)}
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Bot className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">Claude</h3>
+                    <p className="text-sm text-muted-foreground">Anthropic AI</p>
+                  </div>
+                </div>
+                {getServiceStatusBadge('claude', serviceStatus?.claude)}
               </div>
 
               <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -233,7 +260,20 @@ export default function AIApiManagement() {
                     <p className="text-sm text-muted-foreground">Gemini 모델</p>
                   </div>
                 </div>
-                {getServiceStatusBadge('gemini', serviceStatus?.services?.gemini)}
+                {getServiceStatusBadge('gemini', serviceStatus?.gemini)}
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Bot className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">Perplexity</h3>
+                    <p className="text-sm text-muted-foreground">실시간 검색 AI</p>
+                  </div>
+                </div>
+                {getServiceStatusBadge('perplexity', serviceStatus?.perplexity)}
               </div>
             </div>
           )}
@@ -249,7 +289,7 @@ export default function AIApiManagement() {
                 <Zap className="h-4 w-4 text-yellow-500" />
                 <span className="text-sm font-medium">총 요청</span>
               </div>
-              <p className="text-2xl font-bold mt-1">{usageStats.totalRequests?.toLocaleString() || 0}</p>
+              <p className="text-2xl font-bold mt-1">{(usageStats as any)?.totalRequests?.toLocaleString() || 0}</p>
             </CardContent>
           </Card>
 
@@ -259,7 +299,7 @@ export default function AIApiManagement() {
                 <DollarSign className="h-4 w-4 text-green-500" />
                 <span className="text-sm font-medium">총 비용</span>
               </div>
-              <p className="text-2xl font-bold mt-1">${usageStats.totalCost?.toFixed(2) || '0.00'}</p>
+              <p className="text-2xl font-bold mt-1">${(usageStats as any)?.totalCost?.toFixed(2) || '0.00'}</p>
             </CardContent>
           </Card>
 
@@ -269,7 +309,7 @@ export default function AIApiManagement() {
                 <Clock className="h-4 w-4 text-blue-500" />
                 <span className="text-sm font-medium">월간 사용량</span>
               </div>
-              <p className="text-2xl font-bold mt-1">{usageStats.monthlyUsage || 0}</p>
+              <p className="text-2xl font-bold mt-1">{(usageStats as any)?.monthlyUsage || 0}</p>
             </CardContent>
           </Card>
 
@@ -326,6 +366,30 @@ export default function AIApiManagement() {
                     value={config.geminiApiKey}
                     onChange={(e) => setConfig({...config, geminiApiKey: e.target.value})}
                     placeholder="AIza..."
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="claude-key">Claude API 키</Label>
+                  <Input
+                    id="claude-key"
+                    type={isEditing ? "text" : "password"}
+                    value={config.claudeApiKey}
+                    onChange={(e) => setConfig({...config, claudeApiKey: e.target.value})}
+                    placeholder="sk-ant-..."
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="perplexity-key">Perplexity API 키</Label>
+                  <Input
+                    id="perplexity-key"
+                    type={isEditing ? "text" : "password"}
+                    value={config.perplexityApiKey}
+                    onChange={(e) => setConfig({...config, perplexityApiKey: e.target.value})}
+                    placeholder="pplx-..."
                     disabled={!isEditing}
                   />
                 </div>
@@ -484,6 +548,63 @@ export default function AIApiManagement() {
                 </div>
               </div>
 
+              <Separator />
+
+              {/* AI 엔진 가중치 설정 */}
+              <div className="space-y-4">
+                <h4 className="font-medium">분석 유형별 AI 엔진 가중치</h4>
+                <p className="text-sm text-muted-foreground">
+                  각 분석 유형에 따라 AI 엔진의 활용 비율을 조절할 수 있습니다.
+                </p>
+                
+                {Object.entries(config.aiWeights).map(([type, weights]) => (
+                  <Card key={type} className="p-4">
+                    <h5 className="font-medium mb-3 capitalize">
+                      {type === 'behavior' ? '행동 분석' :
+                       type === 'health' ? '건강 분석' :
+                       type === 'training' ? '훈련 분석' :
+                       type === 'news' ? '뉴스/트렌드' : type}
+                    </h5>
+                    <div className="grid grid-cols-4 gap-4">
+                      {Object.entries(weights).map(([engine, weight]) => (
+                        <div key={engine} className="space-y-2">
+                          <Label className="text-xs">
+                            {engine === 'openai' ? 'ChatGPT' :
+                             engine === 'claude' ? 'Claude' :
+                             engine === 'gemini' ? 'Gemini' :
+                             engine === 'perplexity' ? 'Perplexity' : engine}
+                          </Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={weight}
+                            onChange={(e) => {
+                              const newWeight = parseFloat(e.target.value) || 0;
+                              setConfig({
+                                ...config,
+                                aiWeights: {
+                                  ...config.aiWeights,
+                                  [type]: {
+                                    ...config.aiWeights[type],
+                                    [engine]: newWeight
+                                  }
+                                }
+                              });
+                            }}
+                            className="text-xs"
+                          />
+                          <div className="text-xs text-muted-foreground">
+                            {(weight * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
               <Button onClick={handleSaveConfig} disabled={updateConfigMutation.isPending}>
                 고급 설정 저장
               </Button>
@@ -493,12 +614,12 @@ export default function AIApiManagement() {
       </Tabs>
 
       {/* 경고 메시지 */}
-      {(!serviceStatus?.services?.openai?.available || !serviceStatus?.services?.gemini?.available) && (
+      {(!serviceStatus?.openai?.available || !serviceStatus?.claude?.available || !serviceStatus?.gemini?.available || !serviceStatus?.perplexity?.available) && (
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             일부 AI 서비스가 사용 불가능한 상태입니다. API 키 설정을 확인하거나 서비스 상태를 점검해주세요.
-            현재 OpenAI는 할당량 초과, Gemini는 서비스 과부하 상태입니다.
+            4개의 AI 엔진(ChatGPT, Claude, Gemini, Perplexity) 중 일부가 비활성화되어 있습니다.
           </AlertDescription>
         </Alert>
       )}

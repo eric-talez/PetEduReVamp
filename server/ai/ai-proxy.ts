@@ -2,27 +2,48 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Anthropic } from '@anthropic-ai/sdk';
+import fetch from 'node-fetch';
 
 // AI 프록시 서버 - 개선된 AI 분석 기능
 export class AIProxyService {
   private openai: OpenAI;
+  private claude: Anthropic;
   private gemini: GoogleGenerativeAI;
+  private perplexityApiKey: string;
   private usageLog: Map<string, any> = new Map();
+  private aiWeights: { [key: string]: number } = {
+    openai: 0.3,
+    claude: 0.3,
+    gemini: 0.2,
+    perplexity: 0.2
+  };
 
   constructor() {
     // API 키 검증
     if (!process.env.OPENAI_API_KEY) {
       console.warn('⚠️ OpenAI API 키가 설정되지 않았습니다.');
     }
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.warn('⚠️ Claude API 키가 설정되지 않았습니다.');
+    }
     if (!process.env.GEMINI_API_KEY) {
       console.warn('⚠️ Gemini API 키가 설정되지 않았습니다.');
+    }
+    if (!process.env.PERPLEXITY_API_KEY) {
+      console.warn('⚠️ Perplexity API 키가 설정되지 않았습니다.');
     }
 
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
 
+    this.claude = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY || "",
+    });
+
     this.gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    this.perplexityApiKey = process.env.PERPLEXITY_API_KEY || "";
   }
 
   // 레이트 리밋 설정
@@ -381,14 +402,204 @@ export class AIProxyService {
     };
   }
 
+  // Perplexity API 호출 메서드
+  async callPerplexityAPI(messages: Array<{ role: string; content: string }>, options: any = {}) {
+    if (!this.perplexityApiKey) {
+      throw new Error('Perplexity API 키가 설정되지 않았습니다.');
+    }
+
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.perplexityApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: options.model || 'llama-3.1-sonar-small-128k-online',
+        messages,
+        max_tokens: options.max_tokens || 500,
+        temperature: options.temperature || 0.2,
+        top_p: options.top_p || 0.9,
+        return_images: false,
+        return_related_questions: false,
+        search_recency_filter: 'month',
+        stream: false,
+        ...options
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Perplexity API 오류: ${response.status} - ${error}`);
+    }
+
+    return await response.json();
+  }
+
+  // Claude API 호출 메서드
+  async callClaudeAPI(messages: Array<{ role: string; content: string }>, options: any = {}) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('Claude API 키가 설정되지 않았습니다.');
+    }
+
+    const response = await this.claude.messages.create({
+      model: options.model || 'claude-3-haiku-20240307',
+      max_tokens: options.max_tokens || 500,
+      temperature: options.temperature || 0.7,
+      messages: messages.map(msg => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content
+      })),
+      ...options
+    });
+
+    return response;
+  }
+
+  // 다중 AI 엔진 분석 (가중치 기반)
+  async analyzeWithMultipleEngines(prompt: string, analysisType: string = 'general') {
+    const weights = this.getOptimalWeights(analysisType);
+    const results: any[] = [];
+
+    // 각 엔진에서 분석 수행 (병렬 처리)
+    const promises = [];
+
+    if (weights.openai > 0 && process.env.OPENAI_API_KEY) {
+      promises.push(this.analyzeWithOpenAI(prompt, analysisType));
+    }
+    if (weights.claude > 0 && process.env.ANTHROPIC_API_KEY) {
+      promises.push(this.analyzeWithClaude(prompt, analysisType));
+    }
+    if (weights.gemini > 0 && process.env.GEMINI_API_KEY) {
+      promises.push(this.analyzeWithGemini(prompt, analysisType));
+    }
+    if (weights.perplexity > 0 && process.env.PERPLEXITY_API_KEY) {
+      promises.push(this.analyzeWithPerplexity(prompt, analysisType));
+    }
+
+    const allResults = await Promise.allSettled(promises);
+    
+    // 성공한 결과만 수집
+    allResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        results.push(result.value);
+      }
+    });
+
+    return this.combineAnalysisResults(results, weights, analysisType);
+  }
+
+  // 분석 유형에 따른 최적 가중치 조절
+  private getOptimalWeights(analysisType: string): { [key: string]: number } {
+    switch (analysisType) {
+      case 'behavior':
+        return { openai: 0.4, claude: 0.4, gemini: 0.15, perplexity: 0.05 };
+      case 'health':
+        return { openai: 0.3, claude: 0.3, gemini: 0.25, perplexity: 0.15 };
+      case 'training':
+        return { openai: 0.35, claude: 0.35, gemini: 0.2, perplexity: 0.1 };
+      case 'news':
+        return { openai: 0.1, claude: 0.1, gemini: 0.2, perplexity: 0.6 };
+      case 'research':
+        return { openai: 0.2, claude: 0.2, gemini: 0.2, perplexity: 0.4 };
+      default:
+        return this.aiWeights;
+    }
+  }
+
+  // 개별 엔진 분석 메서드들
+  private async analyzeWithOpenAI(prompt: string, analysisType: string) {
+    const systemPrompt = this.getSystemPrompt(analysisType);
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 500,
+      temperature: 0.7
+    });
+    return { engine: 'openai', content: response.choices[0]?.message?.content || '' };
+  }
+
+  private async analyzeWithClaude(prompt: string, analysisType: string) {
+    const systemPrompt = this.getSystemPrompt(analysisType);
+    const response = await this.callClaudeAPI([
+      { role: 'user', content: `${systemPrompt}\n\n${prompt}` }
+    ]);
+    return { engine: 'claude', content: response.content[0]?.text || '' };
+  }
+
+  private async analyzeWithGemini(prompt: string, analysisType: string) {
+    const systemPrompt = this.getSystemPrompt(analysisType);
+    const model = this.gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const response = await model.generateContent(`${systemPrompt}\n\n${prompt}`);
+    return { engine: 'gemini', content: response.response.text() };
+  }
+
+  private async analyzeWithPerplexity(prompt: string, analysisType: string) {
+    const systemPrompt = this.getSystemPrompt(analysisType);
+    const response = await this.callPerplexityAPI([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: prompt }
+    ]);
+    return { engine: 'perplexity', content: response.choices[0]?.message?.content || '' };
+  }
+
+  // 분석 유형별 시스템 프롬프트
+  private getSystemPrompt(analysisType: string): string {
+    const prompts = {
+      behavior: '반려동물 행동 전문가로서 정확하고 실용적인 조언을 제공해주세요.',
+      health: '수의학 전문가로서 반려동물의 건강 상태를 분석하고 조언해주세요.',
+      training: '반려동물 훈련 전문가로서 효과적인 훈련 방법을 제안해주세요.',
+      news: '최신 반려동물 관련 정보와 트렌드를 제공해주세요.',
+      research: '과학적 근거를 바탕으로 반려동물 관련 연구 정보를 제공해주세요.',
+      general: '반려동물 전문가로서 도움이 되는 정보를 제공해주세요.'
+    };
+    return prompts[analysisType] || prompts.general;
+  }
+
+  // 다중 엔진 결과 통합
+  private combineAnalysisResults(results: any[], weights: any, analysisType: string) {
+    if (results.length === 0) {
+      throw new Error('모든 AI 엔진에서 분석에 실패했습니다.');
+    }
+
+    if (results.length === 1) {
+      return {
+        combinedAnalysis: results[0].content,
+        engines: [results[0].engine],
+        analysisType,
+        confidence: 0.7
+      };
+    }
+
+    // 가중치 기반 결과 통합
+    const combinedContent = results.map((result, index) => 
+      `[${result.engine.toUpperCase()}]: ${result.content}`
+    ).join('\n\n');
+
+    return {
+      combinedAnalysis: combinedContent,
+      engines: results.map(r => r.engine),
+      analysisType,
+      confidence: Math.min(0.95, 0.6 + (results.length * 0.1)),
+      individualResults: results
+    };
+  }
+
   // 서비스 상태 확인
   async getServiceStatus(): Promise<{
     openai: { available: boolean; latency?: number };
+    claude: { available: boolean; latency?: number };
     gemini: { available: boolean; latency?: number };
+    perplexity: { available: boolean; latency?: number };
   }> {
     const results = {
       openai: { available: false, latency: 0 },
-      gemini: { available: false, latency: 0 }
+      claude: { available: false, latency: 0 },
+      gemini: { available: false, latency: 0 },
+      perplexity: { available: false, latency: 0 }
     };
 
     try {
@@ -405,11 +616,47 @@ export class AIProxyService {
 
     try {
       const start = Date.now();
+      await this.claude.messages.create({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 10,
+        messages: [{ role: 'user', content: 'test' }]
+      });
+      results.claude = { available: true, latency: Date.now() - start };
+    } catch (error) {
+      console.log('Claude 서비스 체크 실패:', error);
+    }
+
+    try {
+      const start = Date.now();
       const model = this.gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
       await model.generateContent('test');
       results.gemini = { available: true, latency: Date.now() - start };
     } catch (error) {
       console.log('Gemini 서비스 체크 실패:', error);
+    }
+
+    try {
+      const start = Date.now();
+      if (this.perplexityApiKey) {
+        const response = await fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.perplexityApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'llama-3.1-sonar-small-128k-online',
+            messages: [{ role: 'user', content: 'test' }],
+            max_tokens: 10
+          })
+        });
+        
+        if (response.ok) {
+          results.perplexity = { available: true, latency: Date.now() - start };
+        }
+      }
+    } catch (error) {
+      console.log('Perplexity 서비스 체크 실패:', error);
     }
 
     return results;
