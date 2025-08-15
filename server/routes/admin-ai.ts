@@ -3,7 +3,9 @@ import { aiProxyService } from "../ai/ai-proxy";
 
 interface AIConfiguration {
   openaiApiKey?: string;
+  claudeApiKey?: string;
   geminiApiKey?: string;
+  perplexityApiKey?: string;
   defaultModel: string;
   rateLimitPerMinute: number;
   dailyLimitPerUser: number;
@@ -11,6 +13,12 @@ interface AIConfiguration {
   enableCostOptimization: boolean;
   enableFallback: boolean;
   enableUsageTracking: boolean;
+  aiWeights?: {
+    behavior: { openai: number; claude: number; gemini: number; perplexity: number };
+    health: { openai: number; claude: number; gemini: number; perplexity: number };
+    training: { openai: number; claude: number; gemini: number; perplexity: number };
+    news: { openai: number; claude: number; gemini: number; perplexity: number };
+  };
 }
 
 // 메모리 기반 설정 저장소 (실제 운영에서는 데이터베이스 사용)
@@ -21,7 +29,13 @@ let aiConfig: AIConfiguration = {
   monthlyBudget: 100,
   enableCostOptimization: true,
   enableFallback: true,
-  enableUsageTracking: true
+  enableUsageTracking: true,
+  aiWeights: {
+    behavior: { openai: 0.4, claude: 0.4, gemini: 0.15, perplexity: 0.05 },
+    health: { openai: 0.3, claude: 0.3, gemini: 0.25, perplexity: 0.15 },
+    training: { openai: 0.35, claude: 0.35, gemini: 0.2, perplexity: 0.1 },
+    news: { openai: 0.1, claude: 0.1, gemini: 0.2, perplexity: 0.6 }
+  }
 };
 
 // 사용량 통계 (실제로는 데이터베이스에서 조회)
@@ -58,7 +72,9 @@ export function registerAdminAIRoutes(app: Express) {
       const safeConfig = {
         ...aiConfig,
         openaiApiKey: process.env.OPENAI_API_KEY ? '••••••••' : '',
-        geminiApiKey: process.env.GEMINI_API_KEY ? '••••••••' : ''
+        claudeApiKey: process.env.ANTHROPIC_API_KEY ? '••••••••' : '',
+        geminiApiKey: process.env.GEMINI_API_KEY ? '••••••••' : '',
+        perplexityApiKey: process.env.PERPLEXITY_API_KEY ? '••••••••' : ''
       };
 
       res.json(safeConfig);
@@ -73,14 +89,17 @@ export function registerAdminAIRoutes(app: Express) {
     try {
       const {
         openaiApiKey,
+        claudeApiKey,
         geminiApiKey,
+        perplexityApiKey,
         defaultModel,
         rateLimitPerMinute,
         dailyLimitPerUser,
         monthlyBudget,
         enableCostOptimization,
         enableFallback,
-        enableUsageTracking
+        enableUsageTracking,
+        aiWeights
       } = req.body;
 
       // 설정 업데이트
@@ -91,6 +110,7 @@ export function registerAdminAIRoutes(app: Express) {
       if (enableCostOptimization !== undefined) aiConfig.enableCostOptimization = enableCostOptimization;
       if (enableFallback !== undefined) aiConfig.enableFallback = enableFallback;
       if (enableUsageTracking !== undefined) aiConfig.enableUsageTracking = enableUsageTracking;
+      if (aiWeights !== undefined) aiConfig.aiWeights = aiWeights;
 
       // API 키 업데이트 (환경변수로 설정 - 실제로는 안전한 저장소 사용)
       if (openaiApiKey && openaiApiKey !== '••••••••') {
@@ -98,9 +118,19 @@ export function registerAdminAIRoutes(app: Express) {
         console.log('🔑 OpenAI API 키가 업데이트되었습니다.');
       }
 
+      if (claudeApiKey && claudeApiKey !== '••••••••') {
+        process.env.ANTHROPIC_API_KEY = claudeApiKey;
+        console.log('🔑 Claude API 키가 업데이트되었습니다.');
+      }
+
       if (geminiApiKey && geminiApiKey !== '••••••••') {
         process.env.GEMINI_API_KEY = geminiApiKey;
         console.log('🔑 Gemini API 키가 업데이트되었습니다.');
+      }
+
+      if (perplexityApiKey && perplexityApiKey !== '••••••••') {
+        process.env.PERPLEXITY_API_KEY = perplexityApiKey;
+        console.log('🔑 Perplexity API 키가 업데이트되었습니다.');
       }
 
       // 환경변수 업데이트를 위해 AI 프록시 재초기화
@@ -112,7 +142,9 @@ export function registerAdminAIRoutes(app: Express) {
         config: {
           ...aiConfig,
           openaiApiKey: process.env.OPENAI_API_KEY ? '••••••••' : '',
-          geminiApiKey: process.env.GEMINI_API_KEY ? '••••••••' : ''
+          claudeApiKey: process.env.ANTHROPIC_API_KEY ? '••••••••' : '',
+          geminiApiKey: process.env.GEMINI_API_KEY ? '••••••••' : '',
+          perplexityApiKey: process.env.PERPLEXITY_API_KEY ? '••••••••' : ''
         }
       });
 

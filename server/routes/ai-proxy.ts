@@ -14,7 +14,7 @@ export function registerAIProxyRoutes(app: Express) {
   // 유저 인증 미들웨어
   const authenticateUser = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const userId = req.session?.user?.id || req.header("X-User-Id") || "anonymous";
-    req.userId = userId;
+    req.userId = String(userId);
     next();
   };
 
@@ -116,21 +116,23 @@ export function registerAIProxyRoutes(app: Express) {
     }
   });
 
-  // 통합 분석 엔드포인트 (개선된 AI 분석)
+  // 다중 엔진 분석 엔드포인트 (4-engine AI system)
   app.post("/api/ai-proxy/analyze", checkQuota, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { 
-        input, 
-        analysisType = 'behavior', 
+        prompt, 
+        analysisType = 'general',
+        input, // 호환성을 위해 input도 지원
         priority = 'cost' 
       } = req.body;
 
-      if (!input) {
+      const analysisInput = prompt || input;
+      if (!analysisInput) {
         return res.status(400).json({ error: "분석할 내용이 필요합니다." });
       }
 
       // 입력 검증
-      const validTypes = ['behavior', 'health', 'training'];
+      const validTypes = ['behavior', 'health', 'training', 'news', 'research', 'general'];
       if (!validTypes.includes(analysisType)) {
         return res.status(400).json({ 
           error: "올바른 분석 타입을 선택하세요.",
@@ -138,27 +140,26 @@ export function registerAIProxyRoutes(app: Express) {
         });
       }
 
-      console.log(`🔍 AI 분석 요청 - 타입: ${analysisType}, 우선순위: ${priority}, 사용자: ${req.userId}`);
+      console.log(`🔍 다중 AI 엔진 분석 요청 - 타입: ${analysisType}, 사용자: ${req.userId}`);
 
-      const result = await aiProxyService.fusedAnalysis(
-        input,
-        analysisType,
-        req.userId!,
-        priority
-      );
+      // 다중 엔진 분석 실행
+      const result = await aiProxyService.analyzeWithMultipleEngines(analysisInput, analysisType);
+
+      // 사용량 로깅 (간단한 콘솔 로그)
+      console.log(`📊 [Usage] User: ${req.userId}, Engines: ${result.engines?.join(', ')}, Type: ${analysisType}, Length: ${analysisInput.length}`);
 
       res.json({
         success: true,
-        analysis: result,
+        result,
         usageStats: aiProxyService.getUserUsageStats(req.userId!),
         timestamp: new Date().toISOString()
       });
 
     } catch (error: any) {
-      console.error("통합 분석 오류:", error);
+      console.error("다중 엔진 분석 오류:", error);
       res.status(500).json({ 
         error: error.message || "AI 분석 중 오류가 발생했습니다.",
-        code: 'ANALYSIS_ERROR'
+        code: 'MULTI_ENGINE_ERROR'
       });
     }
   });
