@@ -1,0 +1,188 @@
+아요. 아래 설계로 가면 **내 개인 Plus 계정과 분리**하면서도 **서비스 안정성/비용 통제/할당량 보호**를 한 번에 잡을 수 있어요. (OpenAI + Anthropic 동시 적용)
+
+# 1) 계정·키 전략 (필수)
+
+* **별도 API 계정**: Plus와 분리된 OpenAI/Anthropic 결제 계정 생성 → 서비스 전용 **프로젝트(워크스페이스)** 분리.
+* **키 노출 금지**: 프런트엔드에서 직접 호출 금지. **서버 프록시**만 외부에 공개.
+* **환경변수 계층**
+
+  * `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` (프로덕션)
+  * `*_RATE_LIMIT_QPS`, `*_SOFT_LIMIT_USD`, `*_HARD_LIMIT_USD` (운영 파라미터)
+* **회계 분리**: 스테이징/프로덕션 각자 별도 프로젝트·키를 사용(실수 비용 방지).
+
+# 2) 서버 프록시 구조
+
+```
+Client → (Auth) → API Gateway/WAF → App Server(Proxy)
+        ↘︎ Observability(로그/메트릭)  → DB(Usage/에러) → Alert
+```
+
+* **기능**: 인증(세션/토큰), 유저별 할당량 체크, 레이트리밋, 프롬프트 전처리(압축/스크러빙), 백오프 재시도, 모델 라우팅, 비용·토큰 집계, 에러 표준화.
+
+# 3) 유저별 과금/제한 정책
+
+* **일/월별 쿼터**: `requests`, `input_tokens`, `output_tokens`, `cost_usd` 기준으로 차단/감속.
+* **모델 라우팅**: 기본은 저비용 모델(gpt-4o-mini, Claude Sonnet-mini 등) → 품질 필요 시에만 상위 모델로 승급.
+* **대기열(Queue)**: 순간 트래픽은 큐로 흡수하여 429 방지.
+
+# 4) 빠르게 붙이는 코드 예시
+
+## (A) Node.js 익스프레스 프록시 (Replit/AWS 모두 OK)
+
+```js
+import express from "express";
+import rateLimit from "express-rate-limit";
+import axios from "axios";
+
+const app = express();
+app.use(express.json({ limit: "2mb" }));
+
+// API 키는 서버 환경변수로만
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+
+// IP/유저별 1초 5회(예시)
+const limiter = rateLimit({ windowMs: 1000, max: 5 });
+app.use("/ai", limiter);
+
+// 간단한 유저 토큰/요금제 체크 미들웨어 (실서비스는 DB 연동)
+app.use("/ai", async (req, res, next) => {
+  const userId = req.header("X-User-Id");
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  // TODO: DB에서 user quota/usage 조회 후 차단 or 진행
+  return next();
+});
+
+// 백오프 유틸
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function withRetry(fn, { max = 5, base = 400 } = {}) {
+  for (let i = 0; i <= max; i++) {
+    try { return await fn(); }
+    catch (e) {
+      const s = e?.response?.status;
+      if (s && s !== 429 && s < 500) throw e;
+      if (i === max) throw e;
+      const ra = Number(e?.response?.headers?.["retry-after"]);
+      const delay = ra ? ra * 1000 : Math.min(base * 2 ** i, 15000);
+      await sleep(delay + Math.floor(Math.random() * 250));
+    }
+  }
+}
+
+// OpenAI 라우트
+app.post("/ai/openai/chat", async (req, res) => {
+  try {
+    const payload = {
+      model: req.body.model ?? "gpt-4o-mini",
+      messages: req.body.messages,
+      temperature: req.body.temperature ?? 0.7,
+      max_completion_tokens: req.body.max_tokens ?? 1024,
+    };
+    const out = await withRetry(() =>
+      axios.post("https://api.openai.com/v1/chat/completions", payload, {
+        headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
+        timeout: 30000,
+      })
+    );
+    // TODO: 토큰/비용 out.data.usage로 집계 저장
+    res.json(out.data);
+  } catch (e) {
+    res.status(e?.response?.status || 500).json({ error: e?.message, data: e?.response?.data });
+  }
+});
+
+// Anthropic 라우트
+app.post("/ai/claude/chat", async (req, res) => {
+  try {
+    const payload = {
+      model: req.body.model ?? "claude-3.7-sonnet",
+      max_tokens: req.body.max_tokens ?? 1024,
+      messages: req.body.messages, // [{role:"user", content:"..."}]
+    };
+    const out = await withRetry(() =>
+      axios.post("https://api.anthropic.com/v1/messages", payload, {
+        headers: {
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json"
+        },
+        timeout: 30000,
+      })
+    );
+    // TODO: 토큰/비용 집계 저장
+    res.json(out.data);
+  } catch (e) {
+    res.status(e?.response?.status || 500).json({ error: e?.message, data: e?.response?.data });
+  }
+});
+
+app.listen(process.env.PORT || 3000);
+```
+
+## (B) Spring Boot (필요 시)
+
+* `Bucket4j`로 레이트리밋, `Resilience4j`로 재시도/서킷 브레이커.
+* `@ControllerAdvice`로 OpenAI/Anthropic 에러를 **하나의 포맷**으로 변환.
+
+```java
+// build.gradle: implementation 'com.github.vladimir-bukhtoyarov:bucket4j-core:8.10.1'
+@Bean
+public FilterRegistrationBean<ServletFilter> rateLimitFilter() {
+  var conf = Bucket4j.configurationBuilder()
+      .addLimit(Bandwidth.simple(5, Duration.ofSeconds(1))) // 초당 5회
+      .build();
+  var bucket = Bucket4j.builder().addConfiguration(conf).build();
+  return new FilterRegistrationBean<>(new ServletFilter(bucket));
+}
+```
+
+# 5) 사용량·비용 메트릭 (DB 스키마 예시)
+
+```sql
+CREATE TABLE usage_log (
+  id BIGSERIAL PRIMARY KEY,
+  user_id VARCHAR(64) NOT NULL,
+  provider VARCHAR(16) NOT NULL, -- openai / anthropic
+  model VARCHAR(64) NOT NULL,
+  input_tokens INT,
+  output_tokens INT,
+  cost_usd NUMERIC(12,6),
+  status_code INT,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE user_quota (
+  user_id VARCHAR(64) PRIMARY KEY,
+  daily_req_limit INT,
+  daily_cost_limit_usd NUMERIC(12,2),
+  monthly_cost_limit_usd NUMERIC(12,2),
+  updated_at TIMESTAMP DEFAULT now()
+);
+```
+
+* **차단 로직**: 호출 전 `user_quota` 확인 → 초과 시 402/429와 함께 “오늘 한도 초과” 메시지 반환.
+
+# 6) “분석이 안 돼요/할당량 부족” 실전 대응 순서
+
+1. **API 결제/키 확인**: Plus 아님 — API 전용 계정에 결제수단 등록, 새 키 발급.
+2. **모델 최신화**: 종료/제한 모델을 쓰고 있진 않은지 확인 → 최신 안정 모델로 기본값 교체.
+3. **레이트리밋**: 초당 호출 수를 3\~5로 제한하고, 큐·백오프로 완충.
+4. **토큰 절감**: 시스템/히스토리 요약, 파일은 검색 후 필요한 스니펫만 주입.
+5. **사용량 대시보드**: 429/5xx 비율, 평균 토큰, 비용을 그래프로 모니터링.
+6. **스테이징 분리**: 테스트용 키·프로젝트 별도.
+7. **알림**: 일/월 비용 임계치 도달 시 Slack/Webhook 알림.
+
+# 7) 비용 최적화 팁
+
+* **단계적 추론**: 저비용 모델로 1차 요약/정규화 → 최종만 상위 모델.
+* **캐시/중복 제거**: 동일 입력·파생 요청은 24h 캐시.
+* **스트리밍**: 응답을 스트리밍하여 UX 개선 + 불필요한 긴 응답 중도 취소.
+
+# 8) 마이그레이션 체크리스트 (개인키 → 서비스 구조)
+
+* [ ] API 전용 계정 생성, 카드 등록, 키 발급
+* [ ] 프록시 서버 배포(Replit/AWS) & 키 주입
+* [ ] 프런트엔드에서 직접 호출 제거 → `/ai/...`로만 호출
+* [ ] 기본 모델/리밋/백오프 파라미터 설정
+* [ ] 사용량 로깅/대시보드 연결
+* [ ] 알림/장애 대응 Runbook 작성

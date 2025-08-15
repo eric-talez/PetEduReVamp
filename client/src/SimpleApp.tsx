@@ -662,7 +662,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* AI 분석 */}
                   <Route path="/ai-analysis">
                     {() => {
-                      const AIAnalysisPage = lazy(() => import('./pages/ai-analysis'));
+                      const AIAnalysisPage = lazy(() => import('./pages/AIAnalysisPage'));
                       return (
                         <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
                           <AIAnalysisPage />

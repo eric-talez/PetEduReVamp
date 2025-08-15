@@ -1,6 +1,7 @@
 import express from "express";
 import { registerRoutes } from "./routes";
 import { registerAIRoutes } from "./routes/ai";
+import { registerAIProxyRoutes } from "./routes/ai-proxy";
 import { registerExperienceRoutes } from "./routes/experience";
 import { registerInstituteRoutes } from "./institutes/routes";
 import { setupVite, serveStatic } from "./vite";
@@ -530,6 +531,9 @@ async function startServer() {
 
     // Register AI routes
     registerAIRoutes(app);
+    
+    // AI Proxy Routes (개선된 AI 분석 시스템)
+    registerAIProxyRoutes(app);
 
     // Register experience routes
     registerExperienceRoutes(app);
