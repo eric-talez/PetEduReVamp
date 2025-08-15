@@ -335,12 +335,12 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/commission-settings" component={AdminCommissionPage} />
                   <Route path="/admin/settlements" component={AdminSettlementPage} />
                   <Route path="/admin/shop" component={AdminShop} />
-                  <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/messaging-settings" component={MessagingSettings} />
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/community" component={AdminCommunityManagement} />
                   <Route path="/admin/curriculum" component={AdminCurriculum} />
+                  <Route path="/admin/registrations" component={AdminRegistrations} />
                   <Route path="/admin/members-status" component={AdminMembersStatus} />
                   <Route path="/admin/trainer-certification" component={TrainerCertificationManagement} />
                   <Route path="/admin/product-pricing" component={AdminProductPricing} />
