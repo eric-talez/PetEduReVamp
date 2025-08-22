@@ -10418,6 +10418,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
     console.error('[Content Moderation] 라우트 등록 실패:', error);
   });
 
+  // Menu visibility control routes
+  import('./routes/admin-menu-visibility').then(({ adminMenuVisibilityRoutes }) => {
+    app.use('/api/admin', adminMenuVisibilityRoutes);
+    console.log('[Menu Visibility] 메뉴 표시 제어 라우트가 등록되었습니다.');
+  }).catch(error => {
+    console.error('[Menu Visibility] 라우트 등록 실패:', error);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -85,6 +85,7 @@ import ContentModerationTest from "./pages/admin/ContentModerationTest";
 import ApiManagement from "./pages/admin/ApiManagement";
 import AIApiManagement from "./pages/admin/AIApiManagement";
 import AIOptimizationDashboard from "./pages/admin/AIOptimizationDashboard";
+import MenuVisibilityControl from "./pages/admin/MenuVisibilityControl";
 import NavigationProgress from "./components/NavigationProgress";
 import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
 
@@ -358,6 +359,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/api-management" component={ApiManagement} />
                   <Route path="/admin/ai-api-management" component={AIApiManagement} />
         <Route path="/admin/ai-optimization" component={AIOptimizationDashboard} />
+                  <Route path="/admin/menu-visibility" component={MenuVisibilityControl} />
                   <Route path="/admin/analytics" component={AdminAnalytics} />
                   <Route path="/admin/revenue" component={AdminCommissionPage} />
 
