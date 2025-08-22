@@ -10426,6 +10426,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
     console.error('[Menu Visibility] 라우트 등록 실패:', error);
   });
 
+  // Database test routes
+  import('./routes/database-test').then(({ databaseTestRoutes }) => {
+    app.use('/api/test', databaseTestRoutes);
+    console.log('[Database Test] 데이터베이스 테스트 라우트가 등록되었습니다.');
+  }).catch(error => {
+    console.error('[Database Test] 라우트 등록 실패:', error);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
