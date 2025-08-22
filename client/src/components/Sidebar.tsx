@@ -84,7 +84,9 @@ import {
   ChevronsRight,
   Clock,
   Coffee,
-  Mail
+  Mail,
+  Brain,
+  Zap
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
