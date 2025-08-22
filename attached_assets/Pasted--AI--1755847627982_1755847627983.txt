@@ -1,0 +1,1544 @@
+// ==========================================
+// 테일즈 강아지 훈련/관리 AI 시스템
+// ==========================================
+
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from 'axios';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+
+// ==========================================
+// 테일즈 AI 관리자
+// ==========================================
+
+class TailsAIManager {
+  constructor() {
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+    
+    this.anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY
+    });
+    
+    this.gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    this.perplexityApiKey = process.env.PERPLEXITY_API_KEY;
+    
+    // 강아지 관련 서비스 설정
+    this.dogServices = {
+      training: {
+        basic: { complexity: 'simple', focus: 'commands' },
+        intermediate: { complexity: 'medium', focus: 'behavior' },
+        advanced: { complexity: 'complex', focus: 'specialized' },
+        behavioral: { complexity: 'complex', focus: 'psychology' }
+      },
+      health: {
+        monitoring: { urgency: 'medium', accuracy: 'high' },
+        emergency: { urgency: 'critical', accuracy: 'critical' },
+        routine: { urgency: 'low', accuracy: 'medium' }
+      },
+      nutrition: {
+        planning: { personalization: 'high', accuracy: 'high' },
+        emergency: { urgency: 'high', accuracy: 'critical' }
+      },
+      behavior: {
+        analysis: { complexity: 'complex', depth: 'deep' },
+        modification: { complexity: 'complex', personalization: 'high' }
+      }
+    };
+    
+    // 강아지 프로필 데이터
+    this.dogProfiles = new Map();
+    
+    // 훈련 세션 데이터
+    this.trainingSessions = new Map();
+    
+    // 사용량 통계
+    this.serviceStats = {
+      training: { requests: 0, tokens: 0, cost: 0, satisfaction: 0 },
+      health: { requests: 0, tokens: 0, cost: 0, satisfaction: 0 },
+      nutrition: { requests: 0, tokens: 0, cost: 0, satisfaction: 0 },
+      behavior: { requests: 0, tokens: 0, cost: 0, satisfaction: 0 },
+      imageAnalysis: { requests: 0, tokens: 0, cost: 0, satisfaction: 0 },
+      chatbot: { requests: 0, tokens: 0, cost: 0, satisfaction: 0 }
+    };
+    
+    // 파일 업로드 설정
+    this.upload = multer({
+      dest: 'uploads/dogs/',
+      limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+      fileFilter: this.dogContentFilter
+    });
+  }
+
+  // ==========================================
+  // 강아지별 AI 선택 로직
+  // ==========================================
+  
+  selectDogAI(serviceType, taskDetails = {}) {
+    const {
+      urgency = 'medium',
+      complexity = 'medium',
+      dataType = 'text',
+      analysisDepth = 'standard',
+      personalizedNeeded = true,
+      realTimeNeeded = false,
+      visualAnalysis = false
+    } = taskDetails;
+
+    // 실시간 정보 필요 (최신 수의학 정보, 응급상황 등)
+    if (realTimeNeeded || urgency === 'critical') {
+      return {
+        primary: 'perplexity',
+        secondary: 'openai',
+        reason: '응급상황 및 최신 정보 검색',
+        confidence: 0.95
+      };
+    }
+
+    // 이미지/비디오 분석 (강아지 사진, 훈련 영상 등)
+    if (visualAnalysis || dataType !== 'text') {
+      return {
+        primary: 'openai', // GPT-4V
+        secondary: 'gemini',
+        reason: '강아지 이미지/영상 분석 특화',
+        confidence: 0.9
+      };
+    }
+
+    // 서비스별 특화 선택
+    switch (serviceType) {
+      case 'training':
+        return this.selectTrainingAI(complexity, personalizedNeeded);
+      
+      case 'health':
+        return this.selectHealthAI(urgency, analysisDepth);
+      
+      case 'nutrition':
+        return this.selectNutritionAI(personalizedNeeded, complexity);
+      
+      case 'behavior':
+        return this.selectBehaviorAI(complexity, analysisDepth);
+      
+      case 'chatbot':
+        return this.selectChatbotAI(complexity, urgency);
+      
+      default:
+        return this.selectGeneralDogAI(complexity);
+    }
+  }
+
+  selectTrainingAI(complexity, personalizedNeeded) {
+    if (complexity === 'complex' || personalizedNeeded) {
+      return {
+        primary: 'claude',
+        secondary: 'openai',
+        reason: '개인화된 훈련 계획 수립',
+        confidence: 0.9
+      };
+    } else {
+      return {
+        primary: 'openai',
+        secondary: 'gemini',
+        reason: '기본 훈련 가이드',
+        confidence: 0.85
+      };
+    }
+  }
+
+  selectHealthAI(urgency, analysisDepth) {
+    if (urgency === 'critical' || analysisDepth === 'deep') {
+      return {
+        primary: 'claude',
+        secondary: 'perplexity',
+        reason: '정밀한 건강 분석',
+        confidence: 0.95
+      };
+    } else {
+      return {
+        primary: 'openai',
+        secondary: 'claude',
+        reason: '일반 건강 관리',
+        confidence: 0.85
+      };
+    }
+  }
+
+  selectNutritionAI(personalizedNeeded, complexity) {
+    if (personalizedNeeded || complexity === 'complex') {
+      return {
+        primary: 'claude',
+        secondary: 'openai',
+        reason: '맞춤형 영양 계획',
+        confidence: 0.9
+      };
+    } else {
+      return {
+        primary: 'gemini',
+        secondary: 'openai',
+        reason: '일반 영양 정보',
+        confidence: 0.8
+      };
+    }
+  }
+
+  selectBehaviorAI(complexity, analysisDepth) {
+    return {
+      primary: 'claude',
+      secondary: 'openai',
+      reason: '복잡한 행동 패턴 분석',
+      confidence: 0.95
+    };
+  }
+
+  selectChatbotAI(complexity, urgency) {
+    if (urgency === 'high' || complexity === 'simple') {
+      return {
+        primary: 'gemini',
+        secondary: 'openai',
+        reason: '빠른 반려인 상담',
+        confidence: 0.8
+      };
+    } else {
+      return {
+        primary: 'openai',
+        secondary: 'claude',
+        reason: '전문적인 상담',
+        confidence: 0.9
+      };
+    }
+  }
+
+  selectGeneralDogAI(complexity) {
+    return {
+      primary: 'openai',
+      secondary: 'gemini',
+      reason: '범용 반려견 서비스',
+      confidence: 0.8
+    };
+  }
+
+  // ==========================================
+  // 1. 강아지 훈련 AI 서비스
+  // ==========================================
+  
+  async createTrainingPlan(dogId, trainingGoals, currentLevel = 'beginner') {
+    const dogProfile = this.dogProfiles.get(dogId);
+    if (!dogProfile) {
+      throw new Error('강아지 프로필을 먼저 등록해주세요.');
+    }
+
+    const taskDetails = {
+      complexity: currentLevel === 'beginner' ? 'simple' : 'complex',
+      personalizedNeeded: true,
+      analysisDepth: 'deep'
+    };
+
+    const aiChoice = this.selectDogAI('training', taskDetails);
+    const prompt = this.buildTrainingPlanPrompt(dogProfile, trainingGoals, currentLevel);
+
+    const startTime = Date.now();
+
+    try {
+      const result = await this.callAI(aiChoice.primary, prompt, {
+        maxTokens: 2000,
+        temperature: 0.3
+      });
+
+      await this.trackServiceUsage('training', aiChoice.primary, Date.now() - startTime, result.tokens, true);
+
+      const trainingPlan = this.parseTrainingPlan(result.content);
+      
+      // 훈련 계획 저장
+      this.saveTrainingPlan(dogId, trainingPlan);
+
+      return {
+        success: true,
+        trainingPlan,
+        aiUsed: aiChoice.primary,
+        dogProfile,
+        estimatedDuration: trainingPlan.estimatedWeeks,
+        dailySchedule: trainingPlan.dailySchedule
+      };
+
+    } catch (error) {
+      console.error('훈련 계획 생성 실패:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  buildTrainingPlanPrompt(dogProfile, trainingGoals, currentLevel) {
+    return `
+강아지 훈련 계획을 수립해주세요.
+
+강아지 정보:
+- 이름: ${dogProfile.name}
+- 견종: ${dogProfile.breed}
+- 나이: ${dogProfile.age}
+- 성격: ${dogProfile.personality}
+- 현재 훈련 수준: ${currentLevel}
+- 특이사항: ${dogProfile.specialNotes || '없음'}
+
+훈련 목표:
+${trainingGoals.map(goal => `- ${goal}`).join('\n')}
+
+다음 형식으로 개인화된 훈련 계획을 작성해주세요:
+
+{
+  "planName": "맞춤형 훈련 계획명",
+  "estimatedWeeks": 훈련 예상 기간,
+  "phases": [
+    {
+      "week": 1,
+      "focus": "주요 훈련 포커스",
+      "goals": ["주간 목표1", "주간 목표2"],
+      "dailySchedule": {
+        "morning": "오전 훈련 내용",
+        "afternoon": "오후 훈련 내용", 
+        "evening": "저녁 훈련 내용"
+      },
+      "techniques": ["사용할 훈련 기법들"],
+      "rewards": ["보상 방법들"],
+      "duration": "일일 훈련 시간",
+      "checkpoints": ["주간 체크포인트"]
+    }
+  ],
+  "progressTracking": {
+    "weeklyAssessment": "주간 평가 방법",
+    "successMetrics": ["성공 지표들"],
+    "adjustmentTriggers": ["조정이 필요한 신호들"]
+  },
+  "tips": {
+    "dogSpecific": ["이 강아지 특성에 맞는 팁들"],
+    "ownerGuidance": ["보호자 가이드"],
+    "troubleshooting": ["문제 해결 방법"]
+  }
+}
+
+JSON 형식으로만 응답해주세요.`;
+  }
+
+  // ==========================================
+  // 2. 훈련 세션 분석
+  // ==========================================
+  
+  async analyzeTrainingSession(dogId, sessionData) {
+    const taskDetails = {
+      complexity: 'complex',
+      analysisDepth: 'deep',
+      personalizedNeeded: true
+    };
+
+    const aiChoice = this.selectDogAI('training', taskDetails);
+    const prompt = this.buildSessionAnalysisPrompt(dogId, sessionData);
+
+    const startTime = Date.now();
+
+    try {
+      const result = await this.callAI(aiChoice.primary, prompt, {
+        maxTokens: 1500,
+        temperature: 0.2
+      });
+
+      await this.trackServiceUsage('training', aiChoice.primary, Date.now() - startTime, result.tokens, true);
+
+      const analysis = this.parseSessionAnalysis(result.content);
+      
+      // 세션 분석 저장
+      this.saveSessionAnalysis(dogId, sessionData.sessionId, analysis);
+
+      return {
+        success: true,
+        analysis,
+        recommendations: analysis.recommendations,
+        nextSessionPlan: analysis.nextSessionPlan,
+        aiUsed: aiChoice.primary
+      };
+
+    } catch (error) {
+      console.error('훈련 세션 분석 실패:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  buildSessionAnalysisPrompt(dogId, sessionData) {
+    const dogProfile = this.dogProfiles.get(dogId);
+    
+    return `
+강아지 훈련 세션을 분석해주세요.
+
+강아지 정보:
+- 이름: ${dogProfile?.name}
+- 견종: ${dogProfile?.breed}
+- 나이: ${dogProfile?.age}
+
+훈련 세션 데이터:
+- 날짜: ${sessionData.date}
+- 훈련 시간: ${sessionData.duration}분
+- 훈련 내용: ${sessionData.activities.join(', ')}
+- 성공한 활동: ${sessionData.successes.join(', ')}
+- 어려워한 활동: ${sessionData.difficulties.join(', ')}
+- 강아지 집중도 (1-10): ${sessionData.focusLevel}
+- 에너지 레벨 (1-10): ${sessionData.energyLevel}
+- 보상 반응도 (1-10): ${sessionData.rewardResponse}
+- 특이사항: ${sessionData.notes}
+
+다음 형식으로 분석해주세요:
+
+{
+  "overallAssessment": {
+    "performance": "이번 세션 전체 평가",
+    "progressLevel": "현재 진행도 (초급/중급/고급)",
+    "strengths": ["강점들"],
+    "improvementAreas": ["개선 필요 영역들"]
+  },
+  "detailedAnalysis": {
+    "focusAnalysis": "집중도 분석",
+    "energyAnalysis": "에너지 레벨 분석", 
+    "learningPattern": "학습 패턴 분석",
+    "motivationFactors": ["동기부여 요소들"]
+  },
+  "recommendations": {
+    "immediate": ["즉시 적용할 개선사항"],
+    "shortTerm": ["단기 계획 수정사항"],
+    "longTerm": ["장기 전략 조정사항"]
+  },
+  "nextSessionPlan": {
+    "focus": "다음 세션 중점사항",
+    "activities": ["추천 활동들"],
+    "duration": "권장 훈련 시간",
+    "specialNotes": ["특별 주의사항"]
+  }
+}
+
+JSON 형식으로만 응답해주세요.`;
+  }
+
+  // ==========================================
+  // 3. 강아지 이미지/영상 분석
+  // ==========================================
+  
+  async analyzeDogMedia(filePath, analysisType = 'general', dogId = null) {
+    const taskDetails = {
+      dataType: this.getFileType(filePath),
+      visualAnalysis: true,
+      complexity: 'medium'
+    };
+
+    const aiChoice = this.selectDogAI('imageAnalysis', taskDetails);
+
+    const startTime = Date.now();
+
+    try {
+      let result;
+      const fileType = this.getFileType(filePath);
+
+      if (fileType === 'image') {
+        result = await this.analyzeDogImage(filePath, analysisType, dogId);
+      } else if (fileType === 'video') {
+        result = await this.analyzeDogVideo(filePath, analysisType, dogId);
+      } else {
+        throw new Error('지원하지 않는 파일 형식입니다.');
+      }
+
+      await this.trackServiceUsage('imageAnalysis', aiChoice.primary, Date.now() - startTime, result.tokens || 1000, true);
+
+      return {
+        success: true,
+        analysis: result.analysis,
+        insights: result.insights,
+        recommendations: result.recommendations,
+        aiUsed: aiChoice.primary,
+        fileType
+      };
+
+    } catch (error) {
+      console.error('미디어 분석 실패:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async analyzeDogImage(imagePath, analysisType, dogId) {
+    const base64Image = this.encodeImageToBase64(imagePath);
+    const dogProfile = dogId ? this.dogProfiles.get(dogId) : null;
+
+    const prompt = this.buildImageAnalysisPrompt(analysisType, dogProfile);
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 1500
+      });
+
+      const analysis = this.parseImageAnalysis(response.choices[0].message.content, analysisType);
+
+      return {
+        analysis,
+        insights: this.generateImageInsights(analysis, dogProfile),
+        recommendations: this.generateImageRecommendations(analysis, analysisType),
+        tokens: response.usage.total_tokens
+      };
+
+    } catch (error) {
+      console.error('이미지 분석 실패:', error);
+      throw error;
+    }
+  }
+
+  buildImageAnalysisPrompt(analysisType, dogProfile) {
+    const basePrompt = `이 강아지 사진을 분석해주세요.`;
+    
+    const analysisPrompts = {
+      general: `
+다음 항목들을 분석해주세요:
+1. 견종 추정
+2. 나이대 추정  
+3. 건강 상태 관찰
+4. 감정 상태
+5. 자세 및 행동
+6. 환경 및 상황`,
+
+      health: `
+건강 관점에서 분석해주세요:
+1. 털 상태 및 광택
+2. 눈 상태 (맑기, 분비물 등)
+3. 자세 및 보행
+4. 전반적인 컨디션
+5. 주의해야 할 징후`,
+
+      behavior: `
+행동 분석을 해주세요:
+1. 현재 행동 분석
+2. 감정 상태 판단
+3. 스트레스 징후
+4. 사회화 수준
+5. 훈련 상태 추정`,
+
+      training: `
+훈련 관점에서 분석해주세요:
+1. 집중도 및 참여도
+2. 복종도 수준
+3. 학습 준비 상태
+4. 보상에 대한 반응
+5. 훈련 개선점`
+    };
+
+    let fullPrompt = basePrompt;
+    
+    if (dogProfile) {
+      fullPrompt += `\n\n참고 정보:\n- 견종: ${dogProfile.breed}\n- 나이: ${dogProfile.age}\n- 특이사항: ${dogProfile.specialNotes || '없음'}`;
+    }
+    
+    fullPrompt += '\n\n' + (analysisPrompts[analysisType] || analysisPrompts.general);
+    fullPrompt += '\n\nJSON 형식으로 구조화하여 답변해주세요.';
+    
+    return fullPrompt;
+  }
+
+  // ==========================================
+  // 4. 행동 패턴 분석
+  // ==========================================
+  
+  async analyzeBehaviorPattern(dogId, behaviorData, timeRange = '1week') {
+    const taskDetails = {
+      complexity: 'complex',
+      analysisDepth: 'deep',
+      personalizedNeeded: true
+    };
+
+    const aiChoice = this.selectDogAI('behavior', taskDetails);
+    const prompt = this.buildBehaviorAnalysisPrompt(dogId, behaviorData, timeRange);
+
+    const startTime = Date.now();
+
+    try {
+      const result = await this.callAI(aiChoice.primary, prompt, {
+        maxTokens: 2000,
+        temperature: 0.2
+      });
+
+      await this.trackServiceUsage('behavior', aiChoice.primary, Date.now() - startTime, result.tokens, true);
+
+      const analysis = this.parseBehaviorAnalysis(result.content);
+
+      return {
+        success: true,
+        analysis,
+        patterns: analysis.patterns,
+        triggers: analysis.triggers,
+        recommendations: analysis.recommendations,
+        aiUsed: aiChoice.primary
+      };
+
+    } catch (error) {
+      console.error('행동 패턴 분석 실패:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  buildBehaviorAnalysisPrompt(dogId, behaviorData, timeRange) {
+    const dogProfile = this.dogProfiles.get(dogId);
+    
+    return `
+강아지의 행동 패턴을 분석해주세요.
+
+강아지 정보:
+- 이름: ${dogProfile?.name}
+- 견종: ${dogProfile?.breed}
+- 나이: ${dogProfile?.age}
+- 성격: ${dogProfile?.personality}
+
+분석 기간: ${timeRange}
+
+행동 데이터:
+${JSON.stringify(behaviorData, null, 2)}
+
+다음 형식으로 분석해주세요:
+
+{
+  "overallBehaviorProfile": {
+    "dominantTraits": ["주요 행동 특성들"],
+    "behaviorCategory": "행동 유형 분류",
+    "consistencyLevel": "행동 일관성 수준"
+  },
+  "patterns": {
+    "timeBasedPatterns": {
+      "morningBehavior": "오전 행동 패턴",
+      "afternoonBehavior": "오후 행동 패턴", 
+      "eveningBehavior": "저녁 행동 패턴"
+    },
+    "situationalPatterns": {
+      "feedingTime": "식사 시간 행동",
+      "walkTime": "산책 시간 행동",
+      "playTime": "놀이 시간 행동",
+      "restTime": "휴식 시간 행동"
+    },
+    "socialPatterns": {
+      "withOwner": "보호자와의 상호작용",
+      "withStrangers": "낯선 사람과의 상호작용",
+      "withOtherDogs": "다른 강아지와의 상호작용"
+    }
+  },
+  "triggers": {
+    "positiveResponses": ["긍정적 반응을 보이는 상황들"],
+    "stressTriggers": ["스트레스 유발 요인들"],
+    "anxietyTriggers": ["불안 유발 요인들"],
+    "excitementTriggers": ["흥분 유발 요인들"]
+  },
+  "concerningBehaviors": {
+    "identified": ["문제가 될 수 있는 행동들"],
+    "severity": ["각 행동의 심각도"],
+    "frequency": ["발생 빈도"]
+  },
+  "recommendations": {
+    "behaviorModification": ["행동 수정 계획"],
+    "environmentalChanges": ["환경 개선 사항"],
+    "trainingFocus": ["훈련 중점 사항"],
+    "professionalConsultation": "전문가 상담 필요 여부"
+  }
+}
+
+JSON 형식으로만 응답해주세요.`;
+  }
+
+  // ==========================================
+  // 5. 건강 모니터링
+  // ==========================================
+  
+  async monitorDogHealth(dogId, healthData, urgencyLevel = 'routine') {
+    const taskDetails = {
+      urgency: urgencyLevel,
+      analysisDepth: urgencyLevel === 'emergency' ? 'deep' : 'standard',
+      realTimeNeeded: urgencyLevel === 'emergency'
+    };
+
+    const aiChoice = this.selectDogAI('health', taskDetails);
+    const prompt = this.buildHealthMonitoringPrompt(dogId, healthData, urgencyLevel);
+
+    const startTime = Date.now();
+
+    try {
+      const result = await this.callAI(aiChoice.primary, prompt, {
+        maxTokens: urgencyLevel === 'emergency' ? 2000 : 1000,
+        temperature: 0.1 // 건강 관련은 보수적으로
+      });
+
+      await this.trackServiceUsage('health', aiChoice.primary, Date.now() - startTime, result.tokens, true);
+
+      const healthAssessment = this.parseHealthAssessment(result.content);
+
+      // 응급상황 시 알림 발송
+      if (urgencyLevel === 'emergency' && healthAssessment.requiresImmediateAttention) {
+        await this.sendEmergencyAlert(dogId, healthAssessment);
+      }
+
+      return {
+        success: true,
+        assessment: healthAssessment,
+        urgencyLevel,
+        recommendations: healthAssessment.recommendations,
+        followUpNeeded: healthAssessment.followUpNeeded,
+        aiUsed: aiChoice.primary
+      };
+
+    } catch (error) {
+      console.error('건강 모니터링 실패:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  buildHealthMonitoringPrompt(dogId, healthData, urgencyLevel) {
+    const dogProfile = this.dogProfiles.get(dogId);
+    
+    return `
+강아지의 건강 상태를 평가해주세요.
+
+강아지 정보:
+- 이름: ${dogProfile?.name}
+- 견종: ${dogProfile?.breed}
+- 나이: ${dogProfile?.age}
+- 체중: ${dogProfile?.weight}kg
+- 과거 병력: ${dogProfile?.medicalHistory || '없음'}
+
+긴급도: ${urgencyLevel}
+
+현재 상태:
+${JSON.stringify(healthData, null, 2)}
+
+다음 형식으로 평가해주세요:
+
+{
+  "healthStatus": {
+    "overall": "전반적인 건강 상태 (excellent/good/fair/poor/critical)",
+    "vitalSigns": {
+      "temperature": "체온 평가",
+      "appetite": "식욕 상태",
+      "energy": "활력 수준",
+      "behavior": "행동 변화"
+    }
+  },
+  "symptoms": {
+    "observed": ["관찰된 증상들"],
+    "severity": ["각 증상의 심각도"],
+    "duration": ["지속 기간"]
+  },
+  "assessment": {
+    "primaryConcerns": ["주요 우려사항"],
+    "possibleCauses": ["가능한 원인들"],
+    "riskLevel": "위험도 (low/medium/high/critical)"
+  },
+  "recommendations": {
+    "immediate": ["즉시 해야 할 조치"],
+    "shortTerm": ["단기 관리 방안"],
+    "monitoring": ["지속 관찰 사항"],
+    "veterinaryConsultation": "수의사 상담 필요성"
+  },
+  "requiresImmediateAttention": "즉시 병원 방문 필요 여부 (true/false)",
+  "followUpNeeded": "추적 관찰 필요 여부 (true/false)"
+}
+
+${urgencyLevel === 'emergency' ? '응급상황이므로 매우 신중하고 보수적으로 평가해주세요.' : ''}
+
+JSON 형식으로만 응답해주세요.`;
+  }
+
+  // ==========================================
+  // 6. 영양 계획 수립
+  // ==========================================
+  
+  async createNutritionPlan(dogId, nutritionGoals = [], currentDiet = {}) {
+    const taskDetails = {
+      personalizedNeeded: true,
+      complexity: 'complex'
+    };
+
+    const aiChoice = this.selectDogAI('nutrition', taskDetails);
+    const prompt = this.buildNutritionPlanPrompt(dogId, nutritionGoals, currentDiet);
+
+    const startTime = Date.now();
+
+    try {
+      const result = await this.callAI(aiChoice.primary, prompt, {
+        maxTokens: 2000,
+        temperature: 0.3
+      });
+
+      await this.trackServiceUsage('nutrition', aiChoice.primary, Date.now() - startTime, result.tokens, true);
+
+      const nutritionPlan = this.parseNutritionPlan(result.content);
+
+      return {
+        success: true,
+        nutritionPlan,
+        dailyCalories: nutritionPlan.dailyCalories,
+        mealSchedule: nutritionPlan.mealSchedule,
+        supplements: nutritionPlan.supplements,
+        aiUsed: aiChoice.primary
+      };
+
+    } catch (error) {
+      console.error('영양 계획 수립 실패:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  buildNutritionPlanPrompt(dogId, nutritionGoals, currentDiet) {
+    const dogProfile = this.dogProfiles.get(dogId);
+    
+    return `
+강아지의 맞춤형 영양 계획을 수립해주세요.
+
+강아지 정보:
+- 이름: ${dogProfile?.name}
+- 견종: ${dogProfile?.breed}
+- 나이: ${dogProfile?.age}
+- 체중: ${dogProfile?.weight}kg
+- 활동량: ${dogProfile?.activityLevel}
+- 건강 상태: ${dogProfile?.healthStatus || '양호'}
+- 알레르기: ${dogProfile?.allergies || '없음'}
+
+영양 목표:
+${nutritionGoals.map(goal => `- ${goal}`).join('\n')}
+
+현재 식단:
+${JSON.stringify(currentDiet, null, 2)}
+
+다음 형식으로 영양 계획을 작성해주세요:
+
+{
+  "nutritionPlan": {
+    "planName": "맞춤형 영양 계획명",
+    "targetWeight": "목표 체중",
+    "dailyCalories": "일일 칼로리 요구량",
+    "macronutrients": {
+      "protein": "단백질 비율 (%)",
+      "fat": "지방 비율 (%)", 
+      "carbohydrates": "탄수화물 비율 (%)",
+      "fiber": "섬유질 요구량"
+    }
+  },
+  "mealSchedule": {
+    "mealsPerDay": "하루 식사 횟수",
+    "breakfast": {
+      "time": "아침 식사 시간",
+      "portion": "급여량",
+      "foods": ["추천 사료/음식"]
+    },
+    "lunch": {
+      "time": "점심 식사 시간",
+      "portion": "급여량", 
+      "foods": ["추천 사료/음식"]
+    },
+    "dinner": {
+      "time": "저녁 식사 시간",
+      "portion": "급여량",
+      "foods": ["추천 사료/음식"]
+    },
+    "snacks": {
+      "frequency": "간식 횟수",
+      "healthyOptions": ["건강한 간식 옵션들"]
+    }
+  },
+  "foodRecommendations": {
+    "primaryFood": {
+      "brand": "추천 사료 브랜드",
+      "type": "사료 종류",
+      "reason": "선택 이유"
+    },
+    "supplementaryFoods": ["보충 식품들"],
+    "treatsAndSnacks": ["간식 추천"],
+    "avoidFoods": ["피해야 할 음식들"]
+  },
+  "supplements": {
+    "recommended": ["추천 영양제"],
+    "optional": ["선택적 영양제"],
+    "dosage": ["복용량 가이드"]
+  },
+  "specialConsiderations": {
+    "allergies": "알레르기 고려사항",
+    "healthConditions": "건강 상태별 주의사항",
+    "lifeStage": "생애 주기별 고려사항"
+  },
+  "monitoring": {
+    "weightTracking": "체중 모니터링 방법",
+    "healthIndicators": ["건강 지표들"],
+    "adjustmentTriggers": ["계획 수정이 필요한 신호들"]
+  }
+}
+
+JSON 형식으로만 응답해주세요.`;
+  }
+
+  // ==========================================
+  // 7. 테일즈 챗봇 서비스
+  // ==========================================
+  
+  async tailsChatbot(message, context = [], dogId = null, chatType = 'general') {
+    const taskDetails = {
+      complexity: this.determineChatComplexity(message),
+      urgency: this.determineChatUrgency(message)
+    };
+
+    const aiChoice = this.selectDogAI('chatbot', taskDetails);
+    const prompt = this.buildTailsChatPrompt(message, context, dogId, chatType);
+
+    const startTime = Date.now();
+
+    try {
+      const result = await this.callAI(aiChoice.primary, prompt, {
+        maxTokens: 800,
+        temperature: 0.7
+      });
+
+      await this.trackServiceUsage('chatbot', aiChoice.primary, Date.now() - startTime, result.tokens, true);
+
+      // 응급상황 감지
+      const emergencyDetected = this.detectEmergency(message);
+      
+      return {
+        success: true,
+        response: result.content,
+        aiUsed: aiChoice.primary,
+        chatType,
+        emergencyDetected,
+        suggestedActions: this.generateSuggestedActions(message, result.content),
+        relatedServices: this.suggestRelatedServices(message)
+      };
+
+    } catch (error) {
+      console.error('챗봇 응답 실패:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  buildTailsChatPrompt(message, context, dogId, chatType) {
+    const dogProfile = dogId ? this.dogProfiles.get(dogId) : null;
+    
+    const systemPrompts = {
+      general: "당신은 테일즈의 친근하고 전문적인 반려견 AI 어시스턴트입니다. 반려견 훈련, 건강, 행동에 대한 전문 지식을 바탕으로 도움을 드립니다.",
+      training: "당신은 테일즈의 반려견 훈련 전문 AI입니다. 긍정적 강화 훈련법을 기반으로 개별 강아지에 맞는 훈련 조언을 제공합니다.",
+      health: "당신은 테일즈의 반려견 건강 관리 AI입니다. 응급상황은 즉시 병원 방문을 권하고, 일반적인 건강 관리에 대해 조언합니다.",
+      behavior: "당신은 테일즈의 반려견 행동 분석 전문 AI입니다. 강아지의 행동을 이해하고 문제 행동 해결방안을 제시합니다.",
+      nutrition: "당신은 테일즈의 반려견 영양 전문 AI입니다. 개별 강아지의 특성에 맞는 영양 관리 조언을 제공합니다."
+    };
+
+    let prompt = `${systemPrompts[chatType] || systemPrompts.general}\n\n`;
+    
+    if (dogProfile) {
+      prompt += `등록된 강아지 정보:\n`;
+      prompt += `- 이름: ${dogProfile.name}\n`;
+      prompt += `- 견종: ${dogProfile.breed}\n`;
+      prompt += `- 나이: ${dogProfile.age}\n`;
+      prompt += `- 특이사항: ${dogProfile.specialNotes || '없음'}\n\n`;
+    }
+    
+    if (context.length > 0) {
+      prompt += "이전 대화:\n";
+      context.slice(-3).forEach(msg => {
+        prompt += `사용자: ${msg.user}\nAI: ${msg.ai}\n\n`;
+      });
+    }
+    
+    prompt += `사용자 질문: ${message}\n\n`;
+    prompt += `응답 시 주의사항:\n`;
+    prompt += `- 응급상황이 의심되면 즉시 병원 방문을 권하세요\n`;
+    prompt += `- 구체적이고 실용적인 조언을 제공하세요\n`;
+    prompt += `- 개별 강아지의 특성을 고려하세요\n`;
+    prompt += `- 추가 질문이나 관련 서비스를 제안하세요\n\n`;
+    prompt += `답변:`;
+    
+    return prompt;
+  }
+
+  // ==========================================
+  // 8. 강아지 프로필 관리
+  // ==========================================
+  
+  registerDogProfile(dogProfile) {
+    const {
+      name,
+      breed,
+      age,
+      weight,
+      gender,
+      personality = [],
+      activityLevel = 'medium',
+      healthStatus = 'healthy',
+      allergies = [],
+      specialNotes = '',
+      ownerId
+    } = dogProfile;
+
+    const dogId = this.generateDogId();
+    
+    const profile = {
+      dogId,
+      name,
+      breed,
+      age,
+      weight,
+      gender,
+      personality,
+      activityLevel,
+      healthStatus,
+      allergies,
+      specialNotes,
+      ownerId,
+      registeredAt: new Date(),
+      lastUpdated: new Date()
+    };
+
+    this.dogProfiles.set(dogId, profile);
+    
+    console.log(`강아지 프로필 등록 완료: ${name} (ID: ${dogId})`);
+    
+    return {
+      success: true,
+      dogId,
+      profile,
+      recommendedServices: this.recommendInitialServices(profile)
+    };
+  }
+
+  updateDogProfile(dogId, updates) {
+    const profile = this.dogProfiles.get(dogId);
+    if (!profile) {
+      return { success: false, error: '강아지 프로필을 찾을 수 없습니다.' };
+    }
+
+    const updatedProfile = {
+      ...profile,
+      ...updates,
+      lastUpdated: new Date()
+    };
+
+    this.dogProfiles.set(dogId, updatedProfile);
+
+    return {
+      success: true,
+      profile: updatedProfile,
+      changes: Object.keys(updates)
+    };
+  }
+
+  // ==========================================
+  // 9. 유틸리티 함수들
+  // ==========================================
+  
+  async callAI(aiService, prompt, options = {}) {
+    switch (aiService) {
+      case 'openai':
+        return await this.callOpenAI(prompt, options);
+      case 'claude':
+        return await this.callClaude(prompt, options);
+      case 'gemini':
+        return await this.callGemini(prompt, options);
+      case 'perplexity':
+        return await this.callPerplexity(prompt, options);
+      default:
+        throw new Error(`Unknown AI service: ${aiService}`);
+    }
+  }
+
+  async callOpenAI(prompt, options = {}) {
+    const {
+      model = 'gpt-4o-mini',
+      maxTokens = 1000,
+      temperature = 0.7
+    } = options;
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: maxTokens,
+        temperature
+      });
+
+      return {
+        content: response.choices[0].message.content,
+        tokens: response.usage.total_tokens,
+        success: true
+      };
+    } catch (error) {
+      console.error('OpenAI API Error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async callClaude(prompt, options = {}) {
+    const {
+      model = 'claude-3-haiku-20240307',
+      maxTokens = 1000
+    } = options;
+
+    try {
+      const response = await this.anthropic.messages.create({
+        model,
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      return {
+        content: response.content[0].text,
+        tokens: response.usage.input_tokens + response.usage.output_tokens,
+        success: true
+      };
+    } catch (error) {
+      console.error('Claude API Error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async callGemini(prompt, options = {}) {
+    const {
+      model = 'gemini-1.5-flash'
+    } = options;
+
+    try {
+      const genAI = this.gemini.getGenerativeModel({ model });
+      const result = await genAI.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      return {
+        content: text,
+        tokens: Math.ceil(text.length / 4),
+        success: true
+      };
+    } catch (error) {
+      console.error('Gemini API Error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async callPerplexity(prompt, options = {}) {
+    try {
+      const response = await axios.post(
+        'https://api.perplexity.ai/chat/completions',
+        {
+          model: 'llama-3.1-sonar-small-128k-online',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: options.maxTokens || 1000
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.perplexityApiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      return {
+        content: response.data.choices[0].message.content,
+        tokens: response.data.usage.total_tokens,
+        success: true,
+        citations: response.data.citations || []
+      };
+    } catch (error) {
+      console.error('Perplexity API Error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // ==========================================
+  // 10. 분석 및 파싱 함수들
+  // ==========================================
+  
+  parseTrainingPlan(content) {
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      // JSON 파싱 실패 시 텍스트에서 구조 추출
+      return this.extractTrainingPlanFromText(content);
+    }
+  }
+
+  parseSessionAnalysis(content) {
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      return this.extractSessionAnalysisFromText(content);
+    }
+  }
+
+  parseImageAnalysis(content, analysisType) {
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      return this.extractImageAnalysisFromText(content, analysisType);
+    }
+  }
+
+  parseBehaviorAnalysis(content) {
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      return this.extractBehaviorAnalysisFromText(content);
+    }
+  }
+
+  parseHealthAssessment(content) {
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      return this.extractHealthAssessmentFromText(content);
+    }
+  }
+
+  parseNutritionPlan(content) {
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      return this.extractNutritionPlanFromText(content);
+    }
+  }
+
+  // ==========================================
+  // 11. 헬퍼 함수들
+  // ==========================================
+  
+  determineChatComplexity(message) {
+    const complexKeywords = ['훈련', '행동', '분석', '계획', '문제', '전문적'];
+    const simpleKeywords = ['안녕', '간단', '빠르게', '요약'];
+    
+    const hasComplex = complexKeywords.some(keyword => message.includes(keyword));
+    const hasSimple = simpleKeywords.some(keyword => message.includes(keyword));
+    
+    if (hasComplex) return 'complex';
+    if (hasSimple) return 'simple';
+    return 'medium';
+  }
+
+  determineChatUrgency(message) {
+    const urgentKeywords = ['응급', '급해', '아파', '위험', '즉시', '갑자기'];
+    const hasUrgent = urgentKeywords.some(keyword => message.includes(keyword));
+    
+    return hasUrgent ? 'high' : 'medium';
+  }
+
+  detectEmergency(message) {
+    const emergencyKeywords = [
+      '경련', '의식잃음', '호흡곤란', '중독', '출혈', '골절',
+      '응급', '위험', '아파해', '쓰러짐', '토혈', '설사심함'
+    ];
+    
+    return emergencyKeywords.some(keyword => message.includes(keyword));
+  }
+
+  generateSuggestedActions(message, response) {
+    const actions = [];
+    
+    if (message.includes('훈련')) {
+      actions.push('훈련 계획 수립하기', '훈련 세션 분석하기');
+    }
+    
+    if (message.includes('건강') || message.includes('아파')) {
+      actions.push('건강 모니터링 하기', '수의사 상담 예약');
+    }
+    
+    if (message.includes('행동') || message.includes('문제')) {
+      actions.push('행동 패턴 분석하기', '행동 수정 계획 세우기');
+    }
+    
+    return actions;
+  }
+
+  suggestRelatedServices(message) {
+    const services = [];
+    
+    if (message.includes('사진') || message.includes('영상')) {
+      services.push('이미지 분석', '행동 영상 분석');
+    }
+    
+    if (message.includes('먹이') || message.includes('사료')) {
+      services.push('영양 계획 수립', '식단 분석');
+    }
+    
+    if (message.includes('훈련')) {
+      services.push('개인화 훈련 프로그램', '진도 추적');
+    }
+    
+    return services;
+  }
+
+  recommendInitialServices(profile) {
+    const recommendations = [];
+    
+    // 나이별 추천
+    if (profile.age < 1) {
+      recommendations.push('퍼피 기본 훈련', '사회화 프로그램', '영양 계획');
+    } else if (profile.age > 7) {
+      recommendations.push('시니어 건강 관리', '관절 케어', '인지 훈련');
+    } else {
+      recommendations.push('중급 훈련', '행동 분석', '건강 모니터링');
+    }
+    
+    // 견종별 추천
+    const breedRecommendations = {
+      '골든 리트리버': ['수영 훈련', '리트리빙 게임'],
+      '보더 콜리': ['지능 게임', '민첩성 훈련'],
+      '비숑 프리제': ['그루밍 케어', '사회화 훈련']
+    };
+    
+    if (breedRecommendations[profile.breed]) {
+      recommendations.push(...breedRecommendations[profile.breed]);
+    }
+    
+    return recommendations;
+  }
+
+  getFileType(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    
+    if (['.jpg', '.jpeg', '.png', '.gif'].includes(ext)) {
+      return 'image';
+    } else if (['.mp4', '.avi', '.mov'].includes(ext)) {
+      return 'video';
+    } else {
+      return 'unknown';
+    }
+  }
+
+  encodeImageToBase64(imagePath) {
+    try {
+      const imageBuffer = fs.readFileSync(imagePath);
+      return imageBuffer.toString('base64');
+    } catch (error) {
+      console.error('이미지 인코딩 실패:', error);
+      throw error;
+    }
+  }
+
+  dogContentFilter(req, file, cb) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/avi'];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('지원하지 않는 파일 형식입니다.'), false);
+    }
+  }
+
+  generateDogId() {
+    return 'dog_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+  }
+
+  // ==========================================
+  // 12. 사용량 추적 및 통계
+  // ==========================================
+  
+  async trackServiceUsage(service, aiUsed, responseTime, tokens, success) {
+    const stats = this.serviceStats[service];
+    
+    stats.requests++;
+    stats.tokens += tokens;
+    stats.cost += this.calculateCost(aiUsed, tokens);
+    stats.aiUsageDistribution[aiUsed]++;
+    
+    if (success) {
+      stats.avgResponseTime = (stats.avgResponseTime * (stats.requests - 1) + responseTime) / stats.requests;
+    } else {
+      stats.errorRate = (stats.errorRate * (stats.requests - 1) + 1) / stats.requests;
+    }
+  }
+
+  calculateCost(aiService, tokens) {
+    const costPerToken = {
+      openai: 0.0005,
+      claude: 0.0008,
+      gemini: 0.0002,
+      perplexity: 0.045
+    };
+    
+    return tokens * (costPerToken[aiService] || 0);
+  }
+
+  getServiceStatistics() {
+    return {
+      timestamp: new Date(),
+      services: this.serviceStats,
+      totalDogs: this.dogProfiles.size,
+      totalSessions: this.trainingSessions.size,
+      totalCost: Object.values(this.serviceStats).reduce((sum, stats) => sum + stats.cost, 0)
+    };
+  }
+
+  // ==========================================
+  // 13. 알림 및 응급 대응
+  // ==========================================
+  
+  async sendEmergencyAlert(dogId, healthAssessment) {
+    const dogProfile = this.dogProfiles.get(dogId);
+    
+    const alert = {
+      timestamp: new Date(),
+      dogId,
+      dogName: dogProfile?.name,
+      ownerId: dogProfile?.ownerId,
+      urgency: 'critical',
+      assessment: healthAssessment,
+      message: `${dogProfile?.name}에게 즉시 수의학적 처치가 필요할 수 있습니다.`,
+      recommendations: healthAssessment.recommendations.immediate
+    };
+    
+    // 실제 구현에서는 푸시 알림, SMS, 이메일 등으로 발송
+    console.log('🚨 응급 알림 발송:', alert);
+    
+    return alert;
+  }
+
+  // ==========================================
+  // 14. 데이터 저장 및 관리
+  // ==========================================
+  
+  saveTrainingPlan(dogId, trainingPlan) {
+    const planId = this.generatePlanId();
+    const plan = {
+      planId,
+      dogId,
+      plan: trainingPlan,
+      createdAt: new Date(),
+      status: 'active'
+    };
+    
+    if (!this.trainingSessions.has(dogId)) {
+      this.trainingSessions.set(dogId, []);
+    }
+    
+    this.trainingSessions.get(dogId).push(plan);
+    return planId;
+  }
+
+  saveSessionAnalysis(dogId, sessionId, analysis) {
+    const sessionData = {
+      sessionId,
+      dogId,
+      analysis,
+      timestamp: new Date()
+    };
+    
+    // 실제 구현에서는 데이터베이스에 저장
+    console.log('세션 분석 저장:', sessionData);
+  }
+
+  generatePlanId() {
+    return 'plan_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+  }
+}
+
+// ==========================================
+// 사용 예시
+// ==========================================
+
+async function exampleUsage() {
+  const tailsAI = new TailsAIManager();
+
+  // 1. 강아지 프로필 등록
+  const dogProfile = tailsAI.registerDogProfile({
+    name: '멍멍이',
+    breed: '골든 리트리버',
+    age: 2,
+    weight: 25,
+    gender: 'male',
+    personality: ['활발함', '친화적'],
+    activityLevel: 'high',
+    ownerId: 'user123'
+  });
+  
+  console.log('강아지 등록:', dogProfile);
+
+  // 2. 훈련 계획 수립
+  const trainingPlan = await tailsAI.createTrainingPlan(
+    dogProfile.dogId,
+    ['기본 복종 훈련', '산책 예절', '사회화'],
+    'intermediate'
+  );
+  
+  console.log('훈련 계획:', trainingPlan);
+
+  // 3. 훈련 세션 분석
+  const sessionAnalysis = await tailsAI.analyzeTrainingSession(
+    dogProfile.dogId,
+    {
+      sessionId: 'session_001',
+      date: '2024-01-15',
+      duration: 30,
+      activities: ['앉아', '기다려', '리콜'],
+      successes: ['앉아', '기다려'],
+      difficulties: ['리콜'],
+      focusLevel: 7,
+      energyLevel: 8,
+      rewardResponse: 9,
+      notes: '집중력은 좋았으나 리콜에서 산만해짐'
+    }
+  );
+  
+  console.log('세션 분석:', sessionAnalysis);
+
+  // 4. 이미지 분석
+  const imageAnalysis = await tailsAI.analyzeDogMedia(
+    'uploads/dogs/training_photo.jpg',
+    'training',
+    dogProfile.dogId
+  );
+  
+  console.log('이미지 분석:', imageAnalysis);
+
+  // 5. 챗봇 상담
+  const chatResponse = await tailsAI.tailsChatbot(
+    '우리 강아지가 계속 짖어요. 어떻게 해야 할까요?',
+    [],
+    dogProfile.dogId,
+    'behavior'
+  );
+  
+  console.log('챗봇 응답:', chatResponse);
+
+  // 6. 건강 모니터링
+  const healthCheck = await tailsAI.monitorDogHealth(
+    dogProfile.dogId,
+    {
+      temperature: 38.5,
+      appetite: 'reduced',
+      energy: 'low',
+      symptoms: ['기침', '코막힘'],
+      duration: '2일'
+    },
+    'monitoring'
+  );
+  
+  console.log('건강 체크:', healthCheck);
+
+  // 7. 영양 계획
+  const nutritionPlan = await tailsAI.createNutritionPlan(
+    dogProfile.dogId,
+    ['체중 관리', '털 건강'],
+    { currentFood: '프리미엄 사료', portions: '하루 2회' }
+  );
+  
+  console.log('영양 계획:', nutritionPlan);
+
+  // 8. 통계 확인
+  const stats = tailsAI.getServiceStatistics();
+  console.log('서비스 통계:', stats);
+}
+
+export default TailsAIManager;

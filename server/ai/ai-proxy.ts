@@ -527,7 +527,9 @@ export class AIProxyService {
     const response = await this.callClaudeAPI([
       { role: 'user', content: `${systemPrompt}\n\n${prompt}` }
     ]);
-    return { engine: 'claude', content: response.content[0]?.text || '' };
+    const content = response.content?.[0];
+    const text = content && typeof content === 'object' && 'text' in content ? content.text : '';
+    return { engine: 'claude', content: text };
   }
 
   private async analyzeWithGemini(prompt: string, analysisType: string) {

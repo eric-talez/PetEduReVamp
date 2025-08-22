@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { registerAIRoutes } from "./routes/ai";
 import { registerAIProxyRoutes } from "./routes/ai-proxy";
 import { registerAdminAIRoutes } from "./routes/admin-ai";
+import { registerEnhancedAnalysisRoutes } from "./routes/enhanced-analysis";
 import { registerExperienceRoutes } from "./routes/experience";
 import { registerInstituteRoutes } from "./institutes/routes";
 import { setupVite, serveStatic } from "./vite";
@@ -538,6 +539,9 @@ async function startServer() {
     
     // Admin AI Routes (AI API 관리)
     registerAdminAIRoutes(app);
+    
+    // Enhanced Analysis Routes (강화된 AI 분석)
+    registerEnhancedAnalysisRoutes(app);
 
     // Register experience routes
     registerExperienceRoutes(app);
