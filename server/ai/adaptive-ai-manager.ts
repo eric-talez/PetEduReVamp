@@ -10,9 +10,11 @@ import { aiProxyService } from './ai-proxy';
 // ==========================================
 
 interface UserQuery {
-  type: 'chat' | 'analysis' | 'content' | 'search' | 'training' | 'health';
+  type: 'petBehaviorAnalysis' | 'healthMonitoring' | 'trainingPlanning' | 'nutritionAdvice' | 'emergencyConsult' | 'generalChat' | 'imageAnalysis' | 'courseRecommendation';
   complexity: 'simple' | 'medium' | 'complex';
-  domain: 'training' | 'health' | 'behavior' | 'nutrition' | 'general';
+  domain: 'puppyTraining' | 'adultDogTraining' | 'behaviorCorrection' | 'healthPrevention' | 'emergencyHealth' | 'nutrition' | 'grooming' | 'socializing' | 'specialNeeds';
+  urgency: 'routine' | 'concerning' | 'urgent' | 'emergency';
+  breedCategory: 'smallBreeds' | 'mediumBreeds' | 'largeBreeds' | 'workingDogs' | 'mixedBreeds' | 'unknown';
   responseTime: number;
   satisfaction?: number; // 1-5 rating
   aiUsed: string;
@@ -21,6 +23,11 @@ interface UserQuery {
   timestamp: Date;
   hour: number;
   day: number;
+  month: number;
+  hasFollowUp?: boolean;          // 후속 질문 있었는지
+  adviceImplemented?: boolean;    // 조언이 실제 적용되었는지
+  petAge?: 'puppy' | 'adult' | 'senior';
+  sessionContext?: string;        // 세션 컨텍스트 (연관 질문들)
 }
 
 interface UserSession {
@@ -30,17 +37,30 @@ interface UserSession {
     preferredDomain: string;
     responseTimeExpectation: number;
     qualityPreference: 'speed' | 'quality' | 'cost' | 'balanced';
+    preferredAIEngine: 'openai' | 'claude' | 'gemini' | 'perplexity' | 'auto';
+    communicationStyle: 'professional' | 'friendly' | 'detailed' | 'concise';
+  };
+  petProfile: {
+    primaryBreeds: string[];        // 주로 관심있는 견종들
+    dogAges: string[];              // 관리하는 반려견 연령대
+    experienceLevel: 'beginner' | 'intermediate' | 'expert';  // 견주 경험 수준
+    commonConcerns: string[];       // 자주 문의하는 관심사
   };
   patterns: {
     peakHours: number[];
     frequentTopics: string[];
     avgSessionLength: number;
+    seasonalTrends: Record<string, number>;  // 계절별 관심사 변화
+    urgencyDistribution: Record<string, number>; // 긴급도 분포
   };
   performance: {
     avgSatisfaction: number;
     totalQueries: number;
     avgResponseTime: number;
     totalCost: number;
+    followUpQuestions: number;      // 후속 질문 수
+    adviceImplemented: number;      // 조언 실행 횟수
+    emergencyDetected: number;      // 응급상황 감지 횟수
   };
 }
 
@@ -48,33 +68,56 @@ class UserPatternAnalyzer extends EventEmitter {
   private userSessions = new Map<string, UserSession>();
   private globalPatterns = {
     serviceUsage: {
-      chat: 0,
-      analysis: 0,
-      content: 0,
-      search: 0,
-      training: 0,
-      health: 0
+      petBehaviorAnalysis: 0,    // 반려견 행동 분석
+      healthMonitoring: 0,       // 건강 모니터링
+      trainingPlanning: 0,       // 훈련 계획 수립
+      nutritionAdvice: 0,        // 영양 상담
+      emergencyConsult: 0,       // 응급 상담
+      generalChat: 0,            // 일반 채팅
+      imageAnalysis: 0,          // 이미지/영상 분석
+      courseRecommendation: 0    // 코스 추천
     },
     complexityDistribution: {
-      simple: 0,
-      medium: 0,
-      complex: 0
+      simple: 0,     // 간단한 질문 (기본 관리법)
+      medium: 0,     // 중간 복잡도 (훈련 문제)
+      complex: 0     // 복잡한 문제 (행동 교정, 건강 이슈)
     },
     domainPreference: {
-      training: 0,
-      health: 0,
-      behavior: 0,
-      nutrition: 0,
-      general: 0
+      puppyTraining: 0,          // 퍼피 훈련
+      adultDogTraining: 0,       // 성견 훈련
+      behaviorCorrection: 0,     // 문제 행동 교정
+      healthPrevention: 0,       // 예방 의학
+      emergencyHealth: 0,        // 응급 상황
+      nutrition: 0,              // 영양 관리
+      grooming: 0,               // 그루밍
+      socializing: 0,            // 사회화 훈련
+      specialNeeds: 0            // 특수 요구사항
+    },
+    breedSpecificity: {
+      smallBreeds: 0,            // 소형견
+      mediumBreeds: 0,           // 중형견
+      largeBreeds: 0,            // 대형견
+      workingDogs: 0,            // 작업견
+      mixedBreeds: 0,            // 믹스견
+      unknown: 0                 // 견종 불명
     },
     timePatterns: {
       hourly: new Array(24).fill(0),
-      daily: new Array(7).fill(0)
+      daily: new Array(7).fill(0),
+      seasonal: new Array(12).fill(0)  // 월별 패턴 (계절성)
     },
     responseQuality: {
       satisfaction: 0,
       avgRating: 0,
-      totalRatings: 0
+      totalRatings: 0,
+      followUpRate: 0,           // 후속 질문 비율
+      implementationRate: 0       // 조언 실행 비율
+    },
+    urgencyLevels: {
+      routine: 0,                // 일상 관리
+      concerning: 0,             // 우려사항
+      urgent: 0,                 // 긴급
+      emergency: 0               // 응급
     }
   };
   
@@ -99,20 +142,33 @@ class UserPatternAnalyzer extends EventEmitter {
         queries: [],
         preferences: {
           preferredComplexity: 'medium',
-          preferredDomain: 'general',
+          preferredDomain: 'behaviorCorrection',
           responseTimeExpectation: 3000,
-          qualityPreference: 'balanced'
+          qualityPreference: 'balanced',
+          preferredAIEngine: 'auto',
+          communicationStyle: 'friendly'
+        },
+        petProfile: {
+          primaryBreeds: [],
+          dogAges: [],
+          experienceLevel: 'beginner',
+          commonConcerns: []
         },
         patterns: {
           peakHours: [],
           frequentTopics: [],
-          avgSessionLength: 0
+          avgSessionLength: 0,
+          seasonalTrends: {},
+          urgencyDistribution: {}
         },
         performance: {
           avgSatisfaction: 0,
           totalQueries: 0,
           avgResponseTime: 0,
-          totalCost: 0
+          totalCost: 0,
+          followUpQuestions: 0,
+          adviceImplemented: 0,
+          emergencyDetected: 0
         }
       });
     }
@@ -120,11 +176,13 @@ class UserPatternAnalyzer extends EventEmitter {
     const userSession = this.userSessions.get(userId)!;
     
     // 쿼리 추가
+    const now = new Date();
     const query: UserQuery = {
       ...queryData,
-      timestamp: new Date(),
-      hour: new Date().getHours(),
-      day: new Date().getDay()
+      timestamp: now,
+      hour: now.getHours(),
+      day: now.getDay(),
+      month: now.getMonth()
     };
     
     userSession.queries.push(query);
@@ -168,6 +226,13 @@ class UserPatternAnalyzer extends EventEmitter {
     // 시간대별 패턴
     this.globalPatterns.timePatterns.hourly[query.hour]++;
     this.globalPatterns.timePatterns.daily[query.day]++;
+    this.globalPatterns.timePatterns.seasonal[query.month]++;
+    
+    // 견종별 패턴
+    this.globalPatterns.breedSpecificity[query.breedCategory]++;
+    
+    // 긴급도별 패턴
+    this.globalPatterns.urgencyLevels[query.urgency]++;
     
     // 품질 지표
     if (query.satisfaction) {

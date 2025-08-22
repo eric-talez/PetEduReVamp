@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { adaptiveAIManager } from "../ai/adaptive-ai-manager";
 import { aiProxyService } from "../ai/ai-proxy";
+import { talezAIOptimizer } from "../ai/talez-ai-optimizer";
 
 // 확장된 요청 인터페이스
 interface AnalysisRequest extends Request {
@@ -346,10 +347,12 @@ ${prompt}
   app.get("/api/enhanced-analysis/system-stats", requireAdmin, async (req: Request, res: Response) => {
     try {
       const stats = adaptiveAIManager.getSystemStats();
+      const optimizationStatus = talezAIOptimizer.getCurrentOptimizationStatus();
       
       res.json({
         success: true,
         systemStats: stats,
+        optimizationStatus,
         timestamp: new Date().toISOString()
       });
 
@@ -357,6 +360,48 @@ ${prompt}
       console.error('System stats error:', error);
       res.status(500).json({
         error: '시스템 통계 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // ==========================================
+  // AI 최적화 관리 (관리자용)
+  // ==========================================
+  
+  app.get("/api/enhanced-analysis/optimization-history", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const history = talezAIOptimizer.getOptimizationHistory();
+      
+      res.json({
+        success: true,
+        optimizationHistory: history,
+        currentStatus: talezAIOptimizer.getCurrentOptimizationStatus(),
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Optimization history error:', error);
+      res.status(500).json({
+        error: '최적화 이력 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  app.post("/api/enhanced-analysis/force-optimization", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const result = await talezAIOptimizer.forceOptimization();
+      
+      res.json({
+        success: true,
+        message: '최적화가 강제 실행되었습니다.',
+        optimizationResult: result,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Force optimization error:', error);
+      res.status(500).json({
+        error: '강제 최적화 실행 중 오류가 발생했습니다.'
       });
     }
   });
@@ -382,6 +427,66 @@ ${prompt}
       });
     }
   });
+
+  // ==========================================
+  // TALEZ 특화 헬퍼 메서드들
+  // ==========================================
+  
+  function mapAnalysisTypeToTalezService(analysisType: string): any {
+    const mapping: Record<string, any> = {
+      'behavior': 'petBehaviorAnalysis',
+      'health': 'healthMonitoring',
+      'training': 'trainingPlanning',
+      'nutrition': 'nutritionAdvice',
+      'emergency': 'emergencyConsult',
+      'general': 'generalChat',
+      'image': 'imageAnalysis',
+      'course': 'courseRecommendation'
+    };
+    return mapping[analysisType] || 'generalChat';
+  }
+
+  function mapAnalysisTypeToDomain(analysisType: string): any {
+    const mapping: Record<string, any> = {
+      'behavior': 'behaviorCorrection',
+      'health': 'healthPrevention',
+      'training': 'adultDogTraining',
+      'nutrition': 'nutrition',
+      'emergency': 'emergencyHealth',
+      'puppy': 'puppyTraining',
+      'grooming': 'grooming',
+      'social': 'socializing'
+    };
+    return mapping[analysisType] || 'behaviorCorrection';
+  }
+
+  function extractBreedCategory(options: any): any {
+    if (!options.petProfile?.breed) return 'unknown';
+    
+    const breed = options.petProfile.breed.toLowerCase();
+    
+    // 소형견
+    if (['치와와', '푸들', '말티즈', '포메라니안', '요크셔테리어', 'chihuahua', 'poodle', 'maltese'].some(b => breed.includes(b))) {
+      return 'smallBreeds';
+    }
+    
+    // 대형견
+    if (['골든리트리버', '래브라도', '저먼셰퍼드', 'golden', 'labrador', 'german'].some(b => breed.includes(b))) {
+      return 'largeBreeds';
+    }
+    
+    // 작업견
+    if (['셰퍼드', '보더콜리', '허스키', 'shepherd', 'collie', 'husky'].some(b => breed.includes(b))) {
+      return 'workingDogs';
+    }
+    
+    // 믹스견
+    if (['믹스', '잡종', 'mix', 'mixed'].some(b => breed.includes(b))) {
+      return 'mixedBreeds';
+    }
+    
+    return 'mediumBreeds'; // 기본값
+  }
 
   console.log("🚀 강화된 AI 분석 라우트가 등록되었습니다.");
 }

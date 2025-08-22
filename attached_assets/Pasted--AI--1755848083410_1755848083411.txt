@@ -1,0 +1,1270 @@
+// ==========================================
+// 적응형 AI 시스템 - 사용자 패턴 기반 최적화
+// ==========================================
+
+import EventEmitter from 'events';
+import LawAIService from './LawAIService.js';
+
+// ==========================================
+// 사용자 패턴 분석기
+// ==========================================
+
+class UserPatternAnalyzer extends EventEmitter {
+  constructor() {
+    super();
+    this.userSessions = new Map();
+    this.globalPatterns = {
+      serviceUsage: {
+        chat: 0,
+        analysis: 0,
+        content: 0,
+        search: 0
+      },
+      complexityDistribution: {
+        simple: 0,
+        medium: 0,
+        complex: 0
+      },
+      domainPreference: {
+        law: 0,
+        precedent: 0,
+        regulation: 0,
+        procedure: 0
+      },
+      timePatterns: {
+        hourly: new Array(24).fill(0),
+        daily: new Array(7).fill(0)
+      },
+      responseQuality: {
+        satisfaction: 0,
+        avgRating: 0,
+        totalRatings: 0
+      }
+    };
+    
+    this.recentQueries = [];
+    this.maxRecentQueries = 1000;
+    
+    // 패턴 분석 주기 (1시간마다)
+    setInterval(() => this.analyzePatterns(), 60 * 60 * 1000);
+  }
+
+  // ==========================================
+  // 사용자 세션 추적
+  // ==========================================
+  
+  trackUserQuery(userId, queryData) {
+    const {
+      type,           // 'chat', 'analysis', 'content', 'search'
+      complexity,     // 'simple', 'medium', 'complex'
+      domain,         // 'law', 'precedent', 'regulation'
+      responseTime,   // milliseconds
+      satisfaction,   // 1-5 rating
+      aiUsed,        // which AI was used
+      tokens,        // token consumption
+      cost           // actual cost
+    } = queryData;
+
+    // 개별 사용자 세션 업데이트
+    if (!this.userSessions.has(userId)) {
+      this.userSessions.set(userId, {
+        queries: [],
+        preferences: {
+          preferredComplexity: 'medium',
+          preferredDomain: 'law',
+          responseTimeExpectation: 3000,
+          qualityPreference: 'balanced' // 'speed', 'quality', 'cost', 'balanced'
+        },
+        patterns: {
+          peakHours: [],
+          frequentTopics: [],
+          avgSessionLength: 0
+        },
+        performance: {
+          avgSatisfaction: 0,
+          totalQueries: 0,
+          avgResponseTime: 0,
+          totalCost: 0
+        }
+      });
+    }
+
+    const userSession = this.userSessions.get(userId);
+    
+    // 쿼리 추가
+    const query = {
+      ...queryData,
+      timestamp: new Date(),
+      hour: new Date().getHours(),
+      day: new Date().getDay()
+    };
+    
+    userSession.queries.push(query);
+    userSession.performance.totalQueries++;
+    
+    // 최근 쿼리만 유지 (메모리 관리)
+    if (userSession.queries.length > 100) {
+      userSession.queries = userSession.queries.slice(-50);
+    }
+
+    // 글로벌 패턴 업데이트
+    this.updateGlobalPatterns(query);
+    
+    // 개별 사용자 패턴 업데이트
+    this.updateUserPatterns(userId, query);
+    
+    // 최근 쿼리 추가
+    this.recentQueries.push(query);
+    if (this.recentQueries.length > this.maxRecentQueries) {
+      this.recentQueries = this.recentQueries.slice(-this.maxRecentQueries);
+    }
+
+    // 실시간 패턴 변화 감지
+    this.detectPatternChanges();
+  }
+
+  // ==========================================
+  // 글로벌 패턴 업데이트
+  // ==========================================
+  
+  updateGlobalPatterns(query) {
+    // 서비스 사용량
+    this.globalPatterns.serviceUsage[query.type]++;
+    
+    // 복잡도 분포
+    this.globalPatterns.complexityDistribution[query.complexity]++;
+    
+    // 도메인 선호도
+    this.globalPatterns.domainPreference[query.domain]++;
+    
+    // 시간대별 패턴
+    this.globalPatterns.timePatterns.hourly[query.hour]++;
+    this.globalPatterns.timePatterns.daily[query.day]++;
+    
+    // 품질 지표
+    if (query.satisfaction) {
+      const current = this.globalPatterns.responseQuality;
+      current.totalRatings++;
+      current.avgRating = (current.avgRating * (current.totalRatings - 1) + query.satisfaction) / current.totalRatings;
+      
+      if (query.satisfaction >= 4) {
+        current.satisfaction++;
+      }
+    }
+  }
+
+  // ==========================================
+  // 개별 사용자 패턴 업데이트
+  // ==========================================
+  
+  updateUserPatterns(userId, query) {
+    const user = this.userSessions.get(userId);
+    const perf = user.performance;
+    
+    // 성능 지표 업데이트
+    if (query.satisfaction) {
+      perf.avgSatisfaction = (perf.avgSatisfaction * (perf.totalQueries - 1) + query.satisfaction) / perf.totalQueries;
+    }
+    
+    if (query.responseTime) {
+      perf.avgResponseTime = (perf.avgResponseTime * (perf.totalQueries - 1) + query.responseTime) / perf.totalQueries;
+    }
+    
+    if (query.cost) {
+      perf.totalCost += query.cost;
+    }
+
+    // 선호도 학습
+    this.learnUserPreferences(userId, query);
+  }
+
+  // ==========================================
+  // 사용자 선호도 학습
+  // ==========================================
+  
+  learnUserPreferences(userId, query) {
+    const user = this.userSessions.get(userId);
+    const prefs = user.preferences;
+    
+    // 복잡도 선호도 학습
+    if (query.satisfaction >= 4) {
+      prefs.preferredComplexity = query.complexity;
+    }
+    
+    // 도메인 선호도 학습
+    const recentQueries = user.queries.slice(-10);
+    const domainCounts = {};
+    recentQueries.forEach(q => {
+      domainCounts[q.domain] = (domainCounts[q.domain] || 0) + 1;
+    });
+    
+    const mostFrequentDomain = Object.keys(domainCounts).reduce((a, b) => 
+      domainCounts[a] > domainCounts[b] ? a : b
+    );
+    prefs.preferredDomain = mostFrequentDomain;
+    
+    // 품질 vs 속도 선호도 학습
+    if (query.responseTime < 2000 && query.satisfaction >= 4) {
+      prefs.qualityPreference = 'speed';
+    } else if (query.responseTime > 5000 && query.satisfaction >= 4) {
+      prefs.qualityPreference = 'quality';
+    } else {
+      prefs.qualityPreference = 'balanced';
+    }
+    
+    // 응답 시간 기대치 조정
+    if (query.satisfaction >= 4) {
+      prefs.responseTimeExpectation = query.responseTime;
+    }
+  }
+
+  // ==========================================
+  // 패턴 변화 감지
+  // ==========================================
+  
+  detectPatternChanges() {
+    const recent = this.recentQueries.slice(-100);
+    const older = this.recentQueries.slice(-200, -100);
+    
+    if (recent.length < 50 || older.length < 50) return;
+    
+    // 서비스 타입 변화 감지
+    const recentTypes = this.getDistribution(recent, 'type');
+    const olderTypes = this.getDistribution(older, 'type');
+    
+    const typeChanges = this.calculateDistributionDifference(recentTypes, olderTypes);
+    
+    // 복잡도 변화 감지
+    const recentComplexity = this.getDistribution(recent, 'complexity');
+    const olderComplexity = this.getDistribution(older, 'complexity');
+    
+    const complexityChanges = this.calculateDistributionDifference(recentComplexity, olderComplexity);
+    
+    // 유의미한 변화 감지시 이벤트 발생
+    if (typeChanges > 0.15) { // 15% 이상 변화
+      this.emit('patternChange', {
+        type: 'serviceUsage',
+        change: typeChanges,
+        newDistribution: recentTypes,
+        oldDistribution: olderTypes
+      });
+    }
+    
+    if (complexityChanges > 0.1) { // 10% 이상 변화
+      this.emit('patternChange', {
+        type: 'complexity',
+        change: complexityChanges,
+        newDistribution: recentComplexity,
+        oldDistribution: olderComplexity
+      });
+    }
+  }
+
+  // ==========================================
+  // 패턴 분석 메소드들
+  // ==========================================
+  
+  analyzePatterns() {
+    const analysis = {
+      timestamp: new Date(),
+      globalTrends: this.analyzeGlobalTrends(),
+      userSegments: this.analyzeUserSegments(),
+      recommendations: this.generateRecommendations()
+    };
+    
+    this.emit('patternAnalysis', analysis);
+    return analysis;
+  }
+
+  analyzeGlobalTrends() {
+    const trends = {};
+    const usage = this.globalPatterns.serviceUsage;
+    const total = Object.values(usage).reduce((a, b) => a + b, 0);
+    
+    if (total === 0) return trends;
+    
+    // 서비스 사용률 계산
+    Object.keys(usage).forEach(service => {
+      trends[service] = {
+        percentage: (usage[service] / total * 100).toFixed(1),
+        count: usage[service]
+      };
+    });
+    
+    // 피크 시간대 분석
+    const hourlyUsage = this.globalPatterns.timePatterns.hourly;
+    const peakHour = hourlyUsage.indexOf(Math.max(...hourlyUsage));
+    trends.peakHour = peakHour;
+    
+    // 평균 만족도
+    trends.avgSatisfaction = this.globalPatterns.responseQuality.avgRating;
+    
+    return trends;
+  }
+
+  analyzeUserSegments() {
+    const segments = {
+      powerUsers: [],     // 높은 사용량
+      qualityFocused: [], // 품질 중시
+      speedFocused: [],   // 속도 중시
+      costSensitive: []   // 비용 민감
+    };
+    
+    this.userSessions.forEach((session, userId) => {
+      const perf = session.performance;
+      const prefs = session.preferences;
+      
+      // Power Users (일 10회 이상)
+      if (perf.totalQueries > 300) { // 월 300회 이상
+        segments.powerUsers.push(userId);
+      }
+      
+      // Quality Focused (평점 4.5 이상, 응답시간 관대)
+      if (perf.avgSatisfaction >= 4.5 && prefs.responseTimeExpectation > 5000) {
+        segments.qualityFocused.push(userId);
+      }
+      
+      // Speed Focused (응답시간 3초 이하 선호)
+      if (prefs.responseTimeExpectation <= 3000) {
+        segments.speedFocused.push(userId);
+      }
+      
+      // Cost Sensitive (저비용 선호도 추론)
+      if (prefs.qualityPreference === 'cost') {
+        segments.costSensitive.push(userId);
+      }
+    });
+    
+    return segments;
+  }
+
+  generateRecommendations() {
+    const trends = this.analyzeGlobalTrends();
+    const recommendations = [];
+    
+    // 서비스별 추천
+    Object.keys(trends).forEach(service => {
+      if (service === 'peakHour' || service === 'avgSatisfaction') return;
+      
+      const percentage = parseFloat(trends[service].percentage);
+      
+      if (percentage > 40) {
+        recommendations.push({
+          type: 'optimization',
+          priority: 'high',
+          message: `${service} 서비스가 ${percentage}%로 높은 사용률을 보입니다. 해당 서비스에 최적화된 AI 모델 비중을 늘리는 것을 권장합니다.`,
+          action: `increase_${service}_optimization`
+        });
+      }
+    });
+    
+    // 만족도 기반 추천
+    if (trends.avgSatisfaction < 3.5) {
+      recommendations.push({
+        type: 'quality',
+        priority: 'critical',
+        message: `평균 만족도가 ${trends.avgSatisfaction}로 낮습니다. 고품질 AI 모델 사용 비중을 늘리세요.`,
+        action: 'increase_quality_models'
+      });
+    }
+    
+    return recommendations;
+  }
+
+  // ==========================================
+  // 유틸리티 메소드들
+  // ==========================================
+  
+  getDistribution(queries, field) {
+    const distribution = {};
+    queries.forEach(query => {
+      const value = query[field];
+      distribution[value] = (distribution[value] || 0) + 1;
+    });
+    
+    const total = queries.length;
+    Object.keys(distribution).forEach(key => {
+      distribution[key] = distribution[key] / total;
+    });
+    
+    return distribution;
+  }
+
+  calculateDistributionDifference(dist1, dist2) {
+    const keys = new Set([...Object.keys(dist1), ...Object.keys(dist2)]);
+    let totalDifference = 0;
+    
+    keys.forEach(key => {
+      const val1 = dist1[key] || 0;
+      const val2 = dist2[key] || 0;
+      totalDifference += Math.abs(val1 - val2);
+    });
+    
+    return totalDifference / 2; // Jensen-Shannon divergence approximation
+  }
+
+  // ==========================================
+  // 데이터 조회 메소드들
+  // ==========================================
+  
+  getUserPreferences(userId) {
+    const session = this.userSessions.get(userId);
+    return session ? session.preferences : null;
+  }
+
+  getGlobalPatterns() {
+    return this.globalPatterns;
+  }
+
+  getUserPerformance(userId) {
+    const session = this.userSessions.get(userId);
+    return session ? session.performance : null;
+  }
+}
+
+// ==========================================
+// 적응형 AI 관리자
+// ==========================================
+
+class AdaptiveAIManager extends LawAIService {
+  constructor() {
+    super();
+    this.patternAnalyzer = new UserPatternAnalyzer();
+    this.aiConfigTemplate = this.getDefaultAIConfig();
+    this.currentAIConfig = { ...this.aiConfigTemplate };
+    this.optimizationHistory = [];
+    
+    // 패턴 변화 감지시 AI 설정 조정
+    this.patternAnalyzer.on('patternChange', (change) => {
+      this.adjustAIConfiguration(change);
+    });
+    
+    // 정기 분석 결과 처리
+    this.patternAnalyzer.on('patternAnalysis', (analysis) => {
+      this.optimizeFromAnalysis(analysis);
+    });
+    
+    // 시간별 최적화 (피크타임 대응)
+    setInterval(() => this.hourlyOptimization(), 60 * 60 * 1000);
+  }
+
+  // ==========================================
+  // 기본 AI 설정
+  // ==========================================
+  
+  getDefaultAIConfig() {
+    return {
+      chat: {
+        simple: { primary: 'gemini', secondary: 'openai', weight: 0.7 },
+        medium: { primary: 'openai', secondary: 'gemini', weight: 0.6 },
+        complex: { primary: 'claude', secondary: 'openai', weight: 0.8 }
+      },
+      analysis: {
+        simple: { primary: 'gemini', secondary: 'openai', weight: 0.6 },
+        medium: { primary: 'claude', secondary: 'openai', weight: 0.7 },
+        complex: { primary: 'claude', secondary: 'perplexity', weight: 0.9 }
+      },
+      content: {
+        blog: { primary: 'claude', secondary: 'openai', weight: 0.8 },
+        instagram: { primary: 'openai', secondary: 'gemini', weight: 0.7 },
+        report: { primary: 'claude', secondary: 'openai', weight: 0.9 }
+      },
+      search: {
+        realtime: { primary: 'perplexity', secondary: 'gemini', weight: 1.0 },
+        general: { primary: 'perplexity', secondary: 'openai', weight: 0.8 }
+      },
+      fallbackStrategy: {
+        maxRetries: 2,
+        timeoutMs: 10000,
+        qualityThreshold: 0.7
+      }
+    };
+  }
+
+  // ==========================================
+  // 향상된 AI 선택 로직
+  // ==========================================
+  
+  selectOptimalAI(task, userId = null) {
+    // 사용자별 개인화된 선택
+    if (userId) {
+      const userPrefs = this.patternAnalyzer.getUserPreferences(userId);
+      if (userPrefs) {
+        return this.selectPersonalizedAI(task, userPrefs);
+      }
+    }
+    
+    // 현재 최적화된 설정 기반 선택
+    const config = this.currentAIConfig[task.type];
+    if (!config) {
+      return super.selectOptimalAI(task); // fallback to parent
+    }
+    
+    const complexity = task.complexity || 'medium';
+    const settings = config[complexity] || config.general;
+    
+    if (!settings) {
+      return super.selectOptimalAI(task);
+    }
+    
+    return {
+      primary: settings.primary,
+      secondary: settings.secondary,
+      confidence: settings.weight,
+      reason: `패턴 기반 최적화 (${task.type}/${complexity})`
+    };
+  }
+
+  // ==========================================
+  // 개인화된 AI 선택
+  // ==========================================
+  
+  selectPersonalizedAI(task, userPrefs) {
+    const baseSelection = this.selectOptimalAI(task);
+    
+    // 사용자 선호도에 따른 조정
+    if (userPrefs.qualityPreference === 'speed') {
+      // 속도 우선: Gemini 선호
+      if (baseSelection.primary !== 'gemini' && task.complexity === 'simple') {
+        return {
+          primary: 'gemini',
+          secondary: baseSelection.primary,
+          confidence: 0.8,
+          reason: '사용자 속도 선호도 반영'
+        };
+      }
+    } else if (userPrefs.qualityPreference === 'quality') {
+      // 품질 우선: Claude 또는 고급 모델 선호
+      if (task.complexity !== 'simple') {
+        return {
+          primary: 'claude',
+          secondary: 'openai',
+          confidence: 0.9,
+          reason: '사용자 품질 선호도 반영'
+        };
+      }
+    } else if (userPrefs.qualityPreference === 'cost') {
+      // 비용 우선: Gemini 우선 사용
+      return {
+        primary: 'gemini',
+        secondary: 'openai',
+        confidence: 0.7,
+        reason: '사용자 비용 효율성 선호도 반영'
+      };
+    }
+    
+    return baseSelection;
+  }
+
+  // ==========================================
+  // AI 설정 동적 조정
+  // ==========================================
+  
+  adjustAIConfiguration(patternChange) {
+    const { type, newDistribution } = patternChange;
+    
+    if (type === 'serviceUsage') {
+      this.adjustServiceConfiguration(newDistribution);
+    } else if (type === 'complexity') {
+      this.adjustComplexityConfiguration(newDistribution);
+    }
+    
+    // 변경 이력 저장
+    this.optimizationHistory.push({
+      timestamp: new Date(),
+      change: patternChange,
+      oldConfig: JSON.parse(JSON.stringify(this.currentAIConfig)),
+      newConfig: null // 조정 후 업데이트
+    });
+  }
+
+  adjustServiceConfiguration(distribution) {
+    // 가장 많이 사용되는 서비스에 최적화
+    const mostUsedService = Object.keys(distribution).reduce((a, b) => 
+      distribution[a] > distribution[b] ? a : b
+    );
+    
+    if (distribution[mostUsedService] > 0.5) { // 50% 이상 사용
+      // 해당 서비스에 최적화된 AI 우선 배치
+      const optimizedConfig = this.getOptimizedConfigForService(mostUsedService);
+      this.currentAIConfig[mostUsedService] = optimizedConfig;
+      
+      console.log(`AI 설정 조정: ${mostUsedService} 서비스 최적화 (사용률: ${(distribution[mostUsedService] * 100).toFixed(1)}%)`);
+    }
+  }
+
+  adjustComplexityConfiguration(distribution) {
+    const complexRatio = distribution.complex || 0;
+    const simpleRatio = distribution.simple || 0;
+    
+    if (complexRatio > 0.4) {
+      // 복잡한 질의가 많은 경우: 고성능 모델 비중 증가
+      Object.keys(this.currentAIConfig).forEach(service => {
+        if (this.currentAIConfig[service].complex) {
+          this.currentAIConfig[service].complex.weight = Math.min(1.0, 
+            this.currentAIConfig[service].complex.weight + 0.1
+          );
+        }
+      });
+      
+      console.log(`AI 설정 조정: 복잡한 질의 증가로 고성능 모델 비중 증가 (${(complexRatio * 100).toFixed(1)}%)`);
+    } else if (simpleRatio > 0.6) {
+      // 간단한 질의가 많은 경우: 경제적 모델 비중 증가
+      Object.keys(this.currentAIConfig).forEach(service => {
+        if (this.currentAIConfig[service].simple) {
+          this.currentAIConfig[service].simple.primary = 'gemini';
+          this.currentAIConfig[service].simple.weight = 0.9;
+        }
+      });
+      
+      console.log(`AI 설정 조정: 간단한 질의 증가로 경제적 모델 비중 증가 (${(simpleRatio * 100).toFixed(1)}%)`);
+    }
+  }
+
+  getOptimizedConfigForService(service) {
+    const optimizations = {
+      chat: {
+        simple: { primary: 'gemini', secondary: 'openai', weight: 0.9 },
+        medium: { primary: 'openai', secondary: 'gemini', weight: 0.8 },
+        complex: { primary: 'claude', secondary: 'openai', weight: 0.9 }
+      },
+      analysis: {
+        simple: { primary: 'gemini', secondary: 'openai', weight: 0.8 },
+        medium: { primary: 'claude', secondary: 'openai', weight: 0.9 },
+        complex: { primary: 'claude', secondary: 'perplexity', weight: 1.0 }
+      },
+      content: {
+        blog: { primary: 'claude', secondary: 'openai', weight: 0.95 },
+        instagram: { primary: 'openai', secondary: 'claude', weight: 0.85 },
+        report: { primary: 'claude', secondary: 'openai', weight: 1.0 }
+      },
+      search: {
+        realtime: { primary: 'perplexity', secondary: 'gemini', weight: 1.0 },
+        general: { primary: 'perplexity', secondary: 'openai', weight: 0.9 }
+      }
+    };
+    
+    return optimizations[service] || this.currentAIConfig[service];
+  }
+
+  // ==========================================
+  // 분석 기반 최적화
+  // ==========================================
+  
+  optimizeFromAnalysis(analysis) {
+    const { globalTrends, userSegments, recommendations } = analysis;
+    
+    // 추천사항 실행
+    recommendations.forEach(rec => {
+      this.executeRecommendation(rec);
+    });
+    
+    // 사용자 세그먼트별 최적화
+    this.optimizeForUserSegments(userSegments);
+    
+    console.log('패턴 분석 기반 AI 최적화 완료:', {
+      trends: globalTrends,
+      segments: Object.keys(userSegments).map(key => `${key}: ${userSegments[key].length}명`),
+      recommendations: recommendations.length
+    });
+  }
+
+  executeRecommendation(recommendation) {
+    switch (recommendation.action) {
+      case 'increase_chat_optimization':
+        this.optimizeForHighUsage('chat');
+        break;
+      case 'increase_analysis_optimization':
+        this.optimizeForHighUsage('analysis');
+        break;
+      case 'increase_content_optimization':
+        this.optimizeForHighUsage('content');
+        break;
+      case 'increase_quality_models':
+        this.increaseQualityModels();
+        break;
+      default:
+        console.log('알 수 없는 추천사항:', recommendation.action);
+    }
+  }
+
+  optimizeForHighUsage(service) {
+    // 고사용률 서비스에 대한 최적화
+    const config = this.currentAIConfig[service];
+    if (config) {
+      Object.keys(config).forEach(complexity => {
+        if (config[complexity].weight) {
+          config[complexity].weight = Math.min(1.0, config[complexity].weight + 0.05);
+        }
+      });
+    }
+  }
+
+  increaseQualityModels() {
+    // 전체적으로 고품질 모델 비중 증가
+    Object.keys(this.currentAIConfig).forEach(service => {
+      Object.keys(this.currentAIConfig[service]).forEach(complexity => {
+        const config = this.currentAIConfig[service][complexity];
+        if (config && config.primary === 'gemini') {
+          config.primary = 'claude';
+          config.secondary = 'openai';
+          config.weight = Math.min(1.0, config.weight + 0.1);
+        }
+      });
+    });
+  }
+
+  optimizeForUserSegments(segments) {
+    // Power Users를 위한 최적화
+    if (segments.powerUsers.length > 0) {
+      console.log(`Power Users ${segments.powerUsers.length}명을 위한 최적화`);
+      // 고성능 모델 우선 배정
+    }
+    
+    // Speed Focused Users를 위한 최적화
+    if (segments.speedFocused.length > 0) {
+      console.log(`Speed Focused Users ${segments.speedFocused.length}명을 위한 최적화`);
+      // Gemini 비중 증가
+    }
+  }
+
+  // ==========================================
+  // 시간별 최적화
+  // ==========================================
+  
+  hourlyOptimization() {
+    const currentHour = new Date().getHours();
+    const patterns = this.patternAnalyzer.getGlobalPatterns();
+    const hourlyUsage = patterns.timePatterns.hourly;
+    
+    // 피크 시간대 감지
+    const avgUsage = hourlyUsage.reduce((a, b) => a + b) / 24;
+    const currentUsage = hourlyUsage[currentHour];
+    
+    if (currentUsage > avgUsage * 1.5) {
+      // 피크 시간: 안정성 우선
+      this.switchToPeakMode();
+    } else if (currentUsage < avgUsage * 0.5) {
+      // 비피크 시간: 경제성 우선
+      this.switchToEconomyMode();
+    } else {
+      // 일반 시간: 균형 모드
+      this.switchToBalancedMode();
+    }
+  }
+
+  switchToPeakMode() {
+    console.log('피크 모드 전환: 안정성 우선');
+    // 안정적인 AI 모델 우선 사용
+    Object.keys(this.currentAIConfig).forEach(service => {
+      Object.keys(this.currentAIConfig[service]).forEach(complexity => {
+        this.currentAIConfig[service][complexity].primary = 'openai';
+        this.currentAIConfig[service][complexity].secondary = 'claude';
+      });
+    });
+  }
+
+  switchToEconomyMode() {
+    console.log('경제 모드 전환: 비용 효율성 우선');
+    // 경제적인 AI 모델 우선 사용
+    Object.keys(this.currentAIConfig).forEach(service => {
+      Object.keys(this.currentAIConfig[service]).forEach(complexity => {
+        if (complexity === 'simple' || complexity === 'medium') {
+          this.currentAIConfig[service][complexity].primary = 'gemini';
+          this.currentAIConfig[service][complexity].secondary = 'openai';
+        }
+      });
+    });
+  }
+
+  switchToBalancedMode() {
+    console.log('균형 모드 전환: 성능과 비용 균형');
+    // 기본 설정으로 복원
+    this.currentAIConfig = { ...this.aiConfigTemplate };
+  }
+
+  // ==========================================
+  // 향상된 AI 호출 (추적 포함)
+  // ==========================================
+  
+  async callAIWithTracking(aiService, prompt, options = {}, userId = null, taskInfo = {}) {
+    const startTime = Date.now();
+    
+    try {
+      const result = await this.callAI(aiService, prompt, options);
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      
+      // 사용자 패턴 추적
+      if (userId) {
+        this.patternAnalyzer.trackUserQuery(userId, {
+          type: taskInfo.type || 'unknown',
+          complexity: taskInfo.complexity || 'medium',
+          domain: taskInfo.domain || 'law',
+          responseTime,
+          aiUsed: aiService,
+          tokens: result.tokens || 0,
+          cost: this.calculateCost(aiService, result.tokens || 0),
+          success: result.success,
+          timestamp: new Date()
+        });
+      }
+      
+      return {
+        ...result,
+        responseTime,
+        trackingId: this.generateTrackingId()
+      };
+      
+    } catch (error) {
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      
+      // 실패도 추적
+      if (userId) {
+        this.patternAnalyzer.trackUserQuery(userId, {
+          type: taskInfo.type || 'unknown',
+          complexity: taskInfo.complexity || 'medium',
+          domain: taskInfo.domain || 'law',
+          responseTime,
+          aiUsed: aiService,
+          tokens: 0,
+          cost: 0,
+          success: false,
+          error: error.message,
+          timestamp: new Date()
+        });
+      }
+      
+      throw error;
+    }
+  }
+
+  // ==========================================
+  // 지능형 서비스 메소드들 (추적 기능 포함)
+  // ==========================================
+  
+  async intelligentChatResponse(userMessage, context = [], userId = null, userLevel = 'general') {
+    // 작업 정보 분석
+    const taskInfo = {
+      type: 'chat',
+      complexity: this.determineComplexity(userMessage),
+      domain: this.determineDomain(userMessage),
+      urgency: 'medium'
+    };
+    
+    // 최적 AI 선택
+    const aiChoice = this.selectOptimalAI(taskInfo, userId);
+    
+    // 프롬프트 구성
+    const prompt = this.buildChatPrompt(userMessage, context, userLevel);
+    
+    // AI 호출 (추적 포함)
+    const result = await this.callAIWithTracking(
+      aiChoice.primary, 
+      prompt, 
+      { maxTokens: 800, temperature: 0.7 },
+      userId,
+      taskInfo
+    );
+    
+    // 실패시 보조 AI 사용
+    if (!result.success && aiChoice.secondary) {
+      return await this.callAIWithTracking(
+        aiChoice.secondary,
+        prompt,
+        { maxTokens: 800, temperature: 0.7 },
+        userId,
+        taskInfo
+      );
+    }
+    
+    return result;
+  }
+
+  async intelligentAnalyzeLaw(lawText, analysisType = 'general', userId = null) {
+    const taskInfo = {
+      type: 'analysis',
+      complexity: analysisType === 'deep' ? 'complex' : 'medium',
+      domain: 'law'
+    };
+    
+    const aiChoice = this.selectOptimalAI(taskInfo, userId);
+    const prompt = this.buildLawAnalysisPrompt(lawText, analysisType);
+    
+    return await this.callAIWithTracking(
+      aiChoice.primary,
+      prompt,
+      { 
+        maxTokens: analysisType === 'deep' ? 2000 : 1000,
+        temperature: 0.3 
+      },
+      userId,
+      taskInfo
+    );
+  }
+
+  async intelligentGenerateContent(topic, contentType, targetAudience = 'general', userId = null) {
+    // 최신 정보 검색 (필요시)
+    const searchResult = await this.searchRecentInfo(topic);
+    
+    const taskInfo = {
+      type: 'content',
+      complexity: 'medium',
+      contentType: contentType,
+      domain: 'law'
+    };
+    
+    const aiChoice = this.selectOptimalAI(taskInfo, userId);
+    const prompt = this.buildContentPrompt(topic, contentType, targetAudience, searchResult);
+    
+    return await this.callAIWithTracking(
+      aiChoice.primary,
+      prompt,
+      { 
+        maxTokens: contentType === 'blog' ? 2000 : 500,
+        temperature: 0.8 
+      },
+      userId,
+      taskInfo
+    );
+  }
+
+  // ==========================================
+  // 실시간 성능 모니터링
+  // ==========================================
+  
+  async monitorPerformance() {
+    const performance = {
+      timestamp: new Date(),
+      aiServices: {},
+      systemMetrics: await this.getSystemMetrics(),
+      userSatisfaction: await this.getUserSatisfactionMetrics(),
+      costEfficiency: await this.getCostEfficiencyMetrics(),
+      recommendations: []
+    };
+    
+    // 각 AI 서비스별 성능 메트릭
+    ['openai', 'claude', 'gemini', 'perplexity'].forEach(service => {
+      const stats = this.usageStats[service];
+      performance.aiServices[service] = {
+        totalRequests: stats.requests,
+        totalTokens: stats.tokens,
+        totalCost: stats.cost,
+        avgCostPerRequest: stats.requests > 0 ? stats.cost / stats.requests : 0,
+        avgTokensPerRequest: stats.requests > 0 ? stats.tokens / stats.requests : 0
+      };
+    });
+    
+    // 성능 기반 추천사항 생성
+    performance.recommendations = this.generatePerformanceRecommendations(performance);
+    
+    return performance;
+  }
+
+  async getSystemMetrics() {
+    const patterns = this.patternAnalyzer.getGlobalPatterns();
+    return {
+      totalQueries: Object.values(patterns.serviceUsage).reduce((a, b) => a + b, 0),
+      avgSatisfaction: patterns.responseQuality.avgRating,
+      peakHour: patterns.timePatterns.hourly.indexOf(Math.max(...patterns.timePatterns.hourly)),
+      serviceDistribution: patterns.serviceUsage
+    };
+  }
+
+  async getUserSatisfactionMetrics() {
+    const patterns = this.patternAnalyzer.getGlobalPatterns();
+    const quality = patterns.responseQuality;
+    
+    return {
+      avgRating: quality.avgRating,
+      totalRatings: quality.totalRatings,
+      satisfactionRate: quality.totalRatings > 0 ? quality.satisfaction / quality.totalRatings : 0,
+      trend: this.calculateSatisfactionTrend()
+    };
+  }
+
+  async getCostEfficiencyMetrics() {
+    const totalCost = Object.values(this.usageStats).reduce((sum, stats) => sum + stats.cost, 0);
+    const totalRequests = Object.values(this.usageStats).reduce((sum, stats) => sum + stats.requests, 0);
+    
+    return {
+      totalCost,
+      avgCostPerQuery: totalRequests > 0 ? totalCost / totalRequests : 0,
+      costByService: Object.fromEntries(
+        Object.entries(this.usageStats).map(([service, stats]) => [
+          service, 
+          { cost: stats.cost, percentage: totalCost > 0 ? (stats.cost / totalCost) * 100 : 0 }
+        ])
+      ),
+      monthlyCostProjection: totalCost * 30 // 일일 비용의 30배
+    };
+  }
+
+  generatePerformanceRecommendations(performance) {
+    const recommendations = [];
+    const { aiServices, userSatisfaction, costEfficiency } = performance;
+    
+    // 비용 효율성 체크
+    Object.entries(aiServices).forEach(([service, metrics]) => {
+      if (metrics.avgCostPerRequest > 50 && metrics.totalRequests > 100) { // 한화 기준
+        recommendations.push({
+          type: 'cost',
+          priority: 'medium',
+          service,
+          message: `${service} 서비스의 요청당 평균 비용이 ₩${metrics.avgCostPerRequest.toFixed(0)}로 높습니다.`,
+          suggestion: '더 경제적인 모델로 일부 요청을 분산하는 것을 고려하세요.'
+        });
+      }
+    });
+    
+    // 만족도 체크
+    if (userSatisfaction.avgRating < 3.5) {
+      recommendations.push({
+        type: 'quality',
+        priority: 'high',
+        message: `사용자 만족도가 ${userSatisfaction.avgRating.toFixed(1)}점으로 낮습니다.`,
+        suggestion: '고품질 AI 모델의 사용 비중을 늘리거나 응답 품질 개선이 필요합니다.'
+      });
+    }
+    
+    // 비용 증가 체크
+    if (costEfficiency.monthlyCostProjection > 1000000) { // 월 100만원 이상
+      recommendations.push({
+        type: 'cost',
+        priority: 'high',
+        message: `월 예상 비용이 ₩${costEfficiency.monthlyCostProjection.toLocaleString()}입니다.`,
+        suggestion: '비용 최적화 전략을 수립하고 사용량 모니터링을 강화하세요.'
+      });
+    }
+    
+    return recommendations;
+  }
+
+  // ==========================================
+  // 유틸리티 메소드들
+  // ==========================================
+  
+  determineDomain(text) {
+    const domainKeywords = {
+      law: ['법률', '법령', '조문', '법조', '입법'],
+      precedent: ['판례', '판결', '결정', '재판', '법원'],
+      regulation: ['규칙', '규정', '지침', '훈령', '예규'],
+      procedure: ['절차', '신청', '접수', '처리', '방법']
+    };
+    
+    for (const [domain, keywords] of Object.entries(domainKeywords)) {
+      if (keywords.some(keyword => text.includes(keyword))) {
+        return domain;
+      }
+    }
+    
+    return 'law'; // 기본값
+  }
+
+  calculateCost(aiService, tokens) {
+    const costPerToken = {
+      openai: 0.0005,     // 대략적 계산 (한화 기준)
+      claude: 0.0008,
+      gemini: 0.0002,
+      perplexity: 0.045   // 요청당 고정비
+    };
+    
+    return tokens * (costPerToken[aiService] || 0);
+  }
+
+  calculateSatisfactionTrend() {
+    // 최근 100개 쿼리의 만족도 트렌드 계산
+    const recentQueries = this.patternAnalyzer.recentQueries.slice(-100);
+    if (recentQueries.length < 20) return 'insufficient_data';
+    
+    const recent50 = recentQueries.slice(-50).filter(q => q.satisfaction);
+    const previous50 = recentQueries.slice(-100, -50).filter(q => q.satisfaction);
+    
+    if (recent50.length === 0 || previous50.length === 0) return 'insufficient_data';
+    
+    const recentAvg = recent50.reduce((sum, q) => sum + q.satisfaction, 0) / recent50.length;
+    const previousAvg = previous50.reduce((sum, q) => sum + q.satisfaction, 0) / previous50.length;
+    
+    const diff = recentAvg - previousAvg;
+    
+    if (diff > 0.2) return 'improving';
+    if (diff < -0.2) return 'declining';
+    return 'stable';
+  }
+
+  generateTrackingId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  }
+
+  // ==========================================
+  // 사용자 피드백 처리
+  // ==========================================
+  
+  recordUserFeedback(userId, trackingId, satisfaction, feedback = '') {
+    // 해당 사용자의 마지막 쿼리 찾기
+    const userSession = this.patternAnalyzer.userSessions.get(userId);
+    if (!userSession) return false;
+    
+    const lastQuery = userSession.queries[userSession.queries.length - 1];
+    if (lastQuery) {
+      lastQuery.satisfaction = satisfaction;
+      lastQuery.feedback = feedback;
+      
+      // 만족도 기반 AI 선택 최적화
+      this.optimizeBasedOnFeedback(lastQuery);
+      
+      console.log(`사용자 피드백 기록: ${userId}, 만족도: ${satisfaction}`);
+      return true;
+    }
+    
+    return false;
+  }
+
+  optimizeBasedOnFeedback(query) {
+    const { aiUsed, satisfaction, type, complexity } = query;
+    
+    // 높은 만족도: 해당 AI의 가중치 증가
+    if (satisfaction >= 4) {
+      const config = this.currentAIConfig[type];
+      if (config && config[complexity]) {
+        if (config[complexity].primary === aiUsed) {
+          config[complexity].weight = Math.min(1.0, config[complexity].weight + 0.05);
+        }
+      }
+    }
+    
+    // 낮은 만족도: 해당 AI의 가중치 감소
+    else if (satisfaction <= 2) {
+      const config = this.currentAIConfig[type];
+      if (config && config[complexity]) {
+        if (config[complexity].primary === aiUsed) {
+          config[complexity].weight = Math.max(0.1, config[complexity].weight - 0.1);
+          
+          // 가중치가 너무 낮아지면 다른 AI로 변경
+          if (config[complexity].weight < 0.3) {
+            const alternatives = ['openai', 'claude', 'gemini', 'perplexity']
+              .filter(ai => ai !== aiUsed);
+            config[complexity].primary = alternatives[0];
+            config[complexity].secondary = aiUsed;
+            config[complexity].weight = 0.7;
+          }
+        }
+      }
+    }
+  }
+
+  // ==========================================
+  // 설정 및 상태 조회
+  // ==========================================
+  
+  getCurrentConfiguration() {
+    return {
+      aiConfig: this.currentAIConfig,
+      patternAnalysis: this.patternAnalyzer.analyzePatterns(),
+      optimizationHistory: this.optimizationHistory.slice(-10), // 최근 10개
+      performance: this.monitorPerformance()
+    };
+  }
+
+  getRealtimeStats() {
+    return {
+      timestamp: new Date(),
+      usageStats: this.getUsageStats(),
+      globalPatterns: this.patternAnalyzer.getGlobalPatterns(),
+      activeUsers: this.patternAnalyzer.userSessions.size,
+      recentQueries: this.patternAnalyzer.recentQueries.length,
+      cacheSize: this.getCacheSize()
+    };
+  }
+
+  // ==========================================
+  // 설정 저장/복원
+  // ==========================================
+  
+  saveConfiguration(name) {
+    const config = {
+      name,
+      timestamp: new Date(),
+      aiConfig: JSON.parse(JSON.stringify(this.currentAIConfig)),
+      patterns: this.patternAnalyzer.getGlobalPatterns()
+    };
+    
+    // 로컬 스토리지 또는 데이터베이스에 저장
+    localStorage.setItem(`ai_config_${name}`, JSON.stringify(config));
+    
+    console.log(`AI 설정 저장 완료: ${name}`);
+    return config;
+  }
+
+  loadConfiguration(name) {
+    try {
+      const savedConfig = localStorage.getItem(`ai_config_${name}`);
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        this.currentAIConfig = config.aiConfig;
+        
+        console.log(`AI 설정 복원 완료: ${name}`);
+        return true;
+      }
+    } catch (error) {
+      console.error('설정 복원 실패:', error);
+    }
+    
+    return false;
+  }
+
+  resetToDefault() {
+    this.currentAIConfig = { ...this.aiConfigTemplate };
+    this.optimizationHistory = [];
+    console.log('AI 설정을 기본값으로 초기화했습니다.');
+  }
+}
+
+// ==========================================
+// 사용 예시
+// ==========================================
+
+async function exampleUsage() {
+  const adaptiveAI = new AdaptiveAIManager();
+  
+  // 1. 지능형 챗봇 응답 (사용자 추적 포함)
+  const chatResponse = await adaptiveAI.intelligentChatResponse(
+    "개인정보보호법의 최신 개정사항을 알려주세요",
+    [], // 이전 대화 컨텍스트
+    'user123', // 사용자 ID
+    'expert' // 사용자 레벨
+  );
+  
+  console.log('지능형 채팅 응답:', chatResponse);
+  
+  // 2. 사용자 피드백 기록
+  adaptiveAI.recordUserFeedback('user123', chatResponse.trackingId, 5, '매우 도움되었습니다');
+  
+  // 3. 실시간 통계 확인
+  const realtimeStats = adaptiveAI.getRealtimeStats();
+  console.log('실시간 통계:', realtimeStats);
+  
+  // 4. 성능 모니터링
+  const performance = await adaptiveAI.monitorPerformance();
+  console.log('성능 분석:', performance);
+  
+  // 5. 현재 설정 확인
+  const currentConfig = adaptiveAI.getCurrentConfiguration();
+  console.log('현재 AI 설정:', currentConfig);
+  
+  // 6. 설정 저장
+  adaptiveAI.saveConfiguration('optimized_v1');
+  
+  // 패턴 변화 감지 이벤트 리스너
+  adaptiveAI.patternAnalyzer.on('patternChange', (change) => {
+    console.log('패턴 변화 감지:', change);
+  });
+  
+  // 분석 완료 이벤트 리스너
+  adaptiveAI.patternAnalyzer.on('patternAnalysis', (analysis) => {
+    console.log('패턴 분석 완료:', analysis.recommendations);
+  });
+}
+
+export default AdaptiveAIManager;
