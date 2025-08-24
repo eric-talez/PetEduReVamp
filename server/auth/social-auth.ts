@@ -1,5 +1,6 @@
 import { Strategy as KakaoStrategy } from 'passport-kakao';
 import { Strategy as NaverStrategy } from 'passport-naver';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { UserRole } from '@shared/schema';
 import { storage } from '../storage';
 import { Express, Request, Response, NextFunction } from 'express';
@@ -144,6 +145,77 @@ export function setupSocialAuth(app: Express) {
     console.log('[SocialAuth] 네이버 로그인 설정 완료');
   } else {
     console.warn('[SocialAuth] NAVER_CLIENT_ID 또는 NAVER_CLIENT_SECRET이 설정되지 않아 네이버 로그인 기능이 비활성화됩니다.');
+  }
+  
+  // 구글 로그인 전략 설정
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackURL: '/api/auth/google/callback',
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            // profile.id는 구글에서 제공하는 고유 ID입니다
+            const googleId = profile.id;
+            const email = profile.emails?.[0]?.value || '';
+            const name = profile.displayName || '';
+            
+            console.log('구글 로그인 정보:', { googleId, email, name });
+            
+            // 기존 사용자 확인 (소셜 ID로)
+            let user = await storage.getUserBySocialId('google', googleId);
+            
+            if (!user) {
+              // 신규 사용자 생성
+              user = await storage.createUser({
+                username: `google_${googleId}`,
+                password: Math.random().toString(36).slice(2) + Date.now().toString(36), // 랜덤 비밀번호
+                email: email,
+                name: name,
+                provider: 'google',
+                socialId: googleId,
+                role: 'pet-owner', // 기본 역할은 반려인
+                verified: true, // 소셜 로그인은 기본적으로 인증됨
+                verifiedAt: new Date()
+              });
+              
+              console.log('새 사용자 생성 완료:', user.id);
+            } else {
+              console.log('기존 사용자 확인:', user.id);
+            }
+            
+            return done(null, user);
+          } catch (error) {
+            console.error('구글 로그인 오류:', error);
+            return done(error as Error);
+          }
+        }
+      )
+    );
+    
+    // 구글 로그인 라우트
+    app.get('/api/auth/google', passport.authenticate('google', {
+      scope: ['profile', 'email']
+    }));
+    
+    // 구글 로그인 콜백 라우트
+    app.get(
+      '/api/auth/google/callback',
+      passport.authenticate('google', {
+        failureRedirect: '/auth?error=social-login-failed',
+      }),
+      (req, res) => {
+        // 성공 시 대시보드로 리다이렉트
+        res.redirect('/dashboard');
+      }
+    );
+    
+    console.log('[SocialAuth] 구글 로그인 설정 완료');
+  } else {
+    console.warn('[SocialAuth] GOOGLE_CLIENT_ID 또는 GOOGLE_CLIENT_SECRET이 설정되지 않아 구글 로그인 기능이 비활성화됩니다.');
   }
   
   // 소셜 로그인 정보를 세션에 추가하는 미들웨어
