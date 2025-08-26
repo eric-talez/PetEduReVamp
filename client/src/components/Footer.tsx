@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* 회사 정보 */}
-            <div className="md:col-span-1">
+            <div>
               <div className="flex items-center mb-4">
                 <img src="/logo.svg" alt="TALEZ" className="h-7 w-auto mr-2" />
                 <span className="text-xl font-bold text-gray-900 dark:text-white">TALEZ</span>
