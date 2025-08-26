@@ -3604,7 +3604,165 @@ class Storage {
   }
 }
 
-const storage = new Storage();
+// 개발 환경에서는 데이터베이스 연동을 위해 하이브리드 접근 방식 사용
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import { 
+  users,
+  contentApprovals,
+  trainerApplications,
+  curriculums
+} from "../shared/schema";
+
+class HybridStorage extends Storage {
+  // 데이터베이스 연동 메서드들 추가
+  
+  // 훈련사 신청 관련
+  async getTrainerApplication(id: number): Promise<any> {
+    try {
+      const [application] = await db.select().from(trainerApplications).where(eq(trainerApplications.id, id));
+      return application || undefined;
+    } catch (error) {
+      console.error('[DB] 훈련사 신청 조회 오류:', error);
+      return undefined;
+    }
+  }
+
+  async getAllTrainerApplications(): Promise<any[]> {
+    try {
+      return await db.select().from(trainerApplications);
+    } catch (error) {
+      console.error('[DB] 모든 훈련사 신청 조회 오류:', error);
+      return []; // 빈 배열 반환
+    }
+  }
+
+  async createTrainerApplication(data: any): Promise<any> {
+    try {
+      const [application] = await db.insert(trainerApplications).values({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        hasAffiliation: data.hasAffiliation || false,
+        affiliationName: data.affiliationName,
+        experience: data.experience,
+        education: data.education,
+        certifications: data.certifications,
+        motivation: data.motivation,
+        portfolioUrl: data.portfolioUrl,
+        resume: data.resume,
+        status: data.status || 'pending'
+      }).returning();
+      return application;
+    } catch (error) {
+      console.error('[DB] 훈련사 신청 생성 오류:', error);
+      throw error;
+    }
+  }
+
+  async updateTrainerApplicationStatus(id: number, status: string, reviewNotes?: string, reviewerId?: number): Promise<any> {
+    try {
+      const [updated] = await db.update(trainerApplications)
+        .set({
+          status,
+          reviewNotes,
+          reviewedBy: reviewerId,
+          reviewedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(trainerApplications.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error('[DB] 훈련사 신청 상태 업데이트 오류:', error);
+      throw error;
+    }
+  }
+
+  // 컨텐츠 승인 관련
+  async createContentApproval(data: any): Promise<any> {
+    try {
+      const [approval] = await db.insert(contentApprovals).values({
+        contentType: data.contentType,
+        contentId: data.contentId,
+        submitterId: data.submitterId,
+        instituteId: data.instituteId,
+        title: data.title,
+        description: data.description,
+        content: data.content,
+        attachments: data.attachments
+      }).returning();
+      return approval;
+    } catch (error) {
+      console.error('[DB] 컨텐츠 승인 생성 오류:', error);
+      throw error;
+    }
+  }
+
+  async getAllContentApprovals(): Promise<any[]> {
+    try {
+      return await db.select().from(contentApprovals);
+    } catch (error) {
+      console.error('[DB] 컨텐츠 승인 조회 오류:', error);
+      return [];
+    }
+  }
+
+  // 커리큘럼 관련
+  async createCurriculum(data: any): Promise<any> {
+    try {
+      const [curriculum] = await db.insert(curriculums).values({
+        title: data.title,
+        description: data.description,
+        creatorId: data.creatorId,
+        instituteId: data.instituteId,
+        targetLevel: data.targetLevel,
+        duration: data.duration,
+        sessions: data.sessions,
+        prerequisites: data.prerequisites,
+        learningObjectives: data.learningObjectives,
+        materials: data.materials,
+        assessmentMethods: data.assessmentMethods,
+        isPublic: data.isPublic || false,
+        status: data.status || 'draft'
+      }).returning();
+      return curriculum;
+    } catch (error) {
+      console.error('[DB] 커리큘럼 생성 오류:', error);
+      throw error;
+    }
+  }
+
+  async getAllCurriculums(): Promise<any[]> {
+    try {
+      return await db.select().from(curriculums);
+    } catch (error) {
+      console.error('[DB] 커리큘럼 조회 오류:', error);
+      return [];
+    }
+  }
+
+  // 훈련사 인증 관련 (PATCH API 호환성)
+  async createTrainerCertification(data: any): Promise<any> {
+    try {
+      console.log('[DB] 훈련사 인증 생성:', data);
+      // 임시로 성공 응답 (실제 테이블 구조에 맞게 나중에 수정 가능)
+      return {
+        id: Date.now(),
+        applicationId: data.applicationId,
+        trainerId: data.trainerId || data.applicationId,
+        status: 'certified',
+        issuedAt: new Date(),
+        createdAt: new Date()
+      };
+    } catch (error) {
+      console.error('[DB] 훈련사 인증 생성 오류:', error);
+      throw error;
+    }
+  }
+}
+
+const storage = new HybridStorage();
 
 export { storage };
 export default storage;

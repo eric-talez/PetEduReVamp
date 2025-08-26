@@ -6400,36 +6400,35 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 훈련사 신청 목록 API
+  // 훈련사 신청 목록 API - 실제 데이터베이스 연동
   app.get("/api/trainer-applications", async (req, res) => {
     try {
-      const applications = [
-        {
-          id: 1,
-          applicantName: "김훈련",
-          programName: "기초 반려견 훈련사 과정",
-          status: "pending",
-          appliedDate: "2024-02-15",
-          experience: "2년",
-          certification: "반려동물행동지도사 2급"
-        },
-        {
-          id: 2,
-          applicantName: "이전문",
-          programName: "고급 행동 교정사 과정",
-          status: "approved",
-          appliedDate: "2024-02-10",
-          experience: "5년",
-          certification: "반려동물행동지도사 1급"
-        }
-      ];
+      console.log('[DB] 훈련사 신청 목록 조회 시작');
+      
+      // HybridStorage에서 실제 데이터베이스 데이터 가져오기
+      const dbApplications = await storage.getAllTrainerApplications();
+      
+      console.log('[DB] 조회된 훈련사 신청 수:', dbApplications.length);
+      
+      // 응답 형식을 기존 클라이언트와 호환되도록 변환
+      const applications = dbApplications.map(app => ({
+        id: app.id,
+        applicantName: app.name,
+        programName: app.experience ? `${app.experience} 경력자 과정` : "일반 훈련사 과정",
+        status: app.status,
+        appliedDate: app.created_at ? new Date(app.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        experience: app.experience || "미기재",
+        certification: app.certifications || "미기재",
+        email: app.email,
+        phone: app.phone
+      }));
       
       res.json({
         success: true,
         applications
       });
     } catch (error) {
-      console.error('훈련사 신청 목록 조회 오류:', error);
+      console.error('[DB] 훈련사 신청 목록 조회 오류:', error);
       res.status(500).json({
         success: false,
         message: '훈련사 신청 목록을 불러오는 중 오류가 발생했습니다.'
@@ -9630,25 +9629,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
-  // 모든 훈련사 인증 신청 조회 (관리자용)
-  app.get("/api/trainer-applications", async (req, res) => {
-    try {
-      // 직접 trainerApplications 맵에서 데이터를 가져오기
-      const applications = Array.from((storage as any).trainerApplications.values());
-      console.log('훈련사 신청 조회 성공:', applications.length, '개');
-      
-      res.json({
-        success: true,
-        applications: applications
-      });
-    } catch (error) {
-      console.error('훈련사 신청 목록 조회 오류:', error);
-      res.status(500).json({
-        success: false,
-        message: "신청 목록을 불러오는 중 오류가 발생했습니다."
-      });
-    }
-  });
+  // ※ 중복 라우트 제거됨 - 6404번째 줄의 데이터베이스 연동 API 사용
 
   // 특정 훈련사 인증 신청 조회
   app.get("/api/trainer-applications/:id", async (req, res) => {
@@ -9686,8 +9667,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const updatedApplication = await storage.updateTrainerApplicationStatus(
         applicationId,
         status,
-        reviewerId,
-        reviewNotes
+        reviewNotes,
+        reviewerId
       );
 
       // 승인된 경우 훈련사 인증 기록 생성

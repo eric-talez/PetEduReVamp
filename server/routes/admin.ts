@@ -508,42 +508,7 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // 훈련사 신청 목록 API
-  app.get('/api/trainer-applications', async (req, res) => {
-    try {
-      const applications = [
-        {
-          id: 1,
-          applicantName: "김훈련",
-          programName: "기초 반려견 훈련사 과정",
-          status: "pending",
-          appliedDate: "2024-02-15",
-          experience: "2년",
-          certification: "반려동물행동지도사 2급"
-        },
-        {
-          id: 2,
-          applicantName: "이전문",
-          programName: "고급 행동 교정사 과정",
-          status: "approved",
-          appliedDate: "2024-02-10",
-          experience: "5년",
-          certification: "반려동물행동지도사 1급"
-        }
-      ];
-      
-      res.json({
-        success: true,
-        applications
-      });
-    } catch (error) {
-      console.error('훈련사 신청 조회 오류:', error);
-      res.status(500).json({
-        success: false,
-        message: '훈련사 신청 조회 중 오류가 발생했습니다.'
-      });
-    }
-  });
+  // ※ 중복 라우트 제거됨 - 메인 routes.ts의 데이터베이스 연동 API 사용
 
   // 훈련사 인증 기록 API
   app.get('/api/trainer-certifications', async (req, res) => {
