@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ImageOptimizer } from '../utils/performance-optimizer';
+import { ImageOptimizer, ImageCacheManager } from '../utils/image-optimizer';
 
 interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -112,18 +112,37 @@ export function GalleryLazyImage({
     if (!imgRef.current) return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
+      async ([entry]) => {
         if (entry.isIntersecting) {
-          // 이미지 최적화 적용
-          ImageOptimizer.getOptimalImageFormat(src)
-            .then(optimizedSrc => {
-              setOptimizedSrc(optimizedSrc);
+          try {
+            // 캐시에서 먼저 확인
+            const cachedImage = await ImageCacheManager.getCachedImage(src);
+            if (cachedImage) {
+              const cachedUrl = URL.createObjectURL(cachedImage);
+              setOptimizedSrc(cachedUrl);
               setIsInView(true);
-            })
-            .catch(() => {
-              setOptimizedSrc(src);
-              setIsInView(true);
-            });
+              observer.disconnect();
+              return;
+            }
+
+            // 이미지 최적화 적용
+            const optimizedSrc = await ImageOptimizer.getOptimalImageFormat(src);
+            setOptimizedSrc(optimizedSrc);
+            setIsInView(true);
+            
+            // 최적화된 이미지를 캐시에 저장
+            try {
+              const response = await fetch(optimizedSrc);
+              const blob = await response.blob();
+              await ImageCacheManager.cacheImage(src, blob);
+            } catch (cacheError) {
+              console.warn('Failed to cache image:', cacheError);
+            }
+          } catch (error) {
+            console.warn('Image optimization failed:', error);
+            setOptimizedSrc(src);
+            setIsInView(true);
+          }
           observer.disconnect();
         }
       },

@@ -551,6 +551,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAIErrorFixRoutes(app);
   registerAIUsageRoutes(app);
 
+  // 성능 모니터링 라우트 등록
+  const { performanceRoutes } = await import('./routes/performance');
+  app.use('/api/performance', performanceRoutes);
+
   // 기본 사용자 API 라우트
   app.get('/api/users', async (req, res) => {
     try {
