@@ -3760,6 +3760,148 @@ class HybridStorage extends Storage {
       throw error;
     }
   }
+
+  // PaymentService에서 필요한 수수료 관리 메서드들
+  async getFeePolicies(targetType: string, targetId?: number) {
+    try {
+      const { feePolicies } = await import('../shared/schema');
+      const { eq, and, isNull, or } = await import('drizzle-orm');
+      
+      const conditions = [
+        eq(feePolicies.targetType, targetType),
+        eq(feePolicies.isActive, true)
+      ];
+      
+      if (targetId) {
+        conditions.push(
+          or(
+            eq(feePolicies.targetId, targetId),
+            isNull(feePolicies.targetId)
+          )
+        );
+      } else {
+        conditions.push(isNull(feePolicies.targetId));
+      }
+      
+      const policies = await db.select().from(feePolicies).where(and(...conditions));
+      return policies.sort((a, b) => {
+        // 특정 대상 > 전체 적용 순서로 정렬
+        if (a.targetId && !b.targetId) return -1;
+        if (!a.targetId && b.targetId) return 1;
+        return 0;
+      });
+    } catch (error) {
+      console.error('수수료 정책 조회 오류:', error);
+      return [];
+    }
+  }
+  
+  async createTransaction(transactionData: any) {
+    try {
+      const { transactions } = await import('../shared/schema');
+      
+      const [result] = await db.insert(transactions).values(transactionData).returning({ id: transactions.id });
+      console.log(`[DB] 거래 내역 생성: ID ${result.id}`);
+      return result.id;
+    } catch (error) {
+      console.error('거래 내역 생성 오류:', error);
+      throw error;
+    }
+  }
+  
+  async getTransaction(transactionId: number) {
+    try {
+      const { transactions } = await import('../shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      const [transaction] = await db.select().from(transactions).where(eq(transactions.id, transactionId));
+      return transaction;
+    } catch (error) {
+      console.error('거래 내역 조회 오류:', error);
+      return null;
+    }
+  }
+  
+  async getTransactionsByPeriod(targetId: number, periodStart: Date, periodEnd: Date) {
+    try {
+      const { transactions } = await import('../shared/schema');
+      const { eq, and, gte, lte } = await import('drizzle-orm');
+      
+      const results = await db.select().from(transactions).where(
+        and(
+          eq(transactions.payeeId, targetId),
+          eq(transactions.status, 'completed'),
+          gte(transactions.createdAt, periodStart),
+          lte(transactions.createdAt, periodEnd)
+        )
+      );
+      
+      return results;
+    } catch (error) {
+      console.error('기간별 거래 내역 조회 오류:', error);
+      return [];
+    }
+  }
+  
+  async createSettlement(settlementData: any) {
+    try {
+      const { settlements } = await import('../shared/schema');
+      
+      const [result] = await db.insert(settlements).values(settlementData).returning({ id: settlements.id });
+      console.log(`[DB] 정산 내역 생성: ID ${result.id}`);
+      return result.id;
+    } catch (error) {
+      console.error('정산 내역 생성 오류:', error);
+      throw error;
+    }
+  }
+  
+  async createSettlementItem(itemData: any) {
+    try {
+      const { settlementItems } = await import('../shared/schema');
+      
+      const [result] = await db.insert(settlementItems).values(itemData).returning({ id: settlementItems.id });
+      return result.id;
+    } catch (error) {
+      console.error('정산 항목 생성 오류:', error);
+      throw error;
+    }
+  }
+  
+  async updateSettlement(settlementId: number, updates: any) {
+    try {
+      const { settlements } = await import('../shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      await db.update(settlements).set(updates).where(eq(settlements.id, settlementId));
+      return true;
+    } catch (error) {
+      console.error('정산 내역 수정 오류:', error);
+      return false;
+    }
+  }
+  
+  async updateRevenueStats(statsData: any) {
+    try {
+      // 매출 통계 업데이트 로직 (향후 별도 테이블로 관리 가능)
+      console.log('매출 통계 업데이트:', statsData);
+      return true;
+    } catch (error) {
+      console.error('매출 통계 업데이트 오류:', error);
+      return false;
+    }
+  }
+  
+  async createRefund(refundData: any) {
+    try {
+      // 환불 내역 생성 로직 (향후 별도 테이블로 관리 가능)
+      console.log('환불 내역 생성:', refundData);
+      return true;
+    } catch (error) {
+      console.error('환불 내역 생성 오류:', error);
+      return false;
+    }
+  }
 }
 
 const storage = new HybridStorage();

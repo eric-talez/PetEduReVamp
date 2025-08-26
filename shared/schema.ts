@@ -1277,3 +1277,94 @@ export const selectSubstituteMatchingLogSchema = createSelectSchema(substituteMa
 
 export const insertSubstituteClassNotificationSchema = createInsertSchema(substituteClassNotifications);
 export const selectSubstituteClassNotificationSchema = createSelectSchema(substituteClassNotifications);
+
+// 수수료 정책 테이블
+export const feePolicies = pgTable("fee_policies", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  feeType: varchar("fee_type", { length: 50 }).notNull(), // 'percentage', 'fixed', 'tiered'
+  baseRate: decimal("base_rate", { precision: 5, scale: 2 }).notNull(), // 기본 수수료율 또는 금액
+  minAmount: decimal("min_amount", { precision: 10, scale: 2 }), // 최소 수수료
+  maxAmount: decimal("max_amount", { precision: 10, scale: 2 }), // 최대 수수료
+  tierConfig: jsonb("tier_config"), // 차등 수수료 설정
+  targetType: varchar("target_type", { length: 50 }).notNull(), // 'trainer', 'institute', 'all'
+  targetId: integer("target_id"), // 특정 대상 ID (null이면 전체 적용)
+  isActive: boolean("is_active").default(true),
+  validFrom: timestamp("valid_from").defaultNow(),
+  validTo: timestamp("valid_to"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 거래 내역 테이블
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  transactionType: varchar("transaction_type", { length: 50 }).notNull(), // 'course_payment', 'consultation', 'product_sale'
+  referenceId: integer("reference_id").notNull(), // 강의, 상담, 상품 등의 ID
+  referenceType: varchar("reference_type", { length: 50 }).notNull(), // 'course', 'consultation', 'product'
+  payerId: integer("payer_id").notNull(), // 결제자 ID
+  payeeId: integer("payee_id").notNull(), // 수취인 ID (훈련사/기관)
+  grossAmount: decimal("gross_amount", { precision: 10, scale: 2 }).notNull(), // 총 결제금액
+  feeAmount: decimal("fee_amount", { precision: 10, scale: 2 }).notNull(), // 수수료
+  netAmount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(), // 실 지급액
+  currency: varchar("currency", { length: 3 }).default("KRW"),
+  paymentMethod: varchar("payment_method", { length: 50 }), // 'card', 'bank_transfer', 'virtual_account'
+  paymentProvider: varchar("payment_provider", { length: 50 }), // 'stripe', 'toss', 'kakao_pay'
+  externalTransactionId: varchar("external_transaction_id", { length: 100 }),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // 'pending', 'completed', 'failed', 'refunded'
+  feePolicyId: integer("fee_policy_id").references(() => feePolicies.id),
+  instituteId: integer("institute_id"), // 기관 거래인 경우
+  metadata: jsonb("metadata"), // 추가 정보
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 정산 내역 테이블
+export const settlements = pgTable("settlements", {
+  id: serial("id").primaryKey(),
+  settlementType: varchar("settlement_type", { length: 50 }).notNull(), // 'trainer', 'institute'
+  targetId: integer("target_id").notNull(), // 훈련사 또는 기관 ID
+  targetName: varchar("target_name", { length: 200 }).notNull(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  totalGrossAmount: decimal("total_gross_amount", { precision: 12, scale: 2 }).notNull(),
+  totalFeeAmount: decimal("total_fee_amount", { precision: 12, scale: 2 }).notNull(),
+  totalNetAmount: decimal("total_net_amount", { precision: 12, scale: 2 }).notNull(),
+  transactionCount: integer("transaction_count").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // 'pending', 'processing', 'completed', 'paid'
+  bankAccount: jsonb("bank_account"), // 계좌 정보
+  settlementDetails: jsonb("settlement_details"), // 상세 정산 내역
+  approvedBy: integer("approved_by"), // 승인자 ID
+  processedAt: timestamp("processed_at"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 정산 항목 테이블 (정산의 세부 항목들)
+export const settlementItems = pgTable("settlement_items", {
+  id: serial("id").primaryKey(),
+  settlementId: integer("settlement_id").references(() => settlements.id).notNull(),
+  transactionId: integer("transaction_id").references(() => transactions.id).notNull(),
+  itemName: varchar("item_name", { length: 200 }).notNull(),
+  itemType: varchar("item_type", { length: 50 }).notNull(), // 'course', 'consultation', 'product'
+  quantity: integer("quantity").notNull().default(1),
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  grossAmount: decimal("gross_amount", { precision: 10, scale: 2 }).notNull(),
+  feeAmount: decimal("fee_amount", { precision: 10, scale: 2 }).notNull(),
+  netAmount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(),
+  feeRate: decimal("fee_rate", { precision: 5, scale: 2 }), // 적용된 수수료율
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 타입 추출 
+export type FeePolicy = typeof feePolicies.$inferSelect;
+export type InsertFeePolicy = typeof feePolicies.$inferInsert;
+export type Transaction = typeof transactions.$inferSelect;
+export type InsertTransaction = typeof transactions.$inferInsert;
+export type Settlement = typeof settlements.$inferSelect;
+export type InsertSettlement = typeof settlements.$inferInsert;
+export type SettlementItem = typeof settlementItems.$inferSelect;
+export type InsertSettlementItem = typeof settlementItems.$inferInsert;
