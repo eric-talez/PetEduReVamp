@@ -2,50 +2,97 @@ import { Separator } from "@/components/ui/separator";
 
 export default function TalezTermsPage() {
   return (
-    <div className="p-6 max-w-3xl mx-auto text-sm text-gray-800 dark:text-gray-200">
-      <h1 className="text-xl font-bold mb-4">TALEZ 이용약관</h1>
-      <p>본 약관은 TALEZ 서비스를 이용함에 있어 회원의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+    <div className="p-6 max-w-4xl mx-auto text-sm text-gray-800 dark:text-gray-200">
+      <h1 className="text-2xl font-bold mb-6">📑 테일즈 이용약관 (모든 회원 공통)</h1>
       
-      <Separator className="my-4" />
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold mb-3">제1조 (목적)</h2>
+          <p className="leading-relaxed">
+            본 약관은 테일즈(이하 "회사")가 제공하는 온라인 플랫폼 서비스(영상 강의, 화상 수업, 알림장 기능 등)의 이용조건과 절차를 규정합니다.
+          </p>
+        </div>
+        
+        <Separator />
+        
+        <div>
+          <h2 className="text-lg font-semibold mb-3">제2조 (정의)</h2>
+          <div className="space-y-2">
+            <p><strong>"회원"</strong>: 본 약관에 동의하고 서비스를 이용하는 자</p>
+            <p><strong>"훈련소"</strong>: 훈련사를 고용·운영하는 기관</p>
+            <p><strong>"훈련사"</strong>: 회사의 승인을 받아 수업을 제공하는 자</p>
+            <p><strong>"견주"</strong>: 반려견을 보유한 일반 회원</p>
+            <p><strong>"알림장"</strong>: 훈련소·훈련사·견주 간의 소통 기능</p>
+          </div>
+        </div>
+        
+        <Separator />
+        
+        <div>
+          <h2 className="text-lg font-semibold mb-3">제3조 (서비스 내용)</h2>
+          <ul className="list-disc ml-6 space-y-1">
+            <li>영상 강의 제공 및 판매</li>
+            <li>화상 수업 연결</li>
+            <li>알림장 기능 제공</li>
+            <li>커뮤니티 게시판 운영</li>
+          </ul>
+        </div>
+        
+        <Separator />
+        
+        <div>
+          <h2 className="text-lg font-semibold mb-3">제4조 (회원의 의무)</h2>
+          <ul className="list-disc ml-6 space-y-1">
+            <li>허위 정보 제공 금지</li>
+            <li>알림장 및 커뮤니티 내 불법 콘텐츠 게시 금지</li>
+            <li>서비스 이용 시 타인의 권리 침해 금지</li>
+          </ul>
+        </div>
+        
+        <Separator />
+        
+        <div>
+          <h2 className="text-lg font-semibold mb-3">제5조 (회사의 의무)</h2>
+          <ul className="list-disc ml-6 space-y-1">
+            <li>안정적인 서비스 제공</li>
+            <li>개인정보 보호</li>
+            <li>온라인 서비스 결제·환불·정산 책임</li>
+          </ul>
+        </div>
+        
+        <Separator />
+        
+        <div>
+          <h2 className="text-lg font-semibold mb-3">제6조 (결제 및 환불)</h2>
+          <div className="space-y-2">
+            <p>온라인 서비스의 결제 및 환불은 "환불 규정"에 따릅니다.</p>
+            <p>회사는 훈련사·견주 간 오프라인에서 발생하는 모든 거래에는 관여하지 않습니다.</p>
+          </div>
+        </div>
+        
+        <Separator />
+        
+        <div>
+          <h2 className="text-lg font-semibold mb-3">제7조 (지적재산권)</h2>
+          <div className="space-y-2">
+            <p>강의 및 콘텐츠의 저작권은 제작자에게 귀속</p>
+            <p>회사는 서비스 홍보 목적 내에서 이용할 수 있음</p>
+          </div>
+        </div>
+        
+        <Separator />
+        
+        <div>
+          <h2 className="text-lg font-semibold mb-3">제8조 (면책)</h2>
+          <div className="space-y-2">
+            <p>회사는 플랫폼 제공자이며, 훈련사·견주 간 계약, 오프라인 수업, 환불 문제에 대해 책임지지 않습니다.</p>
+            <p className="font-medium">단, 온라인 서비스 결제 및 정산과 관련된 문제는 회사가 책임을 집니다.</p>
+          </div>
+        </div>
+      </div>
       
-      <h2 className="font-semibold mt-4">제1조 (목적)</h2>
-      <p>이 약관은 회사(이하 "회사")가 운영하는 반려견 훈련 플랫폼 TALEZ(이하 "서비스")의 이용조건, 절차 및 책임사항 등을 규정합니다.</p>
-      
-      <h2 className="font-semibold mt-4">제2조 (정의)</h2>
-      <p>이 약관에서 사용하는 용어는 다음과 같습니다: 
-        <br />① "회원"이라 함은 서비스를 이용하는 자를 말합니다. 
-        <br />② "훈련사"는 회사에 등록된 전문가입니다. 
-        <br />③ "견주"는 반려견을 등록하고 서비스를 이용하는 일반 회원입니다.
-      </p>
-      
-      <h2 className="font-semibold mt-4">제3조 (약관의 효력 및 변경)</h2>
-      <p>① 이 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력이 발생합니다.
-      <br />② 회사는 필요한 경우 약관을 변경할 수 있으며, 변경된 약관은 공지함으로써 효력이 발생합니다.
-      <br />③ 회원은 변경된 약관에 동의하지 않을 경우 회원 탈퇴를 요청할 수 있습니다.</p>
-      
-      <h2 className="font-semibold mt-4">제4조 (서비스 이용)</h2>
-      <p>① 회원은 본 서비스를 이용하여 반려견 훈련 서비스를 제공 받을 수 있습니다.
-      <br />② 서비스 이용 시간은 회사의 업무상 또는 기술상 특별한 경우를 제외하고는 연중무휴 1일 24시간 제공함을 원칙으로 합니다.
-      <br />③ 회사는 정기점검, 시스템 업데이트 등의 필요가 있는 경우 서비스 제공을 일시적으로 중단할 수 있습니다.</p>
-      
-      <h2 className="font-semibold mt-4">제5조 (서비스 변경 및 중단)</h2>
-      <p>① 회사는 필요한 경우 서비스의 전부 또는 일부를 변경할 수 있습니다.
-      <br />② 불가항력적인 사유로 서비스를 제공할 수 없는 경우에는 서비스의 제공을 중단할 수 있습니다.
-      <br />③ 서비스 중단의 경우 사전에 공지하되, 사전 공지가 불가능한 경우에는 사후 공지할 수 있습니다.</p>
-      
-      <h2 className="font-semibold mt-4">제6조 (개인정보보호)</h2>
-      <p>회사는 개인정보보호법 등 관련 법령에 따라 회원의 개인정보를 보호하기 위해 노력합니다. 개인정보의 보호 및 사용에 관해서는 개인정보처리방침을 따릅니다.</p>
-      
-      <h2 className="font-semibold mt-4">제7조 (이용계약의 해지)</h2>
-      <p>① 회원은 언제든지 회사에 해지 의사를 통지함으로써 이용계약을 해지할 수 있습니다.
-      <br />② 회사는 회원이 이 약관에서 정한 회원의 의무를 위반한 경우 사전 통보 후 이용계약을 해지할 수 있습니다.</p>
-      
-      <h2 className="font-semibold mt-4">제8조 (면책조항)</h2>
-      <p>① 회사는 천재지변 또는 이에 준하는 불가항력으로 인하여 서비스를 제공할 수 없는 경우에는 책임을 지지 않습니다.
-      <br />② 회사는 회원의 귀책사유로 인한 서비스 이용의 장애에 대하여 책임을 지지 않습니다.</p>
-      
-      <div className="mt-6 text-right">
-        <p>시행일: 2025년 5월 18일</p>
+      <div className="mt-8 pt-4 border-t text-right text-gray-500">
+        <p>시행일: 2025년 1월 26일</p>
       </div>
     </div>
   );

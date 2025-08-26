@@ -29,6 +29,10 @@ import LocationsPage from "./pages/locations";
 import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
 import ChatbotPage from "./pages/chatbot";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Refund from "./pages/Refund";
+import CertifiedPartner from "./pages/CertifiedPartner";
 import AdminMenuConfigPage from "./pages/admin/menu-config";
 import EventsPage from "./pages/events";
 import EventDetailPage from "./pages/events/event-detail";
@@ -93,6 +97,7 @@ import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loadi
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
+import Footer from "@/components/Footer";
 
 import { ThemeManager } from "@/components/ThemeManager";
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
@@ -1060,6 +1065,12 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 검색 */}
                   <Route path="/search" component={SearchPage} />
 
+                  {/* 약관 및 정책 페이지 */}
+                  <Route path="/terms" component={Terms} />
+                  <Route path="/privacy" component={Privacy} />
+                  <Route path="/refund" component={Refund} />
+                  <Route path="/certified-partner" component={CertifiedPartner} />
+
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
 
@@ -1133,7 +1144,8 @@ function AppLayout({ children }: { children: ReactNode }) {
               </ErrorBoundary>
             </main>
 
-
+            {/* Footer */}
+            <Footer />
           </div>
         </div>
 
