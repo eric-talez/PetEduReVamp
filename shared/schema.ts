@@ -1368,3 +1368,57 @@ export type Settlement = typeof settlements.$inferSelect;
 export type InsertSettlement = typeof settlements.$inferInsert;
 export type SettlementItem = typeof settlementItems.$inferSelect;
 export type InsertSettlementItem = typeof settlementItems.$inferInsert;
+
+// AI 사용량 추적 테이블
+export const aiUsageLog = pgTable("ai_usage_log", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  provider: varchar("provider", { length: 50 }).notNull(), // openai, anthropic, gemini, perplexity
+  model: varchar("model", { length: 100 }).notNull(), // gpt-4o, claude-3, gemini-1.5-pro 등
+  requestType: varchar("request_type", { length: 50 }).notNull(), // chat, analysis, training, health 등
+  inputTokens: integer("input_tokens").default(0),
+  outputTokens: integer("output_tokens").default(0),
+  totalTokens: integer("total_tokens").default(0),
+  cost: decimal("cost", { precision: 10, scale: 6 }).default("0"), // 요청당 비용 (달러)
+  requestData: jsonb("request_data"), // 요청 세부 정보
+  responseStatus: varchar("response_status", { length: 20 }).default("success"), // success, error, timeout
+  responseTime: integer("response_time"), // 밀리초
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// AI 사용량 일일 집계 테이블
+export const aiDailySummary = pgTable("ai_daily_summary", {
+  id: serial("id").primaryKey(),
+  date: varchar("date", { length: 10 }).notNull(), // YYYY-MM-DD
+  userId: integer("user_id").references(() => users.id),
+  provider: varchar("provider", { length: 50 }).notNull(),
+  totalRequests: integer("total_requests").default(0),
+  totalTokens: integer("total_tokens").default(0),
+  totalCost: decimal("total_cost", { precision: 10, scale: 2 }).default("0"),
+  avgResponseTime: integer("avg_response_time"), // 평균 응답시간 (밀리초)
+  errorCount: integer("error_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// AI 사용량 제한 설정 테이블
+export const aiUsageLimits = pgTable("ai_usage_limits", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  userRole: varchar("user_role", { length: 50 }).notNull(), // pet-owner, trainer, institute-admin, admin
+  dailyRequestLimit: integer("daily_request_limit").default(50),
+  dailyCostLimit: decimal("daily_cost_limit", { precision: 10, scale: 2 }).default("5.00"),
+  monthlyRequestLimit: integer("monthly_request_limit").default(1000),
+  monthlyCostLimit: decimal("monthly_cost_limit", { precision: 10, scale: 2 }).default("100.00"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// AI 사용량 테이블 타입 추출
+export type AiUsageLog = typeof aiUsageLog.$inferSelect;
+export type InsertAiUsageLog = typeof aiUsageLog.$inferInsert;
+export type AiDailySummary = typeof aiDailySummary.$inferSelect;
+export type InsertAiDailySummary = typeof aiDailySummary.$inferInsert;
+export type AiUsageLimits = typeof aiUsageLimits.$inferSelect;
+export type InsertAiUsageLimits = typeof aiUsageLimits.$inferInsert;

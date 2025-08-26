@@ -40,6 +40,7 @@ import { registerAnalyticsRoutes } from './routes/analytics';
 import { setupSocialRoutes } from './routes/social';
 import { registerCourseManagementRoutes } from './routes/course-management';
 import { registerAIErrorFixRoutes } from './routes/ai-error-fix';
+import { registerAIUsageRoutes } from './routes/ai-usage';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -548,6 +549,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI 에러 자동 수정 라우트 등록
   registerAIErrorFixRoutes(app);
+  registerAIUsageRoutes(app);
 
   // 기본 사용자 API 라우트
   app.get('/api/users', async (req, res) => {
