@@ -3,16 +3,16 @@ import { Separator } from "@/components/ui/separator";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-50 dark:bg-gray-900 border-t mt-20">
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="bg-gray-50 dark:bg-gray-900 border-t mt-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* 회사 정보 */}
           <div className="md:col-span-2">
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-3">
               <img src="/logo.svg" alt="TALEZ" className="h-8 w-auto mr-3" />
               <h3 className="text-lg font-semibold">TALEZ</h3>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
               AI 기반 맞춤형 반려동물 교육 플랫폼
             </p>
             
@@ -30,7 +30,7 @@ export default function Footer() {
           
           {/* 서비스 메뉴 */}
           <div>
-            <h4 className="font-semibold mb-4">서비스</h4>
+            <h4 className="font-semibold mb-3">서비스</h4>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li><Link href="/courses" className="hover:text-primary transition-colors">교육 과정</Link></li>
               <li><Link href="/trainers" className="hover:text-primary transition-colors">전문 훈련사</Link></li>
@@ -42,7 +42,7 @@ export default function Footer() {
           
           {/* 고객 지원 */}
           <div>
-            <h4 className="font-semibold mb-4">고객 지원</h4>
+            <h4 className="font-semibold mb-3">고객 지원</h4>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li><Link href="/help/faq" className="hover:text-primary transition-colors">자주 묻는 질문</Link></li>
               <li><Link href="/help/contact" className="hover:text-primary transition-colors">문의하기</Link></li>
@@ -52,7 +52,7 @@ export default function Footer() {
           </div>
         </div>
         
-        <Separator className="my-8" />
+        <Separator className="my-6" />
         
         {/* 하단 링크 및 저작권 */}
         <div className="flex flex-col md:flex-row justify-between items-center">
@@ -69,7 +69,7 @@ export default function Footer() {
         </div>
         
         {/* 인증 마크 및 추가 정보 */}
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col md:flex-row justify-between items-start text-xs text-gray-400 dark:text-gray-500">
             <div className="mb-4 md:mb-0">
               <p>• 테일즈는 통신판매중개자로서 거래당사자가 아니며, 판매자가 등록한 상품정보 및 거래에 대해 책임을 지지 않습니다.</p>
