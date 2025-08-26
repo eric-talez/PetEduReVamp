@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 메인 푸터 콘텐츠 */}
         <div className="py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* 회사 정보 */}
             <div className="md:col-span-1">
               <div className="flex items-center mb-4">
@@ -20,17 +20,6 @@ export default function Footer() {
                 <p>support@talez.com</p>
                 <p>1588-1234</p>
               </div>
-            </div>
-
-            {/* 서비스 */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">서비스</h3>
-              <ul className="space-y-3">
-                <li><Link href="/courses" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">교육 과정</Link></li>
-                <li><Link href="/trainers" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">전문 훈련사</Link></li>
-                <li><Link href="/shop" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">펫 용품</Link></li>
-                <li><Link href="/community" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">커뮤니티</Link></li>
-              </ul>
             </div>
 
             {/* 지원 */}
