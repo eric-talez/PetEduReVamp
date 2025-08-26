@@ -48,8 +48,7 @@ export default function Footer() {
         <div className="border-t border-gray-200 dark:border-gray-800 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-[10px] text-gray-500 dark:text-gray-400 mb-4 md:mb-0">
-              <p>© 2025 TALEZ Co., Ltd. All rights reserved.</p>
-              <p className="mt-1">사업자등록번호: 123-45-67890 | 통신판매업신고: 2025-서울강남-0001</p>
+              <p>© 2025 TALEZ Co., Ltd. All rights reserved. | 사업자등록번호: 123-45-67890 | 통신판매업신고: 2025-서울강남-0001</p>
             </div>
             
             <div className="flex space-x-6">
