@@ -121,42 +121,12 @@ export default function CourseDetail() {
     }
   };
 
-  const handleEnrollment = async () => {
+  const handleEnrollment = (testMode = false) => {
     if (!course) return;
 
-    try {
-      const response = await fetch(`/api/courses/${course.id}/purchase`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setIsEnrolled(true);
-        
-        toast({
-          title: "수강 신청 완료",
-          description: "강의를 성공적으로 구매했습니다!",
-          variant: "default"
-        });
-
-        // 학습 페이지로 이동 옵션
-        if (confirm('지금 바로 학습을 시작하시겠습니까?')) {
-          window.location.href = `/learn/${course.id}`;
-        }
-      } else {
-        throw new Error('결제 실패');
-      }
-    } catch (error) {
-      console.error('수강 신청 실패:', error);
-      toast({
-        title: "수강 신청 실패",
-        description: "결제 처리 중 오류가 발생했습니다.",
-        variant: "destructive"
-      });
-    }
+    // 결제 페이지로 이동 (테스트 모드 옵션 포함)
+    const checkoutUrl = `/checkout?courseId=${course.id}&type=course${testMode ? '&test=true' : ''}`;
+    window.location.href = checkoutUrl;
   };
 
   const getDifficultyLabel = (difficulty: string) => {
@@ -292,24 +262,37 @@ export default function CourseDetail() {
                 </div>
 
                 {!isPreviewMode && (
-                  <Button
-                    onClick={handleEnrollment}
-                    className="w-full mb-4"
-                    size="lg"
-                    disabled={isEnrolled}
-                  >
-                    {isEnrolled ? (
-                      <>
-                        <CheckCircle className="w-5 h-5 mr-2" />
-                        수강중
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingCart className="w-5 h-5 mr-2" />
-                        지금 수강하기
-                      </>
+                  <div className="space-y-3">
+                    <Button
+                      onClick={() => handleEnrollment(false)}
+                      className="w-full"
+                      size="lg"
+                      disabled={isEnrolled}
+                    >
+                      {isEnrolled ? (
+                        <>
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          수강중
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-5 h-5 mr-2" />
+                          지금 수강하기
+                        </>
+                      )}
+                    </Button>
+                    
+                    {!isEnrolled && (
+                      <Button
+                        onClick={() => handleEnrollment(true)}
+                        variant="outline"
+                        className="w-full text-sm"
+                        size="sm"
+                      >
+                        🧪 테스트 결제 (100원)
+                      </Button>
                     )}
-                  </Button>
+                  </div>
                 )}
 
                 {isPreviewMode && (

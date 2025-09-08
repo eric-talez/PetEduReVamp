@@ -78,4 +78,4 @@ syntax = "typescript"
 start = ["typescript-language-server", "--stdio"]
 
 [agent]
-integrations = ["javascript_stripe==1.0.0", "perplexity_v0==1.0.0"]
+integrations = ["javascript_stripe:1.0.0", "perplexity_v0:1.0.0"]

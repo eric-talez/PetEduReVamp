@@ -7,7 +7,7 @@ import { ArrowLeft, CreditCard, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
 
 interface CourseInfo {
   id: number;
@@ -113,7 +113,7 @@ const CheckoutForm: React.FC<{
           ) : (
             <>
               <CreditCard className="w-4 h-4 mr-2" />
-              {itemInfo.price.toLocaleString()}원 결제하기
+              {isTestMode ? '100' : itemInfo.price.toLocaleString()}원 결제하기
             </>
           )}
         </Button>
@@ -133,6 +133,7 @@ export default function Checkout() {
   const productName = searchParams.get('productName');
   const productPrice = searchParams.get('price');
   const itemType = searchParams.get('type') as 'course' | 'product';
+  const isTestMode = searchParams.get('test') === 'true';
   const [clientSecret, setClientSecret] = useState("");
 
   // 강의 정보 조회
@@ -142,15 +143,16 @@ export default function Checkout() {
   });
 
   // 강의 정보 추출
-  const courseInfo: CourseInfo | null = courseData?.curriculums?.find((course: any) => 
-    course.id === parseInt(courseId || '0')
-  ) ? {
-    id: parseInt(courseId || '0'),
-    title: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.title || '',
-    price: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.price || 0,
-    description: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.description || '',
-    duration: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.duration || 0,
-  } : null;
+  const courseInfo: CourseInfo | null = courseData && (courseData as any).curriculums ? 
+    (courseData as any).curriculums.find((course: any) => 
+      course.id === parseInt(courseId || '0')
+    ) ? {
+      id: parseInt(courseId || '0'),
+      title: (courseData as any).curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.title || '',
+      price: (courseData as any).curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.price || 0,
+      description: (courseData as any).curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.description || '',
+      duration: (courseData as any).curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.duration || 0,
+    } : null : null;
 
   // 상품 정보 생성
   const productInfo: ProductInfo | null = productId ? {
@@ -164,6 +166,9 @@ export default function Checkout() {
 
   useEffect(() => {
     if (itemInfo) {
+      // 테스트 모드일 경우 100원, 아니면 원래 가격
+      const paymentAmount = isTestMode ? 100 : itemInfo.price;
+      
       // Payment Intent 생성
       fetch('/api/create-payment-intent', {
         method: 'POST',
@@ -171,17 +176,18 @@ export default function Checkout() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: itemInfo.price * 100, // 원을 센트로 변환
+          amount: paymentAmount * 100, // 원을 센트로 변환
           currency: 'krw',
           itemType,
           itemId: itemInfo.id,
+          isTestMode,
         }),
       })
       .then(res => res.json())
       .then(data => setClientSecret(data.clientSecret))
       .catch(error => console.error('Payment Intent 생성 실패:', error));
     }
-  }, [itemInfo, itemType]);
+  }, [itemInfo, itemType, isTestMode]);
 
   if ((itemType === 'course' && isCourseLoading) || !itemInfo) {
     return (
@@ -219,6 +225,17 @@ export default function Checkout() {
                   : (itemInfo as ProductInfo).name
               }
             </h2>
+            {isTestMode && (
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded mt-2">
+                <p className="text-sm text-blue-700 font-semibold mb-2">🧪 테스트 결제 모드</p>
+                <div className="text-xs text-blue-600 space-y-1">
+                  <p>• 실제 결제되지 않습니다</p>
+                  <p>• 테스트 카드: <code className="bg-blue-100 px-1 rounded">4242 4242 4242 4242</code></p>
+                  <p>• 만료일: 아무 미래 날짜 (예: 12/25)</p>
+                  <p>• CVC: 아무 3자리 숫자 (예: 123)</p>
+                </div>
+              </div>
+            )}
             <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
               {itemType === 'course' 
                 ? (itemInfo as CourseInfo).description 
@@ -226,9 +243,16 @@ export default function Checkout() {
               }
             </p>
             <div className="flex justify-between items-center mt-3">
-              <span className="text-lg font-bold">
-                {itemInfo.price.toLocaleString()}원
-              </span>
+              <div>
+                <span className="text-lg font-bold">
+                  {isTestMode ? '100' : itemInfo.price.toLocaleString()}원
+                </span>
+                {isTestMode && (
+                  <div className="text-sm text-orange-600 mt-1">
+                    💡 테스트 모드: 100원 테스트 결제
+                  </div>
+                )}
+              </div>
               {itemType === 'course' && (
                 <span className="text-sm text-gray-500">
                   {(itemInfo as CourseInfo).duration}분
