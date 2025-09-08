@@ -27,7 +27,8 @@ interface ProductInfo {
 const CheckoutForm: React.FC<{
   itemInfo: CourseInfo | ProductInfo;
   itemType: 'course' | 'product';
-}> = ({ itemInfo, itemType }) => {
+  isTestMode?: boolean;
+}> = ({ itemInfo, itemType, isTestMode = false }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -82,6 +83,20 @@ const CheckoutForm: React.FC<{
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="p-4 mb-4 bg-yellow-50 border border-yellow-200 rounded">
+        <p className="text-sm text-yellow-800 mb-2">
+          결제 전 약관 및 정책을 확인해주세요.
+        </p>
+        <div className="flex gap-4">
+          <a href="/terms" target="_blank" className="text-blue-600 text-sm hover:underline">
+            📝 이용약관
+          </a>
+          <a href="/refund" target="_blank" className="text-blue-600 text-sm hover:underline">
+            💰 환불정책  
+          </a>
+        </div>
+      </div>
+      
       <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
         <PaymentElement />
       </div>
@@ -263,7 +278,7 @@ export default function Checkout() {
           
           {clientSecret && (
             <Elements options={options} stripe={stripePromise}>
-              <CheckoutForm itemInfo={itemInfo} itemType={itemType} />
+              <CheckoutForm itemInfo={itemInfo} itemType={itemType} isTestMode={isTestMode} />
             </Elements>
           )}
         </div>
