@@ -1,5 +1,6 @@
 import { Express } from "express";
 import { storage as storageInstance } from "../storage";
+import { csrfProtection } from '../middleware/csrf';
 
 export function registerInstituteRoutes(app: Express, storage: any) {
   // 기관 목록 조회
@@ -117,7 +118,7 @@ export function registerInstituteRoutes(app: Express, storage: any) {
   });
 
   // 예약 생성 API
-  app.post("/api/institutes/:id/reservations", async (req, res) => {
+  app.post("/api/institutes/:id/reservations", csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const reservationData = req.body;
@@ -196,7 +197,7 @@ export function registerInstituteRoutes(app: Express, storage: any) {
   });
 
   // 문의 생성 API
-  app.post("/api/institutes/:id/inquiries", async (req, res) => {
+  app.post("/api/institutes/:id/inquiries", csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const inquiryData = req.body;
@@ -245,7 +246,7 @@ export function registerInstituteRoutes(app: Express, storage: any) {
   });
 
   // 문의 상태 업데이트 API (관리자용)
-  app.patch("/api/institutes/:id/inquiries/:inquiryId", async (req, res) => {
+  app.patch("/api/institutes/:id/inquiries/:inquiryId", csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const inquiryId = parseInt(req.params.inquiryId);
@@ -296,7 +297,7 @@ export function registerInstituteRoutes(app: Express, storage: any) {
   });
 
   // 리뷰 생성 API
-  app.post("/api/institutes/:id/reviews", async (req, res) => {
+  app.post("/api/institutes/:id/reviews", csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const reviewData = req.body;
@@ -413,7 +414,7 @@ export function registerInstituteRoutes(app: Express, storage: any) {
   });
 
   // 전화 문의 로그 API
-  app.post("/api/institutes/:id/call-inquiries", async (req, res) => {
+  app.post("/api/institutes/:id/call-inquiries", csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const callData = req.body;

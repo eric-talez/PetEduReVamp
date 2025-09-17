@@ -17,9 +17,13 @@ import rateLimit from "express-rate-limit";
 import { setupPerformance } from "./performance";
 import { registerAdminRoutes } from "./routes/admin";
 import { registerPaymentIntegrationRoutes } from "./routes/payment-integration";
+import { setupAuth } from "./auth";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
+
+// Production proxy compatibility - CRITICAL for production deployment
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
@@ -48,7 +52,23 @@ app.use('/uploads', express.static('uploads'));
 // 로고 및 기타 정적 파일 제공
 app.use(express.static('public'));
 
-// Disable rate limiting in development to avoid proxy issues
+// 로그인 엔드포인트 보안 강화를 위한 레이트 리미터
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15분
+  max: 5, // 15분 동안 최대 5회 로그인 시도
+  message: { 
+    message: '너무 많은 로그인 시도입니다. 15분 후 다시 시도해주세요.',
+    code: 'TOO_MANY_LOGIN_ATTEMPTS' 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true
+});
+
+// 로그인 엔드포인트에만 적용
+app.use('/api/auth/login', loginLimiter);
+
+// 일반 API 레이트 리미터는 프로덕션에서만
 if (process.env.NODE_ENV === 'production') {
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -106,14 +126,16 @@ app.get('/attached_assets/:filename', (req, res) => {
   }
 });
 
-// Session configuration
+// Session configuration - 보안 강화
 app.use(session({
   secret: process.env.SESSION_SECRET || 'talez-super-secure-session-secret-2025-production-ready',
   resave: false,
   saveUninitialized: false,
+  name: 'talez.sid', // 기본 세션 이름 변경으로 보안 강화
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: 'lax', // OAuth 호환성을 위해 'strict'에서 'lax'로 변경
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
@@ -121,6 +143,9 @@ app.use(session({
 // Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Setup authentication system
+setupAuth(app);
 
 // Session to req.user middleware
 app.use((req: any, res: any, next: any) => {
@@ -135,7 +160,6 @@ app.use((req: any, res: any, next: any) => {
   }
 });
 
-// Register API routes BEFORE Vite middleware
 // Critical API routes that must be handled by Express, not Vite
 app.get('/api/users', async (req, res) => {
   try {
@@ -157,139 +181,8 @@ app.get('/api/admin/users', async (req, res) => {
   }
 });
 
-app.post('/api/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: '아이디와 비밀번호를 입력해주세요.'
-      });
-    }
-
-    // 테스트 계정 정보
-    const testAccounts = {
-      'test': { password: 'test123', role: 'pet-owner', name: '테스트 사용자' },
-      'testuser': { password: 'password123', role: 'pet-owner', name: '테스트 사용자' },
-      'trainer': { password: 'trainer123', role: 'trainer', name: '강동훈' },
-      'trainer01': { password: 'trainer123', role: 'trainer', name: '훈련사' },
-      'admin': { password: 'admin123', role: 'admin', name: '관리자' },
-      'institute': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' },
-      'institute01': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' }
-    };
-
-    const account = testAccounts[username as keyof typeof testAccounts];
-
-    if (!account || account.password !== password) {
-      return res.status(401).json({
-        success: false,
-        message: '아이디 또는 비밀번호가 일치하지 않습니다.'
-      });
-    }
-
-    // 세션에 사용자 정보 저장
-    req.session.user = {
-      id: username,
-      username,
-      role: account.role,
-      name: account.name
-    };
-
-    return res.json({
-      success: true,
-      user: {
-        id: username,
-        username,
-        role: account.role,
-        name: account.name
-      }
-    });
-
-  } catch (error) {
-    console.error('로그인 오류:', error);
-    return res.status(500).json({
-      success: false,
-      message: '로그인 처리 중 오류가 발생했습니다.'
-    });
-  }
-});
-
-// 회원가입 API
-app.post('/api/register', async (req, res) => {
-  try {
-    const { username, password, email, name, userRole, instituteCode } = req.body;
-
-    if (!username || !password || !email || !name) {
-      return res.status(400).json({
-        success: false,
-        message: '필수 정보를 모두 입력해주세요.'
-      });
-    }
-
-    // 사용자명 중복 확인 (기본 테스트 계정과 중복 방지)
-    const testAccounts = ['test', 'testuser', 'trainer', 'trainer01', 'admin', 'institute', 'institute01'];
-    if (testAccounts.includes(username)) {
-      return res.status(409).json({
-        success: false,
-        message: '이미 사용 중인 아이디입니다.'
-      });
-    }
-
-    // 새 사용자 데이터 생성
-    const newUser = {
-      id: username,
-      username,
-      email,
-      name,
-      role: userRole || 'pet-owner',
-      password, // 실제 환경에서는 해시 처리 필요
-      instituteCode: userRole === 'institute-admin' ? instituteCode : null,
-      createdAt: new Date().toISOString(),
-      isActive: true
-    };
-
-    // 메모리 저장소에 사용자 추가 (실제로는 storage.createUser 사용)
-    console.log('새 사용자 등록:', newUser);
-
-    return res.json({
-      success: true,
-      message: '회원가입이 완료되었습니다.',
-      user: {
-        id: newUser.id,
-        username: newUser.username,
-        role: newUser.role,
-        name: newUser.name
-      }
-    });
-
-  } catch (error) {
-    console.error('회원가입 오류:', error);
-    return res.status(500).json({
-      success: false,
-      message: '회원가입 처리 중 오류가 발생했습니다.'
-    });
-  }
-});
-
-// 로그아웃 API
-app.post('/api/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ success: false, message: '로그아웃 실패' });
-    }
-    res.clearCookie('connect.sid');
-    return res.json({ success: true, message: '로그아웃 성공' });
-  });
-});
-
-// 사용자 정보 확인 API
-app.get('/api/user', (req, res) => {
-  if (req.session.user) {
-    return res.json(req.session.user);
-  }
-  return res.status(401).json({ message: '인증되지 않은 사용자' });
-});
+// 인증 관련 라우트는 setupAuth()에서 처리됨
+// /api/auth/login, /api/auth/register, /api/auth/logout, /api/auth/me
 
 // Graceful shutdown handling
 process.on('SIGTERM', () => {

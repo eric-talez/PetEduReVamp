@@ -48,6 +48,7 @@ import { WorkflowEngine } from './workflow-engine';
 import { uploadDocuments } from './middleware/upload';
 import xlsx from 'xlsx';
 import { contentCrawler } from './content-crawler';
+import { csrfProtection } from './middleware/csrf';
 
 // 유료/무료 정보를 포함한 엑셀 파일에서 커리큘럼 정보 추출 함수
 function parseExcelCurriculumWithPricing(data: any[], filename: string) {
@@ -357,23 +358,43 @@ function parseExcelCurriculum(data: any[], filename: string) {
   }
 }
 
-// requireAuth 미들웨어 함수
+// requireAuth 미들웨어 함수 - 보안 강화
 function requireAuth(role?: string) {
   return (req: any, res: any, next: any) => {
-    // 개발 환경에서는 간단한 인증 체크
-    if (process.env.NODE_ENV === 'development') {
-      req.user = { id: 'admin', role: role || 'admin' };
+    // Passport 인증 확인
+    if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+      if (role && req.user.role !== role) {
+        return res.status(403).json({ 
+          error: '접근 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS',
+          requiredRole: role,
+          userRole: req.user.role
+        });
+      }
       return next();
     }
 
-    // 실제 프로덕션에서는 세션/토큰 기반 인증 구현
-    const userRole = req.session?.user?.role || 'guest';
-
-    if (role && userRole !== role) {
-      return res.status(403).json({ error: '권한이 없습니다.' });
+    // 세션 인증 확인 (호환성 유지)
+    if (req.session?.user) {
+      const userRole = req.session.user.role;
+      if (role && userRole !== role) {
+        return res.status(403).json({ 
+          error: '접근 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS',
+          requiredRole: role,
+          userRole: userRole
+        });
+      }
+      // req.user 설정 (하위 호환성)
+      req.user = req.session.user;
+      return next();
     }
 
-    next();
+    // 인증되지 않음
+    return res.status(401).json({ 
+      error: '인증이 필요합니다. 로그인 후 다시 시도해주세요.',
+      code: 'AUTHENTICATION_REQUIRED'
+    });
   };
 }
 
@@ -398,145 +419,9 @@ if (stripeSecretKey) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
-  // 인증 API 라우트
-  app.post('/api/login', async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({
-          success: false,
-          message: '아이디와 비밀번호를 입력해주세요.'
-        });
-      }
+  // 인증 관련 라우트는 setupAuth()에서 처리됩니다 (/api/auth/* 경로)
 
-      // 테스트 계정 정보
-      const testAccounts = {
-        'test': { password: 'test123', role: 'pet-owner', name: '테스트 사용자' },
-        'testuser': { password: 'password123', role: 'pet-owner', name: '테스트 사용자' },
-        'trainer': { password: 'trainer123', role: 'trainer', name: '강동훈' },
-        'trainer01': { password: 'trainer123', role: 'trainer', name: '훈련사' },
-        'admin': { password: 'admin123', role: 'admin', name: '관리자' },
-        'institute': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' },
-        'institute01': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' }
-      };
-
-      const account = testAccounts[username as keyof typeof testAccounts];
-      
-      if (!account || account.password !== password) {
-        return res.status(401).json({
-          success: false,
-          message: '아이디 또는 비밀번호가 일치하지 않습니다.'
-        });
-      }
-
-      // 세션에 사용자 정보 저장
-      req.session.user = {
-        id: username,
-        username,
-        email: account.email || `${username}@talez.com`,
-        role: account.role,
-        name: account.name
-      };
-
-      return res.json({
-        success: true,
-        user: {
-          id: username,
-          username,
-          role: account.role,
-          name: account.name
-        }
-      });
-
-    } catch (error) {
-      console.error('로그인 오류:', error);
-      return res.status(500).json({
-        success: false,
-        message: '로그인 처리 중 오류가 발생했습니다.'
-      });
-    }
-  });
-
-  // 회원가입 API
-  app.post('/api/register', async (req, res) => {
-    try {
-      const { username, password, email, name, phoneNumber, birthDate, gender, age, userRole, instituteCode } = req.body;
-
-      if (!username || !password || !email || !name || !phoneNumber || !birthDate || !gender) {
-        return res.status(400).json({
-          success: false,
-          message: '필수 정보를 모두 입력해주세요.'
-        });
-      }
-
-      // 사용자명 중복 확인 (기본 테스트 계정과 중복 방지)
-      const testAccounts = ['test', 'testuser', 'trainer', 'trainer01', 'admin', 'institute', 'institute01'];
-      if (testAccounts.includes(username)) {
-        return res.status(409).json({
-          success: false,
-          message: '이미 사용 중인 아이디입니다.'
-        });
-      }
-
-      // 새 사용자 데이터 생성
-      const newUser = {
-        id: username,
-        username,
-        email,
-        name,
-        phoneNumber,
-        birthDate,
-        age: age || new Date().getFullYear() - new Date(birthDate).getFullYear(),
-        gender,
-        role: userRole || 'pet-owner',
-        password, // 실제 환경에서는 해시 처리 필요
-        instituteCode: userRole === 'institute-admin' ? instituteCode : null,
-        createdAt: new Date().toISOString(),
-        isActive: true
-      };
-
-      // 메모리 저장소에 사용자 추가 (실제로는 storage.createUser 사용)
-      console.log('새 사용자 등록:', newUser);
-
-      return res.json({
-        success: true,
-        message: '회원가입이 완료되었습니다.',
-        user: {
-          id: newUser.id,
-          username: newUser.username,
-          role: newUser.role,
-          name: newUser.name
-        }
-      });
-
-    } catch (error) {
-      console.error('회원가입 오류:', error);
-      return res.status(500).json({
-        success: false,
-        message: '회원가입 처리 중 오류가 발생했습니다.'
-      });
-    }
-  });
-
-  // 로그아웃 API
-  app.post('/api/logout', (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ success: false, message: '로그아웃 실패' });
-      }
-      res.clearCookie('connect.sid');
-      return res.json({ success: true, message: '로그아웃 성공' });
-    });
-  });
-
-  // 사용자 정보 확인 API
-  app.get('/api/user', (req, res) => {
-    if (req.session.user) {
-      return res.json(req.session.user);
-    }
-    return res.status(401).json({ message: '인증되지 않은 사용자' });
-  });
+  // 인증 API들 (로그인, 회원가입, 로그아웃)은 setupAuth()에서 처리됩니다
 
   // 대시보드 라우트 등록
   registerDashboardRoutes(app);
@@ -602,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 - 기관 등록 (구독 플랜 포함)
-  app.post('/api/admin/institutes', (req, res) => {
+  app.post('/api/admin/institutes', csrfProtection, (req, res) => {
     try {
       const {
         name,
@@ -818,7 +703,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 - 기관 구독 변경
-  app.put('/api/admin/institutes/:id/subscription', (req, res) => {
+  app.put('/api/admin/institutes/:id/subscription', csrfProtection, (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const { subscriptionPlan } = req.body;
@@ -863,7 +748,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 - 기관 정보 수정
-  app.put('/api/admin/institutes/:id', (req, res) => {
+  app.put('/api/admin/institutes/:id', csrfProtection, (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const updateData = req.body;
@@ -896,7 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 기관 구독 결제 처리
-  app.post('/api/institutes/:id/payment', async (req, res) => {
+  app.post('/api/institutes/:id/payment', csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const { paymentMethod, cardInfo } = req.body;
@@ -8726,26 +8611,7 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // Auth check endpoint
-  app.get("/api/auth/check", (req, res) => {
-    try {
-      if (req.isAuthenticated && req.isAuthenticated()) {
-        res.json({ 
-          authenticated: true, 
-          user: {
-            id: req.user?.id,
-            role: req.user?.role,
-            name: req.user?.name
-          }
-        });
-      } else {
-        res.json({ authenticated: false });
-      }
-    } catch (error) {
-      console.error('Auth check error:', error);
-      res.status(500).json({ error: 'Authentication check failed' });
-    }
-  });
+  // Auth check endpoint은 setupAuth()에서 처리됩니다
 
   // TALEZ 인증 훈련사 API - 주석 처리됨 (중복 엔드포인트 방지)
   /*
@@ -10469,6 +10335,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
   }).catch(error => {
     console.error('[Database Test] 라우트 등록 실패:', error);
   });
+
+  // 모든 인증 API들은 setupAuth()에서 처리됩니다 (/api/auth/login, /api/auth/logout, /api/auth/me)
 
   const httpServer = createServer(app);
   return httpServer;

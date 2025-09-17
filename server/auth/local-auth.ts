@@ -22,6 +22,26 @@ export function setupLocalAuth() {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        // 개발 환경에서만 테스트 계정 허용
+        if (process.env.NODE_ENV === 'development') {
+          const testAccounts = getTestAccounts();
+          const testUser = testAccounts[username];
+          
+          if (testUser && testUser.password === password) {
+            console.log(`테스트 계정 로그인 성공: '${username}'`);
+            return done(null, {
+              id: testUser.id,
+              username,
+              name: testUser.name,
+              email: testUser.email,
+              role: testUser.role,
+              password: await hashPassword(password), // 보안을 위해 해시된 비밀번호 저장
+              verified: true
+            });
+          }
+        }
+        
+        // 실제 사용자 조회 (프로덕션 환경 또는 등록된 사용자)
         const user = await storage.getUserByUsername(username);
         
         if (!user) {
@@ -45,4 +65,45 @@ export function setupLocalAuth() {
       }
     })
   );
+}
+
+// 환경 변수 기반 테스트 계정 정보
+function getTestAccounts() {
+  return {
+    'admin': { 
+      password: process.env.TEST_ADMIN_PASSWORD || 'change-this-password-in-production', 
+      role: 'admin', 
+      name: '관리자',
+      email: 'admin@talez.com',
+      id: 1
+    },
+    '관리자': { 
+      password: process.env.TEST_ADMIN_PASSWORD || 'change-this-password-in-production', 
+      role: 'admin', 
+      name: '관리자',
+      email: 'admin@talez.com',
+      id: 1
+    },
+    'trainer': { 
+      password: process.env.TEST_TRAINER_PASSWORD || 'change-this-password-in-production', 
+      role: 'trainer', 
+      name: '강동훈',
+      email: 'donghoong@wangzzang.com',
+      id: 2
+    },
+    '강동훈': { 
+      password: process.env.TEST_TRAINER_PASSWORD || 'change-this-password-in-production', 
+      role: 'trainer', 
+      name: '강동훈',
+      email: 'donghoong@wangzzang.com',
+      id: 2
+    },
+    'test': { 
+      password: process.env.TEST_USER_PASSWORD || 'change-this-password-in-production', 
+      role: 'pet-owner', 
+      name: '테스트 사용자',
+      email: 'test@test.com',
+      id: 3
+    }
+  };
 }

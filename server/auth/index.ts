@@ -11,6 +11,7 @@ import { setupSocialAuth } from './social-auth';
 import { storage } from '../storage';
 import { User as SelectUser } from '@shared/schema';
 import { UserRole } from '@shared/schema';
+import { csrfProtection, getCSRFToken } from '../middleware/csrf';
 
 // JWT 설정
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -133,7 +134,10 @@ export function setupAuth(app: Express, sessionStore?: session.Store) {
 function setupAuthRoutes(app: Express) {
   const router = Router();
   
-  // 사용자 인증 상태 확인
+  // CSRF 토큰 조회 엔드포인트
+  router.get('/csrf', getCSRFToken);
+  
+  // 사용자 인증 상태 확인 (GET 요청이므로 CSRF 보호 불필요)
   router.get('/me', (req, res) => {
     console.log('세션 확인 - SessionID:', req.sessionID);
     console.log('세션 확인 - 전체 세션:', req.session);
@@ -149,8 +153,8 @@ function setupAuthRoutes(app: Express) {
     return res.json(req.user);
   });
   
-  // JWT 로그인 API
-  router.post('/login', (req, res, next) => {
+  // JWT 로그인 API (CSRF 보호 적용)
+  router.post('/login', csrfProtection, (req, res, next) => {
     passport.authenticate('local', (err: Error, user: any, info: { message?: string }) => {
       if (err) {
         console.error('로그인 오류:', err);
@@ -199,8 +203,8 @@ function setupAuthRoutes(app: Express) {
     })(req, res, next);
   });
   
-  // 로그아웃 API
-  router.post('/logout', (req, res) => {
+  // 로그아웃 API (CSRF 보호 적용)
+  router.post('/logout', csrfProtection, (req, res) => {
     const wasAuthenticated = req.isAuthenticated();
     
     req.logout((err) => {
@@ -219,8 +223,8 @@ function setupAuthRoutes(app: Express) {
     });
   });
   
-  // 회원가입 API
-  router.post('/register', async (req, res) => {
+  // 회원가입 API (CSRF 보호 적용)
+  router.post('/register', csrfProtection, async (req, res) => {
     try {
       const { username, password, email, name } = req.body;
       

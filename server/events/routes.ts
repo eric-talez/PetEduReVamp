@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { storage } from "../storage";
+import { csrfProtection } from '../middleware/csrf';
 
 // 이벤트 스키마 정의
 const eventSchema = z.object({
@@ -56,7 +57,7 @@ export function registerEventRoutes(app: Express) {
   app.get("/api/events/:id", async (req, res) => {
     try {
       const eventId = parseInt(req.params.id);
-      const event = await storage.getEvent(eventId);
+      const event = await storage.getEventById(eventId);
       
       if (!event) {
         return res.status(404).json({ 
@@ -76,7 +77,7 @@ export function registerEventRoutes(app: Express) {
   });
 
   // 이벤트 생성 (관리자 또는 훈련사만 가능)
-  app.post("/api/events", async (req, res) => {
+  app.post("/api/events", csrfProtection, async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ 
@@ -122,7 +123,7 @@ export function registerEventRoutes(app: Express) {
   });
 
   // 이벤트 참가 신청
-  app.post("/api/events/:id/attend", async (req, res) => {
+  app.post("/api/events/:id/attend", csrfProtection, async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ 
@@ -134,7 +135,7 @@ export function registerEventRoutes(app: Express) {
       const eventId = parseInt(req.params.id);
       const userId = req.session.user.id;
       
-      const event = await storage.getEvent(eventId);
+      const event = await storage.getEventById(eventId);
       
       if (!event) {
         return res.status(404).json({ 

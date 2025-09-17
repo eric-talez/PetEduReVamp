@@ -3738,9 +3738,10 @@ class HybridStorage extends Storage {
     }
   }
 
-  async getAllCurriculums(): Promise<any[]> {
+  getAllCurriculums(): any[] {
     try {
-      return await db.select().from(curriculums);
+      // 기본 Storage 클래스의 샘플 데이터 사용 (동기 호환)
+      return super.getAllCurriculums();
     } catch (error) {
       console.error('[DB] 커리큘럼 조회 오류:', error);
       return [];
@@ -3997,6 +3998,38 @@ class HybridStorage extends Storage {
 
   getBannersByType(type: string) {
     return this.banners.filter(banner => banner.type === type && banner.isActive);
+  }
+
+  // 이벤트 관련 메서드들 추가 (event routes에서 사용)
+  async checkEventAttendance(userId: number, eventId: number): Promise<boolean> {
+    // 실제 구현에서는 데이터베이스에서 참석 여부 확인
+    // 임시로 false 반환 (아직 참석하지 않음)
+    return false;
+  }
+
+  async attendEvent(userId: number, eventId: number): Promise<any> {
+    // 실제 구현에서는 데이터베이스에 참석 기록 저장
+    // 임시 참석 기록 반환
+    return {
+      id: Date.now(),
+      userId,
+      eventId,
+      attendedAt: new Date().toISOString(),
+      status: 'attending'
+    };
+  }
+
+  async getEventsByRegion(region: string): Promise<any[]> {
+    // 지역별 이벤트 필터링 (location.address 기반)
+    return this.events.filter(event => 
+      event.location && event.location.address && 
+      event.location.address.includes(region)
+    );
+  }
+
+  async getEventsByCategory(category: string): Promise<any[]> {
+    // 카테고리별 이벤트 필터링
+    return this.events.filter(event => event.category === category);
   }
 }
 

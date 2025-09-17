@@ -1,7 +1,8 @@
 import { Express } from 'express';
 import { z } from 'zod';
-import { IStorage } from '../storage';
+import { storage } from '../storage';
 import { NotificationService } from './service';
+import { csrfProtection } from '../middleware/csrf';
 
 // 알림 관련 API 라우트 등록
 export function registerNotificationRoutes(app: Express, notificationService: NotificationService) {
@@ -36,7 +37,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   app.get('/api/notifications', async (req, res) => {
     // 개발환경에서는 기본 사용자 설정
     const user = req.user || (process.env.NODE_ENV === 'development' ? 
-      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null);
+      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null) as { id: number; username: string; name: string; role: string } | null;
     
     if (!user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
@@ -86,7 +87,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   app.get('/api/notifications/:id', async (req, res) => {
     // 개발환경에서는 기본 사용자 설정
     const user = req.user || (process.env.NODE_ENV === 'development' ? 
-      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null);
+      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null) as { id: number; username: string; name: string; role: string } | null;
     
     if (!user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
@@ -104,7 +105,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
         type: 'info' as const,
         timestamp: new Date(),
         isRead: false,
-        userId: user.id,
+        userId: (user as any).id,
         linkTo: `/notifications/${notificationId}`,
         metadata: { category: 'system' }
       };
@@ -117,10 +118,10 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   });
   
   // 알림 읽음 표시 API
-  app.patch('/api/notifications/:id/read', async (req, res) => {
+  app.patch('/api/notifications/:id/read', csrfProtection, async (req, res) => {
     // 개발환경에서는 기본 사용자 설정
     const user = req.user || (process.env.NODE_ENV === 'development' ? 
-      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null);
+      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null) as { id: number; username: string; name: string; role: string } | null;
     
     if (!user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
@@ -139,7 +140,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   });
   
   // 모든 알림 읽음 표시 API
-  app.patch('/api/notifications/read-all', async (req, res) => {
+  app.patch('/api/notifications/read-all', csrfProtection, async (req, res) => {
     if (!req.session.user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
     }
@@ -155,7 +156,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   });
   
   // 알림 삭제 API
-  app.delete('/api/notifications/:id', async (req, res) => {
+  app.delete('/api/notifications/:id', csrfProtection, async (req, res) => {
     if (!req.session.user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
     }
@@ -173,7 +174,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   });
   
   // 모든 알림 삭제 API
-  app.delete('/api/notifications', async (req, res) => {
+  app.delete('/api/notifications', csrfProtection, async (req, res) => {
     if (!req.session.user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
     }
@@ -190,7 +191,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   
   // 테스트용 알림 발송 API (개발 환경에서만 활성화)
   if (process.env.NODE_ENV !== 'production') {
-    app.post('/api/test/notifications', async (req, res) => {
+    app.post('/api/test/notifications', csrfProtection, async (req, res) => {
       if (!req.session.user) {
         return res.status(401).json({ message: '인증이 필요합니다.' });
       }

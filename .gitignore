@@ -32,3 +32,43 @@ out/
 # 배포 관련
 .deploy/
 deploy.log
+
+# 보안 관련 파일 (세션, 쿠키, 인증 토큰)
+*cookies*.txt
+*session*.txt
+*auth*.txt
+*.session
+*.cookie
+session_*
+cookies_*
+auth_*
+token_*
+csrf_*
+*.csrf
+
+# 민감한 정보가 포함될 수 있는 파일들
+*.credentials
+*.secrets
+*.keys
+*.pem
+*.p12
+*.pfx
+
+# 환경별 설정 파일
+.env.*
+config.local.*
+settings.local.*
+
+# 세션 스토어 파일
+sessions/
+session-store/
+*.session-store
+
+# JWT 키 파일
+jwt-keys/
+*.jwt-key
+
+# 백업 파일 중 민감한 정보 포함 가능성
+*.backup
+*.bak
+backup_*
