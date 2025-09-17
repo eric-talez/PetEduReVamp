@@ -22,6 +22,14 @@ import {
   createPetSchema, 
   updatePetValidationSchema, 
   pets,
+  // 커리큘럼/강의 관련 스키마 추가
+  curriculums,
+  insertCurriculumSchema,
+  updateCurriculumSchema,
+  selectCurriculumSchema,
+  insertCourseSchema,
+  updateCourseSchema,
+  selectCourseSchema,
   notifications,
   createNotificationSchema,
   updateNotificationSchema,
@@ -426,16 +434,16 @@ function parseExcelCurriculum(data: any[], filename: string) {
   }
 }
 
-// requireAuth 미들웨어 함수 - 보안 강화
-function requireAuth(role?: string) {
+// requireAuth 미들웨어 함수 - RBAC 다중 역할 지원
+function requireAuth(...allowedRoles: string[]) {
   return (req: any, res: any, next: any) => {
     // Passport 인증 확인
     if (req.isAuthenticated && req.isAuthenticated() && req.user) {
-      if (role && req.user.role !== role) {
+      if (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role)) {
         return res.status(403).json({ 
-          error: '접근 권한이 없습니다.',
+          error: `다음 권한 중 하나가 필요합니다: ${allowedRoles.join(', ')}`,
           code: 'INSUFFICIENT_PERMISSIONS',
-          requiredRole: role,
+          allowedRoles: allowedRoles,
           userRole: req.user.role
         });
       }
@@ -445,11 +453,11 @@ function requireAuth(role?: string) {
     // 세션 인증 확인 (호환성 유지)
     if (req.session?.user) {
       const userRole = req.session.user.role;
-      if (role && userRole !== role) {
+      if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
         return res.status(403).json({ 
-          error: '접근 권한이 없습니다.',
+          error: `다음 권한 중 하나가 필요합니다: ${allowedRoles.join(', ')}`,
           code: 'INSUFFICIENT_PERMISSIONS',
-          requiredRole: role,
+          allowedRoles: allowedRoles,
           userRole: userRole
         });
       }
@@ -12614,6 +12622,425 @@ export function registerTrainerCertificationRoutes(app: Express) {
   console.log('[Logo API] 로고 설정 API 엔드포인트가 등록되었습니다.');
   console.log('  - PUT /api/admin/logo (관리자 전용, CSRF 보호, 스키마 검증)');  
   console.log('  - GET /api/logo (공개 접근, 표준화된 응답)');
+
+  // =============================================================================
+  // 커리큘럼 CRUD API (표준화된 버전)
+  // =============================================================================
+  
+  /**
+   * POST /api/admin/curriculums - 커리큘럼 생성
+   * 
+   * 보안: requireAuth('admin') + csrfProtection
+   * 검증: validateBody(insertCurriculumSchema)
+   * 소유권: 관리자는 모든 생성 가능, 기관은 자신 것만 생성 가능
+   */
+  app.post('/api/admin/curriculums',
+    requireAuth('admin', 'institute'),
+    csrfProtection,
+    validateBody(insertCurriculumSchema.omit({ id: true, createdAt: true, updatedAt: true })),
+    async (req, res) => {
+      try {
+        console.log('[Curriculum API] 커리큘럼 생성 요청:', req.body);
+        
+        // 권한 확인: 관리자가 아니면 creatorId를 현재 사용자로 제한
+        const curriculumData = {
+          ...req.body,
+          creatorId: req.user?.role === 'admin' ? req.body.creatorId || req.user?.id : req.user?.id
+        };
+        
+        const curriculum = await storage.createCurriculum(curriculumData);
+        
+        console.log('[Curriculum API] 커리큘럼 생성 성공:', curriculum.title);
+        
+        return res.success(
+          curriculum,
+          '커리큘럼이 성공적으로 생성되었습니다.',
+          201
+        );
+        
+      } catch (error) {
+        console.error('[Curriculum API] 커리큘럼 생성 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '커리큘럼 생성 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * PATCH /api/admin/curriculums/:id - 커리큘럼 수정
+   * 
+   * 보안: requireAuth() + csrfProtection + 소유권 검증
+   * 검증: validateBody(updateCurriculumSchema)
+   */
+  app.patch('/api/admin/curriculums/:id',
+    requireAuth('admin', 'institute'),
+    csrfProtection,
+    validateBody(updateCurriculumSchema),
+    async (req, res) => {
+      try {
+        const curriculumId = req.params.id;
+        console.log('[Curriculum API] 커리큘럼 수정 요청:', curriculumId, req.body);
+        
+        // 권한 기반 커리큘럼 수정
+        const updatedCurriculum = await storage.updateCurriculumWithPermission(curriculumId, req.body, req.user);
+        
+        // 에러 체크 - 새로운 권한 기반 메서드의 에러 응답 처리
+        if (updatedCurriculum && updatedCurriculum.error) {
+          if (updatedCurriculum.error === 'RESOURCE_NOT_FOUND') {
+            return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, updatedCurriculum.message);
+          } else if (updatedCurriculum.error === 'INSUFFICIENT_PERMISSIONS') {
+            return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, updatedCurriculum.message);
+          }
+        }
+        
+        if (!updatedCurriculum || updatedCurriculum.error) {
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '커리큘럼 수정에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Curriculum API] 커리큘럼 수정 성공:', updatedCurriculum.title);
+        
+        return res.success(
+          updatedCurriculum,
+          '커리큘럼이 성공적으로 수정되었습니다.'
+        );
+        
+      } catch (error) {
+        console.error('[Curriculum API] 커리큘럼 수정 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '커리큘럼 수정 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * DELETE /api/admin/curriculums/:id - 커리큘럼 삭제
+   * 
+   * 보안: requireAuth() + csrfProtection + 소유권 검증
+   */
+  app.delete('/api/admin/curriculums/:id',
+    requireAuth('admin', 'institute'),
+    csrfProtection,
+    async (req, res) => {
+      try {
+        const curriculumId = req.params.id;
+        console.log('[Curriculum API] 커리큘럼 삭제 요청:', curriculumId);
+        
+        // 권한 기반 커리큘럼 삭제
+        const deleteResult = await storage.deleteCurriculumWithPermission(curriculumId, req.user);
+        
+        // 에러 체크 - 새로운 권한 기반 메서드의 에러 응답 처리
+        if (!deleteResult.success) {
+          if (deleteResult.error === 'RESOURCE_NOT_FOUND') {
+            return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, deleteResult.message);
+          } else if (deleteResult.error === 'INSUFFICIENT_PERMISSIONS') {
+            return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, deleteResult.message);
+          }
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            deleteResult.message || '커리큘럼 삭제에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Curriculum API] 커리큘럼 삭제 성공:', curriculumId);
+        
+        return res.success(
+          { id: curriculumId },
+          '커리큘럼이 성공적으로 삭제되었습니다.'
+        );
+        
+      } catch (error) {
+        console.error('[Curriculum API] 커리큘럼 삭제 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '커리큘럼 삭제 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * POST /api/admin/curriculums/:id/publish - 커리큘럼 게시/비게시
+   * 
+   * 보안: requireAuth() + csrfProtection + 소유권 검증
+   */
+  app.post('/api/admin/curriculums/:id/publish',
+    requireAuth('admin', 'institute'),
+    csrfProtection,
+    async (req, res) => {
+      try {
+        const curriculumId = req.params.id;
+        const { isPublic = true } = req.body;
+        console.log('[Curriculum API] 커리큘럼 게시 상태 변경 요청:', curriculumId, isPublic);
+        
+        // 소유권 검증: 기존 커리큘럼 확인
+        const existingCurriculum = await storage.getCurriculumById(curriculumId);
+        if (!existingCurriculum) {
+          console.log('[Curriculum API] 커리큘럼을 찾을 수 없음:', curriculumId);
+          return res.error(
+            ApiErrorCode.RESOURCE_NOT_FOUND,
+            '게시하려는 커리큘럼을 찾을 수 없습니다.'
+          );
+        }
+        
+        // 권한 확인: 관리자가 아니면 자신이 생성한 것만 게시 가능
+        if (req.user?.role !== 'admin' && existingCurriculum.creatorId !== req.user?.id) {
+          console.log('[Curriculum API] 게시 권한 없음:', req.user?.id, existingCurriculum.creatorId);
+          return res.error(
+            ApiErrorCode.INSUFFICIENT_PERMISSIONS,
+            '이 커리큘럼을 게시할 권한이 없습니다.'
+          );
+        }
+        
+        const publishedCurriculum = await storage.publishCurriculum(curriculumId, isPublic);
+        
+        if (!publishedCurriculum) {
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '커리큘럼 게시 상태 변경에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Curriculum API] 커리큘럼 게시 상태 변경 성공:', publishedCurriculum.title, isPublic);
+        
+        return res.success(
+          publishedCurriculum,
+          `커리큘럼이 성공적으로 ${isPublic ? '게시' : '비게시'}되었습니다.`
+        );
+        
+      } catch (error) {
+        console.error('[Curriculum API] 커리큘럼 게시 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '커리큘럼 게시 상태 변경 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  // =============================================================================
+  // 강의 CRUD API (표준화된 버전)
+  // =============================================================================
+  
+  /**
+   * POST /api/admin/courses - 강의 생성
+   * 
+   * 보안: requireAuth() + csrfProtection
+   * 검증: validateBody(insertCourseSchema)
+   */
+  app.post('/api/admin/courses',
+    requireAuth('admin', 'institute'),
+    csrfProtection,
+    validateBody(insertCourseSchema.omit({ id: true, createdAt: true, updatedAt: true })),
+    async (req, res) => {
+      try {
+        console.log('[Course API] 강의 생성 요청:', req.body);
+        
+        // 권한 확인: 관리자가 아니면 instructorId를 현재 사용자로 제한
+        const courseData = {
+          ...req.body,
+          instructorId: req.user?.role === 'admin' ? req.body.instructorId || req.user?.id : req.user?.id
+        };
+        
+        const course = await storage.createCourse(courseData);
+        
+        console.log('[Course API] 강의 생성 성공:', course.title);
+        
+        return res.success(
+          course,
+          '강의가 성공적으로 생성되었습니다.',
+          201
+        );
+        
+      } catch (error) {
+        console.error('[Course API] 강의 생성 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '강의 생성 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * PATCH /api/admin/courses/:id - 강의 수정
+   * 
+   * 보안: requireAuth() + csrfProtection + 소유권 검증
+   * 검증: validateBody(updateCourseSchema)
+   */
+  app.patch('/api/admin/courses/:id',
+    requireAuth('admin', 'institute'),
+    csrfProtection,
+    validateBody(updateCourseSchema),
+    async (req, res) => {
+      try {
+        const courseId = req.params.id;
+        console.log('[Course API] 강의 수정 요청:', courseId, req.body);
+        
+        // 권한 기반 강의 수정
+        const updatedCourse = await storage.updateCourseWithPermission(courseId, req.body, req.user);
+        
+        // 에러 체크 - 새로운 권한 기반 메서드의 에러 응답 처리
+        if (updatedCourse && updatedCourse.error) {
+          if (updatedCourse.error === 'RESOURCE_NOT_FOUND') {
+            return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, updatedCourse.message);
+          } else if (updatedCourse.error === 'INSUFFICIENT_PERMISSIONS') {
+            return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, updatedCourse.message);
+          }
+        }
+        
+        if (!updatedCourse || updatedCourse.error) {
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '강의 수정에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Course API] 강의 수정 성공:', updatedCourse.title);
+        
+        return res.success(
+          updatedCourse,
+          '강의가 성공적으로 수정되었습니다.'
+        );
+        
+      } catch (error) {
+        console.error('[Course API] 강의 수정 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '강의 수정 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * DELETE /api/admin/courses/:id - 강의 삭제
+   * 
+   * 보안: requireAuth() + csrfProtection + 소유권 검증
+   */
+  app.delete('/api/admin/courses/:id',
+    requireAuth('admin', 'institute'),
+    csrfProtection,
+    async (req, res) => {
+      try {
+        const courseId = req.params.id;
+        console.log('[Course API] 강의 삭제 요청:', courseId);
+        
+        // 권한 기반 강의 삭제
+        const deleteResult = await storage.deleteCourseWithPermission(courseId, req.user);
+        
+        // 에러 체크 - 새로운 권한 기반 메서드의 에러 응답 처리
+        if (!deleteResult.success) {
+          if (deleteResult.error === 'RESOURCE_NOT_FOUND') {
+            return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, deleteResult.message);
+          } else if (deleteResult.error === 'INSUFFICIENT_PERMISSIONS') {
+            return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, deleteResult.message);
+          }
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            deleteResult.message || '강의 삭제에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Course API] 강의 삭제 성공:', courseId);
+        
+        return res.success(
+          { id: courseId },
+          '강의가 성공적으로 삭제되었습니다.'
+        );
+        
+      } catch (error) {
+        console.error('[Course API] 강의 삭제 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '강의 삭제 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * POST /api/admin/courses/:id/publish - 강의 게시/비게시
+   * 
+   * 보안: requireAuth() + csrfProtection + 소유권 검증
+   */
+  app.post('/api/admin/courses/:id/publish',
+    requireAuth('admin', 'institute'),
+    csrfProtection,
+    async (req, res) => {
+      try {
+        const courseId = req.params.id;
+        const { isActive = true } = req.body;
+        console.log('[Course API] 강의 게시 상태 변경 요청:', courseId, isActive);
+        
+        // 소유권 검증: 기존 강의 확인
+        const existingCourse = storage.courses.find(c => c.id == courseId);
+        if (!existingCourse) {
+          console.log('[Course API] 강의를 찾을 수 없음:', courseId);
+          return res.error(
+            ApiErrorCode.RESOURCE_NOT_FOUND,
+            '게시하려는 강의를 찾을 수 없습니다.'
+          );
+        }
+        
+        // 권한 확인: 관리자가 아니면 자신이 생성한 것만 게시 가능
+        if (req.user?.role !== 'admin' && existingCourse.instructorId !== req.user?.id) {
+          console.log('[Course API] 게시 권한 없음:', req.user?.id, existingCourse.instructorId);
+          return res.error(
+            ApiErrorCode.INSUFFICIENT_PERMISSIONS,
+            '이 강의를 게시할 권한이 없습니다.'
+          );
+        }
+        
+        const publishedCourse = await storage.publishCourse(courseId, isActive);
+        
+        if (!publishedCourse) {
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '강의 게시 상태 변경에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Course API] 강의 게시 상태 변경 성공:', publishedCourse.title, isActive);
+        
+        return res.success(
+          publishedCourse,
+          `강의가 성공적으로 ${isActive ? '게시' : '비게시'}되었습니다.`
+        );
+        
+      } catch (error) {
+        console.error('[Course API] 강의 게시 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '강의 게시 상태 변경 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  console.log('[Curriculum/Course API] 커리큘럼/강의 CRUD API 엔드포인트가 등록되었습니다.');
+  console.log('  - POST /api/admin/curriculums (관리자/기관 전용, CSRF 보호, 스키마 검증)');
+  console.log('  - PATCH /api/admin/curriculums/:id (관리자/기관 전용, CSRF 보호, 소유권 검증)');
+  console.log('  - DELETE /api/admin/curriculums/:id (관리자/기관 전용, 소유권 검증)');
+  console.log('  - POST /api/admin/curriculums/:id/publish (관리자/기관 전용, CSRF 보호)');
+  console.log('  - POST /api/admin/courses (관리자/기관 전용, CSRF 보호, 스키마 검증)');
+  console.log('  - PATCH /api/admin/courses/:id (관리자/기관 전용, CSRF 보호, 소유권 검증)');
+  console.log('  - DELETE /api/admin/courses/:id (관리자/기관 전용, 소유권 검증)');
+  console.log('  - POST /api/admin/courses/:id/publish (관리자/기관 전용, CSRF 보호)');
 
   // Database test routes
   import('./routes/database-test').then(({ databaseTestRoutes }) => {

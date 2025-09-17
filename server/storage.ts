@@ -2,6 +2,7 @@ class Storage {
   users: any[] = [];
   pets: any[] = [];
   courses: any[] = [];
+  curriculums: any[] = [];
   notifications: any[] = [];
   registrations: any[] = [];
   institutes: any[] = [];
@@ -1694,6 +1695,26 @@ class Storage {
     return this.courses?.find(course => course.id === id);
   }
 
+  // 보안: 권한별 강의 조회
+  getCourseByIdWithPermission(id: string | number, user: any): any {
+    const course = this.courses?.find(course => course.id == id);
+    if (!course) return null;
+
+    // 관리자는 모든 강의 접근 가능
+    if (user.role === 'admin') return course;
+
+    // 기관은 자신이 소속된 강의만 접근 가능
+    if (user.role === 'institute' && course.instituteId === user.id) return course;
+
+    // 트레이너는 소속 기관의 강의 접근 가능
+    if (user.role === 'trainer' && course.instituteId === user.instituteId) return course;
+
+    // 생성자는 항상 접근 가능 (instructorId)
+    if (course.instructorId === user.id) return course;
+
+    return null; // 권한 없음
+  }
+
   // 커리큘럼 관련 메서드들
   getAllCurriculums() {
     // 샘플 커리큘럼 데이터 (준비물 포함)
@@ -2382,27 +2403,49 @@ class Storage {
       id: Date.now().toString(),
       ...curriculumData,
       status: curriculumData.status || 'draft', // 기본 상태를 draft로 설정
+      isPublic: curriculumData.isPublic || false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
     
-    if (!this.courses) {
-      this.courses = [];
+    if (!this.curriculums) {
+      this.curriculums = [];
     }
-    this.courses.push(curriculum);
+    this.curriculums.push(curriculum);
+    console.log(`[Storage] 커리큘럼 생성 완료: ${curriculum.title}`);
     return curriculum;
   }
 
   getAllCurricula(): any[] {
-    return this.courses || [];
+    return this.curriculums || [];
   }
 
   getCurriculumById(id: string): any {
-    return this.courses.find(curriculum => curriculum.id == id);
+    return this.curriculums.find(curriculum => curriculum.id == id);
+  }
+
+  // 보안: 권한별 커리큘럼 조회
+  getCurriculumByIdWithPermission(id: string, user: any): any {
+    const curriculum = this.curriculums.find(curriculum => curriculum.id == id);
+    if (!curriculum) return null;
+
+    // 관리자는 모든 커리큘럼 접근 가능
+    if (user.role === 'admin') return curriculum;
+
+    // 기관은 자신이 소속된 커리큘럼만 접근 가능
+    if (user.role === 'institute' && curriculum.instituteId === user.id) return curriculum;
+
+    // 훈련사는 소속 기관의 커리큘럼 접근 가능
+    if (user.role === 'trainer' && curriculum.instituteId === user.instituteId) return curriculum;
+
+    // 생성자는 항상 접근 가능
+    if (curriculum.creatorId === user.id) return curriculum;
+
+    return null; // 권한 없음
   }
 
   updateCurriculum(id: string, updateData: any): any {
-    const curriculum = this.courses.find(c => c.id == id); // == 사용하여 타입 변환 허용
+    const curriculum = this.curriculums.find(c => c.id == id); // == 사용하여 타입 변환 허용
     if (curriculum) {
       Object.assign(curriculum, updateData, { updatedAt: new Date().toISOString() });
       console.log(`[Storage] 커리큘럼 수정 완료: ${id}`);
@@ -2412,8 +2455,39 @@ class Storage {
     return null;
   }
 
+  // 보안: 권한 기반 커리큘럼 수정
+  updateCurriculumWithPermission(id: string, updateData: any, user: any): any {
+    const curriculum = this.curriculums.find(c => c.id == id);
+    if (!curriculum) {
+      console.log(`[Storage] 커리큘럼 수정 실패: ${id} 찾을 수 없음`);
+      return { error: 'RESOURCE_NOT_FOUND', message: '수정하려는 커리큘럼을 찾을 수 없습니다.' };
+    }
+
+    // 권한 확인
+    const hasPermission = user.role === 'admin' ||
+      (user.role === 'institute' && curriculum.instituteId === user.id) ||
+      (user.role === 'trainer' && curriculum.instituteId === user.instituteId) ||
+      curriculum.creatorId === user.id;
+
+    if (!hasPermission) {
+      console.log(`[Storage] 권한 없음: User ${user.id}가 커리큘럼 ${id} 수정 시도`);
+      return { error: 'INSUFFICIENT_PERMISSIONS', message: '이 커리큘럼을 수정할 권한이 없습니다.' };
+    }
+
+    // 소유권 필드 보호 - creatorId, instituteId는 수정 불가
+    const safeUpdateData = { ...updateData };
+    delete safeUpdateData.creatorId;
+    delete safeUpdateData.instituteId;
+    delete safeUpdateData.createdAt;
+    delete safeUpdateData.id;
+
+    Object.assign(curriculum, safeUpdateData, { updatedAt: new Date().toISOString() });
+    console.log(`[Storage] 커리큘럼 수정 완료: ${id}`);
+    return curriculum;
+  }
+
   updateModule(curriculumId: string, moduleId: string, updateData: any): boolean {
-    const curriculum = this.courses.find(c => c.id == curriculumId);
+    const curriculum = this.curriculums.find(c => c.id == curriculumId);
     if (!curriculum || !curriculum.modules) {
       console.log(`[Storage] 모듈 수정 실패: 커리큘럼 ${curriculumId} 찾을 수 없음`);
       return false;
@@ -2443,7 +2517,7 @@ class Storage {
     const result = this.updateModule(curriculumId.toString(), moduleId, updateData);
     if (result) {
       // 업데이트된 모듈을 반환
-      const curriculum = this.courses.find(c => c.id == curriculumId);
+      const curriculum = this.curriculums.find(c => c.id == curriculumId);
       if (curriculum && curriculum.modules) {
         const module = curriculum.modules.find(m => m.id == moduleId);
         return module;
@@ -2453,17 +2527,58 @@ class Storage {
   }
 
   deleteCurriculum(id: string): boolean {
-    const index = this.courses.findIndex(c => c.id == id);
+    const index = this.curriculums.findIndex(c => c.id == id);
     if (index !== -1) {
-      this.courses.splice(index, 1);
+      this.curriculums.splice(index, 1);
+      console.log(`[Storage] 커리큘럼 삭제 완료: ${id}`);
       return true;
     }
+    console.log(`[Storage] 커리큘럼 삭제 실패: ${id} 찾을 수 없음`);
     return false;
+  }
+
+  // 보안: 권한 기반 커리큘럼 삭제
+  deleteCurriculumWithPermission(id: string, user: any): { success: boolean; error?: string; message?: string } {
+    const curriculumIndex = this.curriculums.findIndex(c => c.id == id);
+    if (curriculumIndex === -1) {
+      console.log(`[Storage] 커리큘럼 삭제 실패: ${id} 찾을 수 없음`);
+      return { success: false, error: 'RESOURCE_NOT_FOUND', message: '삭제하려는 커리큘럼을 찾을 수 없습니다.' };
+    }
+
+    const curriculum = this.curriculums[curriculumIndex];
+    
+    // 권한 확인
+    const hasPermission = user.role === 'admin' ||
+      (user.role === 'institute' && curriculum.instituteId === user.id) ||
+      (user.role === 'trainer' && curriculum.instituteId === user.instituteId) ||
+      curriculum.creatorId === user.id;
+
+    if (!hasPermission) {
+      console.log(`[Storage] 권한 없음: User ${user.id}가 커리큘럼 ${id} 삭제 시도`);
+      return { success: false, error: 'INSUFFICIENT_PERMISSIONS', message: '이 커리큘럼을 삭제할 권한이 없습니다.' };
+    }
+
+    this.curriculums.splice(curriculumIndex, 1);
+    console.log(`[Storage] 커리큘럼 삭제 완료: ${id}`);
+    return { success: true };
+  }
+
+  publishCurriculum(id: string, isPublic: boolean): any {
+    const curriculum = this.curriculums.find(c => c.id == id);
+    if (curriculum) {
+      curriculum.isPublic = isPublic;
+      curriculum.status = isPublic ? 'approved' : 'draft';
+      curriculum.updatedAt = new Date().toISOString();
+      console.log(`[Storage] 커리큘럼 게시 상태 변경: ${id} -> ${isPublic ? '공개' : '비공개'}`);
+      return curriculum;
+    }
+    console.log(`[Storage] 커리큘럼 게시 실패: ${id} 찾을 수 없음`);
+    return null;
   }
 
   // 모듈에 영상 추가 메소드
   addVideoToModule(curriculumId: string, moduleId: string, videoData: any): boolean {
-    const curriculum = this.courses.find(c => c.id == curriculumId);
+    const curriculum = this.curriculums.find(c => c.id == curriculumId);
     if (!curriculum || !curriculum.modules) {
       console.log(`[Storage] 영상 추가 실패: 커리큘럼 ${curriculumId} 찾을 수 없음`);
       return false;
@@ -3007,6 +3122,125 @@ class Storage {
       return newCourse;
     } catch (error) {
       console.error('[Storage] 강의 생성 실패:', error);
+      throw error;
+    }
+  }
+
+  // 강의 수정
+  async updateCourse(id: string, updateData: any): Promise<any> {
+    try {
+      const course = this.courses.find(c => c.id == id);
+      if (course) {
+        Object.assign(course, updateData, { updatedAt: new Date().toISOString() });
+        console.log(`[Storage] 강의 수정 완료: ${id}`);
+        return course;
+      }
+      console.log(`[Storage] 강의 수정 실패: ${id} 찾을 수 없음`);
+      return null;
+    } catch (error) {
+      console.error('[Storage] 강의 수정 실패:', error);
+      throw error;
+    }
+  }
+
+  // 보안: 권한 기반 강의 수정
+  async updateCourseWithPermission(id: string, updateData: any, user: any): Promise<any> {
+    try {
+      const course = this.courses.find(c => c.id == id);
+      if (!course) {
+        console.log(`[Storage] 강의 수정 실패: ${id} 찾을 수 없음`);
+        return { error: 'RESOURCE_NOT_FOUND', message: '수정하려는 강의를 찾을 수 없습니다.' };
+      }
+
+      // 권한 확인
+      const hasPermission = user.role === 'admin' ||
+        (user.role === 'institute' && course.instituteId === user.id) ||
+        (user.role === 'trainer' && course.instituteId === user.instituteId) ||
+        course.instructorId === user.id;
+
+      if (!hasPermission) {
+        console.log(`[Storage] 권한 없음: User ${user.id}가 강의 ${id} 수정 시도`);
+        return { error: 'INSUFFICIENT_PERMISSIONS', message: '이 강의를 수정할 권한이 없습니다.' };
+      }
+
+      // 소유권 필드 보호 - instructorId, instituteId는 수정 불가
+      const safeUpdateData = { ...updateData };
+      delete safeUpdateData.instructorId;
+      delete safeUpdateData.instituteId;
+      delete safeUpdateData.createdAt;
+      delete safeUpdateData.id;
+
+      Object.assign(course, safeUpdateData, { updatedAt: new Date().toISOString() });
+      console.log(`[Storage] 강의 수정 완료: ${id}`);
+      return course;
+    } catch (error) {
+      console.error('[Storage] 강의 수정 실패:', error);
+      throw error;
+    }
+  }
+
+  // 강의 삭제
+  async deleteCourse(id: string): Promise<boolean> {
+    try {
+      const index = this.courses.findIndex(c => c.id == id);
+      if (index !== -1) {
+        this.courses.splice(index, 1);
+        console.log(`[Storage] 강의 삭제 완료: ${id}`);
+        return true;
+      }
+      console.log(`[Storage] 강의 삭제 실패: ${id} 찾을 수 없음`);
+      return false;
+    } catch (error) {
+      console.error('[Storage] 강의 삭제 실패:', error);
+      throw error;
+    }
+  }
+
+  // 보안: 권한 기반 강의 삭제
+  async deleteCourseWithPermission(id: string, user: any): Promise<{ success: boolean; error?: string; message?: string }> {
+    try {
+      const courseIndex = this.courses.findIndex(c => c.id == id);
+      if (courseIndex === -1) {
+        console.log(`[Storage] 강의 삭제 실패: ${id} 찾을 수 없음`);
+        return { success: false, error: 'RESOURCE_NOT_FOUND', message: '삭제하려는 강의를 찾을 수 없습니다.' };
+      }
+
+      const course = this.courses[courseIndex];
+      
+      // 권한 확인
+      const hasPermission = user.role === 'admin' ||
+        (user.role === 'institute' && course.instituteId === user.id) ||
+        (user.role === 'trainer' && course.instituteId === user.instituteId) ||
+        course.instructorId === user.id;
+
+      if (!hasPermission) {
+        console.log(`[Storage] 권한 없음: User ${user.id}가 강의 ${id} 삭제 시도`);
+        return { success: false, error: 'INSUFFICIENT_PERMISSIONS', message: '이 강의를 삭제할 권한이 없습니다.' };
+      }
+
+      this.courses.splice(courseIndex, 1);
+      console.log(`[Storage] 강의 삭제 완료: ${id}`);
+      return { success: true };
+    } catch (error) {
+      console.error('[Storage] 강의 삭제 실패:', error);
+      throw error;
+    }
+  }
+
+  // 강의 게시/비게시
+  async publishCourse(id: string, isActive: boolean): Promise<any> {
+    try {
+      const course = this.courses.find(c => c.id == id);
+      if (course) {
+        course.isActive = isActive;
+        course.updatedAt = new Date().toISOString();
+        console.log(`[Storage] 강의 게시 상태 변경: ${id} -> ${isActive ? '공개' : '비공개'}`);
+        return course;
+      }
+      console.log(`[Storage] 강의 게시 실패: ${id} 찾을 수 없음`);
+      return null;
+    } catch (error) {
+      console.error('[Storage] 강의 게시 실패:', error);
       throw error;
     }
   }

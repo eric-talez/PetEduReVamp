@@ -44,6 +44,7 @@ export const courses = pgTable("courses", {
   level: varchar("level", { length: 50 }),
   category: varchar("category", { length: 100 }),
   instructorId: integer("instructor_id").references(() => users.id),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(), // Critical: Institute-scoped RBAC
   imageUrl: text("image_url"),
   videoUrl: text("video_url"),
   isActive: boolean("is_active").default(true),
@@ -328,6 +329,12 @@ export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
 export const insertCourseSchema = createInsertSchema(courses);
 export const selectCourseSchema = createSelectSchema(courses);
+export const updateCourseSchema = insertCourseSchema.partial().omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true, 
+  instructorId: true  // Prevent ownership modification
+});
 export const insertInstituteSchema = createInsertSchema(institutes);
 export const selectInstituteSchema = createSelectSchema(institutes);
 // Basic Pet Zod Schemas
@@ -1022,6 +1029,17 @@ export const curriculums = pgTable("curriculums", {
   status: varchar("status", { length: 20 }).default("draft"), // draft, pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 커리큘럼 Zod 스키마
+export const insertCurriculumSchema = createInsertSchema(curriculums);
+export const selectCurriculumSchema = createSelectSchema(curriculums);
+export const updateCurriculumSchema = insertCurriculumSchema.partial().omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true, 
+  creatorId: true, 
+  instituteId: true  // Prevent ownership modification
 });
 
 // 훈련사 인증 신청 테이블
@@ -1760,3 +1778,41 @@ export type LogoSettings = z.infer<typeof selectLogoSettingsSchema>;
 export type InsertLogoSettings = z.infer<typeof insertLogoSettingsSchema>;
 export type UpdateLogoSettings = z.infer<typeof updateLogoSettingsSchema>;
 export type LogoSettingsQuery = z.infer<typeof logoSettingsQuerySchema>;
+
+// =============================================================================
+// 강의(Courses) 스키마 정의 - RBAC 보안 적용
+// =============================================================================
+
+// 강의 기본 스키마
+export const insertCourseSchema = createInsertSchema(courses, {
+  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
+  description: z.string().max(5000, "설명은 5000자를 초과할 수 없습니다").optional().nullable(),
+  content: z.string().max(10000, "내용은 10000자를 초과할 수 없습니다").optional().nullable(),
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/, "올바른 가격 형식이 아닙니다").optional().nullable(),
+  duration: z.number().int().min(1, "강의 시간은 1분 이상이어야 합니다").optional().nullable(),
+  level: z.enum(["beginner", "intermediate", "advanced"]).optional().nullable(),
+  category: z.string().max(100, "카테고리는 100자를 초과할 수 없습니다").optional().nullable(),
+  imageUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable(),
+  videoUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable()
+}).omit({
+  id: true,
+  rating: true,
+  enrollmentCount: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 강의 수정 스키마 - 보안: instituteId, instructorId 보호
+export const updateCourseSchema = insertCourseSchema.partial().omit({
+  instituteId: true,    // 소유권 필드 보호 - RBAC Critical
+  instructorId: true    // 소유권 필드 보호 - RBAC Critical
+});
+
+// 강의 조회 스키마
+export const selectCourseSchema = createSelectSchema(courses);
+
+// 강의 타입 정의
+export type Course = typeof courses.$inferSelect;
+export type InsertCourse = z.infer<typeof insertCourseSchema>;
+export type UpdateCourse = z.infer<typeof updateCourseSchema>;
+
