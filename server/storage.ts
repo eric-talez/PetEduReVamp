@@ -1541,38 +1541,148 @@ class Storage {
     return this.users?.find(user => user.id === id && user.role === 'trainer');
   }
 
-  // 로고 설정 관련 메서드들
+  // 로고 설정 관련 메서드들 - 표준화된 구현
   initializeLogoSettings() {
     this.logoSettings = {
       id: 1,
-      logoUrl: '/logo.svg',
-      darkLogoUrl: '/logo-dark.svg',
-      compactLogoUrl: '/logo-compact.svg',
-      symbolUrl: '/logo-symbol.svg',
-      logoLight: '/logo.svg',
-      logoDark: '/logo-dark.svg',
-      logoSymbolLight: '/logo-compact.svg',
-      logoSymbolDark: '/logo-compact-dark.svg',
+      logoUrl: 'https://via.placeholder.com/200x80/2563EB/FFFFFF?text=TALEZ',
+      logoPosition: 'left',
+      logoSize: 'medium',
+      altText: '테일즈 로고',
+      linkUrl: '/',
+      maxWidth: 200,
+      maxHeight: 80,
+      showOnMobile: true,
+      showOnDesktop: true,
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+    console.log('[Storage] 로고 설정 초기화 완료:', this.logoSettings);
   }
 
-  getLogoSettings() {
-    console.log('[Storage] 로고 설정 조회:', this.logoSettings);
+  /**
+   * 현재 로고 설정 조회
+   * @param includeInactive - 비활성화된 설정 포함 여부
+   * @returns 로고 설정 객체
+   */
+  getLogoSettings(includeInactive: boolean = false) {
+    console.log('[Storage] 로고 설정 조회 - includeInactive:', includeInactive);
+    
+    if (!this.logoSettings || Object.keys(this.logoSettings).length === 0) {
+      console.log('[Storage] 로고 설정이 없어서 초기화 실행');
+      this.initializeLogoSettings();
+    }
+
+    // 비활성화 설정 제외 로직
+    if (!includeInactive && !this.logoSettings.isActive) {
+      console.log('[Storage] 비활성화된 로고 설정으로 인해 기본값 반환');
+      return null;
+    }
+
+    console.log('[Storage] 로고 설정 조회 결과:', this.logoSettings);
     return this.logoSettings;
   }
 
+  /**
+   * 로고 설정 업데이트
+   * @param settings - 업데이트할 설정 객체
+   * @returns 업데이트된 로고 설정
+   */
   updateLogoSettings(settings: any) {
     console.log('[Storage] 로고 설정 업데이트 요청:', settings);
-    this.logoSettings = { 
-      ...this.logoSettings, 
+    
+    if (!this.logoSettings || Object.keys(this.logoSettings).length === 0) {
+      console.log('[Storage] 기존 로고 설정이 없어서 초기화 후 업데이트');
+      this.initializeLogoSettings();
+    }
+
+    // 업데이트할 데이터 검증 및 정리
+    const updateData = {
       ...settings,
       updatedAt: new Date().toISOString()
     };
+
+    // 기존 설정과 병합
+    this.logoSettings = { 
+      ...this.logoSettings, 
+      ...updateData
+    };
+    
     console.log('[Storage] 로고 설정 업데이트 완료:', this.logoSettings);
     return this.logoSettings;
+  }
+
+  /**
+   * 로고 설정 검증
+   * @param settings - 검증할 설정 객체  
+   * @returns 검증 결과
+   */
+  validateLogoSettings(settings: any): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    // 필수 필드 검증
+    if (!settings.logoUrl) {
+      errors.push('로고 URL은 필수입니다');
+    }
+
+    // URL 형식 검증
+    if (settings.logoUrl && !this.isValidUrl(settings.logoUrl)) {
+      errors.push('올바른 URL 형식이 아닙니다');
+    }
+
+    // 이미지 파일 형식 검증
+    if (settings.logoUrl && !this.isImageUrl(settings.logoUrl)) {
+      errors.push('이미지 파일 형식만 허용됩니다');
+    }
+
+    // 크기 검증
+    if (settings.maxWidth && (settings.maxWidth < 50 || settings.maxWidth > 800)) {
+      errors.push('로고 너비는 50px~800px 사이여야 합니다');
+    }
+
+    if (settings.maxHeight && (settings.maxHeight < 20 || settings.maxHeight > 200)) {
+      errors.push('로고 높이는 20px~200px 사이여야 합니다');
+    }
+
+    // 위치 및 크기 옵션 검증
+    if (settings.logoPosition && !['left', 'center', 'right'].includes(settings.logoPosition)) {
+      errors.push('로고 위치는 left, center, right 중 하나여야 합니다');
+    }
+
+    if (settings.logoSize && !['small', 'medium', 'large'].includes(settings.logoSize)) {
+      errors.push('로고 크기는 small, medium, large 중 하나여야 합니다');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * URL 형식 검증 헬퍼
+   * @param url - 검증할 URL
+   * @returns 유효성 여부
+   */
+  private isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 이미지 URL 검증 헬퍼  
+   * @param url - 검증할 URL
+   * @returns 이미지 형식 여부
+   */
+  private isImageUrl(url: string): boolean {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.bmp'];
+    const lowerUrl = url.toLowerCase();
+    return imageExtensions.some(ext => lowerUrl.includes(ext)) || lowerUrl.includes('placeholder');
   }
 
   // 강좌 관련 메서드들  

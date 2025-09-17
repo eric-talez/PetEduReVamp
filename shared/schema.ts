@@ -1697,3 +1697,66 @@ export type BannerQuery = z.infer<typeof bannerQuerySchema>;
 export type BannerReorder = z.infer<typeof bannerReorderSchema>;
 export type BannerAnalytics = z.infer<typeof bannerAnalyticsSchema>;
 export type BulkBannerUpdate = z.infer<typeof bulkBannerUpdateSchema>;
+
+// =============================================================================
+// 로고 설정 테이블 - 전체 애플리케이션의 로고 표시 설정 관리
+// =============================================================================
+
+export const logoSettings = pgTable("logo_settings", {
+  id: serial("id").primaryKey(),
+  logoUrl: text("logo_url").notNull(),
+  logoPosition: varchar("logo_position", { length: 20 }).notNull().default("left"), // left, center, right
+  logoSize: varchar("logo_size", { length: 20 }).notNull().default("medium"), // small, medium, large
+  altText: varchar("alt_text", { length: 200 }).notNull().default("로고"),
+  linkUrl: text("link_url").default("/"), // 로고 클릭 시 이동할 URL
+  maxWidth: integer("max_width").default(200), // 최대 너비 (px)
+  maxHeight: integer("max_height").default(80), // 최대 높이 (px)
+  showOnMobile: boolean("show_on_mobile").default(true),
+  showOnDesktop: boolean("show_on_desktop").default(true),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 로고 설정 삽입 스키마
+export const insertLogoSettingsSchema = createInsertSchema(logoSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 로고 설정 업데이트 스키마 - 비즈니스 로직과 검증 포함
+export const updateLogoSettingsSchema = z.object({
+  logoUrl: z.string().url("올바른 URL 형식이어야 합니다").min(1, "로고 URL은 필수입니다")
+    .refine(url => {
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.bmp'];
+      return imageExtensions.some(ext => url.toLowerCase().includes(ext));
+    }, "이미지 파일 형식만 허용됩니다 (jpg, png, gif, svg, webp, bmp)"),
+  logoPosition: z.enum(["left", "center", "right"], {
+    errorMap: () => ({ message: "로고 위치는 left, center, right 중 하나여야 합니다" })
+  }).default("left"),
+  logoSize: z.enum(["small", "medium", "large"], {
+    errorMap: () => ({ message: "로고 크기는 small, medium, large 중 하나여야 합니다" })
+  }).default("medium"),
+  altText: z.string().min(1, "대체 텍스트는 필수입니다").max(200, "대체 텍스트는 200자를 초과할 수 없습니다").default("로고"),
+  linkUrl: z.string().url("올바른 URL 형식이어야 합니다").optional().default("/"),
+  maxWidth: z.number().int().min(50, "최소 너비는 50px입니다").max(800, "최대 너비는 800px입니다").default(200),
+  maxHeight: z.number().int().min(20, "최소 높이는 20px입니다").max(200, "최대 높이는 200px입니다").default(80),
+  showOnMobile: z.boolean().default(true),
+  showOnDesktop: z.boolean().default(true),
+  isActive: z.boolean().default(true)
+});
+
+// 로고 설정 조회 스키마
+export const selectLogoSettingsSchema = createSelectSchema(logoSettings);
+
+// 로고 설정 쿼리 스키마
+export const logoSettingsQuerySchema = z.object({
+  includeInactive: z.coerce.boolean().default(false),
+});
+
+// 로고 설정 타입 정의
+export type LogoSettings = z.infer<typeof selectLogoSettingsSchema>;
+export type InsertLogoSettings = z.infer<typeof insertLogoSettingsSchema>;
+export type UpdateLogoSettings = z.infer<typeof updateLogoSettingsSchema>;
+export type LogoSettingsQuery = z.infer<typeof logoSettingsQuerySchema>;

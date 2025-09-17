@@ -61,7 +61,17 @@ import {
   type BannerQuery,
   type BannerReorder,
   type BannerAnalytics,
-  type BulkBannerUpdate
+  type BulkBannerUpdate,
+  // 로고 설정 관련 스키마
+  logoSettings,
+  insertLogoSettingsSchema,
+  updateLogoSettingsSchema,
+  selectLogoSettingsSchema,
+  logoSettingsQuerySchema,
+  type LogoSettings,
+  type InsertLogoSettings,
+  type UpdateLogoSettings,
+  type LogoSettingsQuery
 } from "../shared/schema";
 import { ilike, or } from "drizzle-orm";
 import { 
@@ -1746,8 +1756,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('배너 클릭 추적 오류:', error);
       res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, error.message || '클릭 추적에 실패했습니다.', error);
-    }
-  });
     }
   });
 
@@ -12501,6 +12509,111 @@ export function registerTrainerCertificationRoutes(app: Express) {
   }).catch(error => {
     console.error('[Menu Visibility] 라우트 등록 실패:', error);
   });
+
+  // =============================================================================
+  // 로고 설정 API - 완전한 보안 및 표준화 구현
+  // =============================================================================
+
+  /**
+   * PUT /api/admin/logo - 로고 설정 업데이트 (관리자 전용)
+   * 
+   * 보안: requireAuth('admin') + csrfProtection
+   * 검증: validateBody(updateLogoSettingsSchema)
+   * 응답: 표준화된 res.success/res.error
+   */
+  app.put('/api/admin/logo', 
+    requireAuth('admin'),
+    csrfProtection, 
+    validateBody(updateLogoSettingsSchema),
+    async (req, res) => {
+      try {
+        console.log('[Logo API] 로고 설정 업데이트 요청:', req.body);
+        console.log('[Logo API] 요청자:', req.user);
+
+        const logoData = req.body;
+
+        // Storage 레벨에서 추가 검증 수행
+        const validation = storage.validateLogoSettings(logoData);
+        if (!validation.isValid) {
+          console.log('[Logo API] 검증 실패:', validation.errors);
+          return res.error(
+            ApiErrorCode.VALIDATION_ERROR,
+            '로고 설정 검증에 실패했습니다.',
+            { errors: validation.errors }
+          );
+        }
+
+        // 로고 설정 업데이트 수행
+        const updatedSettings = storage.updateLogoSettings(logoData);
+        
+        console.log('[Logo API] 로고 설정 업데이트 성공:', updatedSettings);
+        
+        return res.success(
+          updatedSettings,
+          '로고 설정이 성공적으로 업데이트되었습니다.',
+          200
+        );
+
+      } catch (error) {
+        console.error('[Logo API] 로고 설정 업데이트 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '로고 설정 업데이트 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * GET /api/logo - 현재 로고 설정 조회 (공개 접근)
+   * 
+   * 보안: 공개 접근 허용
+   * 검증: 쿼리 파라미터 검증 (필요 시)
+   * 응답: 표준화된 res.success/res.error
+   */
+  app.get('/api/logo', 
+    validateQuery(logoSettingsQuerySchema.optional()),
+    async (req, res) => {
+      try {
+        console.log('[Logo API] 로고 설정 조회 요청:', req.query);
+
+        const { includeInactive = false } = req.query as LogoSettingsQuery;
+
+        // 로고 설정 조회
+        const logoSettings = storage.getLogoSettings(includeInactive);
+        
+        if (!logoSettings) {
+          console.log('[Logo API] 활성화된 로고 설정이 없음');
+          return res.success(
+            null,
+            '현재 활성화된 로고 설정이 없습니다.',
+            200
+          );
+        }
+
+        console.log('[Logo API] 로고 설정 조회 성공:', logoSettings);
+        
+        return res.success(
+          logoSettings,
+          '로고 설정을 성공적으로 조회했습니다.',
+          200
+        );
+
+      } catch (error) {
+        console.error('[Logo API] 로고 설정 조회 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '로고 설정 조회 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  console.log('[Logo API] 로고 설정 API 엔드포인트가 등록되었습니다.');
+  console.log('  - PUT /api/admin/logo (관리자 전용, CSRF 보호, 스키마 검증)');  
+  console.log('  - GET /api/logo (공개 접근, 표준화된 응답)');
 
   // Database test routes
   import('./routes/database-test').then(({ databaseTestRoutes }) => {
