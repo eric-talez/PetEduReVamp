@@ -152,12 +152,12 @@ export default function Home() {
   const defaultBannerSlides = [
     {
       id: 1,
-      title: "Talez - 반려견과 함께하는 특별한 여정",
-      subtitle: "전문 훈련사와 AI 기술로 반려견 교육의 새로운 기준을 만들어갑니다",
-      features: ["전문가 1:1 교육", "AI 행동 분석", "실시간 상담", "커뮤니티"],
-      image: "https://images.unsplash.com/photo-1591769225440-811ad7d6eab3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "교육 시작하기", path: "/courses" },
-      secondaryAction: { text: "서비스 소개", path: "/about" }
+      title: "오늘의 총령 보호",
+      subtitle: "funnytalez.com에서 따뜻한 홈케어를 만나보세요",
+      features: ["전문 홈케어", "반려동물 보호", "따뜻한 서비스", "안전한 공간"],
+      image: "/main-banner-talez.png",
+      primaryAction: { text: "자세히 보기", path: "/home" },
+      secondaryAction: { text: "더 알아보기", path: "/about" }
     },
     {
       id: 2,
@@ -407,12 +407,20 @@ export default function Home() {
       console.log('[Banner Debug] 훈련사 배너 선택됨, 배너 수:', trainerBannerSlides.length);
       return trainerBannerSlides.map(convertTrainerBannerToSlide);
     }
-    // 관리자 배너가 있으면 우선 표시, 없으면 기본 배너
-    console.log('[Banner Debug] 기본 배너 선택됨, 관리자 배너 수:', adminBanners.length);
-    return adminBanners.length > 0 
-      ? adminBanners.map(convertAdminBannerToSlide)
-      : defaultBannerSlides;
-  }, [isAuthenticated, userRole, adminBanners.length, trainerBannerSlides.length]);
+    
+    // 새로운 배너를 항상 첫 번째로 표시 (관리자 배너가 있어도 우선)
+    const heroSlide = defaultBannerSlides[0];
+    console.log('[Banner Debug] 새 히어로 배너 추가:', heroSlide.title);
+    
+    if (adminBanners.length > 0) {
+      const adminSlides = adminBanners.map(convertAdminBannerToSlide);
+      console.log('[Banner Debug] 관리자 배너와 함께 표시, 총 수:', 1 + adminSlides.length);
+      return [heroSlide, ...adminSlides];
+    }
+    
+    console.log('[Banner Debug] 기본 배너만 표시, 배너 수:', defaultBannerSlides.length);
+    return defaultBannerSlides;
+  }, [isAuthenticated, userRole, adminBanners, trainerBannerSlides.length]);
   
   console.log('[Banner Debug] 최종 배너 슬라이드 수:', bannerSlides.length, '첫 번째 배너:', bannerSlides[0]?.title);
 
