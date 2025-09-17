@@ -1481,3 +1481,57 @@ export type AiDailySummary = typeof aiDailySummary.$inferSelect;
 export type InsertAiDailySummary = typeof aiDailySummary.$inferInsert;
 export type AiUsageLimits = typeof aiUsageLimits.$inferSelect;
 export type InsertAiUsageLimits = typeof aiUsageLimits.$inferInsert;
+
+// 알림 시스템 스키마 및 타입
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateNotificationSchema = z.object({
+  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다").optional(),
+  message: z.string().min(1, "메시지는 필수입니다").max(1000, "메시지는 1000자를 초과할 수 없습니다").optional(),
+  type: z.enum(["info", "success", "warning", "error", "course", "payment", "training", "reservation", "system", "marketing"], {
+    errorMap: () => ({ message: "올바른 알림 타입을 선택해주세요" })
+  }).optional(),
+  isRead: z.boolean().optional(),
+  actionUrl: z.string().url("올바른 URL 형식이 아닙니다").nullable().optional(),
+  metadata: z.record(z.any()).nullable().optional(),
+});
+
+export const createNotificationSchema = z.object({
+  userId: z.number().int().positive("올바른 사용자 ID가 필요합니다"),
+  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
+  message: z.string().min(1, "메시지는 필수입니다").max(1000, "메시지는 1000자를 초과할 수 없습니다"),
+  type: z.enum(["info", "success", "warning", "error", "course", "payment", "training", "reservation", "system", "marketing"], {
+    errorMap: () => ({ message: "올바른 알림 타입을 선택해주세요" })
+  }),
+  isRead: z.boolean().default(false),
+  actionUrl: z.string().url("올바른 URL 형식이 아닙니다").nullable().optional(),
+  metadata: z.record(z.any()).nullable().optional(),
+});
+
+export const selectNotificationSchema = createSelectSchema(notifications);
+
+// 알림 조회 쿼리 스키마
+export const notificationQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  type: z.enum(["info", "success", "warning", "error", "course", "payment", "training", "reservation", "system", "marketing"]).optional(),
+  isRead: z.coerce.boolean().optional(),
+  sortBy: z.enum(["createdAt", "title", "type"]).default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+// 다중 알림 업데이트 스키마
+export const bulkNotificationUpdateSchema = z.object({
+  notificationIds: z.array(z.number().int().positive()).min(1, "적어도 하나의 알림을 선택해주세요"),
+  updates: updateNotificationSchema,
+});
+
+// 알림 타입 정의
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof createNotificationSchema>;
+export type UpdateNotification = z.infer<typeof updateNotificationSchema>;
+export type NotificationQuery = z.infer<typeof notificationQuerySchema>;
+export type BulkNotificationUpdate = z.infer<typeof bulkNotificationUpdateSchema>;

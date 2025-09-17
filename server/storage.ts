@@ -1374,6 +1374,144 @@ class Storage {
     return this.pets?.filter(pet => pet.ownerId === ownerId) || [];
   }
 
+  // 알림 관련 메서드들
+  getNotifications() {
+    return this.notifications || [];
+  }
+
+  getNotificationById(id: number) {
+    return this.notifications?.find(notification => notification.id === id) || null;
+  }
+
+  getNotificationsByUserId(userId: number, query: any = {}) {
+    if (!this.notifications) return { notifications: [], total: 0, hasMore: false };
+    
+    let filteredNotifications = this.notifications.filter(notification => notification.userId === userId);
+    
+    // 타입 필터링
+    if (query.type) {
+      filteredNotifications = filteredNotifications.filter(n => n.type === query.type);
+    }
+    
+    // 읽음 상태 필터링
+    if (query.isRead !== undefined) {
+      filteredNotifications = filteredNotifications.filter(n => n.isRead === query.isRead);
+    }
+    
+    // 정렬
+    const sortBy = query.sortBy || 'createdAt';
+    const sortOrder = query.sortOrder || 'desc';
+    filteredNotifications.sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+      
+      if (sortOrder === 'desc') {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      } else {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      }
+    });
+    
+    // 페이지네이션
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const offset = (page - 1) * limit;
+    const total = filteredNotifications.length;
+    const paginatedNotifications = filteredNotifications.slice(offset, offset + limit);
+    const hasMore = offset + limit < total;
+    
+    return {
+      notifications: paginatedNotifications,
+      total,
+      page,
+      limit,
+      hasMore
+    };
+  }
+
+  createNotification(notificationData: any) {
+    if (!this.notifications) {
+      this.notifications = [];
+    }
+    
+    const newNotification = {
+      id: this.notifications.length ? Math.max(...this.notifications.map(n => n.id || 0)) + 1 : 1,
+      ...notificationData,
+      createdAt: new Date().toISOString()
+    };
+    
+    this.notifications.push(newNotification);
+    return newNotification;
+  }
+
+  updateNotification(id: number, updates: any) {
+    if (!this.notifications) return null;
+    
+    const notificationIndex = this.notifications.findIndex(notification => notification.id === id);
+    if (notificationIndex !== -1) {
+      this.notifications[notificationIndex] = {
+        ...this.notifications[notificationIndex],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      return this.notifications[notificationIndex];
+    }
+    return null;
+  }
+
+  deleteNotification(id: number) {
+    if (!this.notifications) return false;
+    
+    const notificationIndex = this.notifications.findIndex(notification => notification.id === id);
+    if (notificationIndex !== -1) {
+      this.notifications.splice(notificationIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
+  markNotificationAsRead(id: number) {
+    return this.updateNotification(id, { isRead: true });
+  }
+
+  markAllNotificationsAsRead(userId: number) {
+    if (!this.notifications) return 0;
+    
+    let markedCount = 0;
+    this.notifications.forEach(notification => {
+      if (notification.userId === userId && !notification.isRead) {
+        notification.isRead = true;
+        notification.updatedAt = new Date().toISOString();
+        markedCount++;
+      }
+    });
+    return markedCount;
+  }
+
+  getUnreadNotificationCount(userId: number) {
+    if (!this.notifications) return 0;
+    
+    return this.notifications.filter(notification => 
+      notification.userId === userId && !notification.isRead
+    ).length;
+  }
+
+  bulkUpdateNotifications(notificationIds: number[], updates: any) {
+    if (!this.notifications || !notificationIds.length) return [];
+    
+    const updatedNotifications: any[] = [];
+    const updateTime = new Date().toISOString();
+    
+    this.notifications.forEach(notification => {
+      if (notificationIds.includes(notification.id)) {
+        Object.assign(notification, updates, { updatedAt: updateTime });
+        updatedNotifications.push(notification);
+      }
+    });
+    
+    return updatedNotifications;
+  }
+
   // 통계 관련 메서드들
   getUserStats() {
     const users = this.users || [];
