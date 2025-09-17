@@ -2,8 +2,15 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import mainBannerImage from "@assets/main-banner-talez.png";
 
 const banners = [
+  {
+    title: "오늘의 총령 보호",
+    description: "funnytalez.com에서 따뜻한 홈케어를 만나보세요",
+    image: mainBannerImage,
+    link: "/home"
+  },
   {
     title: "반려견 전문 훈련사와 함께하는 맞춤형 교육",
     description: "1:1 전문 상담으로 반려견에게 알맞은 교육 프로그램을 찾아보세요",
