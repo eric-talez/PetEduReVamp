@@ -18,6 +18,8 @@ import { setupPerformance } from "./performance";
 import { registerAdminRoutes } from "./routes/admin";
 import { registerPaymentIntegrationRoutes } from "./routes/payment-integration";
 import { setupAuth } from "./auth";
+import { extendResponse } from "./middleware/api-standards";
+import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
@@ -56,9 +58,15 @@ app.use(express.static('public'));
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15분
   max: 5, // 15분 동안 최대 5회 로그인 시도
-  message: { 
-    message: '너무 많은 로그인 시도입니다. 15분 후 다시 시도해주세요.',
-    code: 'TOO_MANY_LOGIN_ATTEMPTS' 
+  message: {
+    success: false,
+    error: {
+      code: 'TOO_MANY_LOGIN_ATTEMPTS',
+      message: '너무 많은 로그인 시도입니다. 15분 후 다시 시도해주세요.'
+    },
+    meta: {
+      timestamp: new Date().toISOString()
+    }
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -160,26 +168,10 @@ app.use((req: any, res: any, next: any) => {
   }
 });
 
-// Critical API routes that must be handled by Express, not Vite
-app.get('/api/users', async (req, res) => {
-  try {
-    const users = await storage.getAllUsers();
-    res.json(users || []);
-  } catch (error) {
-    console.error('Users API error:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
-  }
-});
+// API 표준화 미들웨어 적용 - Response 객체에 표준 메서드 추가
+app.use(extendResponse);
 
-app.get('/api/admin/users', async (req, res) => {
-  try {
-    const users = await storage.getAllUsers();
-    res.json(users || []);
-  } catch (error) {
-    console.error('Admin Users API error:', error);
-    res.status(500).json({ error: 'Failed to fetch admin users' });
-  }
-});
+// REMOVED: Critical security fix - these endpoints have been moved to routes.ts with proper authentication
 
 // 인증 관련 라우트는 setupAuth()에서 처리됨
 // /api/auth/login, /api/auth/register, /api/auth/logout, /api/auth/me
@@ -455,6 +447,12 @@ async function startServer() {
     } else {
       serveStatic(app);
     }
+
+    // 404 핸들러 (모든 라우트 후에 적용)
+    app.use(notFoundHandler);
+    
+    // 글로벌 에러 핸들러 (맨 마지막에 적용)
+    app.use(errorHandler);
 
     // Start the server
     server.listen(PORT, "0.0.0.0", () => {

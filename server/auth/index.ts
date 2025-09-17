@@ -12,6 +12,13 @@ import { storage } from '../storage';
 import { User as SelectUser } from '@shared/schema';
 import { UserRole } from '@shared/schema';
 import { csrfProtection, getCSRFToken } from '../middleware/csrf';
+import { 
+  ApiErrorCode, 
+  createSuccessResponse,
+  UnauthorizedApiError,
+  ValidationApiError,
+  HTTP_STATUS
+} from '../middleware/api-standards';
 
 // JWT 설정
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -30,17 +37,18 @@ export function generateJwtToken(user: SelectUser): string {
   );
 }
 
-// JWT 토큰 검증 미들웨어
+// JWT 토큰 검증 미들웨어 (표준화 적용)
 export function verifyJwtToken(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: '인증 토큰이 필요합니다.',
-      code: 'NO_TOKEN'
-    });
+    return res.error(
+      ApiErrorCode.AUTHENTICATION_REQUIRED,
+      '인증 토큰이 필요합니다.',
+      undefined,
+      HTTP_STATUS.UNAUTHORIZED
+    );
   }
 
   try {
@@ -48,11 +56,12 @@ export function verifyJwtToken(req: Request, res: Response, next: NextFunction) 
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(403).json({
-      success: false,
-      message: '유효하지 않은 토큰입니다.',
-      code: 'INVALID_TOKEN'
-    });
+    return res.error(
+      ApiErrorCode.TOKEN_INVALID,
+      '유효하지 않은 토큰입니다.',
+      undefined,
+      HTTP_STATUS.UNAUTHORIZED
+    );
   }
 }
 
@@ -137,20 +146,20 @@ function setupAuthRoutes(app: Express) {
   // CSRF 토큰 조회 엔드포인트
   router.get('/csrf', getCSRFToken);
   
-  // 사용자 인증 상태 확인 (GET 요청이므로 CSRF 보호 불필요)
+  // 사용자 인증 상태 확인 (표준화 적용)
   router.get('/me', (req, res) => {
     console.log('세션 확인 - SessionID:', req.sessionID);
     console.log('세션 확인 - 전체 세션:', req.session);
     console.log('세션 확인 - 사용자:', req.user);
     
     if (!req.isAuthenticated()) {
-      return res.status(401).json({
-        message: '인증이 필요합니다. 로그인 후 다시 시도해주세요.',
-        code: 'AUTHENTICATION_REQUIRED'
-      });
+      return res.error(
+        ApiErrorCode.AUTHENTICATION_REQUIRED,
+        '인증이 필요합니다. 로그인 후 다시 시도해주세요.'
+      );
     }
     
-    return res.json(req.user);
+    return res.success(req.user, '사용자 정보를 조회했습니다.');
   });
   
   // JWT 로그인 API (CSRF 보호 적용)
@@ -158,19 +167,17 @@ function setupAuthRoutes(app: Express) {
     passport.authenticate('local', (err: Error, user: any, info: { message?: string }) => {
       if (err) {
         console.error('로그인 오류:', err);
-        return res.status(500).json({
-          success: false,
-          message: '로그인 처리 중 오류가 발생했습니다',
-          code: 'LOGIN_ERROR'
-        });
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '로그인 처리 중 오류가 발생했습니다'
+        );
       }
       
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: info?.message || '아이디 또는 비밀번호가 일치하지 않습니다',
-          code: 'INVALID_CREDENTIALS'
-        });
+        return res.error(
+          ApiErrorCode.INVALID_CREDENTIALS,
+          info?.message || '아이디 또는 비밀번호가 일치하지 않습니다'
+        );
       }
       
       // JWT 토큰 생성
@@ -179,16 +186,14 @@ function setupAuthRoutes(app: Express) {
       req.login(user, (loginErr) => {
         if (loginErr) {
           console.error('로그인 세션 생성 오류:', loginErr);
-          return res.status(500).json({
-            success: false,
-            message: '로그인 세션 생성 중 오류가 발생했습니다',
-            code: 'SESSION_ERROR'
-          });
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '로그인 세션 생성 중 오류가 발생했습니다'
+          );
         }
         
         console.log('로그인 성공:', user.username);
-        return res.json({
-          success: true,
+        return res.success({
           user: {
             id: user.id,
             username: user.username,
@@ -198,51 +203,51 @@ function setupAuthRoutes(app: Express) {
           },
           token,
           expiresIn: JWT_EXPIRES_IN
-        });
+        }, '로그인에 성공했습니다.');
       });
     })(req, res, next);
   });
   
-  // 로그아웃 API (CSRF 보호 적용)
+  // 로그아웃 API (표준화 적용)
   router.post('/logout', csrfProtection, (req, res) => {
     const wasAuthenticated = req.isAuthenticated();
     
     req.logout((err) => {
       if (err) {
         console.error('로그아웃 오류:', err);
-        return res.status(500).json({
-          message: '로그아웃 처리 중 오류가 발생했습니다',
-          code: 'LOGOUT_ERROR'
-        });
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '로그아웃 처리 중 오류가 발생했습니다'
+        );
       }
       
-      return res.json({
-        success: true,
-        wasAuthenticated
-      });
+      return res.success(
+        { wasAuthenticated },
+        '로그아웃되었습니다.'
+      );
     });
   });
   
-  // 회원가입 API (CSRF 보호 적용)
+  // 회원가입 API (표준화 적용)
   router.post('/register', csrfProtection, async (req, res) => {
     try {
       const { username, password, email, name } = req.body;
       
       // 필수 필드 검증
       if (!username || !password || !email || !name) {
-        return res.status(400).json({
-          message: '모든 필수 정보를 입력해주세요',
-          code: 'MISSING_FIELDS'
-        });
+        return res.error(
+          ApiErrorCode.MISSING_REQUIRED_FIELD,
+          '모든 필수 정보를 입력해주세요'
+        );
       }
       
       // 기존 사용자 확인
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
-        return res.status(409).json({
-          message: '이미 사용 중인 아이디입니다',
-          code: 'USERNAME_EXISTS'
-        });
+        return res.error(
+          ApiErrorCode.RESOURCE_ALREADY_EXISTS,
+          '이미 사용 중인 아이디입니다'
+        );
       }
       
       // 비밀번호 해싱
@@ -262,21 +267,21 @@ function setupAuthRoutes(app: Express) {
       req.login(user, (err) => {
         if (err) {
           console.error('회원가입 후 자동 로그인 오류:', err);
-          return res.status(500).json({
-            message: '회원가입은 완료되었으나 자동 로그인 중 오류가 발생했습니다',
-            code: 'AUTO_LOGIN_ERROR'
-          });
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '회원가입은 완료되었으나 자동 로그인 중 오류가 발생했습니다'
+          );
         }
         
         console.log('회원가입 및 자동 로그인 성공:', user.username);
-        return res.status(201).json(user);
+        return res.success(user, '회원가입에 성공했습니다.', HTTP_STATUS.CREATED);
       });
     } catch (error) {
       console.error('회원가입 오류:', error);
-      return res.status(500).json({
-        message: '회원가입 처리 중 오류가 발생했습니다',
-        code: 'REGISTRATION_ERROR'
-      });
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        '회원가입 처리 중 오류가 발생했습니다'
+      );
     }
   });
   

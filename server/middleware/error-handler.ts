@@ -1,5 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import winston from 'winston';
+import { 
+  StandardApiError, 
+  ApiErrorCode, 
+  standardErrorHandler,
+  createErrorResponse,
+  ERROR_CODE_TO_HTTP_STATUS,
+  HTTP_STATUS
+} from './api-standards';
 
 // 로깅 설정
 const logger = winston.createLogger({
@@ -17,7 +25,11 @@ const logger = winston.createLogger({
   ]
 });
 
-// 커스텀 에러 클래스
+// =============================================================================
+// 기존 에러 클래스들 (하위 호환성 유지)
+// =============================================================================
+
+// 커스텀 에러 클래스 (기존 호환성 유지)
 export class AppError extends Error {
   public statusCode: number;
   public isOperational: boolean;
@@ -31,7 +43,7 @@ export class AppError extends Error {
   }
 }
 
-// 비즈니스 로직 에러
+// 비즈니스 로직 에러 (기존 호환성 유지)
 export class ValidationError extends AppError {
   constructor(message: string) {
     super(message, 400);
@@ -56,61 +68,111 @@ export class ForbiddenError extends AppError {
   }
 }
 
-// 글로벌 에러 핸들러
+// =============================================================================
+// 통합된 글로벌 에러 핸들러
+// =============================================================================
+
+/**
+ * 기존 AppError와 새로운 StandardApiError를 모두 처리하는 통합 에러 핸들러
+ */
 export const errorHandler = (
   error: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let { statusCode = 500, message } = error as any;
-
-  // 개발 환경에서는 스택 트레이스 포함
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
-  // 에러 로깅
+  // Winston 로거로 에러 로깅
   logger.error({
     message: error.message,
     stack: error.stack,
-    statusCode,
     url: req.url,
     method: req.method,
     ip: req.ip,
     userAgent: req.get('User-Agent'),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    ...(error instanceof StandardApiError && { code: error.code }),
+    ...(error instanceof AppError && { statusCode: error.statusCode })
   });
+
+  // 표준 API 에러인 경우 새로운 표준 핸들러 사용
+  if (error instanceof StandardApiError) {
+    return standardErrorHandler(error, req, res, next);
+  }
+
+  // 기존 AppError 클래스들 처리 (하위 호환성 유지)
+  if (error instanceof AppError) {
+    const errorCode = getErrorCodeFromAppError(error);
+    const response = createErrorResponse(
+      errorCode,
+      error.message,
+      process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+    );
+    return res.status(error.statusCode).json(response);
+  }
+
+  // 특수 에러들 처리
+  let statusCode = 500;
+  let message = error.message;
+  let errorCode = ApiErrorCode.INTERNAL_SERVER_ERROR;
 
   // 데이터베이스 에러 처리
   if (error.name === 'MongoError' || error.name === 'ValidationError') {
-    statusCode = 400;
+    statusCode = HTTP_STATUS.BAD_REQUEST;
     message = '데이터 처리 중 오류가 발생했습니다.';
+    errorCode = ApiErrorCode.DATABASE_ERROR;
   }
 
   // JWT 에러 처리
   if (error.name === 'JsonWebTokenError') {
-    statusCode = 401;
+    statusCode = HTTP_STATUS.UNAUTHORIZED;
     message = '유효하지 않은 토큰입니다.';
+    errorCode = ApiErrorCode.TOKEN_INVALID;
   }
 
   if (error.name === 'TokenExpiredError') {
-    statusCode = 401;
+    statusCode = HTTP_STATUS.UNAUTHORIZED;
     message = '토큰이 만료되었습니다.';
+    errorCode = ApiErrorCode.TOKEN_EXPIRED;
   }
 
-  // 응답 전송
-  res.status(statusCode).json({
-    success: false,
+  // 표준 에러 응답 생성
+  const response = createErrorResponse(
+    errorCode,
     message,
-    ...(isDevelopment && { stack: error.stack })
-  });
+    process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+  );
+
+  res.status(statusCode).json(response);
 };
 
-// 404 핸들러
+/**
+ * 기존 AppError에서 적절한 ErrorCode 매핑
+ */
+function getErrorCodeFromAppError(error: AppError): ApiErrorCode {
+  if (error instanceof ValidationError) {
+    return ApiErrorCode.VALIDATION_ERROR;
+  }
+  if (error instanceof NotFoundError) {
+    return ApiErrorCode.RESOURCE_NOT_FOUND;
+  }
+  if (error instanceof UnauthorizedError) {
+    return ApiErrorCode.AUTHENTICATION_REQUIRED;
+  }
+  if (error instanceof ForbiddenError) {
+    return ApiErrorCode.INSUFFICIENT_PERMISSIONS;
+  }
+  return ApiErrorCode.INTERNAL_SERVER_ERROR;
+}
+
+/**
+ * 통합된 404 핸들러 (새로운 표준 사용)
+ */
 export const notFoundHandler = (req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: `요청하신 경로 ${req.originalUrl}을 찾을 수 없습니다.`
-  });
+  const response = createErrorResponse(
+    ApiErrorCode.RESOURCE_NOT_FOUND,
+    `요청하신 경로 ${req.originalUrl}을 찾을 수 없습니다.`
+  );
+  res.status(HTTP_STATUS.NOT_FOUND).json(response);
 };
 
 // 비동기 함수 래퍼

@@ -476,15 +476,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { performanceRoutes } = await import('./routes/performance');
   app.use('/api/performance', performanceRoutes);
 
-  // 기본 사용자 API 라우트
-  app.get('/api/users', async (req, res) => {
+  // 보안이 강화된 사용자 API 라우트
+  app.get('/api/users', requireAuth(), async (req, res) => {
     try {
       const users = await storage.getAllUsers();
-      // 사용자별 펫 정보 포함
-      const usersWithPets = users.map(user => ({
+      // 민감한 정보 제거 및 사용자별 펫 정보 포함
+      const safeMappedUsers = users.map(user => ({
         id: user.id,
         name: user.name,
         role: user.role,
+        // 비밀번호, 이메일 등 민감한 정보는 제외
         pets: storage.pets.filter(pet => pet.ownerId === user.id).map(pet => ({
           id: pet.id,
           name: pet.name,
@@ -492,21 +493,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           age: pet.age
         }))
       }));
-      res.json(usersWithPets || []);
+      res.success(safeMappedUsers, '사용자 목록을 조회했습니다.');
     } catch (error) {
       console.error('Users API error:', error);
-      res.status(500).json({ error: 'Failed to fetch users' });
+      res.error('INTERNAL_SERVER_ERROR', '사용자 목록 조회 중 오류가 발생했습니다.');
     }
   });
 
-  // 관리자 사용자 API
-  app.get('/api/admin/users', (req, res) => {
+  // 관리자 전용 사용자 API
+  app.get('/api/admin/users', requireAuth('admin'), async (req, res) => {
     try {
-      const users = storage.getAllUsers();
-      res.json(users || []);
+      const users = await storage.getAllUsers();
+      // 관리자는 더 많은 정보에 접근 가능하지만 여전히 비밀번호는 제외
+      const adminMappedUsers = users.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isVerified: user.verified,
+        createdAt: user.createdAt
+        // 비밀번호는 여전히 제외
+      }));
+      res.success(adminMappedUsers, '관리자용 사용자 목록을 조회했습니다.');
     } catch (error) {
       console.error('Admin Users API error:', error);
-      res.status(500).json({ error: 'Failed to fetch admin users' });
+      res.error('INTERNAL_SERVER_ERROR', '관리자용 사용자 목록 조회 중 오류가 발생했습니다.');
     }
   });
 
