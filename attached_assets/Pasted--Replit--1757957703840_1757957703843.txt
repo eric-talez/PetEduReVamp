@@ -1,0 +1,652 @@
+# Replit에서 메일 발송 + 푸시 알림 통합 구현 가이드
+
+## 전체 아키텍처
+
+```
+사용자 → 웹 앱 → 서버 → [이메일 발송 + 푸시 알림]
+                    ↓
+            Firebase FCM + Nodemailer/EmailJS
+```
+
+## 1. 프로젝트 초기 설정
+
+### 필요한 패키지 설치
+
+**`package.json`**
+
+```json
+{
+  "name": "notification-system",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.7",
+    "firebase-admin": "^11.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "body-parser": "^1.20.2"
+  }
+}
+```
+
+### 환경 변수 설정 (Replit Secrets)
+
+Replit의 **Tools → Secrets**에 다음 값들 추가:
+
+```
+# 이메일 설정
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-app-password
+
+# Firebase 설정
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_PRIVATE_KEY=your-private-key
+FIREBASE_CLIENT_EMAIL=your-client-email
+
+# VAPID 키
+VAPID_PUBLIC_KEY=your-vapid-public-key
+VAPID_PRIVATE_KEY=your-vapid-private-key
+```
+
+## 2. 백엔드 서버 구현
+
+**`server.js`**
+
+```javascript
+const express = require('express');
+const nodemailer = require('nodemailer');
+const admin = require('firebase-admin');
+const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.static('.'));
+
+// Firebase Admin 초기화
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        })
+    });
+}
+
+// 이메일 설정 (Nodemailer)
+const emailTransporter = nodemailer.createTransporter({
+    service: 'gmail',
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+    }
+});
+
+// 사용자 토큰 저장소 (실제로는 데이터베이스 사용)
+let userTokens = [];
+let userEmails = [];
+
+// 사용자 등록 (이메일 + 푸시 토큰)
+app.post('/register-user', (req, res) => {
+    const { email, pushToken } = req.body;
+    
+    if (email && !userEmails.includes(email)) {
+        userEmails.push(email);
+    }
+    
+    if (pushToken && !userTokens.includes(pushToken)) {
+        userTokens.push(pushToken);
+    }
+    
+    res.json({ 
+        success: true, 
+        message: '사용자 등록 완료',
+        registeredEmails: userEmails.length,
+        registeredTokens: userTokens.length
+    });
+});
+
+// 통합 알림 발송 (메일 + 푸시)
+app.post('/send-notification', async (req, res) => {
+    const { 
+        title, 
+        message, 
+        recipient_email, 
+        send_email = true, 
+        send_push = true,
+        email_subject,
+        email_html 
+    } = req.body;
+
+    const results = {
+        email: { success: false, error: null },
+        push: { success: false, error: null, successCount: 0 }
+    };
+
+    // 1. 이메일 발송
+    if (send_email) {
+        try {
+            const mailOptions = {
+                from: process.env.GMAIL_USER,
+                to: recipient_email || userEmails.join(','),
+                subject: email_subject || title || '새 알림',
+                text: message,
+                html: email_html || `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px;">
+                        <h2 style="color: #333;">${title || '알림'}</h2>
+                        <p style="font-size: 16px; line-height: 1.5;">${message}</p>
+                        <hr style="border: none; height: 1px; background-color: #eee;">
+                        <p style="color: #666; font-size: 12px;">
+                            이 메일은 자동으로 발송되었습니다.
+                        </p>
+                    </div>
+                `
+            };
+
+            await emailTransporter.sendMail(mailOptions);
+            results.email.success = true;
+            console.log('이메일 발송 성공');
+        } catch (error) {
+            results.email.error = error.message;
+            console.error('이메일 발송 실패:', error);
+        }
+    }
+
+    // 2. 푸시 알림 발송
+    if (send_push && userTokens.length > 0) {
+        try {
+            const pushMessage = {
+                notification: {
+                    title: title || '새 알림',
+                    body: message || '새로운 내용이 도착했습니다!'
+                },
+                data: {
+                    click_action: '/',
+                    timestamp: Date.now().toString()
+                },
+                tokens: userTokens
+            };
+
+            const response = await admin.messaging().sendMulticast(pushMessage);
+            results.push.success = true;
+            results.push.successCount = response.successCount;
+            console.log(`푸시 알림 발송 성공: ${response.successCount}개`);
+
+            // 실패한 토큰 제거
+            if (response.failureCount > 0) {
+                const failedTokens = [];
+                response.responses.forEach((resp, idx) => {
+                    if (!resp.success) {
+                        failedTokens.push(userTokens[idx]);
+                    }
+                });
+                userTokens = userTokens.filter(token => !failedTokens.includes(token));
+            }
+        } catch (error) {
+            results.push.error = error.message;
+            console.error('푸시 알림 발송 실패:', error);
+        }
+    }
+
+    res.json({
+        success: results.email.success || results.push.success,
+        results: results,
+        message: '알림 발송 처리 완료'
+    });
+});
+
+// 테스트용 엔드포인트
+app.post('/test-notification', async (req, res) => {
+    const testResult = await fetch(`${req.protocol}://${req.get('host')}/send-notification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            title: '테스트 알림',
+            message: '이것은 테스트 알림입니다. 이메일과 푸시 알림이 모두 발송됩니다.',
+            send_email: true,
+            send_push: true
+        })
+    });
+    
+    const result = await testResult.json();
+    res.json(result);
+});
+
+// 상태 확인
+app.get('/status', (req, res) => {
+    res.json({
+        registered_emails: userEmails.length,
+        registered_push_tokens: userTokens.length,
+        server_status: 'running'
+    });
+});
+
+app.listen(3000, () => {
+    console.log('🚀 알림 서버가 3000 포트에서 실행 중...');
+    console.log('📧 이메일 설정:', process.env.GMAIL_USER ? '✅' : '❌');
+    console.log('🔔 Firebase 설정:', process.env.FIREBASE_PROJECT_ID ? '✅' : '❌');
+});
+```
+
+## 3. 프론트엔드 구현
+
+**`index.html`**
+
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 알림 시스템</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .section { 
+            margin: 30px 0; 
+            padding: 20px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px; 
+        }
+        button { 
+            background: #007AFF; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #005BBB; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        input, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        .status { 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin: 10px 0; 
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 통합 알림 시스템</h1>
+        <p>이메일과 푸시 알림을 동시에 관리하는 시스템입니다.</p>
+
+        <!-- 1. 사용자 등록 섹션 -->
+        <div class="section">
+            <h2>📝 사용자 등록</h2>
+            <input type="email" id="user-email" placeholder="이메일 주소 입력">
+            <button onclick="registerUser()">이메일 등록</button>
+            <button onclick="enablePushNotifications()">푸시 알림 허용</button>
+            <div id="registration-status"></div>
+        </div>
+
+        <!-- 2. 알림 발송 섹션 -->
+        <div class="section">
+            <h2>📢 알림 발송</h2>
+            <input type="text" id="notification-title" placeholder="알림 제목">
+            <textarea id="notification-message" placeholder="알림 내용" rows="3"></textarea>
+            <input type="email" id="specific-email" placeholder="특정 이메일 (선택사항)">
+            
+            <div>
+                <label>
+                    <input type="checkbox" id="send-email" checked> 이메일 발송
+                </label>
+                <label>
+                    <input type="checkbox" id="send-push" checked> 푸시 알림 발송
+                </label>
+            </div>
+            
+            <button onclick="sendNotification()">📤 알림 발송</button>
+            <button onclick="sendTestNotification()">🧪 테스트 알림</button>
+            <div id="send-status"></div>
+        </div>
+
+        <!-- 3. 상태 확인 섹션 -->
+        <div class="section">
+            <h2>📊 시스템 상태</h2>
+            <button onclick="checkStatus()">상태 확인</button>
+            <div id="system-status"></div>
+        </div>
+
+        <!-- 4. 수신된 알림 섹션 -->
+        <div class="section">
+            <h2>📬 수신된 알림</h2>
+            <div id="received-notifications">
+                <p class="info">여기에 수신된 푸시 알림이 표시됩니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+        import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging.js';
+
+        // Firebase 설정 (실제 값으로 교체)
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "your-app-id"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        let currentPushToken = null;
+
+        // 전역 함수들
+        window.registerUser = async function() {
+            const email = document.getElementById('user-email').value;
+            if (!email) {
+                showStatus('registration-status', '이메일을 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/register-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: email,
+                        pushToken: currentPushToken 
+                    })
+                });
+
+                const result = await response.json();
+                showStatus('registration-status', 
+                    `✅ 등록 완료! (이메일: ${result.registeredEmails}개, 토큰: ${result.registeredTokens}개)`, 
+                    'success'
+                );
+            } catch (error) {
+                showStatus('registration-status', '등록 실패: ' + error.message, 'error');
+            }
+        };
+
+        window.enablePushNotifications = async function() {
+            try {
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                
+                const token = await getToken(messaging, {
+                    vapidKey: 'your-vapid-key', // 실제 VAPID 키로 교체
+                    serviceWorkerRegistration: registration
+                });
+
+                if (token) {
+                    currentPushToken = token;
+                    showStatus('registration-status', 
+                        '✅ 푸시 알림 허용 완료! 이제 이메일도 등록해주세요.', 
+                        'success'
+                    );
+                } else {
+                    showStatus('registration-status', '푸시 알림 토큰을 가져올 수 없습니다.', 'error');
+                }
+            } catch (error) {
+                showStatus('registration-status', '푸시 알림 허용 실패: ' + error.message, 'error');
+            }
+        };
+
+        window.sendNotification = async function() {
+            const title = document.getElementById('notification-title').value;
+            const message = document.getElementById('notification-message').value;
+            const specificEmail = document.getElementById('specific-email').value;
+            const sendEmail = document.getElementById('send-email').checked;
+            const sendPush = document.getElementById('send-push').checked;
+
+            if (!title || !message) {
+                showStatus('send-status', '제목과 내용을 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/send-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        message,
+                        recipient_email: specificEmail,
+                        send_email: sendEmail,
+                        send_push: sendPush
+                    })
+                });
+
+                const result = await response.json();
+                
+                let statusMessage = '📤 발송 결과:\n';
+                if (sendEmail) {
+                    statusMessage += `이메일: ${result.results.email.success ? '✅ 성공' : '❌ 실패'}\n`;
+                }
+                if (sendPush) {
+                    statusMessage += `푸시: ${result.results.push.success ? `✅ ${result.results.push.successCount}개 성공` : '❌ 실패'}`;
+                }
+
+                showStatus('send-status', statusMessage, result.success ? 'success' : 'error');
+            } catch (error) {
+                showStatus('send-status', '발송 실패: ' + error.message, 'error');
+            }
+        };
+
+        window.sendTestNotification = async function() {
+            try {
+                const response = await fetch('/test-notification', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                showStatus('send-status', '🧪 테스트 알림 발송 완료!', 'info');
+            } catch (error) {
+                showStatus('send-status', '테스트 실패: ' + error.message, 'error');
+            }
+        };
+
+        window.checkStatus = async function() {
+            try {
+                const response = await fetch('/status');
+                const status = await response.json();
+                
+                const statusHtml = `
+                    <div class="info">
+                        <strong>📊 시스템 상태</strong><br>
+                        등록된 이메일: ${status.registered_emails}개<br>
+                        등록된 푸시 토큰: ${status.registered_push_tokens}개<br>
+                        서버 상태: ${status.server_status}
+                    </div>
+                `;
+                document.getElementById('system-status').innerHTML = statusHtml;
+            } catch (error) {
+                showStatus('system-status', '상태 확인 실패: ' + error.message, 'error');
+            }
+        };
+
+        // 포그라운드 메시지 수신
+        onMessage(messaging, (payload) => {
+            console.log('포그라운드 메시지 수신:', payload);
+            
+            const notificationHtml = `
+                <div class="success" style="margin: 10px 0;">
+                    <strong>🔔 ${payload.notification.title}</strong><br>
+                    ${payload.notification.body}<br>
+                    <small>수신 시간: ${new Date().toLocaleString()}</small>
+                </div>
+            `;
+            
+            const container = document.getElementById('received-notifications');
+            container.innerHTML = notificationHtml + container.innerHTML;
+        });
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${message.replace(/\n/g, '<br>')}</div>`;
+        }
+
+        // 페이지 로드시 상태 확인
+        window.addEventListener('load', () => {
+            checkStatus();
+        });
+    </script>
+</body>
+</html>
+```
+
+## 4. Service Worker 파일
+
+**`firebase-messaging-sw.js`**
+
+```javascript
+// Firebase SDK import
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
+
+// Firebase 설정 (실제 값으로 교체)
+firebase.initializeApp({
+    apiKey: "your-api-key",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project-id",
+    storageBucket: "your-project.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "your-app-id"
+});
+
+const messaging = firebase.messaging();
+
+// 백그라운드 메시지 처리
+messaging.onBackgroundMessage(function(payload) {
+    console.log('백그라운드 메시지 수신:', payload);
+    
+    const notificationTitle = payload.notification.title || '새 알림';
+    const notificationOptions = {
+        body: payload.notification.body || '새로운 내용이 도착했습니다.',
+        icon: '/icon-192x192.png',
+        badge: '/icon-72x72.png',
+        tag: 'notification-' + Date.now(),
+        data: {
+            click_action: payload.data?.click_action || '/',
+            timestamp: payload.data?.timestamp || Date.now()
+        },
+        actions: [
+            {
+                action: 'open',
+                title: '열기'
+            },
+            {
+                action: 'close',
+                title: '닫기'
+            }
+        ]
+    };
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// 알림 클릭 처리
+self.addEventListener('notificationclick', function(event) {
+    console.log('알림 클릭:', event);
+    
+    event.notification.close();
+
+    if (event.action === 'close') {
+        return;
+    }
+
+    const clickAction = event.notification.data?.click_action || '/';
+    
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+        .then(function(clientList) {
+            // 이미 열린 탭이 있으면 포커스
+            for (let client of clientList) {
+                if (client.url.includes(self.location.origin)) {
+                    return client.focus();
+                }
+            }
+            // 새 탭 열기
+            return clients.openWindow(clickAction);
+        })
+    );
+});
+
+// 알림 닫기 처리
+self.addEventListener('notificationclose', function(event) {
+    console.log('알림 닫힘:', event);
+});
+```
+
+## 5. 사용 방법
+
+### 5-1. 초기 설정
+
+1. Firebase 프로젝트 생성 및 설정
+1. Gmail 앱 비밀번호 생성
+1. Replit Secrets에 환경변수 설정
+1. 프로젝트 파일들 업로드
+
+### 5-2. 사용자 등록
+
+1. 웹페이지에서 이메일 입력 → “이메일 등록” 클릭
+1. “푸시 알림 허용” 클릭 → 브라우저 권한 허용
+
+### 5-3. 알림 발송
+
+1. 제목과 내용 입력
+1. 이메일/푸시 알림 체크박스 선택
+1. “알림 발송” 클릭
+
+### 5-4. API 사용법
+
+```javascript
+// 프로그래밍 방식으로 알림 발송
+fetch('/send-notification', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        title: '주문 완료',
+        message: '주문이 성공적으로 처리되었습니다.',
+        recipient_email: 'customer@example.com',
+        send_email: true,
+        send_push: true,
+        email_html: '<h1>주문 완료!</h1><p>감사합니다.</p>'
+    })
+});
+```
+
+## 주요 특징
+
+✅ **통합 관리**: 이메일과 푸시 알림을 한 번에 발송  
+✅ **선택적 발송**: 이메일만, 푸시만, 또는 둘 다 발송 가능  
+✅ **실시간 알림**: 포그라운드/백그라운드 모두 지원  
+✅ **사용자 관리**: 이메일과 푸시 토큰 자동 관리  
+✅ **에러 핸들링**: 실패한 토큰 자동 제거  
+✅ **테스트 기능**: 쉬운 테스트 및 상태 확인
+
+이제 Replit에서 완전한 알림 시스템을 운영할 수 있습니다! 🚀​​​​​​​​​​​​​​​​
