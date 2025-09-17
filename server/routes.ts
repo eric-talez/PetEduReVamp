@@ -15,7 +15,7 @@ import { storage } from "./storage";
 import Stripe from "stripe";
 import { eventRoutes } from "./routes/events";
 import { eventUpdater } from "./services/eventUpdater";
-import { courses, users, institutes } from "../shared/schema";
+import { courses, users, institutes, createPetSchema, updatePetValidationSchema, pets } from "../shared/schema";
 import { ilike, or } from "drizzle-orm";
 import { 
   analyzePetBehavior, 
@@ -1874,26 +1874,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/pets/:id", async (req, res) => {
+  // 반려동물 정보 수정 API (Enhanced with Zod validation)
+  app.put("/api/pets/:id", csrfProtection, async (req, res) => {
     try {
       const petId = parseInt(req.params.id);
       const userId = req.session?.user?.id;
       
+      console.log(`반려동물 정보 수정 요청 - Pet ID: ${petId}, User ID: ${userId}`);
+
       if (!userId) {
-        return res.status(401).json({ error: "로그인이 필요합니다" });
+        return res.status(401).json({ 
+          success: false,
+          error: "로그인이 필요합니다",
+          code: "AUTHENTICATION_REQUIRED"
+        });
       }
 
-      // 반려동물 소유자 확인
+      if (isNaN(petId)) {
+        return res.status(400).json({
+          success: false,
+          error: "올바르지 않은 반려동물 ID입니다",
+          code: "INVALID_PET_ID"
+        });
+      }
+
+      // 반려동물 존재 및 소유자 확인
       const existingPet = await storage.getPet(petId);
       if (!existingPet) {
-        return res.status(404).json({ error: '반려동물을 찾을 수 없습니다' });
+        return res.status(404).json({ 
+          success: false,
+          error: '반려동물을 찾을 수 없습니다',
+          code: "PET_NOT_FOUND"
+        });
       }
 
-      if (existingPet.ownerId !== userId) {
-        return res.status(403).json({ error: '권한이 없습니다' });
+      // 소유자 권한 확인 (관리자는 모든 펫 수정 가능)
+      if (existingPet.ownerId !== userId && req.session?.user?.role !== 'admin') {
+        return res.status(403).json({ 
+          success: false,
+          error: '권한이 없습니다. 본인의 반려동물만 수정할 수 있습니다',
+          code: "FORBIDDEN"
+        });
       }
 
-      const updatedPet = await storage.updatePet(petId, req.body);
+      // Zod 스키마 검증
+      const validationResult = updatePetValidationSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.issues.map(issue => ({
+          field: issue.path.join('.'),
+          message: issue.message
+        }));
+        
+        return res.status(400).json({
+          success: false,
+          error: "입력 데이터가 올바르지 않습니다",
+          code: "VALIDATION_ERROR",
+          details: errors
+        });
+      }
+
+      // 업데이트 데이터 준비
+      const updateData = {
+        ...validationResult.data,
+        updatedAt: new Date().toISOString()
+      };
+
+      const updatedPet = await storage.updatePet(petId, updateData);
+
+      console.log(`반려동물 정보 수정 성공 - Pet ID: ${petId}`);
 
       res.json({
         success: true,
@@ -1902,38 +1951,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Error updating pet:', error);
-      res.status(500).json({ error: '반려동물 정보 업데이트 중 오류가 발생했습니다' });
+      res.status(500).json({ 
+        success: false,
+        error: '반려동물 정보 업데이트 중 오류가 발생했습니다',
+        code: "INTERNAL_SERVER_ERROR"
+      });
     }
   });
 
-  app.delete("/api/pets/:id", async (req, res) => {
+  // 반려동물 삭제 API (Enhanced with better security and validation)
+  app.delete("/api/pets/:id", csrfProtection, async (req, res) => {
     try {
       const petId = parseInt(req.params.id);
       const userId = req.session?.user?.id;
       
+      console.log(`반려동물 삭제 요청 - Pet ID: ${petId}, User ID: ${userId}`);
+
       if (!userId) {
-        return res.status(401).json({ error: "로그인이 필요합니다" });
+        return res.status(401).json({ 
+          success: false,
+          error: "로그인이 필요합니다",
+          code: "AUTHENTICATION_REQUIRED"
+        });
       }
 
-      // 반려동물 소유자 확인
+      if (isNaN(petId)) {
+        return res.status(400).json({
+          success: false,
+          error: "올바르지 않은 반려동물 ID입니다",
+          code: "INVALID_PET_ID"
+        });
+      }
+
+      // 반려동물 존재 및 소유자 확인
       const existingPet = await storage.getPet(petId);
       if (!existingPet) {
-        return res.status(404).json({ error: '반려동물을 찾을 수 없습니다' });
+        return res.status(404).json({ 
+          success: false,
+          error: '반려동물을 찾을 수 없습니다',
+          code: "PET_NOT_FOUND"
+        });
       }
 
-      if (existingPet.ownerId !== userId) {
-        return res.status(403).json({ error: '권한이 없습니다' });
+      // 소유자 권한 확인 (관리자는 모든 펫 삭제 가능)
+      if (existingPet.ownerId !== userId && req.session?.user?.role !== 'admin') {
+        return res.status(403).json({ 
+          success: false,
+          error: '권한이 없습니다. 본인의 반려동물만 삭제할 수 있습니다',
+          code: "FORBIDDEN"
+        });
       }
+
+      // 활성 훈련이나 예약이 있는지 확인
+      if (existingPet.trainingStatus === 'in_progress' || existingPet.trainingStatus === 'assigned') {
+        const statusMessage = existingPet.trainingStatus === 'in_progress' 
+          ? '현재 훈련 중인 반려동물은 삭제할 수 없습니다. 먼저 훈련을 완료하거나 취소해주세요.'
+          : '훈련사가 배정된 반려동물은 삭제할 수 없습니다. 먼저 훈련사 배정을 해제해주세요.';
+        
+        return res.status(409).json({
+          success: false,
+          error: statusMessage,
+          code: "TRAINING_ACTIVE"
+        });
+      }
+
+      // TODO: 연관된 데이터 정리 (예약, 훈련 기록, 건강 기록 등)
+      // 실제 구현에서는 이런 관련 데이터들도 함께 처리해야 합니다.
 
       const deleted = await storage.deletePet(petId);
 
+      if (!deleted) {
+        return res.status(500).json({
+          success: false,
+          error: '반려동물 삭제에 실패했습니다',
+          code: "DELETE_FAILED"
+        });
+      }
+
+      console.log(`반려동물 삭제 성공 - Pet ID: ${petId}`);
+
       res.json({ 
         success: true, 
-        message: '반려동물이 성공적으로 삭제되었습니다.' 
+        message: '반려동물이 성공적으로 삭제되었습니다.',
+        petId: petId
       });
     } catch (error) {
       console.error('Error deleting pet:', error);
-      res.status(500).json({ error: '반려동물 삭제 중 오류가 발생했습니다' });
+      res.status(500).json({ 
+        success: false,
+        error: '반려동물 삭제 중 오류가 발생했습니다',
+        code: "INTERNAL_SERVER_ERROR"
+      });
     }
   });
 
@@ -2266,44 +2374,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 반려동물 등록 API (사용자별 데이터 분리)
-  app.post("/api/pets", async (req, res) => {
+  // 반려동물 등록 API (Enhanced with Zod validation)
+  app.post("/api/pets", csrfProtection, async (req, res) => {
     try {
-      const { 
-        name, 
-        species, 
-        breed, 
-        age, 
-        gender, 
-        weight, 
-        color, 
-        personality, 
-        medicalHistory, 
-        specialNotes, 
-        imageUrl 
-      } = req.body;
-
-      console.log('반려동물 등록 요청:', { name, species, breed, age });
+      console.log('반려동물 등록 요청:', req.body);
 
       // 세션에서 사용자 정보 가져오기
       const userId = req.session?.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: "로그인이 필요합니다" });
+        return res.status(401).json({ 
+          success: false,
+          error: "로그인이 필요합니다",
+          code: "AUTHENTICATION_REQUIRED"
+        });
+      }
+
+      // Zod 스키마 검증
+      const validationResult = createPetSchema.safeParse({
+        ...req.body,
+        ownerId: userId
+      });
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.issues.map(issue => ({
+          field: issue.path.join('.'),
+          message: issue.message
+        }));
+        
+        return res.status(400).json({
+          success: false,
+          error: "입력 데이터가 올바르지 않습니다",
+          code: "VALIDATION_ERROR",
+          details: errors
+        });
       }
 
       const petData = {
-        name: name,
-        species: species || 'dog',
-        breed: breed,
-        age: age,
-        gender: gender || 'male',
-        weight: weight,
-        color: color || '',
-        personality: personality || '',
-        medicalHistory: medicalHistory || '',
-        specialNotes: specialNotes || '',
-        imageUrl: imageUrl || "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        ...validationResult.data,
         ownerId: userId,
+        imageUrl: validationResult.data.imageUrl || "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         trainingStatus: 'not_assigned',
         assignedTrainerId: null,
         assignedTrainerName: null,
@@ -2315,14 +2424,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 저장소에 반려동물 추가
       const createdPet = await storage.createPet(petData);
 
-      res.json({ 
+      console.log('반려동물 등록 성공:', createdPet.id);
+
+      res.status(201).json({ 
         success: true, 
         message: "반려동물이 성공적으로 등록되었습니다.",
         pet: createdPet
       });
     } catch (error) {
       console.error('반려동물 등록 오류:', error);
-      res.status(500).json({ error: "반려동물 등록 중 오류가 발생했습니다" });
+      res.status(500).json({ 
+        success: false,
+        error: "반려동물 등록 중 오류가 발생했습니다",
+        code: "INTERNAL_SERVER_ERROR"
+      });
     }
   });
 

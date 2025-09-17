@@ -97,10 +97,25 @@ export const pets = pgTable("pets", {
   species: varchar("species", { length: 50 }).notNull(),
   breed: varchar("breed", { length: 100 }),
   age: integer("age"),
+  gender: varchar("gender", { length: 10 }), // male, female
   weight: decimal("weight", { precision: 5, scale: 2 }),
+  color: varchar("color", { length: 100 }),
+  personality: text("personality"),
+  medicalHistory: text("medical_history"),
+  specialNotes: text("special_notes"),
   ownerId: integer("owner_id").references(() => users.id),
   profileImage: text("profile_image"),
+  imageUrl: text("image_url"), // 추가 이미지 필드
   notes: text("notes"),
+  // 훈련 관련 필드
+  trainingStatus: varchar("training_status", { length: 50 }).default("not_assigned"), // not_assigned, assigned, in_progress, completed
+  assignedTrainerId: integer("assigned_trainer_id").references(() => users.id),
+  assignedTrainerName: varchar("assigned_trainer_name", { length: 100 }),
+  trainingType: varchar("training_type", { length: 50 }), // basic, advanced, behavioral_correction
+  notebookEnabled: boolean("notebook_enabled").default(false),
+  trainingStartDate: timestamp("training_start_date"),
+  lastNotebookEntry: text("last_notebook_entry"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -315,8 +330,52 @@ export const insertCourseSchema = createInsertSchema(courses);
 export const selectCourseSchema = createSelectSchema(courses);
 export const insertInstituteSchema = createInsertSchema(institutes);
 export const selectInstituteSchema = createSelectSchema(institutes);
-export const insertPetSchema = createInsertSchema(pets);
+// Basic Pet Zod Schemas
+export const insertPetSchema = createInsertSchema(pets).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true,
+  assignedTrainerId: true, // 관리자만 설정 가능
+  assignedTrainerName: true
+});
+
+export const updatePetSchema = insertPetSchema.partial().omit({ 
+  ownerId: true // 소유자는 변경 불가
+});
+
 export const selectPetSchema = createSelectSchema(pets);
+
+// Enhanced Pet validation schemas with custom rules
+export const createPetSchema = z.object({
+  name: z.string().min(1, "반려동물 이름은 필수입니다").max(100, "이름은 100자를 초과할 수 없습니다"),
+  species: z.string().min(1, "종(Species)은 필수입니다").max(50, "종 이름은 50자를 초과할 수 없습니다"),
+  breed: z.string().max(100, "품종 이름은 100자를 초과할 수 없습니다").optional().nullable(),
+  age: z.number().int().min(0, "나이는 0 이상이어야 합니다").max(30, "나이는 30세를 초과할 수 없습니다").optional().nullable(),
+  gender: z.enum(["male", "female"]).optional().nullable(),
+  weight: z.coerce.number().min(0.1, "체중은 0.1kg 이상이어야 합니다").max(200, "체중은 200kg을 초과할 수 없습니다").optional().nullable(),
+  color: z.string().max(100, "색상은 100자를 초과할 수 없습니다").optional().nullable(),
+  personality: z.string().max(500, "성격 설명은 500자를 초과할 수 없습니다").optional().nullable(),
+  medicalHistory: z.string().max(1000, "병력은 1000자를 초과할 수 없습니다").optional().nullable(),
+  specialNotes: z.string().max(1000, "특이사항은 1000자를 초과할 수 없습니다").optional().nullable(),
+  profileImage: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable(),
+  imageUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable(),
+  notes: z.string().max(1000, "메모는 1000자를 초과할 수 없습니다").optional().nullable(),
+  trainingStatus: z.enum(["not_assigned", "assigned", "in_progress", "completed"]).default("not_assigned"),
+  trainingType: z.enum(["basic", "advanced", "behavioral_correction"]).optional().nullable(),
+  notebookEnabled: z.boolean().default(false),
+  ownerId: z.number().int().positive("올바른 사용자 ID가 필요합니다"),
+  isActive: z.boolean().default(true)
+});
+
+export const updatePetValidationSchema = createPetSchema.partial().omit({
+  ownerId: true // 소유자는 변경 불가
+});
+
+// Pet type definitions
+export type InsertPet = z.infer<typeof insertPetSchema>;
+export type UpdatePet = z.infer<typeof updatePetSchema>;
+export type CreatePetInput = z.infer<typeof createPetSchema>;
+export type UpdatePetInput = z.infer<typeof updatePetValidationSchema>;
 // 새로운 테이블들의 Zod 스키마는 하단에서 정의됨
 
 // Missing schema tables required by storage.ts
