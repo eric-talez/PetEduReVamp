@@ -791,6 +791,7 @@ class Storage {
         enrollmentCount: 15,
         averageRating: 4.7,
         reviewCount: 12,
+        thumbnailUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop&crop=center&auto=format", // 강아지 훈련 썸네일
         modules: [
           {
             id: 1,
@@ -900,6 +901,7 @@ class Storage {
         enrollmentCount: 8,
         averageRating: 4.8,
         reviewCount: 6,
+        thumbnailUrl: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop&crop=center&auto=format", // 퍼피 사회화 썸네일
         modules: [
           {
             id: 1,
@@ -987,6 +989,7 @@ class Storage {
         enrollmentCount: 10,
         averageRating: 4.9,
         reviewCount: 8,
+        thumbnailUrl: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop&crop=center&auto=format", // 행동 교정 썸네일
         modules: [
           {
             id: 1,
@@ -2570,6 +2573,7 @@ class Storage {
         isActive: courseData.isActive !== false,
         featured: courseData.featured || false,
         tags: courseData.tags || [],
+        thumbnailUrl: courseData.thumbnailUrl || null, // 썸네일 URL 필드 추가
         createdAt: courseData.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };

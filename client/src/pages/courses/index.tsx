@@ -392,12 +392,35 @@ export default function Courses(props?: CoursesPageProps) {
         {currentCourses.length > 0 ? (
           currentCourses.map((course) => (
             <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
-              <div className="relative h-40 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                {course.hasAnyVideo ? (
-                  <Video className="w-16 h-16 text-green-500" />
+              <div className="relative h-40 overflow-hidden">
+                {course.thumbnailUrl ? (
+                  <img 
+                    src={course.thumbnailUrl} 
+                    alt={course.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // 이미지 로드 실패 시 기본 배경으로 대체
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.className += ' bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center';
+                        parent.innerHTML += course.hasAnyVideo 
+                          ? '<div class="w-16 h-16 text-green-500"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>'
+                          : '<div class="w-16 h-16 text-blue-400"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>';
+                      }
+                    }}
+                  />
                 ) : (
-                  <BookOpen className="w-16 h-16 text-blue-400" />
+                  <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                    {course.hasAnyVideo ? (
+                      <Video className="w-16 h-16 text-green-500" />
+                    ) : (
+                      <BookOpen className="w-16 h-16 text-blue-400" />
+                    )}
+                  </div>
                 )}
+                <div className="absolute inset-0 bg-black/20"></div>
                 <Badge variant="default" className="absolute top-2 right-2">
                   발행됨
                 </Badge>
