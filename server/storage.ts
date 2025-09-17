@@ -18,6 +18,7 @@ class Storage {
   trainerActivityLogs: any[] = [];
   pointSettings: any = {};
   logoSettings: any = {};
+  banners: any[] = [];
   // 대체 훈련사 시스템 데이터 저장소
   substituteClassPosts: any[] = [];
   substituteClassApplications: any[] = [];
@@ -3901,6 +3902,97 @@ class HybridStorage extends Storage {
       console.error('환불 내역 생성 오류:', error);
       return false;
     }
+  }
+
+  // 배너 관리 메서드들
+  getAllBanners() {
+    // 기본 배너가 없으면 생성
+    if (this.banners.length === 0) {
+      this.banners = [
+        {
+          id: 1,
+          title: "Talez 펫 교육 플랫폼",
+          content: "전문 훈련사와 함께하는 AI 기반 맞춤형 반려동물 교육",
+          imageUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+          actionText: "교육 시작하기",
+          actionUrl: "/courses",
+          position: "hero",
+          type: "main",
+          isActive: true,
+          order: 1,
+          startDate: null,
+          endDate: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+    }
+    return this.banners.filter(banner => banner.isActive);
+  }
+
+  createBanner(bannerData: any) {
+    const newId = Math.max(0, ...this.banners.map(b => b.id || 0)) + 1;
+    const newBanner = {
+      id: newId,
+      title: bannerData.title,
+      description: bannerData.description,
+      content: bannerData.description,
+      imageUrl: bannerData.imageUrl,
+      altText: bannerData.altText,
+      actionText: bannerData.linkUrl ? '자세히 보기' : '',
+      actionUrl: bannerData.linkUrl || '',
+      linkUrl: bannerData.linkUrl,
+      targetBlank: bannerData.targetBlank || true,
+      position: bannerData.position || 'hero',
+      type: bannerData.type || 'main',
+      order: bannerData.order || 1,
+      startDate: bannerData.startDate || null,
+      endDate: bannerData.endDate || null,
+      isActive: bannerData.status === 'active',
+      status: bannerData.status || 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.banners.push(newBanner);
+    return newBanner;
+  }
+
+  updateBanner(id: number, bannerData: any) {
+    const index = this.banners.findIndex(banner => banner.id === id);
+    if (index === -1) {
+      throw new Error('배너를 찾을 수 없습니다');
+    }
+    
+    this.banners[index] = {
+      ...this.banners[index],
+      ...bannerData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    return this.banners[index];
+  }
+
+  deleteBanner(id: number) {
+    const index = this.banners.findIndex(banner => banner.id === id);
+    if (index === -1) {
+      throw new Error('배너를 찾을 수 없습니다');
+    }
+    
+    this.banners.splice(index, 1);
+    return true;
+  }
+
+  getBannerById(id: number) {
+    return this.banners.find(banner => banner.id === id);
+  }
+
+  getBannersByPosition(position: string) {
+    return this.banners.filter(banner => banner.position === position && banner.isActive);
+  }
+
+  getBannersByType(type: string) {
+    return this.banners.filter(banner => banner.type === type && banner.isActive);
   }
 }
 

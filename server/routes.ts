@@ -5646,11 +5646,60 @@ app.get('/api/search', async (req, res) => {
 // 관리자 - 배너 관리
   app.get('/api/admin/banners', requireAuth('admin'), async (req, res) => {
     try {
-      const banners = await storage.getAllTrainers();
+      const banners = await storage.getAllBanners();
       res.json(banners);
     } catch (error) {
       console.error('배너 조회 오류:', error);
       res.status(500).json({ error: '배너 조회에 실패했습니다.' });
+    }
+  });
+
+  app.post('/api/admin/banners', requireAuth('admin'), async (req, res) => {
+    try {
+      const bannerData = req.body;
+      console.log('[Banner API] 배너 등록 요청:', bannerData);
+      
+      // 필수 필드 검증
+      if (!bannerData.title) {
+        return res.status(400).json({ error: '제목은 필수입니다.' });
+      }
+      if (!bannerData.imageUrl) {
+        return res.status(400).json({ error: '이미지 URL은 필수입니다.' });
+      }
+
+      const newBanner = await storage.createBanner(bannerData);
+      console.log('[Banner API] 배너 등록 완료:', newBanner);
+      res.status(201).json(newBanner);
+    } catch (error: any) {
+      console.error('[Banner API] 배너 등록 오류:', error);
+      res.status(500).json({ error: error.message || '배너 등록에 실패했습니다.' });
+    }
+  });
+
+  app.put('/api/admin/banners/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const bannerId = parseInt(req.params.id);
+      const bannerData = req.body;
+      
+      const updatedBanner = await storage.updateBanner(bannerId, bannerData);
+      console.log('[Banner API] 배너 수정 완료:', updatedBanner);
+      res.json(updatedBanner);
+    } catch (error: any) {
+      console.error('[Banner API] 배너 수정 오류:', error);
+      res.status(500).json({ error: error.message || '배너 수정에 실패했습니다.' });
+    }
+  });
+
+  app.delete('/api/admin/banners/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const bannerId = parseInt(req.params.id);
+      
+      await storage.deleteBanner(bannerId);
+      console.log('[Banner API] 배너 삭제 완료:', bannerId);
+      res.json({ success: true, message: '배너가 삭제되었습니다.' });
+    } catch (error: any) {
+      console.error('[Banner API] 배너 삭제 오류:', error);
+      res.status(500).json({ error: error.message || '배너 삭제에 실패했습니다.' });
     }
   });
 
