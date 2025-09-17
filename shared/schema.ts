@@ -327,14 +327,6 @@ export const systemSettings = pgTable("system_settings", {
 // Zod 스키마 생성
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
-export const insertCourseSchema = createInsertSchema(courses);
-export const selectCourseSchema = createSelectSchema(courses);
-export const updateCourseSchema = insertCourseSchema.partial().omit({ 
-  id: true, 
-  createdAt: true, 
-  updatedAt: true, 
-  instructorId: true  // Prevent ownership modification
-});
 export const insertInstituteSchema = createInsertSchema(institutes);
 export const selectInstituteSchema = createSelectSchema(institutes);
 // Basic Pet Zod Schemas
