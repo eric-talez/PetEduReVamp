@@ -804,7 +804,7 @@ export default function Home() {
 
         {/* 메인 배너 슬라이더 */}
         <div className="mb-8">
-          <div className="relative overflow-hidden rounded-xl h-[218px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+          <div className="relative overflow-hidden rounded-xl min-h-[280px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
             {/* 배경 이미지 */}
             <div className="absolute inset-0 transition-all duration-500 ease-in-out">
               <img 
@@ -816,43 +816,45 @@ export default function Home() {
             </div>
             
             {/* 배너 콘텐츠 */}
-            <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-12">
-              <h1 className="text-white text-xl md:text-2xl font-bold mb-2 max-w-3xl">
-                {bannerSlides[currentSlide].title}
-              </h1>
-              <p className="text-white/90 text-sm md:text-base max-w-2xl mb-3">
-                {bannerSlides[currentSlide].subtitle}
-              </p>
-              
-              {/* 주요 기능 태그 */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {bannerSlides[currentSlide].features.map((feature, idx) => (
-                  <span 
-                    key={idx} 
-                    className="inline-flex items-center text-xs bg-white/20 text-white px-2 py-1 rounded-full backdrop-blur-sm"
+            <div className="relative z-10 flex flex-col justify-center min-h-[280px] py-8 px-6 md:px-12">
+              <div className="max-w-4xl mx-auto w-full">
+                <h1 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
+                  {bannerSlides[currentSlide].title}
+                </h1>
+                <p className="text-white/90 text-sm md:text-lg mb-4 leading-relaxed max-w-2xl">
+                  {bannerSlides[currentSlide].subtitle}
+                </p>
+                
+                {/* 주요 기능 태그 */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {bannerSlides[currentSlide].features.map((feature, idx) => (
+                    <span 
+                      key={idx} 
+                      className="inline-flex items-center text-sm bg-white/20 text-white px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20"
+                    >
+                      <span className="mr-1.5 text-yellow-300 text-lg">✓</span> {feature}
+                    </span>
+                  ))}
+                </div>
+                
+                {/* 액션 버튼 */}
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    size="default"
+                    className="bg-white text-primary font-semibold hover:bg-white/90 border border-white px-6 py-2.5 rounded-lg shadow-md"
+                    onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
                   >
-                    <span className="mr-1 text-yellow-300">✓</span> {feature}
-                  </span>
-                ))}
-              </div>
-              
-              {/* 액션 버튼 */}
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  className="bg-background/95 text-foreground font-semibold hover:bg-background border border-border px-4 py-1.5 rounded-lg shadow-md backdrop-blur-sm"
-                  onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
-                >
-                  {bannerSlides[currentSlide].primaryAction.text}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-2 border-white/60 text-white hover:bg-white/20 hover:text-white px-4 py-1.5 rounded-lg backdrop-blur-sm font-semibold"
-                  onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
-                >
-                  {bannerSlides[currentSlide].secondaryAction.text}
-                </Button>
+                    {bannerSlides[currentSlide].primaryAction.text}
+                  </Button>
+                  <Button
+                    size="default"
+                    variant="outline"
+                    className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-6 py-2.5 rounded-lg backdrop-blur-sm font-semibold"
+                    onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
+                  >
+                    {bannerSlides[currentSlide].secondaryAction.text}
+                  </Button>
+                </div>
               </div>
             </div>
 
