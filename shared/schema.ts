@@ -1535,3 +1535,86 @@ export type InsertNotification = z.infer<typeof createNotificationSchema>;
 export type UpdateNotification = z.infer<typeof updateNotificationSchema>;
 export type NotificationQuery = z.infer<typeof notificationQuerySchema>;
 export type BulkNotificationUpdate = z.infer<typeof bulkNotificationUpdateSchema>;
+
+// 훈련 일지 (알림장) Zod 스키마
+export const insertTrainingJournalSchema = createInsertSchema(trainingJournals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  readAt: true,
+  isRead: true,
+  status: true, // 기본값 사용
+}).extend({
+  trainerId: z.number().int().positive("올바른 훈련사 ID가 필요합니다"),
+  petOwnerId: z.number().int().positive("올바른 견주 ID가 필요합니다"),
+  petId: z.number().int().positive("올바른 반려동물 ID가 필요합니다"),
+  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
+  content: z.string().min(1, "내용은 필수입니다").max(5000, "내용은 5000자를 초과할 수 없습니다"),
+  trainingDate: z.string().min(1, "훈련 날짜는 필수입니다"),
+  trainingDuration: z.number().int().min(1, "훈련 시간은 1분 이상이어야 합니다").max(480, "훈련 시간은 8시간을 초과할 수 없습니다").optional().nullable(),
+  trainingType: z.string().max(100, "훈련 유형은 100자를 초과할 수 없습니다").optional().nullable(),
+  progressRating: z.number().int().min(1, "평가는 1~5 사이여야 합니다").max(5, "평가는 1~5 사이여야 합니다").optional().nullable(),
+  behaviorNotes: z.string().max(2000, "행동 관찰 노트는 2000자를 초과할 수 없습니다").optional().nullable(),
+  homeworkInstructions: z.string().max(2000, "숙제 내용은 2000자를 초과할 수 없습니다").optional().nullable(),
+  nextGoals: z.string().max(2000, "다음 목표는 2000자를 초과할 수 없습니다").optional().nullable(),
+  attachments: z.array(z.string().url("올바른 URL 형식이 아닙니다")).optional().nullable().default([])
+});
+
+export const updateTrainingJournalSchema = z.object({
+  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다").optional(),
+  content: z.string().min(1, "내용은 필수입니다").max(5000, "내용은 5000자를 초과할 수 없습니다").optional(),
+  trainingDate: z.string().min(1, "훈련 날짜는 필수입니다").optional(),
+  trainingDuration: z.number().int().min(1, "훈련 시간은 1분 이상이어야 합니다").max(480, "훈련 시간은 8시간을 초과할 수 없습니다").optional().nullable(),
+  trainingType: z.string().max(100, "훈련 유형은 100자를 초과할 수 없습니다").optional().nullable(),
+  progressRating: z.number().int().min(1, "평가는 1~5 사이여야 합니다").max(5, "평가는 1~5 사이여야 합니다").optional().nullable(),
+  behaviorNotes: z.string().max(2000, "행동 관찰 노트는 2000자를 초과할 수 없습니다").optional().nullable(),
+  homeworkInstructions: z.string().max(2000, "숙제 내용은 2000자를 초과할 수 없습니다").optional().nullable(),
+  nextGoals: z.string().max(2000, "다음 목표는 2000자를 초과할 수 없습니다").optional().nullable(),
+  attachments: z.array(z.string().url("올바른 URL 형식이 아닙니다")).optional().nullable(),
+  isRead: z.boolean().optional(),
+  status: z.enum(["sent", "read", "replied"]).optional()
+});
+
+export const selectTrainingJournalSchema = createSelectSchema(trainingJournals);
+
+// 훈련 일지 조회 쿼리 스키마
+export const trainingJournalQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  petId: z.coerce.number().int().positive().optional(),
+  trainerId: z.coerce.number().int().positive().optional(),
+  petOwnerId: z.coerce.number().int().positive().optional(),
+  trainingType: z.string().optional(),
+  status: z.enum(["sent", "read", "replied"]).optional(),
+  isRead: z.coerce.boolean().optional(),
+  fromDate: z.string().optional(), // YYYY-MM-DD 형식
+  toDate: z.string().optional(),   // YYYY-MM-DD 형식
+  sortBy: z.enum(["trainingDate", "createdAt", "title", "progressRating"]).default("trainingDate"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+// 미디어 업로드 스키마
+export const trainingJournalMediaUploadSchema = z.object({
+  journalId: z.number().int().positive("올바른 일지 ID가 필요합니다"),
+  mediaType: z.enum(["image", "video"], {
+    errorMap: () => ({ message: "이미지 또는 비디오만 업로드 가능합니다" })
+  }),
+  description: z.string().max(500, "설명은 500자를 초과할 수 없습니다").optional()
+});
+
+// 대량 일지 상태 업데이트 스키마
+export const bulkTrainingJournalUpdateSchema = z.object({
+  journalIds: z.array(z.number().int().positive()).min(1, "적어도 하나의 일지를 선택해주세요"),
+  updates: z.object({
+    isRead: z.boolean().optional(),
+    status: z.enum(["sent", "read", "replied"]).optional()
+  })
+});
+
+// 훈련 일지 타입 정의
+export type TrainingJournal = typeof trainingJournals.$inferSelect;
+export type InsertTrainingJournal = z.infer<typeof insertTrainingJournalSchema>;
+export type UpdateTrainingJournal = z.infer<typeof updateTrainingJournalSchema>;
+export type TrainingJournalQuery = z.infer<typeof trainingJournalQuerySchema>;
+export type TrainingJournalMediaUpload = z.infer<typeof trainingJournalMediaUploadSchema>;
+export type BulkTrainingJournalUpdate = z.infer<typeof bulkTrainingJournalUpdateSchema>;

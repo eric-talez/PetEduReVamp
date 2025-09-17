@@ -2081,13 +2081,189 @@ class Storage {
     return journal;
   }
 
+  getTrainingJournalById(id: number): any {
+    return (this.trainingJournals || []).find(j => j.id === id) || null;
+  }
+
   updateTrainingJournal(id: number, updateData: any): any {
     const journal = (this.trainingJournals || []).find(j => j.id === id);
     if (journal) {
-      Object.assign(journal, updateData);
+      Object.assign(journal, {
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      });
       return journal;
     }
     return null;
+  }
+
+  deleteTrainingJournal(id: number): boolean {
+    const index = (this.trainingJournals || []).findIndex(j => j.id === id);
+    if (index !== -1) {
+      this.trainingJournals.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
+  // 페이지네이션과 필터링을 지원하는 훈련 일지 조회
+  getTrainingJournalsWithPagination(query: any): { 
+    journals: any[], 
+    total: number, 
+    page: number, 
+    limit: number,
+    totalPages: number 
+  } {
+    let filteredJournals = [...(this.trainingJournals || [])];
+    
+    // 필터링 적용
+    if (query.petId) {
+      filteredJournals = filteredJournals.filter(j => j.petId === query.petId);
+    }
+    if (query.trainerId) {
+      filteredJournals = filteredJournals.filter(j => j.trainerId === query.trainerId);
+    }
+    if (query.petOwnerId) {
+      // 펫 소유자 필터링 - 해당 소유자의 모든 펫 찾기
+      const ownerPets = this.getPetsByUserId(query.petOwnerId);
+      const petIds = ownerPets.map(pet => pet.id);
+      filteredJournals = filteredJournals.filter(j => petIds.includes(j.petId));
+    }
+    if (query.trainingType) {
+      filteredJournals = filteredJournals.filter(j => j.trainingType === query.trainingType);
+    }
+    if (query.status) {
+      filteredJournals = filteredJournals.filter(j => j.status === query.status);
+    }
+    if (query.isRead !== undefined) {
+      filteredJournals = filteredJournals.filter(j => j.isRead === query.isRead);
+    }
+    if (query.fromDate) {
+      filteredJournals = filteredJournals.filter(j => j.trainingDate >= query.fromDate);
+    }
+    if (query.toDate) {
+      filteredJournals = filteredJournals.filter(j => j.trainingDate <= query.toDate);
+    }
+
+    // 정렬
+    const sortBy = query.sortBy || 'trainingDate';
+    const sortOrder = query.sortOrder || 'desc';
+    
+    filteredJournals.sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+      
+      if (sortOrder === 'desc') {
+        return bValue > aValue ? 1 : bValue < aValue ? -1 : 0;
+      } else {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      }
+    });
+
+    // 페이지네이션
+    const page = Math.max(1, query.page || 1);
+    const limit = Math.max(1, Math.min(100, query.limit || 10));
+    const offset = (page - 1) * limit;
+    const total = filteredJournals.length;
+    const totalPages = Math.ceil(total / limit);
+    
+    const journals = filteredJournals.slice(offset, offset + limit);
+
+    return {
+      journals,
+      total,
+      page,
+      limit,
+      totalPages
+    };
+  }
+
+  // 권한 확인 메서드들
+  canUserAccessTrainingJournal(userId: number, userRole: string, journal: any): boolean {
+    if (!journal) return false;
+    
+    // 관리자는 모든 일지 접근 가능
+    if (userRole === 'admin') return true;
+    
+    // 훈련사는 본인이 작성한 일지만 접근 가능
+    if (userRole === 'trainer' && journal.trainerId === userId) return true;
+    
+    // 반려동물 소유자는 본인 펫의 일지만 접근 가능
+    if (userRole === 'pet-owner' && journal.petOwnerId === userId) return true;
+    
+    return false;
+  }
+
+  canUserCreateTrainingJournal(userId: number, userRole: string, petId: number): boolean {
+    // 관리자는 모든 일지 생성 가능
+    if (userRole === 'admin') return true;
+    
+    // 훈련사는 담당 펫의 일지만 생성 가능
+    if (userRole === 'trainer') {
+      const pet = this.getPetById(petId);
+      return pet && pet.assignedTrainerId === userId;
+    }
+    
+    return false;
+  }
+
+  canUserModifyTrainingJournal(userId: number, userRole: string, journal: any): boolean {
+    if (!journal) return false;
+    
+    // 관리자는 모든 일지 수정 가능
+    if (userRole === 'admin') return true;
+    
+    // 훈련사는 본인이 작성한 일지만 수정 가능
+    if (userRole === 'trainer' && journal.trainerId === userId) return true;
+    
+    return false;
+  }
+
+  // 미디어 첨부 관련 메서드들
+  addTrainingJournalMedia(journalId: number, mediaUrl: string, description?: string): boolean {
+    const journal = this.getTrainingJournalById(journalId);
+    if (!journal) return false;
+    
+    if (!journal.attachments) {
+      journal.attachments = [];
+    }
+    
+    journal.attachments.push(mediaUrl);
+    journal.updatedAt = new Date().toISOString();
+    
+    return true;
+  }
+
+  removeTrainingJournalMedia(journalId: number, mediaUrl: string): boolean {
+    const journal = this.getTrainingJournalById(journalId);
+    if (!journal || !journal.attachments) return false;
+    
+    const index = journal.attachments.indexOf(mediaUrl);
+    if (index !== -1) {
+      journal.attachments.splice(index, 1);
+      journal.updatedAt = new Date().toISOString();
+      return true;
+    }
+    
+    return false;
+  }
+
+  // 대량 상태 업데이트
+  bulkUpdateTrainingJournalStatus(journalIds: number[], updates: any): { updated: number, errors: string[] } {
+    let updated = 0;
+    const errors: string[] = [];
+    
+    for (const id of journalIds) {
+      const journal = this.getTrainingJournalById(id);
+      if (journal) {
+        Object.assign(journal, updates, { updatedAt: new Date().toISOString() });
+        updated++;
+      } else {
+        errors.push(`일지 ID ${id}를 찾을 수 없습니다`);
+      }
+    }
+    
+    return { updated, errors };
   }
 
   // 커리큘럼 관리 메서드

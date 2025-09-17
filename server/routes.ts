@@ -31,7 +31,21 @@ import {
   type InsertNotification,
   type UpdateNotification,
   type NotificationQuery,
-  type BulkNotificationUpdate
+  type BulkNotificationUpdate,
+  // 훈련 일지 관련 스키마
+  trainingJournals,
+  insertTrainingJournalSchema,
+  updateTrainingJournalSchema,
+  selectTrainingJournalSchema,
+  trainingJournalQuerySchema,
+  trainingJournalMediaUploadSchema,
+  bulkTrainingJournalUpdateSchema,
+  type TrainingJournal,
+  type InsertTrainingJournal,
+  type UpdateTrainingJournal,
+  type TrainingJournalQuery,
+  type TrainingJournalMediaUpload,
+  type BulkTrainingJournalUpdate
 } from "../shared/schema";
 import { ilike, or } from "drizzle-orm";
 import { 
@@ -62,7 +76,12 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { WorkflowEngine } from './workflow-engine';
-import { uploadDocuments } from './middleware/upload';
+import { 
+  uploadDocuments, 
+  uploadMultiple, 
+  processUploadedFiles, 
+  deleteFile 
+} from './middleware/upload';
 import xlsx from 'xlsx';
 import { contentCrawler } from './content-crawler';
 import { csrfProtection } from './middleware/csrf';
@@ -2140,6 +2159,1220 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Internal server error' });
     }
   });
+
+  // ============ 훈련 일지 (알림장) API ============
+  
+  // 1. 새 훈련 일지 생성
+  app.post("/api/notebook/entries", requireAuth('trainer'), csrfProtection, async (req, res) => {
+    try {
+      // Zod 스키마 검증
+      const validatedData = insertTrainingJournalSchema.parse(req.body);
+      const currentUser = req.session.user!;
+      
+      // 권한 확인 - 훈련사가 담당 펫의 일지만 생성 가능
+      if (!storage.canUserCreateTrainingJournal(currentUser.id, currentUser.role, validatedData.petId)) {
+        return res.status(403).json({
+          error: '해당 반려동물의 훈련 일지를 작성할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 펫 정보 확인
+      const pet = storage.getPetById(validatedData.petId);
+      if (!pet) {
+        return res.status(404).json({
+          error: '해당 반려동물을 찾을 수 없습니다.',
+          code: 'PET_NOT_FOUND'
+        });
+      }
+
+      // 훈련 일지 생성
+      const journalEntry = storage.createTrainingJournal({
+        ...validatedData,
+        trainerId: currentUser.id,
+        petOwnerId: pet.ownerId,
+        status: 'sent',
+        isRead: false
+      });
+
+      res.status(201).json({
+        success: true,
+        message: '훈련 일지가 성공적으로 생성되었습니다.',
+        data: journalEntry
+      });
+
+    } catch (error: any) {
+      console.error('훈련 일지 생성 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: '입력 데이터가 올바르지 않습니다.',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: '훈련 일지 생성 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 2. 훈련 일지 목록 조회 (페이지네이션, 필터링)
+  app.get("/api/notebook/entries", requireAuth(), async (req, res) => {
+    try {
+      // 쿼리 검증
+      const query = trainingJournalQuerySchema.parse(req.query);
+      const currentUser = req.session.user!;
+
+      // 사용자 권한에 따른 필터링
+      if (currentUser.role === 'pet-owner') {
+        query.petOwnerId = currentUser.id;
+      } else if (currentUser.role === 'trainer') {
+        query.trainerId = currentUser.id;
+      }
+      // 관리자는 모든 일지 조회 가능
+
+      const result = storage.getTrainingJournalsWithPagination(query);
+
+      res.json({
+        success: true,
+        data: result.journals,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: result.totalPages
+        }
+      });
+
+    } catch (error: any) {
+      console.error('훈련 일지 목록 조회 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: '쿼리 매개변수가 올바르지 않습니다.',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: '훈련 일지 목록 조회 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 3. 특정 훈련 일지 조회
+  app.get("/api/notebook/entries/:id", requireAuth(), async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      const journal = storage.getTrainingJournalById(journalId);
+      if (!journal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 권한 확인
+      if (!storage.canUserAccessTrainingJournal(currentUser.id, currentUser.role, journal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지에 접근할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 읽음 상태 업데이트 (견주가 조회할 때)
+      if (currentUser.role === 'pet-owner' && !journal.isRead) {
+        storage.updateTrainingJournal(journalId, {
+          isRead: true,
+          readAt: new Date().toISOString(),
+          status: 'read'
+        });
+        journal.isRead = true;
+        journal.readAt = new Date().toISOString();
+        journal.status = 'read';
+      }
+
+      res.json({
+        success: true,
+        data: journal
+      });
+
+    } catch (error) {
+      console.error('훈련 일지 조회 오류:', error);
+      res.status(500).json({
+        error: '훈련 일지 조회 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 4. 훈련 일지 수정
+  app.put("/api/notebook/entries/:id", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      // 기존 일지 확인
+      const existingJournal = storage.getTrainingJournalById(journalId);
+      if (!existingJournal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 수정 권한 확인
+      if (!storage.canUserModifyTrainingJournal(currentUser.id, currentUser.role, existingJournal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지를 수정할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // Zod 스키마 검증
+      const validatedData = updateTrainingJournalSchema.parse(req.body);
+
+      // 훈련 일지 수정
+      const updatedJournal = storage.updateTrainingJournal(journalId, validatedData);
+
+      res.json({
+        success: true,
+        message: '훈련 일지가 성공적으로 수정되었습니다.',
+        data: updatedJournal
+      });
+
+    } catch (error: any) {
+      console.error('훈련 일지 수정 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: '입력 데이터가 올바르지 않습니다.',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: '훈련 일지 수정 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 5. 훈련 일지 삭제
+  app.delete("/api/notebook/entries/:id", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      // 기존 일지 확인
+      const existingJournal = storage.getTrainingJournalById(journalId);
+      if (!existingJournal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 삭제 권한 확인
+      if (!storage.canUserModifyTrainingJournal(currentUser.id, currentUser.role, existingJournal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지를 삭제할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 훈련 일지 삭제
+      const deleted = storage.deleteTrainingJournal(journalId);
+      
+      if (deleted) {
+        res.json({
+          success: true,
+          message: '훈련 일지가 성공적으로 삭제되었습니다.'
+        });
+      } else {
+        res.status(500).json({
+          error: '훈련 일지 삭제에 실패했습니다.',
+          code: 'DELETE_FAILED'
+        });
+      }
+
+    } catch (error) {
+      console.error('훈련 일지 삭제 오류:', error);
+      res.status(500).json({
+        error: '훈련 일지 삭제 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 6. 특정 펫의 훈련 일지 조회
+  app.get("/api/pets/:petId/notebook", requireAuth(), async (req, res) => {
+    try {
+      const petId = parseInt(req.params.petId);
+      const currentUser = req.session.user!;
+
+      if (isNaN(petId)) {
+        return res.status(400).json({
+          error: '올바른 펫 ID가 필요합니다.',
+          code: 'INVALID_PET_ID'
+        });
+      }
+
+      // 펫 정보 확인
+      const pet = storage.getPetById(petId);
+      if (!pet) {
+        return res.status(404).json({
+          error: '해당 반려동물을 찾을 수 없습니다.',
+          code: 'PET_NOT_FOUND'
+        });
+      }
+
+      // 권한 확인 - 펫 소유자, 담당 훈련사, 관리자만 접근 가능
+      if (currentUser.role === 'pet-owner' && pet.ownerId !== currentUser.id) {
+        return res.status(403).json({
+          error: '해당 반려동물의 훈련 일지에 접근할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+      
+      if (currentUser.role === 'trainer' && pet.assignedTrainerId !== currentUser.id) {
+        return res.status(403).json({
+          error: '담당하지 않는 반려동물의 훈련 일지에 접근할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 해당 펫의 훈련 일지 조회
+      const journals = storage.getTrainingJournalsByPet(petId);
+
+      res.json({
+        success: true,
+        data: journals,
+        petInfo: {
+          id: pet.id,
+          name: pet.name,
+          breed: pet.breed
+        }
+      });
+
+    } catch (error) {
+      console.error('펫별 훈련 일지 조회 오류:', error);
+      res.status(500).json({
+        error: '훈련 일지 조회 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 7. 훈련사별 일지 목록 조회
+  app.get("/api/trainer/notebook/entries", requireAuth('trainer'), async (req, res) => {
+    try {
+      const currentUser = req.session.user!;
+      const journals = storage.getTrainingJournalsByTrainer(currentUser.id);
+
+      res.json({
+        success: true,
+        data: journals,
+        trainerInfo: {
+          id: currentUser.id,
+          name: currentUser.name
+        }
+      });
+
+    } catch (error) {
+      console.error('훈련사별 일지 조회 오류:', error);
+      res.status(500).json({
+        error: '훈련사별 일지 조회 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 8. 미디어 파일 업로드 (훈련 일지 전용)
+  app.post("/api/notebook/media/upload", requireAuth(), csrfProtection, (req, res) => {
+    // Multer 미들웨어 사용
+    uploadMultiple(req, res, (err) => {
+      if (err) {
+        console.error('미디어 업로드 오류:', err);
+        return res.status(400).json({
+          error: err.message || '파일 업로드 중 오류가 발생했습니다.',
+          code: 'UPLOAD_ERROR'
+        });
+      }
+
+      try {
+        const currentUser = req.session.user!;
+        const files = req.files as Express.Multer.File[];
+
+        if (!files || files.length === 0) {
+          return res.status(400).json({
+            error: '업로드할 파일이 없습니다.',
+            code: 'NO_FILES'
+          });
+        }
+
+        // 업로드된 파일 정보 처리
+        const uploadedFiles = processUploadedFiles(files);
+        
+        // 파일 URL 생성 (public 폴더 기준)
+        const fileUrls = files.map(file => ({
+          filename: file.filename,
+          originalName: file.originalname,
+          url: `/uploads/${file.mimetype.startsWith('image/') ? 'images' : 'videos'}/${file.filename}`,
+          size: file.size,
+          mimetype: file.mimetype,
+          type: file.mimetype.startsWith('image/') ? 'image' : 'video'
+        }));
+
+        res.json({
+          success: true,
+          message: `${files.length}개의 파일이 성공적으로 업로드되었습니다.`,
+          data: fileUrls
+        });
+
+      } catch (error) {
+        console.error('파일 처리 오류:', error);
+        res.status(500).json({
+          error: '파일 처리 중 오류가 발생했습니다.',
+          code: 'FILE_PROCESSING_ERROR'
+        });
+      }
+    });
+  });
+
+  // 9. 미디어 첨부 (업로드된 파일을 일지에 연결)
+  app.post("/api/notebook/entries/:id/media", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      // 기존 일지 확인
+      const existingJournal = storage.getTrainingJournalById(journalId);
+      if (!existingJournal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 수정 권한 확인
+      if (!storage.canUserModifyTrainingJournal(currentUser.id, currentUser.role, existingJournal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지에 미디어를 첨부할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 요청 본문 검증
+      const { mediaUrls, description } = req.body;
+      
+      if (!mediaUrls || !Array.isArray(mediaUrls) || mediaUrls.length === 0) {
+        return res.status(400).json({
+          error: '첨부할 미디어 URL이 필요합니다.',
+          code: 'MEDIA_URLS_REQUIRED'
+        });
+      }
+
+      // 각 미디어 URL 첨부
+      let attachedCount = 0;
+      for (const mediaUrl of mediaUrls) {
+        if (storage.addTrainingJournalMedia(journalId, mediaUrl, description)) {
+          attachedCount++;
+        }
+      }
+
+      if (attachedCount > 0) {
+        res.json({
+          success: true,
+          message: `${attachedCount}개의 미디어가 성공적으로 첨부되었습니다.`,
+          attached: attachedCount,
+          total: mediaUrls.length
+        });
+      } else {
+        res.status(500).json({
+          error: '미디어 첨부에 실패했습니다.',
+          code: 'MEDIA_ATTACH_FAILED'
+        });
+      }
+
+    } catch (error: any) {
+      console.error('미디어 첨부 오류:', error);
+      res.status(500).json({
+        error: '미디어 첨부 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 10. 미디어 파일 삭제
+  app.delete("/api/notebook/entries/:id/media", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+      const { mediaUrl } = req.body;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      if (!mediaUrl) {
+        return res.status(400).json({
+          error: '삭제할 미디어 URL이 필요합니다.',
+          code: 'MEDIA_URL_REQUIRED'
+        });
+      }
+
+      // 기존 일지 확인
+      const existingJournal = storage.getTrainingJournalById(journalId);
+      if (!existingJournal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 수정 권한 확인
+      if (!storage.canUserModifyTrainingJournal(currentUser.id, currentUser.role, existingJournal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지의 미디어를 삭제할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 미디어 제거
+      const success = storage.removeTrainingJournalMedia(journalId, mediaUrl);
+      
+      if (success) {
+        // 실제 파일도 삭제 시도
+        const fileName = mediaUrl.split('/').pop();
+        if (fileName) {
+          const filePathImage = `/uploads/images/${fileName}`;
+          const filePathVideo = `/uploads/videos/${fileName}`;
+          deleteFile(filePathImage) || deleteFile(filePathVideo);
+        }
+
+        res.json({
+          success: true,
+          message: '미디어가 성공적으로 삭제되었습니다.'
+        });
+      } else {
+        res.status(404).json({
+          error: '해당 미디어를 찾을 수 없거나 삭제에 실패했습니다.',
+          code: 'MEDIA_DELETE_FAILED'
+        });
+      }
+
+    } catch (error) {
+      console.error('미디어 삭제 오류:', error);
+      res.status(500).json({
+        error: '미디어 삭제 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 9. 대량 상태 업데이트
+  app.post("/api/notebook/bulk-update", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const currentUser = req.session.user!;
+
+      // Zod 스키마 검증
+      const validatedData = bulkTrainingJournalUpdateSchema.parse(req.body);
+
+      // 각 일지에 대한 권한 확인
+      const unauthorizedIds: number[] = [];
+      for (const journalId of validatedData.journalIds) {
+        const journal = storage.getTrainingJournalById(journalId);
+        if (journal && !storage.canUserAccessTrainingJournal(currentUser.id, currentUser.role, journal)) {
+          unauthorizedIds.push(journalId);
+        }
+      }
+
+      if (unauthorizedIds.length > 0) {
+        return res.status(403).json({
+          error: '일부 훈련 일지에 대한 접근 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS',
+          unauthorizedIds
+        });
+      }
+
+      // 대량 업데이트 실행
+      const result = storage.bulkUpdateTrainingJournalStatus(
+        validatedData.journalIds, 
+        validatedData.updates
+      );
+
+      res.json({
+        success: true,
+        message: `${result.updated}개의 훈련 일지가 업데이트되었습니다.`,
+        updated: result.updated,
+        errors: result.errors
+      });
+
+    } catch (error: any) {
+      console.error('대량 업데이트 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: '입력 데이터가 올바르지 않습니다.',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: '대량 업데이트 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // ============ 훈련 일지 (알림장) API 구현 ============
+  
+  // 1. 새 훈련 일지 생성 - 훈련사만 가능
+  app.post("/api/notebook/entries", requireAuth('trainer'), csrfProtection, async (req, res) => {
+    try {
+      const validatedData = insertTrainingJournalSchema.parse(req.body);
+      const currentUser = req.session.user!;
+      
+      // 권한 확인 - 훈련사가 담당 펫의 일지만 생성 가능
+      if (!storage.canUserCreateTrainingJournal(currentUser.id, currentUser.role, validatedData.petId)) {
+        return res.status(403).json({
+          error: '해당 반려동물의 훈련 일지를 작성할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 펫 정보 확인
+      const pet = storage.getPetById(validatedData.petId);
+      if (!pet) {
+        return res.status(404).json({
+          error: '해당 반려동물을 찾을 수 없습니다.',
+          code: 'PET_NOT_FOUND'
+        });
+      }
+
+      // 훈련 일지 생성
+      const journalEntry = storage.createTrainingJournal({
+        ...validatedData,
+        trainerId: currentUser.id,
+        petOwnerId: pet.ownerId,
+        status: 'sent',
+        isRead: false
+      });
+
+      res.status(201).json({
+        success: true,
+        message: '훈련 일지가 성공적으로 생성되었습니다.',
+        data: journalEntry
+      });
+
+    } catch (error: any) {
+      console.error('훈련 일지 생성 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: '입력 데이터가 올바르지 않습니다.',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: '훈련 일지 생성 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 2. 훈련 일지 목록 조회 (페이지네이션, 필터링)
+  app.get("/api/notebook/entries", requireAuth(), async (req, res) => {
+    try {
+      const query = trainingJournalQuerySchema.parse(req.query);
+      const currentUser = req.session.user!;
+
+      // 사용자 권한에 따른 필터링
+      if (currentUser.role === 'pet-owner') {
+        query.petOwnerId = currentUser.id;
+      } else if (currentUser.role === 'trainer') {
+        query.trainerId = currentUser.id;
+      }
+
+      const result = storage.getTrainingJournalsWithPagination(query);
+
+      res.json({
+        success: true,
+        data: result.journals,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: result.totalPages
+        }
+      });
+
+    } catch (error: any) {
+      console.error('훈련 일지 목록 조회 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: '쿼리 매개변수가 올바르지 않습니다.',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: '훈련 일지 목록 조회 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 3. 특정 훈련 일지 조회
+  app.get("/api/notebook/entries/:id", requireAuth(), async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      const journal = storage.getTrainingJournalById(journalId);
+      if (!journal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 권한 확인 - IDOR 방지
+      if (!storage.canUserAccessTrainingJournal(currentUser.id, currentUser.role, journal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지에 접근할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 읽음 상태 업데이트 (견주가 조회할 때)
+      if (currentUser.role === 'pet-owner' && !journal.isRead) {
+        storage.updateTrainingJournal(journalId, {
+          isRead: true,
+          readAt: new Date().toISOString(),
+          status: 'read'
+        });
+        journal.isRead = true;
+        journal.readAt = new Date().toISOString();
+        journal.status = 'read';
+      }
+
+      res.json({
+        success: true,
+        data: journal
+      });
+
+    } catch (error) {
+      console.error('훈련 일지 조회 오류:', error);
+      res.status(500).json({
+        error: '훈련 일지 조회 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 4. 훈련 일지 수정
+  app.put("/api/notebook/entries/:id", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      // 기존 일지 확인
+      const existingJournal = storage.getTrainingJournalById(journalId);
+      if (!existingJournal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 수정 권한 확인 - IDOR 방지
+      if (!storage.canUserModifyTrainingJournal(currentUser.id, currentUser.role, existingJournal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지를 수정할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // Zod 스키마 검증
+      const validatedData = updateTrainingJournalSchema.parse(req.body);
+
+      // 훈련 일지 수정
+      const updatedJournal = storage.updateTrainingJournal(journalId, validatedData);
+
+      res.json({
+        success: true,
+        message: '훈련 일지가 성공적으로 수정되었습니다.',
+        data: updatedJournal
+      });
+
+    } catch (error: any) {
+      console.error('훈련 일지 수정 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: '입력 데이터가 올바르지 않습니다.',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: '훈련 일지 수정 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 5. 훈련 일지 삭제
+  app.delete("/api/notebook/entries/:id", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      // 기존 일지 확인
+      const existingJournal = storage.getTrainingJournalById(journalId);
+      if (!existingJournal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 삭제 권한 확인 - IDOR 방지
+      if (!storage.canUserModifyTrainingJournal(currentUser.id, currentUser.role, existingJournal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지를 삭제할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 훈련 일지 삭제
+      const deleted = storage.deleteTrainingJournal(journalId);
+      
+      if (deleted) {
+        res.json({
+          success: true,
+          message: '훈련 일지가 성공적으로 삭제되었습니다.'
+        });
+      } else {
+        res.status(500).json({
+          error: '훈련 일지 삭제에 실패했습니다.',
+          code: 'DELETE_FAILED'
+        });
+      }
+
+    } catch (error) {
+      console.error('훈련 일지 삭제 오류:', error);
+      res.status(500).json({
+        error: '훈련 일지 삭제 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 6. 특정 펫의 훈련 일지 조회
+  app.get("/api/pets/:petId/notebook", requireAuth(), async (req, res) => {
+    try {
+      const petId = parseInt(req.params.petId);
+      const currentUser = req.session.user!;
+
+      if (isNaN(petId)) {
+        return res.status(400).json({
+          error: '올바른 펫 ID가 필요합니다.',
+          code: 'INVALID_PET_ID'
+        });
+      }
+
+      // 펫 정보 확인
+      const pet = storage.getPetById(petId);
+      if (!pet) {
+        return res.status(404).json({
+          error: '해당 반려동물을 찾을 수 없습니다.',
+          code: 'PET_NOT_FOUND'
+        });
+      }
+
+      // 권한 확인 - 펫 소유자, 담당 훈련사, 관리자만 접근 가능
+      if (currentUser.role === 'pet-owner' && pet.ownerId !== currentUser.id) {
+        return res.status(403).json({
+          error: '해당 반려동물의 훈련 일지에 접근할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+      
+      if (currentUser.role === 'trainer' && pet.assignedTrainerId !== currentUser.id) {
+        return res.status(403).json({
+          error: '담당하지 않는 반려동물의 훈련 일지에 접근할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 해당 펫의 훈련 일지 조회
+      const journals = storage.getTrainingJournalsByPet(petId);
+
+      res.json({
+        success: true,
+        data: journals,
+        petInfo: {
+          id: pet.id,
+          name: pet.name,
+          breed: pet.breed
+        }
+      });
+
+    } catch (error) {
+      console.error('펫별 훈련 일지 조회 오류:', error);
+      res.status(500).json({
+        error: '훈련 일지 조회 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 7. 훈련사별 일지 목록 조회
+  app.get("/api/trainer/notebook/entries", requireAuth('trainer'), async (req, res) => {
+    try {
+      const currentUser = req.session.user!;
+      const journals = storage.getTrainingJournalsByTrainer(currentUser.id);
+
+      res.json({
+        success: true,
+        data: journals,
+        trainerInfo: {
+          id: currentUser.id,
+          name: currentUser.name
+        }
+      });
+
+    } catch (error) {
+      console.error('훈련사별 일지 조회 오류:', error);
+      res.status(500).json({
+        error: '훈련사별 일지 조회 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 8. 미디어 파일 업로드 (훈련 일지 전용)
+  app.post("/api/notebook/media/upload", requireAuth(), csrfProtection, (req, res) => {
+    // Multer 미들웨어 사용
+    uploadMultiple(req, res, (err) => {
+      if (err) {
+        console.error('미디어 업로드 오류:', err);
+        return res.status(400).json({
+          error: err.message || '파일 업로드 중 오류가 발생했습니다.',
+          code: 'UPLOAD_ERROR'
+        });
+      }
+
+      try {
+        const currentUser = req.session.user!;
+        const files = req.files as Express.Multer.File[];
+
+        if (!files || files.length === 0) {
+          return res.status(400).json({
+            error: '업로드할 파일이 없습니다.',
+            code: 'NO_FILES'
+          });
+        }
+
+        // 파일 형식 및 크기 제한 검증
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/avi', 'video/mov'];
+        const maxFileSize = 50 * 1024 * 1024; // 50MB
+
+        for (const file of files) {
+          if (!allowedTypes.includes(file.mimetype)) {
+            return res.status(400).json({
+              error: `지원하지 않는 파일 형식입니다: ${file.mimetype}`,
+              code: 'INVALID_FILE_TYPE'
+            });
+          }
+          if (file.size > maxFileSize) {
+            return res.status(400).json({
+              error: '파일 크기는 50MB를 초과할 수 없습니다.',
+              code: 'FILE_TOO_LARGE'
+            });
+          }
+        }
+
+        // 업로드된 파일 정보 처리
+        const uploadedFiles = processUploadedFiles(files);
+        
+        // 파일 URL 생성 (public 폴더 기준)
+        const fileUrls = files.map(file => ({
+          filename: file.filename,
+          originalName: file.originalname,
+          url: `/uploads/${file.mimetype.startsWith('image/') ? 'images' : 'videos'}/${file.filename}`,
+          size: file.size,
+          mimetype: file.mimetype,
+          type: file.mimetype.startsWith('image/') ? 'image' : 'video'
+        }));
+
+        res.json({
+          success: true,
+          message: `${files.length}개의 파일이 성공적으로 업로드되었습니다.`,
+          data: fileUrls
+        });
+
+      } catch (error) {
+        console.error('파일 처리 오류:', error);
+        res.status(500).json({
+          error: '파일 처리 중 오류가 발생했습니다.',
+          code: 'FILE_PROCESSING_ERROR'
+        });
+      }
+    });
+  });
+
+  // 9. 미디어 첨부 (업로드된 파일을 일지에 연결)
+  app.post("/api/notebook/entries/:id/media", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      // 기존 일지 확인
+      const existingJournal = storage.getTrainingJournalById(journalId);
+      if (!existingJournal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 수정 권한 확인
+      if (!storage.canUserModifyTrainingJournal(currentUser.id, currentUser.role, existingJournal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지에 미디어를 첨부할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 요청 본문 검증
+      const { mediaUrls, description } = req.body;
+      
+      if (!mediaUrls || !Array.isArray(mediaUrls) || mediaUrls.length === 0) {
+        return res.status(400).json({
+          error: '첨부할 미디어 URL이 필요합니다.',
+          code: 'MEDIA_URLS_REQUIRED'
+        });
+      }
+
+      // 각 미디어 URL 첨부
+      let attachedCount = 0;
+      for (const mediaUrl of mediaUrls) {
+        if (storage.addTrainingJournalMedia(journalId, mediaUrl, description)) {
+          attachedCount++;
+        }
+      }
+
+      if (attachedCount > 0) {
+        res.json({
+          success: true,
+          message: `${attachedCount}개의 미디어가 성공적으로 첨부되었습니다.`,
+          attached: attachedCount,
+          total: mediaUrls.length
+        });
+      } else {
+        res.status(500).json({
+          error: '미디어 첨부에 실패했습니다.',
+          code: 'MEDIA_ATTACH_FAILED'
+        });
+      }
+
+    } catch (error: any) {
+      console.error('미디어 첨부 오류:', error);
+      res.status(500).json({
+        error: '미디어 첨부 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 10. 미디어 파일 삭제
+  app.delete("/api/notebook/entries/:id/media", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const journalId = parseInt(req.params.id);
+      const currentUser = req.session.user!;
+      const { mediaUrl } = req.body;
+
+      if (isNaN(journalId)) {
+        return res.status(400).json({
+          error: '올바른 일지 ID가 필요합니다.',
+          code: 'INVALID_JOURNAL_ID'
+        });
+      }
+
+      if (!mediaUrl) {
+        return res.status(400).json({
+          error: '삭제할 미디어 URL이 필요합니다.',
+          code: 'MEDIA_URL_REQUIRED'
+        });
+      }
+
+      // 기존 일지 확인
+      const existingJournal = storage.getTrainingJournalById(journalId);
+      if (!existingJournal) {
+        return res.status(404).json({
+          error: '해당 훈련 일지를 찾을 수 없습니다.',
+          code: 'JOURNAL_NOT_FOUND'
+        });
+      }
+
+      // 수정 권한 확인
+      if (!storage.canUserModifyTrainingJournal(currentUser.id, currentUser.role, existingJournal)) {
+        return res.status(403).json({
+          error: '해당 훈련 일지의 미디어를 삭제할 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
+      // 미디어 제거
+      const success = storage.removeTrainingJournalMedia(journalId, mediaUrl);
+      
+      if (success) {
+        // 실제 파일도 삭제 시도
+        const fileName = mediaUrl.split('/').pop();
+        if (fileName) {
+          const filePathImage = `/uploads/images/${fileName}`;
+          const filePathVideo = `/uploads/videos/${fileName}`;
+          deleteFile(filePathImage) || deleteFile(filePathVideo);
+        }
+
+        res.json({
+          success: true,
+          message: '미디어가 성공적으로 삭제되었습니다.'
+        });
+      } else {
+        res.status(404).json({
+          error: '해당 미디어를 찾을 수 없거나 삭제에 실패했습니다.',
+          code: 'MEDIA_DELETE_FAILED'
+        });
+      }
+
+    } catch (error) {
+      console.error('미디어 삭제 오류:', error);
+      res.status(500).json({
+        error: '미디어 삭제 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // 11. 대량 상태 업데이트
+  app.post("/api/notebook/bulk-update", requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const currentUser = req.session.user!;
+
+      // Zod 스키마 검증
+      const validatedData = bulkTrainingJournalUpdateSchema.parse(req.body);
+
+      // 각 일지에 대한 권한 확인
+      const unauthorizedIds: number[] = [];
+      for (const journalId of validatedData.journalIds) {
+        const journal = storage.getTrainingJournalById(journalId);
+        if (journal && !storage.canUserAccessTrainingJournal(currentUser.id, currentUser.role, journal)) {
+          unauthorizedIds.push(journalId);
+        }
+      }
+
+      if (unauthorizedIds.length > 0) {
+        return res.status(403).json({
+          error: '일부 훈련 일지에 대한 접근 권한이 없습니다.',
+          code: 'INSUFFICIENT_PERMISSIONS',
+          unauthorizedIds
+        });
+      }
+
+      // 대량 업데이트 실행
+      const result = storage.bulkUpdateTrainingJournalStatus(
+        validatedData.journalIds, 
+        validatedData.updates
+      );
+
+      res.json({
+        success: true,
+        message: `${result.updated}개의 훈련 일지가 업데이트되었습니다.`,
+        updated: result.updated,
+        errors: result.errors
+      });
+
+    } catch (error: any) {
+      console.error('대량 업데이트 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: '입력 데이터가 올바르지 않습니다.',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: '대량 업데이트 중 오류가 발생했습니다.',
+        code: 'INTERNAL_SERVER_ERROR'
+      });
+    }
+  });
+
+  // ============ 훈련 일지 API 끝 ============
 
   // 상담 관련 API
   app.get("/api/consultations/my-requests", async (req, res) => {
