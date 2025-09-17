@@ -4223,7 +4223,10 @@ class HybridStorage extends Storage {
     }
   }
 
-  // 배너 관리 메서드들
+  // =============================================================================
+  // 배너 관리 메서드들 - 새로운 스키마에 맞게 구현
+  // =============================================================================
+  
   getAllBanners() {
     // 기본 배너가 없으면 생성
     if (this.banners.length === 0) {
@@ -4233,42 +4236,61 @@ class HybridStorage extends Storage {
           title: "Talez 펫 교육 플랫폼",
           content: "전문 훈련사와 함께하는 AI 기반 맞춤형 반려동물 교육",
           imageUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-          actionText: "교육 시작하기",
-          actionUrl: "/courses",
-          position: "hero",
-          type: "main",
-          isActive: true,
-          order: 1,
+          linkUrl: "/courses",
+          targetPosition: "home-hero",
+          displayOrder: 1,
+          targetUserGroup: "all",
           startDate: null,
           endDate: null,
+          clickCount: 0,
+          viewCount: 0,
+          isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
       ];
     }
-    return this.banners.filter(banner => banner.isActive);
+    return this.banners;
+  }
+
+  getActiveBanners() {
+    const now = new Date();
+    return this.banners.filter(banner => {
+      if (!banner.isActive) return false;
+      
+      // 시작일 체크
+      if (banner.startDate && new Date(banner.startDate) > now) return false;
+      
+      // 종료일 체크
+      if (banner.endDate && new Date(banner.endDate) < now) return false;
+      
+      return true;
+    }).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   createBanner(bannerData: any) {
     const newId = Math.max(0, ...this.banners.map(b => b.id || 0)) + 1;
+    
+    // 새로운 배너의 표시 순서 설정 (같은 위치에서 가장 높은 순서 + 1)
+    const samePositionBanners = this.banners.filter(b => 
+      b.targetPosition === (bannerData.targetPosition || 'home-hero')
+    );
+    const maxOrder = Math.max(0, ...samePositionBanners.map(b => b.displayOrder || 0));
+    
     const newBanner = {
       id: newId,
       title: bannerData.title,
-      description: bannerData.description,
-      content: bannerData.description,
+      content: bannerData.content || bannerData.description,
       imageUrl: bannerData.imageUrl,
-      altText: bannerData.altText,
-      actionText: bannerData.linkUrl ? '자세히 보기' : '',
-      actionUrl: bannerData.linkUrl || '',
       linkUrl: bannerData.linkUrl,
-      targetBlank: bannerData.targetBlank || true,
-      position: bannerData.position || 'hero',
-      type: bannerData.type || 'main',
-      order: bannerData.order || 1,
+      targetPosition: bannerData.targetPosition || 'home-hero',
+      displayOrder: bannerData.displayOrder !== undefined ? bannerData.displayOrder : maxOrder + 1,
+      targetUserGroup: bannerData.targetUserGroup || 'all',
       startDate: bannerData.startDate || null,
       endDate: bannerData.endDate || null,
-      isActive: bannerData.status === 'active',
-      status: bannerData.status || 'active',
+      clickCount: 0,
+      viewCount: 0,
+      isActive: bannerData.isActive !== undefined ? bannerData.isActive : true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -4281,6 +4303,17 @@ class HybridStorage extends Storage {
     const index = this.banners.findIndex(banner => banner.id === id);
     if (index === -1) {
       throw new Error('배너를 찾을 수 없습니다');
+    }
+    
+    // 표시 순서가 변경되는 경우 다른 배너들의 순서도 조정
+    const currentBanner = this.banners[index];
+    if (bannerData.displayOrder !== undefined && 
+        bannerData.displayOrder !== currentBanner.displayOrder) {
+      this.reorderBannersInPosition(
+        currentBanner.targetPosition, 
+        id, 
+        bannerData.displayOrder
+      );
     }
     
     this.banners[index] = {
@@ -4298,7 +4331,17 @@ class HybridStorage extends Storage {
       throw new Error('배너를 찾을 수 없습니다');
     }
     
+    const deletedBanner = this.banners[index];
     this.banners.splice(index, 1);
+    
+    // 삭제된 배너보다 뒤의 배너들 순서 조정
+    this.banners
+      .filter(b => 
+        b.targetPosition === deletedBanner.targetPosition && 
+        b.displayOrder > deletedBanner.displayOrder
+      )
+      .forEach(b => b.displayOrder--);
+    
     return true;
   }
 
@@ -4307,11 +4350,153 @@ class HybridStorage extends Storage {
   }
 
   getBannersByPosition(position: string) {
-    return this.banners.filter(banner => banner.position === position && banner.isActive);
+    return this.banners
+      .filter(banner => banner.targetPosition === position && banner.isActive)
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
-  getBannersByType(type: string) {
-    return this.banners.filter(banner => banner.type === type && banner.isActive);
+  getBannersByUserGroup(userGroup: string) {
+    return this.banners
+      .filter(banner => 
+        banner.isActive && 
+        (banner.targetUserGroup === 'all' || banner.targetUserGroup === userGroup)
+      )
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+  }
+
+  // 새로운 배너 관리 메서드들
+  toggleBannerStatus(id: number) {
+    const banner = this.getBannerById(id);
+    if (!banner) {
+      throw new Error('배너를 찾을 수 없습니다');
+    }
+    
+    banner.isActive = !banner.isActive;
+    banner.updatedAt = new Date().toISOString();
+    
+    return banner;
+  }
+
+  reorderBanners(bannerId: number, newOrder: number, targetPosition?: string) {
+    const banner = this.getBannerById(bannerId);
+    if (!banner) {
+      throw new Error('배너를 찾을 수 없습니다');
+    }
+    
+    const position = targetPosition || banner.targetPosition;
+    return this.reorderBannersInPosition(position, bannerId, newOrder);
+  }
+
+  private reorderBannersInPosition(position: string, bannerId: number, newOrder: number) {
+    const positionBanners = this.banners.filter(b => b.targetPosition === position);
+    const targetBanner = positionBanners.find(b => b.id === bannerId);
+    
+    if (!targetBanner) {
+      throw new Error('배너를 찾을 수 없습니다');
+    }
+    
+    const oldOrder = targetBanner.displayOrder;
+    
+    // 순서 재정렬
+    positionBanners.forEach(banner => {
+      if (banner.id === bannerId) {
+        banner.displayOrder = newOrder;
+      } else if (oldOrder < newOrder) {
+        // 아래로 이동: 사이의 배너들을 위로 이동
+        if (banner.displayOrder > oldOrder && banner.displayOrder <= newOrder) {
+          banner.displayOrder--;
+        }
+      } else {
+        // 위로 이동: 사이의 배너들을 아래로 이동
+        if (banner.displayOrder >= newOrder && banner.displayOrder < oldOrder) {
+          banner.displayOrder++;
+        }
+      }
+      banner.updatedAt = new Date().toISOString();
+    });
+    
+    return targetBanner;
+  }
+
+  incrementBannerViews(id: number) {
+    const banner = this.getBannerById(id);
+    if (banner) {
+      banner.viewCount = (banner.viewCount || 0) + 1;
+      banner.updatedAt = new Date().toISOString();
+    }
+    return banner;
+  }
+
+  incrementBannerClicks(id: number) {
+    const banner = this.getBannerById(id);
+    if (banner) {
+      banner.clickCount = (banner.clickCount || 0) + 1;
+      banner.updatedAt = new Date().toISOString();
+    }
+    return banner;
+  }
+
+  getBannerAnalytics() {
+    return this.banners.map(banner => ({
+      id: banner.id,
+      title: banner.title,
+      targetPosition: banner.targetPosition,
+      targetUserGroup: banner.targetUserGroup,
+      isActive: banner.isActive,
+      clickCount: banner.clickCount || 0,
+      viewCount: banner.viewCount || 0,
+      clickThroughRate: banner.viewCount > 0 ? 
+        ((banner.clickCount || 0) / banner.viewCount * 100).toFixed(2) + '%' : '0%',
+      createdAt: banner.createdAt,
+      updatedAt: banner.updatedAt
+    }));
+  }
+
+  getBannersWithPagination(page: number = 1, limit: number = 10, filters: any = {}) {
+    let filteredBanners = [...this.banners];
+    
+    // 필터 적용
+    if (filters.targetPosition) {
+      filteredBanners = filteredBanners.filter(b => b.targetPosition === filters.targetPosition);
+    }
+    if (filters.targetUserGroup) {
+      filteredBanners = filteredBanners.filter(b => b.targetUserGroup === filters.targetUserGroup);
+    }
+    if (filters.isActive !== undefined) {
+      filteredBanners = filteredBanners.filter(b => b.isActive === filters.isActive);
+    }
+    
+    // 정렬
+    const sortBy = filters.sortBy || 'displayOrder';
+    const sortOrder = filters.sortOrder || 'asc';
+    
+    filteredBanners.sort((a, b) => {
+      const aValue = a[sortBy] || 0;
+      const bValue = b[sortBy] || 0;
+      
+      if (sortOrder === 'desc') {
+        return bValue > aValue ? 1 : -1;
+      }
+      return aValue > bValue ? 1 : -1;
+    });
+    
+    // 페이지네이션
+    const total = filteredBanners.length;
+    const totalPages = Math.ceil(total / limit);
+    const offset = (page - 1) * limit;
+    const paginatedBanners = filteredBanners.slice(offset, offset + limit);
+    
+    return {
+      data: paginatedBanners,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
   }
 
   // 이벤트 관련 메서드들 추가 (event routes에서 사용)

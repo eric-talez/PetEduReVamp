@@ -45,7 +45,23 @@ import {
   type UpdateTrainingJournal,
   type TrainingJournalQuery,
   type TrainingJournalMediaUpload,
-  type BulkTrainingJournalUpdate
+  type BulkTrainingJournalUpdate,
+  // 배너 관련 스키마
+  banners,
+  insertBannerSchema,
+  updateBannerSchema,
+  selectBannerSchema,
+  bannerQuerySchema,
+  bannerReorderSchema,
+  bannerAnalyticsSchema,
+  bulkBannerUpdateSchema,
+  type Banner,
+  type InsertBanner,
+  type UpdateBanner,
+  type BannerQuery,
+  type BannerReorder,
+  type BannerAnalytics,
+  type BulkBannerUpdate
 } from "../shared/schema";
 import { ilike, or } from "drizzle-orm";
 import { 
@@ -85,6 +101,12 @@ import {
 import xlsx from 'xlsx';
 import { contentCrawler } from './content-crawler';
 import { csrfProtection } from './middleware/csrf';
+import { 
+  extendResponse, 
+  ApiErrorCode, 
+  validateBody, 
+  validateQuery 
+} from './middleware/api-standards';
 
 // 유료/무료 정보를 포함한 엑셀 파일에서 커리큘럼 정보 추출 함수
 function parseExcelCurriculumWithPricing(data: any[], filename: string) {
@@ -454,6 +476,9 @@ if (stripeSecretKey) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+
+  // 표준화 API 응답 형식 미들웨어 적용
+  app.use(extendResponse);
 
   // 인증 관련 라우트는 setupAuth()에서 처리됩니다 (/api/auth/* 경로)
 
@@ -1629,26 +1654,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return value.includes('****') || value === '******';
   }
 
-  // 배너 API
+  // =============================================================================
+  // 배너 관리 API - 새로운 스키마와 요구사항에 맞게 완전 구현
+  // =============================================================================
+
+  // 공개 API: 활성화된 배너 목록 조회 (페이지네이션 지원)
   app.get("/api/banners", async (req, res) => {
     try {
-      const banners = [
-        {
-          id: 1,
-          title: "Talez 펫 교육 플랫폼",
-          description: "반려동물과 함께하는 더 나은 삶을 위한 종합 교육 플랫폼",
-          imageUrl: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=600&q=80",
-          linkUrl: "/courses",
-          isActive: true,
-          type: "main",
-          position: "hero"
-        }
-      ];
-
-      res.json(banners);
-    } catch (error) {
+      const query = bannerQuerySchema.parse(req.query);
+      
+      // 활성 배너만 조회하도록 필터 설정
+      const filters = {
+        ...query,
+        isActive: true
+      };
+      
+      const result = storage.getBannersWithPagination(
+        query.page,
+        query.limit,
+        filters
+      );
+      
+      res.paginated(result.data, query.page, query.limit, result.meta.total, '배너 목록을 조회했습니다.');
+    } catch (error: any) {
       console.error('배너 조회 오류:', error);
-      res.status(500).json({ error: "배너 데이터를 불러올 수 없습니다" });
+      if (error.name === 'ZodError') {
+        res.error(ApiErrorCode.VALIDATION_ERROR, '잘못된 요청 파라미터입니다.', error.issues);
+      } else {
+        res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, error.message || '배너 데이터를 불러올 수 없습니다.', error);
+      }
+    }
+  });
+
+  // 공개 API: 활성화된 배너만 조회 (간단한 엔드포인트)
+  app.get("/api/banners/active", async (req, res) => {
+    try {
+      const activeBanners = storage.getActiveBanners();
+      
+      res.success(activeBanners, `총 ${activeBanners.length}개의 활성 배너를 조회했습니다.`);
+    } catch (error: any) {
+      console.error('활성 배너 조회 오류:', error);
+      res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, error.message || '활성 배너 데이터를 불러올 수 없습니다.', error);
+    }
+  });
+
+  // 공개 API: 특정 배너 조회 (조회 수 증가)
+  app.get("/api/banners/:id", async (req, res) => {
+    try {
+      const bannerId = parseInt(req.params.id);
+      if (isNaN(bannerId)) {
+        return res.error(ApiErrorCode.VALIDATION_ERROR, '올바른 배너 ID가 필요합니다.');
+      }
+
+      const banner = storage.getBannerById(bannerId);
+      if (!banner) {
+        return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, '배너를 찾을 수 없습니다.');
+      }
+
+      // 활성 배너가 아니면 비공개
+      if (!banner.isActive) {
+        return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, '현재 이용할 수 없는 배너입니다.');
+      }
+
+      // 조회 수 증가
+      storage.incrementBannerViews(bannerId);
+
+      res.success(banner, '배너를 조회했습니다.');
+    } catch (error: any) {
+      console.error('배너 조회 오류:', error);
+      res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, error.message || '배너 조회에 실패했습니다.', error);
+    }
+  });
+
+  // 공개 API: 배너 클릭 추적
+  app.post("/api/banners/:id/click", async (req, res) => {
+    try {
+      const bannerId = parseInt(req.params.id);
+      if (isNaN(bannerId)) {
+        return res.error(ApiErrorCode.VALIDATION_ERROR, '올바른 배너 ID가 필요합니다.');
+      }
+
+      const banner = storage.getBannerById(bannerId);
+      if (!banner || !banner.isActive) {
+        return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, '배너를 찾을 수 없습니다.');
+      }
+
+      // 클릭 수 증가
+      storage.incrementBannerClicks(bannerId);
+
+      res.success(null, '클릭이 기록되었습니다.');
+    } catch (error: any) {
+      console.error('배너 클릭 추적 오류:', error);
+      res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, error.message || '클릭 추적에 실패했습니다.', error);
+    }
+  });
     }
   });
 
@@ -7267,63 +7366,399 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-// 관리자 - 배너 관리
-  app.get('/api/admin/banners', requireAuth('admin'), async (req, res) => {
-    try {
-      const banners = await storage.getAllBanners();
-      res.json(banners);
-    } catch (error) {
-      console.error('배너 조회 오류:', error);
-      res.status(500).json({ error: '배너 조회에 실패했습니다.' });
-    }
-  });
+  // =============================================================================
+  // 관리자 배너 관리 API - 완전한 CRUD 및 관리 기능
+  // =============================================================================
 
-  app.post('/api/admin/banners', requireAuth('admin'), async (req, res) => {
+  // 관리자 API: 모든 배너 조회 (비활성 포함, 페이지네이션)
+  app.get('/api/admin/banners', requireAuth('admin'), validateQuery(bannerQuerySchema), (req, res) => {
     try {
-      const bannerData = req.body;
-      console.log('[Banner API] 배너 등록 요청:', bannerData);
+      const query = req.query as any;
       
-      // 필수 필드 검증
-      if (!bannerData.title) {
-        return res.status(400).json({ error: '제목은 필수입니다.' });
-      }
-      if (!bannerData.imageUrl) {
-        return res.status(400).json({ error: '이미지 URL은 필수입니다.' });
-      }
-
-      const newBanner = await storage.createBanner(bannerData);
-      console.log('[Banner API] 배너 등록 완료:', newBanner);
-      res.status(201).json(newBanner);
+      const result = storage.getBannersWithPagination(
+        query.page,
+        query.limit,
+        query
+      );
+      
+      return res.paginated(
+        result.data, 
+        result.meta.page, 
+        result.meta.limit, 
+        result.meta.total,
+        '배너 목록을 조회했습니다'
+      );
     } catch (error: any) {
-      console.error('[Banner API] 배너 등록 오류:', error);
-      res.status(500).json({ error: error.message || '배너 등록에 실패했습니다.' });
+      console.error('관리자 배너 조회 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 조회에 실패했습니다'
+      );
     }
   });
 
-  app.put('/api/admin/banners/:id', requireAuth('admin'), async (req, res) => {
+  // 관리자 API: 새 배너 생성
+  app.post('/api/admin/banners', requireAuth('admin'), csrfProtection, validateBody(insertBannerSchema), (req, res) => {
+    try {
+      console.log('[Admin Banner API] 배너 생성 요청:', req.body);
+      
+      const newBanner = storage.createBanner(req.body);
+      console.log('[Admin Banner API] 배너 생성 완료:', newBanner);
+      
+      return res.success(
+        newBanner,
+        '배너가 성공적으로 생성되었습니다',
+        201
+      );
+    } catch (error: any) {
+      console.error('[Admin Banner API] 배너 생성 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 생성에 실패했습니다'
+      );
+    }
+  });
+
+  // 관리자 API: 배너 수정
+  app.put('/api/admin/banners/:id', requireAuth('admin'), csrfProtection, validateBody(updateBannerSchema.omit({ id: true })), (req, res) => {
     try {
       const bannerId = parseInt(req.params.id);
-      const bannerData = req.body;
+      if (isNaN(bannerId)) {
+        return res.error(
+          ApiErrorCode.VALIDATION_ERROR,
+          '올바른 배너 ID가 필요합니다'
+        );
+      }
+
+      // 배너 존재 확인
+      const existingBanner = storage.getBannerById(bannerId);
+      if (!existingBanner) {
+        return res.error(
+          ApiErrorCode.RESOURCE_NOT_FOUND,
+          '배너를 찾을 수 없습니다'
+        );
+      }
+
+      console.log('[Admin Banner API] 배너 수정 요청:', bannerId, req.body);
       
-      const updatedBanner = await storage.updateBanner(bannerId, bannerData);
-      console.log('[Banner API] 배너 수정 완료:', updatedBanner);
-      res.json(updatedBanner);
+      const updatedBanner = storage.updateBanner(bannerId, req.body);
+      console.log('[Admin Banner API] 배너 수정 완료:', updatedBanner);
+      
+      return res.success(
+        updatedBanner,
+        '배너가 성공적으로 수정되었습니다'
+      );
     } catch (error: any) {
-      console.error('[Banner API] 배너 수정 오류:', error);
-      res.status(500).json({ error: error.message || '배너 수정에 실패했습니다.' });
+      console.error('[Admin Banner API] 배너 수정 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 수정에 실패했습니다'
+      );
     }
   });
 
-  app.delete('/api/admin/banners/:id', requireAuth('admin'), async (req, res) => {
+  // 관리자 API: 배너 삭제
+  app.delete('/api/admin/banners/:id', requireAuth('admin'), csrfProtection, (req, res) => {
     try {
       const bannerId = parseInt(req.params.id);
+      if (isNaN(bannerId)) {
+        return res.error(
+          ApiErrorCode.VALIDATION_ERROR,
+          '올바른 배너 ID가 필요합니다'
+        );
+      }
+
+      // 배너 존재 확인
+      const existingBanner = storage.getBannerById(bannerId);
+      if (!existingBanner) {
+        return res.error(
+          ApiErrorCode.RESOURCE_NOT_FOUND,
+          '배너를 찾을 수 없습니다'
+        );
+      }
       
-      await storage.deleteBanner(bannerId);
-      console.log('[Banner API] 배너 삭제 완료:', bannerId);
-      res.json({ success: true, message: '배너가 삭제되었습니다.' });
+      console.log('[Admin Banner API] 배너 삭제 요청:', bannerId);
+      
+      storage.deleteBanner(bannerId);
+      console.log('[Admin Banner API] 배너 삭제 완료:', bannerId);
+      
+      return res.success(
+        { deleted: true, bannerId },
+        '배너가 성공적으로 삭제되었습니다'
+      );
     } catch (error: any) {
-      console.error('[Banner API] 배너 삭제 오류:', error);
-      res.status(500).json({ error: error.message || '배너 삭제에 실패했습니다.' });
+      console.error('[Admin Banner API] 배너 삭제 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 삭제에 실패했습니다'
+      );
+    }
+  });
+
+  // =============================================================================
+  // 특수 기능 배너 API - 토글, 순서 변경, 대량 업데이트 등
+  // =============================================================================
+
+  // 관리자 API: 배너 활성화/비활성화 토글
+  app.patch('/api/admin/banners/:id/toggle', requireAuth('admin'), csrfProtection, (req, res) => {
+    try {
+      const bannerId = parseInt(req.params.id);
+      if (isNaN(bannerId)) {
+        return res.error(
+          ApiErrorCode.VALIDATION_ERROR,
+          '올바른 배너 ID가 필요합니다'
+        );
+      }
+
+      console.log('[Admin Banner API] 배너 토글 요청:', bannerId);
+      
+      const updatedBanner = storage.toggleBannerStatus(bannerId);
+      console.log('[Admin Banner API] 배너 토글 완료:', updatedBanner);
+      
+      return res.success(
+        updatedBanner,
+        `배너가 ${updatedBanner.isActive ? '활성화' : '비활성화'}되었습니다`
+      );
+    } catch (error: any) {
+      console.error('[Admin Banner API] 배너 토글 오류:', error);
+      const isNotFound = error.message?.includes('찾을 수 없습니다');
+      return res.error(
+        isNotFound ? ApiErrorCode.RESOURCE_NOT_FOUND : ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 상태 변경에 실패했습니다'
+      );
+    }
+  });
+
+  // 관리자 API: 배너 순서 변경
+  app.post('/api/admin/banners/reorder', requireAuth('admin'), csrfProtection, validateBody(bannerReorderSchema), (req, res) => {
+    try {
+      console.log('[Admin Banner API] 배너 순서 변경 요청:', req.body);
+      
+      const updatedBanner = storage.reorderBanners(
+        req.body.bannerId,
+        req.body.newOrder,
+        req.body.targetPosition
+      );
+      
+      console.log('[Admin Banner API] 배너 순서 변경 완료:', updatedBanner);
+      
+      return res.success(
+        updatedBanner,
+        '배너 순서가 성공적으로 변경되었습니다'
+      );
+    } catch (error: any) {
+      console.error('[Admin Banner API] 배너 순서 변경 오류:', error);
+      const isNotFound = error.message?.includes('찾을 수 없습니다');
+      return res.error(
+        isNotFound ? ApiErrorCode.RESOURCE_NOT_FOUND : ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 순서 변경에 실패했습니다'
+      );
+    }
+  });
+
+  // 관리자 API: 배너 대량 업데이트
+  app.patch('/api/admin/banners/bulk-update', requireAuth('admin'), csrfProtection, validateBody(bulkBannerUpdateSchema), (req, res) => {
+    try {
+      console.log('[Admin Banner API] 배너 대량 업데이트 요청:', req.body);
+      
+      const updatedBanners = [];
+      const errors = [];
+      
+      for (const bannerId of req.body.bannerIds) {
+        try {
+          const updatedBanner = storage.updateBanner(bannerId, req.body.updates);
+          updatedBanners.push(updatedBanner);
+        } catch (error: any) {
+          errors.push({
+            bannerId,
+            error: error.message
+          });
+        }
+      }
+      
+      console.log('[Admin Banner API] 배너 대량 업데이트 완료:', {
+        updated: updatedBanners.length,
+        errors: errors.length
+      });
+      
+      const data = {
+        updatedBanners,
+        updatedCount: updatedBanners.length,
+        totalCount: req.body.bannerIds.length,
+        ...(errors.length > 0 && { errors })
+      };
+      
+      const message = errors.length === 0 
+        ? `${updatedBanners.length}개 배너가 성공적으로 업데이트되었습니다`
+        : `${updatedBanners.length}개 배너가 업데이트되었습니다 (${errors.length}개 실패)`;
+      
+      return res.success(data, message, errors.length === 0 ? 200 : 207);
+    } catch (error: any) {
+      console.error('[Admin Banner API] 배너 대량 업데이트 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 대량 업데이트에 실패했습니다'
+      );
+    }
+  });
+
+  // =============================================================================
+  // 관리자 전용 배너 분석 및 통계 API
+  // =============================================================================
+
+  // 관리자 API: 배너 분석 및 통계
+  app.get('/api/admin/banners/analytics', requireAuth('admin'), (req, res) => {
+    try {
+      console.log('[Admin Banner API] 배너 분석 요청');
+      
+      const analytics = storage.getBannerAnalytics();
+      
+      // 총 통계 계산
+      const totalClicks = analytics.reduce((sum, banner) => sum + banner.clickCount, 0);
+      const totalViews = analytics.reduce((sum, banner) => sum + banner.viewCount, 0);
+      const activeBanners = analytics.filter(banner => banner.isActive).length;
+      const totalBanners = analytics.length;
+      
+      // 위치별 통계
+      const positionStats = analytics.reduce((acc, banner) => {
+        const position = banner.targetPosition;
+        if (!acc[position]) {
+          acc[position] = {
+            count: 0,
+            activeCount: 0,
+            totalClicks: 0,
+            totalViews: 0
+          };
+        }
+        acc[position].count++;
+        if (banner.isActive) acc[position].activeCount++;
+        acc[position].totalClicks += banner.clickCount;
+        acc[position].totalViews += banner.viewCount;
+        return acc;
+      }, {} as any);
+      
+      // 사용자 그룹별 통계
+      const userGroupStats = analytics.reduce((acc, banner) => {
+        const group = banner.targetUserGroup;
+        if (!acc[group]) {
+          acc[group] = {
+            count: 0,
+            activeCount: 0,
+            totalClicks: 0,
+            totalViews: 0
+          };
+        }
+        acc[group].count++;
+        if (banner.isActive) acc[group].activeCount++;
+        acc[group].totalClicks += banner.clickCount;
+        acc[group].totalViews += banner.viewCount;
+        return acc;
+      }, {} as any);
+      
+      console.log('[Admin Banner API] 배너 분석 완료');
+      
+      const data = {
+        banners: analytics,
+        summary: {
+          totalBanners,
+          activeBanners,
+          inactiveBanners: totalBanners - activeBanners,
+          totalClicks,
+          totalViews,
+          overallClickThroughRate: totalViews > 0 ? 
+            ((totalClicks / totalViews) * 100).toFixed(2) + '%' : '0%'
+        },
+        positionStats,
+        userGroupStats,
+        topPerformers: {
+          mostClicked: analytics
+            .sort((a, b) => b.clickCount - a.clickCount)
+            .slice(0, 5),
+          mostViewed: analytics
+            .sort((a, b) => b.viewCount - a.viewCount)
+            .slice(0, 5),
+          bestClickThrough: analytics
+            .filter(b => b.viewCount > 0)
+            .sort((a, b) => {
+              const aRate = a.clickCount / a.viewCount;
+              const bRate = b.clickCount / b.viewCount;
+              return bRate - aRate;
+            })
+            .slice(0, 5)
+        }
+      };
+      
+      return res.success(data, '배너 분석 데이터를 조회했습니다');
+    } catch (error: any) {
+      console.error('[Admin Banner API] 배너 분석 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 분석에 실패했습니다'
+      );
+    }
+  });
+
+  // 관리자 API: 특정 배너 상세 조회 (관리자 전용, 통계 포함)
+  app.get('/api/admin/banners/:id', requireAuth('admin'), (req, res) => {
+    try {
+      const bannerId = parseInt(req.params.id);
+      if (isNaN(bannerId)) {
+        return res.error(
+          ApiErrorCode.VALIDATION_ERROR,
+          '올바른 배너 ID가 필요합니다'
+        );
+      }
+
+      const banner = storage.getBannerById(bannerId);
+      if (!banner) {
+        return res.error(
+          ApiErrorCode.RESOURCE_NOT_FOUND,
+          '배너를 찾을 수 없습니다'
+        );
+      }
+
+      // 추가 분석 정보
+      const analytics = storage.getBannerAnalytics();
+      const bannerAnalytics = analytics.find(a => a.id === bannerId);
+      
+      // 같은 위치의 다른 배너들과 비교
+      const samePositionBanners = analytics.filter(a => 
+        a.targetPosition === banner.targetPosition && a.id !== bannerId
+      );
+      
+      const avgClicksInPosition = samePositionBanners.length > 0 
+        ? samePositionBanners.reduce((sum, b) => sum + b.clickCount, 0) / samePositionBanners.length
+        : 0;
+      
+      const avgViewsInPosition = samePositionBanners.length > 0 
+        ? samePositionBanners.reduce((sum, b) => sum + b.viewCount, 0) / samePositionBanners.length
+        : 0;
+
+      const data = {
+        ...banner,
+        analytics: bannerAnalytics,
+        performance: {
+          clicksVsAverage: avgClicksInPosition > 0 
+            ? ((banner.clickCount || 0) / avgClicksInPosition * 100).toFixed(1) + '%'
+            : '100%',
+          viewsVsAverage: avgViewsInPosition > 0 
+            ? ((banner.viewCount || 0) / avgViewsInPosition * 100).toFixed(1) + '%'
+            : '100%',
+          positionRank: samePositionBanners.length > 0 
+            ? samePositionBanners
+                .sort((a, b) => b.clickCount - a.clickCount)
+                .findIndex(b => b.clickCount <= (banner.clickCount || 0)) + 1
+            : 1
+        }
+      };
+
+      return res.success(data, '배너 상세 정보를 조회했습니다');
+    } catch (error: any) {
+      console.error('[Admin Banner API] 관리자 배너 조회 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        error.message || '배너 조회에 실패했습니다'
+      );
     }
   });
 

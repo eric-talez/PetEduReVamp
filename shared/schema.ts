@@ -634,8 +634,17 @@ export const banners = pgTable("banners", {
   title: varchar("title", { length: 200 }).notNull(),
   content: text("content"),
   imageUrl: text("image_url"),
+  linkUrl: text("link_url"), // 클릭시 이동할 URL
+  targetPosition: varchar("target_position", { length: 50 }).default("home-hero"), // home-hero, sidebar, footer 등
+  displayOrder: integer("display_order").default(0), // 표시 순서
+  targetUserGroup: varchar("target_user_group", { length: 50 }).default("all"), // all, pet-owners, trainers, admins
+  startDate: timestamp("start_date"), // 표시 시작일
+  endDate: timestamp("end_date"), // 표시 종료일
+  clickCount: integer("click_count").default(0), // 클릭 수
+  viewCount: integer("view_count").default(0), // 노출 수
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // 알림장 테이블 - 훈련사가 견주에게 보내는 훈련 알림
@@ -1618,3 +1627,73 @@ export type UpdateTrainingJournal = z.infer<typeof updateTrainingJournalSchema>;
 export type TrainingJournalQuery = z.infer<typeof trainingJournalQuerySchema>;
 export type TrainingJournalMediaUpload = z.infer<typeof trainingJournalMediaUploadSchema>;
 export type BulkTrainingJournalUpdate = z.infer<typeof bulkTrainingJournalUpdateSchema>;
+
+// =============================================================================
+// 배너 관련 스키마 및 타입 정의
+// =============================================================================
+
+// 배너 생성 스키마
+export const insertBannerSchema = createInsertSchema(banners, {
+  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
+  content: z.string().max(1000, "내용은 1000자를 초과할 수 없습니다").optional(),
+  imageUrl: z.string().url("올바른 이미지 URL 형식이 아닙니다").optional(),
+  linkUrl: z.string().url("올바른 링크 URL 형식이 아닙니다").optional(),
+  targetPosition: z.enum(["home-hero", "sidebar", "footer", "header", "content-top", "content-bottom"]).default("home-hero"),
+  displayOrder: z.number().int().min(0).default(0),
+  targetUserGroup: z.enum(["all", "pet-owners", "trainers", "admins"]).default("all"),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  isActive: z.boolean().default(true)
+}).omit({ id: true, clickCount: true, viewCount: true, createdAt: true, updatedAt: true });
+
+// 배너 수정 스키마
+export const updateBannerSchema = insertBannerSchema.partial().extend({
+  id: z.number().int().positive()
+});
+
+// 배너 조회 스키마
+export const selectBannerSchema = createSelectSchema(banners);
+
+// 배너 쿼리 스키마
+export const bannerQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  targetPosition: z.enum(["home-hero", "sidebar", "footer", "header", "content-top", "content-bottom"]).optional(),
+  targetUserGroup: z.enum(["all", "pet-owners", "trainers", "admins"]).optional(),
+  isActive: z.coerce.boolean().optional(),
+  sortBy: z.enum(["displayOrder", "createdAt", "title", "clickCount"]).default("displayOrder"),
+  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+});
+
+// 배너 순서 변경 스키마
+export const bannerReorderSchema = z.object({
+  bannerId: z.number().int().positive(),
+  newOrder: z.number().int().min(0),
+  targetPosition: z.enum(["home-hero", "sidebar", "footer", "header", "content-top", "content-bottom"]).optional()
+});
+
+// 배너 통계 스키마
+export const bannerAnalyticsSchema = z.object({
+  bannerId: z.number().int().positive(),
+  actionType: z.enum(["view", "click"]),
+  userAgent: z.string().optional(),
+  referrer: z.string().optional()
+});
+
+// 배너 대량 업데이트 스키마
+export const bulkBannerUpdateSchema = z.object({
+  bannerIds: z.array(z.number().int().positive()).min(1, "적어도 하나의 배너를 선택해주세요"),
+  updates: z.object({
+    isActive: z.boolean().optional(),
+    targetPosition: z.enum(["home-hero", "sidebar", "footer", "header", "content-top", "content-bottom"]).optional(),
+    displayOrder: z.number().int().min(0).optional()
+  })
+});
+
+// 배너 타입 정의 (이미 존재하는 것 확장)
+export type UpdateBanner = z.infer<typeof updateBannerSchema>;
+export type InsertBanner = z.infer<typeof insertBannerSchema>;
+export type BannerQuery = z.infer<typeof bannerQuerySchema>;
+export type BannerReorder = z.infer<typeof bannerReorderSchema>;
+export type BannerAnalytics = z.infer<typeof bannerAnalyticsSchema>;
+export type BulkBannerUpdate = z.infer<typeof bulkBannerUpdateSchema>;
