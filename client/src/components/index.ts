@@ -1,3 +1,3 @@
 
 // Feature Components
-export * from './features/Chatbot';
+// Note: Chatbot has been deprecated in favor of ui/SimpleChatBot
