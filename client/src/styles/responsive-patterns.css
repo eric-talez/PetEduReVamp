@@ -1,0 +1,343 @@
+/**
+ * TALEZ Platform - Standardized Responsive Design Patterns
+ * 
+ * This file contains standardized responsive design patterns to ensure
+ * consistent user experience across all devices and components.
+ * 
+ * Breakpoint Strategy: Mobile-first approach using Tailwind breakpoints
+ * - Mobile: 0-639px (base)
+ * - Tablet: 640px+ (sm:)
+ * - Desktop: 768px+ (md:)
+ * - Large: 1024px+ (lg:)
+ * - XL: 1280px+ (xl:)
+ * - 2XL: 1536px+ (2xl:)
+ */
+
+@layer components {
+  /* ===========================================
+     STANDARDIZED SPACING PATTERNS
+     =========================================== */
+  
+  /* Card Components - Responsive Padding */
+  .card-responsive {
+    @apply p-4 sm:p-5 md:p-6 lg:p-8;
+  }
+  
+  .card-compact {
+    @apply p-3 sm:p-4 md:p-5;
+  }
+  
+  .card-spacious {
+    @apply p-6 sm:p-8 md:p-10 lg:p-12;
+  }
+  
+  /* Container Patterns */
+  .container-responsive {
+    @apply px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16;
+  }
+  
+  .container-tight {
+    @apply px-3 sm:px-4 md:px-6 lg:px-8;
+  }
+  
+  /* Section Spacing */
+  .section-spacing {
+    @apply py-8 sm:py-12 md:py-16 lg:py-20;
+  }
+  
+  .section-spacing-compact {
+    @apply py-6 sm:py-8 md:py-10;
+  }
+  
+  /* ===========================================
+     TYPOGRAPHY RESPONSIVE PATTERNS
+     =========================================== */
+  
+  /* Heading Responsive Scales */
+  .heading-1 {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight;
+  }
+  
+  .heading-2 {
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold tracking-tight;
+  }
+  
+  .heading-3 {
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold tracking-tight;
+  }
+  
+  .heading-4 {
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium tracking-tight;
+  }
+  
+  .heading-5 {
+    @apply text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-medium tracking-tight;
+  }
+  
+  .heading-6 {
+    @apply text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-medium tracking-tight;
+  }
+  
+  /* Body Text Responsive */
+  .text-body {
+    @apply text-sm sm:text-base md:text-lg leading-relaxed;
+  }
+  
+  .text-body-small {
+    @apply text-xs sm:text-sm md:text-base leading-relaxed;
+  }
+  
+  .text-caption {
+    @apply text-xs sm:text-sm leading-normal;
+  }
+  
+  /* ===========================================
+     FORM ELEMENT RESPONSIVE PATTERNS
+     =========================================== */
+  
+  /* Input Sizing */
+  .input-responsive {
+    @apply h-10 sm:h-11 md:h-12 px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base;
+  }
+  
+  .input-compact {
+    @apply h-8 sm:h-9 md:h-10 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm;
+  }
+  
+  .input-large {
+    @apply h-12 sm:h-13 md:h-14 px-4 sm:px-5 py-3 sm:py-3.5 text-base sm:text-lg;
+  }
+  
+  /* Button Responsive Sizing */
+  .btn-responsive {
+    @apply h-10 sm:h-11 md:h-12 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base min-w-[2.5rem] sm:min-w-[2.75rem] md:min-w-[3rem];
+  }
+  
+  .btn-compact {
+    @apply h-8 sm:h-9 md:h-10 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm min-w-[2rem] sm:min-w-[2.25rem];
+  }
+  
+  .btn-large {
+    @apply h-12 sm:h-13 md:h-14 px-6 sm:px-8 py-3 sm:py-3.5 text-base sm:text-lg min-w-[3rem] sm:min-w-[3.5rem];
+  }
+  
+  /* Form Layout Spacing */
+  .form-spacing {
+    @apply space-y-3 sm:space-y-4 md:space-y-6;
+  }
+  
+  .form-grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+  
+  /* ===========================================
+     NAVIGATION RESPONSIVE PATTERNS
+     =========================================== */
+  
+  /* Menu Item Sizing */
+  .menu-item-responsive {
+    @apply min-h-[2.5rem] sm:min-h-[2.75rem] md:min-h-[3rem] px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base;
+  }
+  
+  /* Breadcrumb Responsive */
+  .breadcrumb-responsive {
+    @apply gap-1 sm:gap-1.5 md:gap-2.5 text-xs sm:text-sm md:text-base;
+  }
+  
+  /* ===========================================
+     MODAL AND DIALOG RESPONSIVE PATTERNS
+     =========================================== */
+  
+  /* Dialog Responsive Sizing */
+  .dialog-responsive {
+    @apply w-[95vw] sm:w-[85vw] md:w-[75vw] lg:w-[65vw] xl:w-[55vw] 2xl:w-[45vw] max-w-none sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl;
+  }
+  
+  .dialog-compact {
+    @apply w-[90vw] sm:w-[80vw] md:w-[70vw] lg:w-[50vw] max-w-none sm:max-w-md md:max-w-lg lg:max-w-xl;
+  }
+  
+  .dialog-full {
+    @apply w-[98vw] sm:w-[95vw] md:w-[90vw] lg:w-[85vw] xl:w-[80vw] max-w-none sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl;
+  }
+  
+  /* Sheet Responsive Sizing */
+  .sheet-responsive {
+    @apply w-full sm:w-[85vw] md:w-[75vw] lg:w-[65vw] xl:w-[55vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl;
+  }
+  
+  /* ===========================================
+     TABLE RESPONSIVE PATTERNS
+     =========================================== */
+  
+  /* Table Cell Responsive Padding */
+  .table-cell-responsive {
+    @apply p-2 sm:p-3 md:p-4 lg:p-5;
+  }
+  
+  .table-cell-compact {
+    @apply p-1.5 sm:p-2 md:p-3;
+  }
+  
+  /* Table Header Responsive */
+  .table-header-responsive {
+    @apply h-10 sm:h-11 md:h-12 px-2 sm:px-3 md:px-4 text-xs sm:text-sm md:text-base font-medium;
+  }
+  
+  /* ===========================================
+     GRID AND LAYOUT RESPONSIVE PATTERNS
+     =========================================== */
+  
+  /* Responsive Grid Systems */
+  .grid-responsive-1-2-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8;
+  }
+  
+  .grid-responsive-1-2-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  .grid-responsive-2-4-6 {
+    @apply grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6;
+  }
+  
+  /* Flex Responsive Patterns */
+  .flex-responsive-column-row {
+    @apply flex flex-col sm:flex-row gap-4 sm:gap-6;
+  }
+  
+  .flex-responsive-wrap {
+    @apply flex flex-wrap gap-2 sm:gap-3 md:gap-4;
+  }
+  
+  /* ===========================================
+     UTILITY RESPONSIVE PATTERNS
+     =========================================== */
+  
+  /* Responsive Gaps */
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 md:gap-6 lg:gap-8;
+  }
+  
+  .gap-responsive-tight {
+    @apply gap-2 sm:gap-3 md:gap-4;
+  }
+  
+  /* Responsive Margins */
+  .margin-responsive {
+    @apply m-4 sm:m-6 md:m-8 lg:m-10;
+  }
+  
+  .margin-responsive-y {
+    @apply my-4 sm:my-6 md:my-8 lg:my-10;
+  }
+  
+  .margin-responsive-x {
+    @apply mx-4 sm:mx-6 md:mx-8 lg:mx-10;
+  }
+  
+  /* Touch Target Optimization */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .touch-target-large {
+    @apply min-h-[48px] min-w-[48px];
+  }
+}
+
+/* ===========================================
+   RESPONSIVE BEHAVIOR UTILITIES
+   =========================================== */
+
+@layer utilities {
+  /* Hide/Show at Different Breakpoints */
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+  
+  .tablet-up {
+    @apply hidden sm:block;
+  }
+  
+  .desktop-up {
+    @apply hidden md:block;
+  }
+  
+  .large-up {
+    @apply hidden lg:block;
+  }
+  
+  /* Responsive Text Alignment */
+  .text-responsive-center {
+    @apply text-center sm:text-left;
+  }
+  
+  .text-responsive-left {
+    @apply text-left;
+  }
+  
+  /* Responsive Overflow Handling */
+  .overflow-responsive {
+    @apply overflow-x-auto sm:overflow-x-visible;
+  }
+  
+  /* Responsive Z-Index Management */
+  .z-mobile-menu {
+    @apply z-50;
+  }
+  
+  .z-modal {
+    @apply z-50;
+  }
+  
+  .z-dropdown {
+    @apply z-40;
+  }
+  
+  .z-sidebar {
+    @apply z-30;
+  }
+  
+  .z-header {
+    @apply z-20;
+  }
+}
+
+/* ===========================================
+   BREAKPOINT-SPECIFIC CUSTOMIZATIONS
+   =========================================== */
+
+/* Mobile-specific optimizations */
+@media (max-width: 639px) {
+  .mobile-full-width {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+  }
+  
+  .mobile-safe-area {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Tablet-specific optimizations */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .tablet-optimized {
+    /* Tablet-specific styles */
+  }
+}
+
+/* Desktop-specific optimizations */
+@media (min-width: 1024px) {
+  .desktop-optimized {
+    /* Desktop-specific styles */
+  }
+  
+  /* Hover effects only on desktop */
+  .desktop-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+}
