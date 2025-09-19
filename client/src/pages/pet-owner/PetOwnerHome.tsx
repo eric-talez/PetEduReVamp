@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { EnhancedAnalytics } from "@/components/dashboard/EnhancedAnalytics";
+import { EmptyBannerState, getEmptyBannerVariant } from "@/components/ui/empty-banner-state";
+import { useQuery } from '@tanstack/react-query';
 
 import { useLocation, Link } from "wouter";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock, BarChart3 } from "lucide-react";
@@ -30,8 +32,35 @@ export default function PetOwnerHome() {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // 배너 슬라이드 데이터
-  const bannerSlides: BannerSlide[] = [
+  // 데이터베이스에서 배너 정보 조회
+  const { data: banners = [], isLoading: bannersLoading, error: bannersError } = useQuery({
+    queryKey: ['/api/banners', 'pet-owner', 'dashboard'],
+    queryFn: async () => {
+      const response = await fetch('/api/banners?type=dashboard&position=hero&userRole=pet-owner');
+      if (!response.ok) {
+        throw new Error('배너 정보를 불러오는데 실패했습니다');
+      }
+      return response.json();
+    }
+  });
+
+  // 배너 데이터를 슬라이드 형식으로 변환
+  const bannerSlides: BannerSlide[] = banners.length > 0 ? banners.map((banner: any) => ({
+    id: banner.id,
+    title: banner.title,
+    description: banner.description || banner.content,
+    features: banner.features || [],
+    image: banner.imageUrl,
+    primaryAction: {
+      text: banner.actionText || "자세히 보기",
+      path: banner.actionUrl || "/courses"
+    },
+    secondaryAction: {
+      text: "더 알아보기",
+      path: "/about"
+    }
+  })) : [
+    // 백업 데이터 - 실제 배너가 없을 때는 EmptyBannerState를 사용
     {
       id: 1,
       title: "반려견 맞춤형 전문 교육 서비스",
@@ -49,82 +78,6 @@ export default function PetOwnerHome() {
       secondaryAction: {
         text: "무료 체험 신청",
         path: "/courses"
-      }
-    },
-    {
-      id: 2,
-      title: "AI 기반 반려견 행동 분석",
-      description: "최신 인공지능 기술로 반려견의 행동과 감정을 분석하고 맞춤형 솔루션을 제공합니다",
-      features: [
-        "영상 기반 행동 분석",
-        "감정 상태 모니터링",
-        "맞춤형 훈련 가이드"
-      ],
-      image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
-      primaryAction: {
-        text: "AI 분석 체험하기",
-        path: "/ai-analysis"
-      },
-      secondaryAction: {
-        text: "기술 소개 보기",
-        path: "/courses"
-      }
-    },
-    {
-      id: 3,
-      title: "반려견 친화적 장소 찾기",
-      description: "전국의 반려견 동반 가능 장소를 한 눈에 확인하고 실시간 리뷰와 평점을 확인하세요",
-      features: [
-        "위치 기반 추천 시스템",
-        "사용자 실시간 리뷰",
-        "Talez 인증 장소 정보"
-      ],
-      image: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
-      primaryAction: {
-        text: "주변 장소 찾기",
-        path: "/locations"
-      },
-      secondaryAction: {
-        text: "장소 등록하기",
-        path: "/locations"
-      }
-    },
-    {
-      id: 4,
-      title: "반려견 건강 모니터링 시스템",
-      description: "일상 활동, 식이 패턴, 수면 상태를 기록하고 건강 변화를 추적하여 질병을 예방합니다",
-      features: [
-        "건강 데이터 대시보드",
-        "식이 관리 캘린더",
-        "건강 알림 서비스"
-      ],
-      image: "https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
-      primaryAction: {
-        text: "건강 기록 시작하기",
-        path: "/pet-care/health-record"
-      },
-      secondaryAction: {
-        text: "건강 정보 살펴보기",
-        path: "/pet-care/health-record"
-      }
-    },
-    {
-      id: 5,
-      title: "반려견 소셜 커뮤니티",
-      description: "비슷한 관심사를 가진 반려인들과 소통하고 경험을 공유하는 활발한 커뮤니티에 참여하세요",
-      features: [
-        "지역별 모임 정보",
-        "실시간 Q&A",
-        "전문가 상담 서비스"
-      ],
-      image: "https://images.unsplash.com/photo-1548658166-136d9f6a7e76?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
-      primaryAction: {
-        text: "커뮤니티 가입하기",
-        path: "/community"
-      },
-      secondaryAction: {
-        text: "이벤트 참여하기",
-        path: "/events"
       }
     }
   ];
@@ -197,71 +150,87 @@ export default function PetOwnerHome() {
         </div>
 
         {/* 메인 배너 슬라이드 */}
-        <Card className="mb-8 overflow-hidden">
-          <div className="relative">
-            <div className="relative h-96 bg-gradient-to-r from-blue-600 to-purple-600">
-              <div 
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url(${bannerSlides[currentSlide].image})` }}
-              >
-                <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-              </div>
-              
-              <div className="relative z-10 flex items-center h-full">
-                <div className="container mx-auto px-6">
-                  <div className="max-w-2xl text-white">
-                    <h2 className="text-4xl font-bold mb-4">
-                      {bannerSlides[currentSlide].title}
-                    </h2>
-                    <p className="text-xl mb-6 text-gray-100">
-                      {bannerSlides[currentSlide].description}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-3 mb-8">
-                      {bannerSlides[currentSlide].features.map((feature, index) => (
-                        <span 
-                          key={index}
-                          className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium"
-                        >
-                          ✨ {feature}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    <div className="flex gap-4">
-                      <Link href={bannerSlides[currentSlide].primaryAction.path}>
-                        <Button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold">
-                          {bannerSlides[currentSlide].primaryAction.text}
-                        </Button>
-                      </Link>
-                      <Link href={bannerSlides[currentSlide].secondaryAction.path}>
-                        <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-semibold">
-                          {bannerSlides[currentSlide].secondaryAction.text}
-                        </Button>
-                      </Link>
+        {bannersLoading ? (
+          <EmptyBannerState 
+            variant="loading"
+            context="dashboard"
+            height="h-96"
+            data-testid="pet-owner-banner-loading"
+          />
+        ) : bannersError || banners.length === 0 ? (
+          <EmptyBannerState 
+            variant={getEmptyBannerVariant(userRole, true, false, !!bannersError)}
+            context="dashboard"
+            height="h-96"
+            data-testid="pet-owner-banner-empty"
+          />
+        ) : (
+          <Card className="mb-8 overflow-hidden">
+            <div className="relative">
+              <div className="relative h-96 bg-gradient-to-r from-blue-600 to-purple-600">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{ backgroundImage: `url(${bannerSlides[currentSlide].image})` }}
+                >
+                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                </div>
+                
+                <div className="relative z-10 flex items-center h-full">
+                  <div className="container mx-auto px-6">
+                    <div className="max-w-2xl text-white">
+                      <h2 className="text-4xl font-bold mb-4">
+                        {bannerSlides[currentSlide].title}
+                      </h2>
+                      <p className="text-xl mb-6 text-gray-100">
+                        {bannerSlides[currentSlide].description}
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-3 mb-8">
+                        {bannerSlides[currentSlide].features.map((feature, index) => (
+                          <span 
+                            key={index}
+                            className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium"
+                          >
+                            ✨ {feature}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      <div className="flex gap-4">
+                        <Link href={bannerSlides[currentSlide].primaryAction.path}>
+                          <Button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold">
+                            {bannerSlides[currentSlide].primaryAction.text}
+                          </Button>
+                        </Link>
+                        <Link href={bannerSlides[currentSlide].secondaryAction.path}>
+                          <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-semibold">
+                            {bannerSlides[currentSlide].secondaryAction.text}
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+              
+              {/* 슬라이드 인디케이터 */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                {bannerSlides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      index === currentSlide 
+                        ? 'bg-white w-8' 
+                        : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+                    }`}
+                    aria-label={`슬라이드 ${index + 1}로 이동`}
+                  />
+                ))}
+              </div>
             </div>
-            
-            {/* 슬라이드 인디케이터 */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-              {bannerSlides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentSlide 
-                      ? 'bg-white w-8' 
-                      : 'bg-white bg-opacity-50 hover:bg-opacity-75'
-                  }`}
-                  aria-label={`슬라이드 ${index + 1}로 이동`}
-                />
-              ))}
-            </div>
-          </div>
-        </Card>
+          </Card>
+        )}
 
         {/* 핵심 기능 대시보드 */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

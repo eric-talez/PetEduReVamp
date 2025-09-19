@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { EmptyBannerState, getEmptyBannerVariant } from '@/components/ui/empty-banner-state';
 import {
   Card,
   CardContent,
@@ -772,16 +773,20 @@ export default function AdminBanners() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10">
-                      <div className="text-muted-foreground">등록된 배너가 없습니다</div>
-                      <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={handleAddBanner}
-                      >
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        새 배너 추가
-                      </Button>
+                    <TableCell colSpan={7} className="p-0">
+                      <div onClick={handleAddBanner} className="cursor-pointer">
+                        <EmptyBannerState 
+                          variant={getEmptyBannerVariant(userName ? 'admin' : null, !!userName)}
+                          context="admin"
+                          height="h-48"
+                          title="첫 번째 배너를 만들어 시작하세요"
+                          description={`${activeTab} 배너가 아직 없습니다. 사용자에게 중요한 정보와 프로모션을 전달할 수 있는 배너를 추가해보세요.`}
+                          actionText="배너 추가하기"
+                          actionLink="#"
+                          showAction={true}
+                          data-testid="admin-banners-empty-state"
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}

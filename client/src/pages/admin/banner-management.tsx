@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { EmptyBannerState, getEmptyBannerVariant } from '@/components/ui/empty-banner-state';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,6 +56,7 @@ interface BannerFormData {
 export default function BannerManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { userRole, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<BannerType>('main');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPosition, setFilterPosition] = useState<string | null>(null);
@@ -389,11 +392,19 @@ export default function BannerManagement() {
         <TabsContent value={activeTab} className="mt-6">
           <div className="grid gap-4">
             {paginatedBanners.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  등록된 배너가 없습니다.
-                </CardContent>
-              </Card>
+              <div onClick={handleAddBanner} className="cursor-pointer">
+                <EmptyBannerState 
+                  variant={getEmptyBannerVariant(userRole, isAuthenticated)}
+                  context="admin"
+                  height="h-64"
+                  title="첫 번째 배너를 만들어보세요"
+                  description={`${activeTab} 배너가 아직 없습니다. 사용자들에게 중요한 정보를 전달할 첫 번째 배너를 생성해보세요.`}
+                  actionText="배너 추가하기"
+                  actionLink="#"
+                  showAction={true}
+                  data-testid="admin-banner-empty-state"
+                />
+              </div>
             ) : (
               paginatedBanners.map((banner) => (
                 <Card key={banner.id}>
