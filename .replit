@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["maven", "openjdk17", "unzip"]
+packages = ["maven", "openjdk17", "unzip", "jq"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -22,6 +22,10 @@ externalPort = 80
 [[ports]]
 localPort = 33855
 externalPort = 3002
+
+[[ports]]
+localPort = 38847
+externalPort = 3003
 
 [[ports]]
 localPort = 41399
