@@ -1,8 +1,8 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
-import { NewSidebar } from "@/components/NewSidebar"; // 새로운 사이드바 컴포넌트 추가
+// DEPRECATED: NewSidebar removed - using canonical Sidebar.tsx for consistency
 import { TopBar } from "@/components/TopBar";
-import { Chatbot } from "@/components/features/Chatbot";
+import { SimpleChatBot } from "@/components/ui/SimpleChatBot"; // Using canonical SimpleChatBot for consistency
 import { useAuth } from "@/hooks/useAuth";
 import SkipLink from "@/components/accessibility/SkipLink";
 
@@ -81,7 +81,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}
 
       {/* 챗봇 컴포넌트 */}
-      <Chatbot />
+      <SimpleChatBot />
     </div>
   );
 }

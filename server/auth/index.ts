@@ -9,8 +9,7 @@ import jwt from 'jsonwebtoken';
 import { hashPassword, setupLocalAuth } from './local-auth';
 import { setupSocialAuth } from './social-auth';
 import { storage } from '../storage';
-import { User as SelectUser } from '@shared/schema';
-import { UserRole } from '@shared/schema';
+import type { User as SelectUser, UserRole } from '../../shared/schema';
 import { csrfProtection, getCSRFToken } from '../middleware/csrf';
 import { 
   ApiErrorCode, 
@@ -20,9 +19,21 @@ import {
   HTTP_STATUS
 } from '../middleware/api-standards';
 
-// JWT 설정
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// JWT 설정 - 보안 강화
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+
+// JWT Secret 검증 - 프로덕션에서 반드시 설정되어야 함
+if (!JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ CRITICAL SECURITY ERROR: JWT_SECRET must be set in production');
+    process.exit(1);
+  } else {
+    console.warn('⚠️ WARNING: JWT_SECRET not set. Using development fallback.');
+  }
+}
+
+const EFFECTIVE_JWT_SECRET = JWT_SECRET || 'dev-only-insecure-key-' + Date.now();
 
 // JWT 토큰 생성
 export function generateJwtToken(user: SelectUser): string {
@@ -32,8 +43,8 @@ export function generateJwtToken(user: SelectUser): string {
       username: user.username, 
       role: user.role 
     },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
+    EFFECTIVE_JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
   );
 }
 
@@ -52,7 +63,7 @@ export function verifyJwtToken(req: Request, res: Response, next: NextFunction) 
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, EFFECTIVE_JWT_SECRET) as any;
     req.user = decoded;
     next();
   } catch (error) {
@@ -76,7 +87,7 @@ export function requireRole(...allowedRoles: UserRole[]) {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    if (!allowedRoles.includes(req.user.role as UserRole)) {
       return res.status(403).json({
         success: false,
         message: '접근 권한이 없습니다.',
@@ -91,7 +102,14 @@ export function requireRole(...allowedRoles: UserRole[]) {
 // Express 애플리케이션에 타입 확장
 declare global {
   namespace Express {
-    interface User extends SelectUser {}
+    interface User {
+      id: number;
+      username: string;
+      role: string;
+      name?: string;
+      email?: string;
+      verified?: boolean;
+    }
     interface Session {
       social?: {
         provider: string;
@@ -119,7 +137,7 @@ export function setupAuth(app: Express, sessionStore?: session.Store) {
   
   passport.deserializeUser(async (id: number, done) => {
     try {
-      const user = await storage.getUser(id);
+      const user = await storage.getUserById(id);
       if (!user) {
         return done(null, false);
       }

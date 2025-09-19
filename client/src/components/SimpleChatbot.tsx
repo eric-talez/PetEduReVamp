@@ -1,3 +1,16 @@
+/**
+ * @deprecated This component has been deprecated in favor of the canonical SimpleChatBot
+ * 
+ * DEPRECATED: This SimpleChatbot component is a duplicate of ui/SimpleChatBot.tsx
+ * and is being removed for commercial deployment consistency. The canonical version
+ * provides the same functionality with better organization and standardized imports.
+ * 
+ * Please use @/components/ui/SimpleChatBot instead.
+ * This file will be removed in a future version.
+ * 
+ * Migration: Replace SimpleChatbot imports with SimpleChatBot from @/components/ui/SimpleChatBot
+ */
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Loader2, Bot, User, Move, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -1,4 +1,4 @@
-import { User, Pet, Course, Curriculum, Notification, Institute, SubscriptionPlan, Product, Post, Reservation } from '@shared/schema';
+import { User, Pet, Course, Curriculum, Notification, Institute, SubscriptionPlan, Product, Post, Reservation } from '../shared/schema';
 
 class Storage {
   users: User[] = [];
@@ -1307,6 +1307,14 @@ class Storage {
 
   getUserByEmail(email: string) {
     return this.users?.find(user => user.email === email);
+  }
+
+  getUserById(id: number) {
+    return this.users?.find(user => user.id === id);
+  }
+
+  getUserByUsername(username: string) {
+    return this.users?.find(user => user.username === username);
   }
 
   createUser(userData: any) {

@@ -1,3 +1,16 @@
+/**
+ * @deprecated This page has been deprecated in favor of the canonical shop
+ * 
+ * DEPRECATED: This shop-simple page is being replaced by the comprehensive shop/index.tsx
+ * which provides full e-commerce functionality, better design, and integration with
+ * the main layout system for commercial deployment consistency.
+ * 
+ * Please use /shop instead which offers the complete shopping experience.
+ * This file will be removed in a future version.
+ * 
+ * Migration: Replace references to shop-simple with /shop
+ */
+
 import { ShoppingBag, Search, Star, Filter } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/context/cart-context';

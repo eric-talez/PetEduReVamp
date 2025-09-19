@@ -809,6 +809,11 @@ export type NewInstitute = z.infer<typeof insertInstituteSchema>;
 export type Pet = z.infer<typeof selectPetSchema>;
 export type NewPet = z.infer<typeof insertPetSchema>;
 
+// Missing type exports for storage.ts compatibility
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type Post = typeof posts.$inferSelect;
+export type Reservation = typeof reservations.$inferSelect;
+
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = typeof events.$inferInsert;
 

@@ -22,6 +22,7 @@ import {
   createPetSchema, 
   updatePetValidationSchema, 
   pets,
+  products,
   // 커리큘럼/강의 관련 스키마 추가
   curriculums,
   insertCurriculumSchema,
@@ -474,16 +475,18 @@ function requireAuth(...allowedRoles: string[]) {
   };
 }
 
+import { maskApiKey, maskSecret, safeLog } from './utils/secret-masking';
+
 // Stripe 초기화 - 환경 변수 선택적 로드 (없어도 서버 시작 가능)
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-console.log('🔑 Stripe Secret Key 확인:', stripeSecretKey ? `${stripeSecretKey.substring(0, 15)}...` : 'NOT SET');
+console.log('🔑 Stripe Secret Key 확인:', maskApiKey(stripeSecretKey));
 
 let stripe: Stripe | null = null;
 
 if (stripeSecretKey) {
   try {
     stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2023-10-16',
+      apiVersion: '2025-01-27.acacia' as const,
     });
     console.log('✅ Stripe 초기화 성공');
   } catch (error) {
@@ -1071,8 +1074,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { newPlanCode, paymentMethod } = req.body;
     
     // 기관 관리자 또는 시스템 관리자만 접근 가능
-    const userRole = req.user?.role;
-    const userId = req.user?.id;
+    const userRole = (req.user as any)?.role;
+    const userId = (req.user as any)?.id;
     
     if (userRole !== 'admin' && userRole !== 'institute-admin') {
       return res.status(403).json({ error: '접근 권한이 없습니다.' });
@@ -1102,7 +1105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/institutes/:id/payment/process', requireAuth('institute-admin'), (req, res) => {
     const instituteId = parseInt(req.params.id);
     const paymentData = req.body;
-    const userId = req.user?.id;
+    const userId = (req.user as any)?.id;
     
     // 기관 관리자 본인 확인
     const institute = storage.getInstitute(instituteId);
@@ -1125,7 +1128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 대리 결제 처리 API
   app.post('/api/admin/payment-requests/:id/process', requireAuth('admin'), (req, res) => {
     const paymentRequestId = req.params.id;
-    const adminId = req.user?.id;
+    const adminId = (req.user as any)?.id;
     
     const result = storage.processAdminPayment(paymentRequestId, adminId);
     
@@ -1860,7 +1863,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      console.log(`[Kakao API] 검색어: "${search}", API 키: ${KAKAO_REST_API_KEY.substring(0, 8)}...`);
+      console.log(`[Kakao API] 검색어: "${search}", API 키: ${maskApiKey(KAKAO_REST_API_KEY)}`);
       
       const params = new URLSearchParams({
         query: search,
@@ -2222,7 +2225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/pets/:id/health-records", async (req, res) => {
     try {
       const petId = parseInt(req.params.id);
-      const healthRecord = await storage.createHealthRecord(petId, req.body);
+      const healthRecord = await storage.createHealthRecord(req.body);
       res.status(201).json(healthRecord);
     } catch (error) {
       console.error('Error creating health record:', error);
@@ -2304,7 +2307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 펫 정보 확인
-      const pet = storage.getPetById(validatedData.petId);
+      const pet = storage.getPet(validatedData.petId);
       if (!pet) {
         return res.status(404).json({
           error: '해당 반려동물을 찾을 수 없습니다.',
@@ -2568,7 +2571,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 펫 정보 확인
-      const pet = storage.getPetById(petId);
+      const pet = storage.getPet(petId);
       if (!pet) {
         return res.status(404).json({
           error: '해당 반려동물을 찾을 수 없습니다.',
@@ -2901,7 +2904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 펫 정보 확인
-      const pet = storage.getPetById(validatedData.petId);
+      const pet = storage.getPet(validatedData.petId);
       if (!pet) {
         return res.status(404).json({
           error: '해당 반려동물을 찾을 수 없습니다.',
@@ -3163,7 +3166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 펫 정보 확인
-      const pet = storage.getPetById(petId);
+      const pet = storage.getPet(petId);
       if (!pet) {
         return res.status(404).json({
           error: '해당 반려동물을 찾을 수 없습니다.',
@@ -6965,7 +6968,13 @@ app.get('/api/search', async (req, res) => {
   app.use('/api', eventRoutes);
 
   // 이벤트 자동 업데이트 서비스 시작
-  eventUpdater.startScheduler && eventUpdater.startScheduler();
+  if (eventUpdater && typeof eventUpdater.startScheduler === 'function') {
+    try {
+      (eventUpdater as any).startScheduler();
+    } catch (error) {
+      console.warn('EventUpdater 시작 실패:', error);
+    }
+  }
 
   // 서비스 검수 API
   app.get('/api/service/inspection', async (req, res) => {

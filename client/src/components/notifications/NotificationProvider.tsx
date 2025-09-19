@@ -1,4 +1,17 @@
 
+/**
+ * @deprecated This provider has been deprecated in favor of the canonical use-notifications system
+ * 
+ * DEPRECATED: This NotificationProvider is being replaced by the use-notifications.tsx system
+ * which provides more comprehensive WebSocket handling, better state management, enhanced TypeScript
+ * interfaces, and integration with NotificationCenter for commercial deployment consistency.
+ * 
+ * Please use @/hooks/use-notifications and its NotificationProvider instead.
+ * This file will be removed in a future version.
+ * 
+ * Migration: Replace useNotification from this provider with useNotifications from use-notifications
+ */
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
