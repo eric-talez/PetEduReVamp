@@ -157,6 +157,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
               onKeyDown={handleKeyDown}
               tabIndex={0}
               aria-label={typeof children === 'string' ? children : children?.toString()}
+              data-testid={`nav-item-${href.replace(/\//g, '-').replace(/^-/, 'root')}-collapsed`}
             >
               <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6">
                 {icon}
@@ -183,6 +184,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
       onKeyDown={handleKeyDown}
       tabIndex={0}
       aria-current={active ? "page" : undefined}
+      data-testid={`nav-item-${href.replace(/\//g, '-').replace(/^-/, 'root')}-expanded`}
     >
       <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3">
         {icon}
@@ -582,7 +584,12 @@ export function Sidebar({
         <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
           {expanded ? (
             <ScrollReveal direction="left" delay={100}>
-              <a href="/" className="flex items-center justify-center w-full h-full group">
+              <a 
+                href="/" 
+                className="flex items-center justify-center w-full h-full group"
+                aria-label="TALEZ 홈페이지로 이동"
+                data-testid="link-logo-expanded"
+              >
                 <img 
                   src={getLogoUrl('expanded')} 
                   alt="TALEZ 로고" 
@@ -591,11 +598,17 @@ export function Sidebar({
                     // 이미지 로드 실패시 기본 이미지로 대체
                     e.currentTarget.src = TalezLogoType;
                   }}
+                  data-testid="img-logo-expanded"
                 />
               </a>
             </ScrollReveal>
           ) : (
-            <a href="/" className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
+            <a 
+              href="/" 
+              className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110"
+              aria-label="TALEZ 홈페이지로 이동"
+              data-testid="link-logo-collapsed"
+            >
               <img 
                 src={getLogoUrl('collapsed')} 
                 alt="TALEZ" 
@@ -604,6 +617,7 @@ export function Sidebar({
                   // 이미지 로드 실패시 기본 이미지로 대체
                   e.currentTarget.src = TalezSymbol;
                 }}
+                data-testid="img-logo-collapsed"
               />
             </a>
           )}
@@ -613,6 +627,7 @@ export function Sidebar({
             aria-label={expanded ? "사이드바 접기" : "사이드바 펼치기"}
             aria-expanded={expanded}
             title={expanded ? "사이드바 접기" : "사이드바 펼치기"}
+            data-testid="button-toggle-sidebar-expand"
           >
             {expanded ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
           </button>
@@ -707,6 +722,8 @@ export function Sidebar({
                     <Link
                       href="/auth"
                       className="bg-primary hover:bg-primary/90 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors inline-block text-center"
+                      aria-label="로그인 페이지로 이동"
+                      data-testid="link-login-expanded"
                     >
                       로그인
                     </Link>
@@ -719,6 +736,7 @@ export function Sidebar({
                           href="/auth"
                           className="flex items-center justify-center py-2 px-2 mt-4 bg-primary hover:bg-primary/90 text-white rounded-lg mx-auto w-[48px]"
                           aria-label="로그인"
+                          data-testid="link-login-collapsed"
                         >
                           <LogIn className="w-5 h-5" />
                         </Link>

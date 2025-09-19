@@ -383,6 +383,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             onClick={onToggleSidebar}
             className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
             aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
+            data-testid="button-toggle-sidebar"
           >
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -400,6 +401,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyPress}
+                aria-label="사이트 검색"
+                data-testid="input-search"
               />
               {searchQuery.length > 0 && (
                 <div className="absolute right-0 top-0 h-full flex items-center pr-3">
@@ -412,6 +415,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       onClick={() => setSearchQuery('')}
                       className="h-6 w-6 p-0"
                       aria-label="검색어 지우기"
+                      data-testid="button-clear-search"
                     >
                       <X className="h-3 w-3" aria-hidden="true" />
                     </Button>
@@ -467,13 +471,15 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     }
                   }}
                   className="relative"
-                  aria-label="메시지"
+                  aria-label={`메시지 ${unreadMessagesCount > 0 ? `(읽지 않은 메시지 ${unreadMessagesCount}개)` : ''}`}
+                  data-testid="button-messages"
                 >
                   <MessageSquare className="h-5 w-5" />
                   {isAuthenticated && unreadMessagesCount > 0 && (
                     <Badge 
                       variant="danger" 
                       className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center"
+                      data-testid="badge-unread-messages"
                     >
                       {unreadMessagesCount}
                     </Badge>
@@ -493,6 +499,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                             onClick={markAllMessagesAsRead}
                             className="text-xs h-7 px-2"
                             aria-label="모든 메시지 읽음 표시하기"
+                            data-testid="button-mark-all-messages-read"
                           >
                             모두 읽음 표시
                           </Button>
@@ -569,13 +576,15 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       setCartPopupOpen(false);
                     }}
                     className="relative"
-                    aria-label="알림"
+                    aria-label={`알림 ${unreadNotificationsCount > 0 ? `(읽지 않은 알림 ${unreadNotificationsCount}개)` : ''}`}
+                    data-testid="button-notifications"
                   >
                     <Bell className="h-5 w-5" />
                     {unreadNotificationsCount > 0 && (
                       <Badge 
                         variant="danger" 
                         className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center"
+                        data-testid="badge-unread-notifications"
                       >
                         {unreadNotificationsCount}
                       </Badge>
@@ -679,12 +688,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                         console.log("장바구니 아이콘 애니메이션 활성화");
                       }
                     }}
-                    aria-label="쇼핑몰 장바구니 보기"
+                    aria-label={`쇼핑몰 장바구니 보기 ${cartItemsCount > 0 ? `(${cartItemsCount}개 상품)` : '(비어있음)'}`}
+                    data-testid="button-cart"
                     tabIndex={0}
                   >
                     <ShoppingCart className={`h-5 w-5 ${cartItemsCount > 0 ? 'text-primary' : ''}`} />
                     {cartItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center animate-pulse">
+                      <span 
+                        className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center animate-pulse"
+                        data-testid="badge-cart-count"
+                      >
                         {cartItemsCount}
                       </span>
                     )}
@@ -954,6 +967,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   variant="ghost" 
                   size="sm" 
                   aria-label="로그인 페이지로 이동"
+                  data-testid="button-login"
                   onClick={() => {
                     const startTime = performance.now();
                     console.log("🔄 로그인 버튼 클릭 시작");
