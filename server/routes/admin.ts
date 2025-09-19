@@ -1,5 +1,41 @@
 import type { Express } from "express";
 import { storage } from "../storage";
+import { requireRole } from "../auth";
+import { csrfProtection } from "../middleware/csrf";
+
+// Enhanced Authentication middleware - checks both session and user object
+const requireAuth = (req: any, res: any, next: any) => {
+  console.log('[AUTH] Checking authentication for:', req.url);
+  console.log('[AUTH] req.isAuthenticated():', req.isAuthenticated ? req.isAuthenticated() : 'undefined');
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[AUTH] req.user:', req.user);
+    console.log('[AUTH] req.session:', req.session);
+  }
+  
+  // Multiple authentication checks for security
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    console.log('[AUTH] BLOCKED: Not authenticated via session');
+    return res.status(401).json({
+      success: false,
+      message: '인증이 필요합니다. 로그인 후 다시 시도해주세요.',
+      code: 'AUTHENTICATION_REQUIRED'
+    });
+  }
+  
+  if (!req.user) {
+    console.log('[AUTH] BLOCKED: No user object found');
+    return res.status(401).json({
+      success: false,
+      message: '인증이 필요합니다. 로그인 후 다시 시도해주세요.',
+      code: 'AUTHENTICATION_REQUIRED'
+    });
+  }
+  
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[AUTH] ALLOWED: Authentication successful for user:', req.user.id, req.user.role);
+  }
+  next();
+};
 
 // 임시 에러 핸들러
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
@@ -32,7 +68,7 @@ class ApiError extends Error {
 
 export function registerAdminRoutes(app: Express) {
   // 회원 현황 조회 API
-  app.get('/api/admin/members-status', asyncHandler(async (req: any, res: any) => {
+  app.get('/api/admin/members-status', requireAuth, requireRole('admin'), asyncHandler(async (req: any, res: any) => {
     console.log('[Admin] 회원 현황 조회 요청');
 
     try {
@@ -108,7 +144,7 @@ export function registerAdminRoutes(app: Express) {
   }));
 
   // 회원 상태 변경 API
-  app.patch("/api/admin/members/:id/status", async (req, res) => {
+  app.patch("/api/admin/members/:id/status", requireAuth, requireRole('admin'), csrfProtection, async (req, res) => {
     try {
       const memberId = parseInt(req.params.id);
       const { status, reason } = req.body;
@@ -138,7 +174,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 관리자 승인 대기 목록 조회
-  app.get("/api/admin/approvals", async (req, res) => {
+  app.get("/api/admin/approvals", requireAuth, requireRole('admin'), async (req, res) => {
     try {
       const approvals = [
         { id: 1, type: 'trainer', name: '김훈련', status: 'pending', requestDate: '2024-12-15' },
@@ -152,7 +188,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Spring Boot 연동 사용자 관리
-  app.get("/api/spring/users", async (req, res) => {
+  app.get("/api/spring/users", requireAuth, requireRole('admin'), async (req, res) => {
     try {
       const users = [
         { id: 1, role: 'pet-owner', name: '김반려', email: 'owner@test.com' },
@@ -167,7 +203,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 관리자 위치 등록 API
-  app.post("/api/admin/locations", async (req, res) => {
+  app.post("/api/admin/locations", requireAuth, requireRole('admin'), csrfProtection, async (req, res) => {
     try {
       const { name, type, address, latitude, longitude, description, certification } = req.body;
 
@@ -199,7 +235,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 기관 관리 목록 조회
-  app.get("/api/admin/institutes", async (req, res) => {
+  app.get("/api/admin/institutes", requireAuth, requireRole('admin'), async (req, res) => {
     try {
       console.log('[Admin] 기관 관리 목록 조회 요청');
 
@@ -326,7 +362,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 기관 상태 변경 API
-  app.patch("/api/admin/institutes/:id/status", async (req, res) => {
+  app.patch("/api/admin/institutes/:id/status", requireAuth, requireRole('admin'), csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const { status, reason } = req.body;
@@ -355,7 +391,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 관리자 위치 목록 조회 (기존 유지)
-  app.get("/api/admin/locations", async (req, res) => {
+  app.get("/api/admin/locations", requireAuth, requireRole('admin'), async (req, res) => {
     try {
       const locations = [
         {
@@ -396,7 +432,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 관리자 위치 승인/거부
-  app.patch("/api/admin/locations/:id/approve", async (req, res) => {
+  app.patch("/api/admin/locations/:id/approve", requireAuth, requireRole('admin'), csrfProtection, async (req, res) => {
     try {
       const locationId = parseInt(req.params.id);
       const { approved, reason } = req.body;
@@ -422,7 +458,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 커리큘럼 목록 조회 API
-  app.get('/api/admin/curriculums', asyncHandler(async (req: any, res: any) => {
+  app.get('/api/admin/curriculums', requireAuth, requireRole('admin'), asyncHandler(async (req: any, res: any) => {
     console.log('[Admin] 커리큘럼 목록 조회 요청');
 
     try {
@@ -468,7 +504,7 @@ export function registerAdminRoutes(app: Express) {
   }));
 
   // 훈련사 양성 프로그램 관리 API
-  app.get('/api/trainer-programs', async (req, res) => {
+  app.get('/api/trainer-programs', requireAuth, requireRole('admin'), async (req, res) => {
     try {
       const programs = [
         {
@@ -511,7 +547,7 @@ export function registerAdminRoutes(app: Express) {
   // ※ 중복 라우트 제거됨 - 메인 routes.ts의 데이터베이스 연동 API 사용
 
   // 훈련사 인증 기록 API
-  app.get('/api/trainer-certifications', async (req, res) => {
+  app.get('/api/trainer-certifications', requireAuth, requireRole('admin'), async (req, res) => {
     try {
       const certifications = [
         {

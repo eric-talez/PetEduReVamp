@@ -149,144 +149,7 @@ export default function Home() {
   };
 
 
-  // 훈련사 전용 배너 슬라이드
-  const trainerBannerSlides = [
-    {
-      id: 101,
-      title: "더 많은 반려인들이 당신을 찾고 있습니다",
-      subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
-      features: ["전국 고객 연결", "안정적 수익", "브랜드 인지도"],
-      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "고객 연결", path: "/trainer/customer-connect" },
-      secondaryAction: { text: "성공 사례", path: "/trainer/success-stories" }
-    },
-    {
-      id: 102,
-      title: "전문 훈련사의 가치를 제대로 인정받으세요",
-      subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
-      features: ["공정한 보상", "투명한 정산", "전문가 대우"],
-      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
-      secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
-    },
-    {
-      id: 103,
-      title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
-      subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
-      features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
-      image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
-      secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
-    },
-    {
-      id: 104,
-      title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
-      subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
-      features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
-      secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
-    },
-    {
-      id: 105,
-      title: "반려견 교육의 미래를 함께 만들어갑니다",
-      subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
-      features: ["업계 선도", "혁신 기술", "미래 교육"],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
-      secondaryAction: { text: "미래 교육", path: "/trainer/future-education" }
-    },
-    {
-      id: 106,
-      title: "더 많은 반려인들이 당신을 찾고 있습니다",
-      subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
-      features: ["전국 고객 연결", "안정적 수익", "브랜드 인지도"],
-      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "고객 연결", path: "/trainer/customer-connect" },
-      secondaryAction: { text: "성공 사례", path: "/trainer/success-stories" }
-    },
-    {
-      id: 107,
-      title: "전문 훈련사의 가치를 제대로 인정받으세요",
-      subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
-      features: ["공정한 보상", "투명한 정산", "전문가 대우"],
-      image: "https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
-      secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
-    },
-    {
-      id: 108,
-      title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
-      subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
-      features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
-      image: "https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
-      secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
-    },
-    {
-      id: 109,
-      title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
-      subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
-      features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
-      secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
-    },
-    {
-      id: 110,
-      title: "반려견 교육의 미래를 함께 만들어갑니다",
-      subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
-      features: ["업계 선도", "혁신 기술", "미래 교육"],
-      image: "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
-      secondaryAction: { text: "미래 교육", path: "/trainer/future-education" }
-    },
-    {
-      id: 111,
-      title: "성공하는 훈련사들의 비밀, TALEZ가 알려드립니다.",
-      subtitle: "검증된 성공 사례와 전략으로 당신의 훈련사 비즈니스를 성장시키세요",
-      features: ["성공 전략", "사례 분석", "비즈니스 멘토링"],
-      image: "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "성공 전략", path: "/trainer/success-strategies" },
-      secondaryAction: { text: "멘토링 신청", path: "/trainer/mentoring" }
-    },
-    {
-      id: 112,
-      title: "24시간 언제든지 상담 예약이 들어옵니다.",
-      subtitle: "TALEZ 플랫폼으로 시간과 장소에 구애받지 않고 더 많은 수익을 창출하세요",
-      features: ["24시간 예약", "자동 스케줄링", "수익 극대화"],
-      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "예약 시스템", path: "/trainer/booking-system" },
-      secondaryAction: { text: "수익 통계", path: "/trainer/revenue" }
-    },
-    {
-      id: 113,
-      title: "전국 어디서든 당신의 전문성을 인정받으세요.",
-      subtitle: "지역 제약 없이 전국의 반려인들에게 서비스를 제공할 수 있습니다",
-      features: ["전국 서비스", "원격 상담", "무제한 고객"],
-      image: "https://images.unsplash.com/photo-1583511655826-05700d52f4d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "서비스 확장", path: "/trainer/expand-service" },
-      secondaryAction: { text: "원격 상담", path: "/trainer/remote-consulting" }
-    },
-    {
-      id: 114,
-      title: "프리미엄 훈련사로 차별화된 서비스를 제공하세요.",
-      subtitle: "고급 인증과 특별한 혜택으로 더 높은 수준의 서비스를 제공할 수 있습니다",
-      features: ["프리미엄 인증", "차별화 서비스", "높은 수수료"],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "프리미엄 등급", path: "/trainer/premium-tier" },
-      secondaryAction: { text: "인증 신청", path: "/trainer/certification-apply" }
-    },
-    {
-      id: 115,
-      title: "AI 기술로 더 효과적인 훈련 결과를 만들어보세요.",
-      subtitle: "최신 AI 분석 도구와 데이터를 활용해 훈련 효과를 극대화하세요",
-      features: ["AI 분석", "데이터 활용", "효과 최적화"],
-      image: "https://images.unsplash.com/photo-1587300942307-4f2e1ce14d6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "AI 도구", path: "/trainer/ai-tools" },
-      secondaryAction: { text: "분석 리포트", path: "/trainer/analytics-report" }
-    }
-  ];
+  // Removed hardcoded trainer banner slides - now using database-driven banners only
 
   // 관리자 배너를 표시 형식으로 변환하는 함수
   const convertAdminBannerToSlide = (banner: Banner) => ({
@@ -305,35 +168,11 @@ export default function Home() {
     }
   });
 
-  // 훈련사 배너를 슬라이드 형식으로 변환
-  const convertTrainerBannerToSlide = (banner: any) => ({
-    id: banner.id,
-    title: banner.title,
-    subtitle: banner.subtitle,
-    features: banner.features,
-    image: banner.image,
-    primaryAction: banner.primaryAction,
-    secondaryAction: banner.secondaryAction
-  });
-
   // 표시할 배너 슬라이드 결정 (데이터베이스 관리 배너만 사용)
   const bannerSlides = useMemo(() => {
-    // 전역 상태에서 인증 정보도 확인
-    const globalAuth = (window as any).__peteduAuthState;
-    const actualIsAuthenticated = isAuthenticated || globalAuth?.isAuthenticated;
-    const actualUserRole = userRole || globalAuth?.userRole;
-    
-    console.log('[Banner Debug] 인증 상태:', actualIsAuthenticated, '사용자 역할:', actualUserRole);
-    console.log('[Banner Debug] useAuth 상태:', { isAuthenticated, userRole });
     console.log('[Banner Debug] 관리자 배너 수:', adminBanners.length);
     
-    // 인증된 훈련사인 경우 훈련사 전용 배너 표시
-    if (actualIsAuthenticated && actualUserRole === 'trainer') {
-      console.log('[Banner Debug] 훈련사 배너 선택됨, 배너 수:', trainerBannerSlides.length);
-      return trainerBannerSlides.map(convertTrainerBannerToSlide);
-    }
-    
-    // 관리자가 등록한 배너가 있으면 우선 표시
+    // 관리자가 등록한 배너가 있으면 표시 (모든 사용자에게 동일하게)
     if (adminBanners.length > 0) {
       const adminSlides = adminBanners.map(convertAdminBannerToSlide);
       console.log('[Banner Debug] 관리자 배너 표시, 총 수:', adminSlides.length);
@@ -343,7 +182,7 @@ export default function Home() {
     // 배너가 없으면 빈 배열 반환 (기본 배너 없음)
     console.log('[Banner Debug] 표시할 배너 없음');
     return [];
-  }, [isAuthenticated, userRole, adminBanners, trainerBannerSlides.length]);
+  }, [adminBanners]);
   
   console.log('[Banner Debug] 최종 배너 슬라이드 수:', bannerSlides.length, '첫 번째 배너:', bannerSlides[0]?.title);
 
@@ -781,51 +620,55 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 네비게이션 화살표 */}
-            <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 dark:bg-gray-800/40 hover:bg-white/50 dark:hover:bg-gray-800/60 text-white dark:text-gray-200 backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20 border border-white/20 dark:border-gray-600/30"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                prevSlide();
-              }}
-              aria-label="이전 슬라이드"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            
-            <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 dark:bg-gray-800/40 hover:bg-white/50 dark:hover:bg-gray-800/60 text-white dark:text-gray-200 backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20 border border-white/20 dark:border-gray-600/30"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                nextSlide();
-              }}
-              aria-label="다음 슬라이드"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-            
-            {/* 슬라이드 인디케이터 */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-              {bannerSlides.map((_, index) => (
+            {/* 네비게이션 화살표 - 배너가 2개 이상일 때만 표시 */}
+            {bannerSlides.length > 1 && (
+              <>
                 <button
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-all duration-200 hover:scale-125 border border-white/30 dark:border-gray-400/40 ${
-                    currentSlide === index 
-                      ? 'bg-white dark:bg-gray-200 shadow-lg' 
-                      : 'bg-white/50 dark:bg-gray-400/50 hover:bg-white/70 dark:hover:bg-gray-300/70'
-                  }`}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 dark:bg-gray-800/40 hover:bg-white/50 dark:hover:bg-gray-800/60 text-white dark:text-gray-200 backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20 border border-white/20 dark:border-gray-600/30"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Dot clicked, moving to slide:', index);
-                    setCurrentSlide(index);
+                    prevSlide();
                   }}
-                  aria-label={`${index + 1}번째 슬라이드로 이동`}
-                />
-              ))}
-            </div>
+                  aria-label="이전 슬라이드"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                <button
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 dark:bg-gray-800/40 hover:bg-white/50 dark:hover:bg-gray-800/60 text-white dark:text-gray-200 backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20 border border-white/20 dark:border-gray-600/30"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    nextSlide();
+                  }}
+                  aria-label="다음 슬라이드"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                
+                {/* 슬라이드 인디케이터 */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                  {bannerSlides.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`w-3 h-3 rounded-full transition-all duration-200 hover:scale-125 border border-white/30 dark:border-gray-400/40 ${
+                        currentSlide === index 
+                          ? 'bg-white dark:bg-gray-200 shadow-lg' 
+                          : 'bg-white/50 dark:bg-gray-400/50 hover:bg-white/70 dark:hover:bg-gray-300/70'
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Dot clicked, moving to slide:', index);
+                        setCurrentSlide(index);
+                      }}
+                      aria-label={`${index + 1}번째 슬라이드로 이동`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 

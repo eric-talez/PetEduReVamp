@@ -148,9 +148,11 @@ function setupAuthRoutes(app: Express) {
   
   // 사용자 인증 상태 확인 (표준화 적용)
   router.get('/me', (req, res) => {
-    console.log('세션 확인 - SessionID:', req.sessionID);
-    console.log('세션 확인 - 전체 세션:', req.session);
-    console.log('세션 확인 - 사용자:', req.user);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('세션 확인 - SessionID:', req.sessionID);
+      console.log('세션 확인 - 전체 세션:', req.session);
+      console.log('세션 확인 - 사용자:', req.user);
+    }
     
     if (!req.isAuthenticated()) {
       return res.error(

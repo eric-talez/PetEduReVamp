@@ -1,5 +1,18 @@
 import type { Express } from "express";
 import { storage } from "../storage";
+import { requireRole } from "../auth";
+
+// Authentication middleware - checks if user is authenticated
+const requireAuth = (req: any, res: any, next: any) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({
+      success: false,
+      message: '인증이 필요합니다. 로그인 후 다시 시도해주세요.',
+      code: 'AUTHENTICATION_REQUIRED'
+    });
+  }
+  next();
+};
 
 // 임시 에러 핸들러 (middleware/error-handler.ts가 없는 경우)
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
@@ -61,7 +74,7 @@ export function registerDashboardRoutes(app: Express) {
   }));
 
   // 관리자 대시보드 통계 API
-  app.get('/api/admin/dashboard/stats', asyncHandler(async (req: any, res: any) => {
+  app.get('/api/admin/dashboard/stats', requireAuth, requireRole('admin'), asyncHandler(async (req: any, res: any) => {
     console.log('[Dashboard] 관리자 대시보드 통계 요청받음');
     
     try {
@@ -164,7 +177,7 @@ export function registerDashboardRoutes(app: Express) {
   }));
 
   // 관리자 대시보드 통계
-  app.get('/api/dashboard/admin/stats', asyncHandler(async (req: any, res: any) => {
+  app.get('/api/dashboard/admin/stats', requireAuth, requireRole('admin'), asyncHandler(async (req: any, res: any) => {
     // 임시로 인증 체크 생략 (세션 설정 없이 테스트)
     console.log('[Dashboard] 관리자 통계 요청받음');
 

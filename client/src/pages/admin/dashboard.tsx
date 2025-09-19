@@ -26,8 +26,7 @@ import {
   Building,
   PieChart,
   Zap,
-  CreditCard,
-  PawPrint
+  CreditCard
 } from "lucide-react";
 import {
   Table,

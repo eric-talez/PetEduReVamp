@@ -3703,7 +3703,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log('반려동물 목록 조회 - 사용자 ID:', userId);
-      console.log('전체 세션 정보:', req.session);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('전체 세션 정보:', req.session);
+      }
       
       // 사용자 ID를 숫자로 변환하여 조회
       let numericUserId = userId;
