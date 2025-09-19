@@ -802,7 +802,6 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type Course = z.infer<typeof selectCourseSchema>;
 export type NewCourse = z.infer<typeof insertCourseSchema>;
-export type InsertCourse = z.infer<typeof insertCourseSchema>;
 
 export type Institute = z.infer<typeof selectInstituteSchema>;
 export type NewInstitute = z.infer<typeof insertInstituteSchema>;
@@ -818,8 +817,6 @@ export type InsertEventLocation = typeof eventLocations.$inferInsert;
 
 export type EventAttendance = typeof eventAttendances.$inferSelect;
 
-export type TrainingJournal = typeof trainingJournals.$inferSelect;
-export type InsertTrainingJournal = typeof trainingJournals.$inferInsert;
 
 // Missing tables from error report
 export const projects = pgTable("projects", {
@@ -913,7 +910,6 @@ export const forums = pgTable("forums", {
 });
 
 export type Banner = typeof banners.$inferSelect;
-export type InsertBanner = typeof banners.$inferInsert;
 
 export type JournalComment = typeof journalComments.$inferSelect;
 export type InsertJournalComment = typeof journalComments.$inferInsert;
@@ -1643,18 +1639,13 @@ export type BulkTrainingJournalUpdate = z.infer<typeof bulkTrainingJournalUpdate
 // =============================================================================
 
 // 배너 생성 스키마
-export const insertBannerSchema = createInsertSchema(banners, {
-  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
-  content: z.string().max(1000, "내용은 1000자를 초과할 수 없습니다").optional(),
-  imageUrl: z.string().url("올바른 이미지 URL 형식이 아닙니다").optional(),
-  linkUrl: z.string().url("올바른 링크 URL 형식이 아닙니다").optional(),
-  targetPosition: z.enum(["home-hero", "sidebar", "footer", "header", "content-top", "content-bottom"]).default("home-hero"),
-  displayOrder: z.number().int().min(0).default(0),
-  targetUserGroup: z.enum(["all", "pet-owners", "trainers", "admins"]).default("all"),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-  isActive: z.boolean().default(true)
-}).omit({ id: true, clickCount: true, viewCount: true, createdAt: true, updatedAt: true });
+export const insertBannerSchema = createInsertSchema(banners).omit({ 
+  id: true, 
+  clickCount: true, 
+  viewCount: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
 
 // 배너 수정 스키마
 export const updateBannerSchema = insertBannerSchema.partial().extend({
@@ -1803,8 +1794,7 @@ export const updateCourseSchema = insertCourseSchema.partial().omit({
 // 강의 조회 스키마
 export const selectCourseSchema = createSelectSchema(courses);
 
-// 강의 타입 정의
-export type Course = typeof courses.$inferSelect;
+// Additional course type definitions (avoiding duplicates)
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type UpdateCourse = z.infer<typeof updateCourseSchema>;
 
