@@ -148,81 +148,16 @@ export default function Home() {
     setUploadError('');
   };
 
-  // 기본 배너 데이터 (관리자 배너가 없을 때 사용)
-  const defaultBannerSlides = [
-    {
-      id: 1,
-      title: "오늘의 총령 보호",
-      subtitle: "funnytalez.com에서 따뜻한 홈케어를 만나보세요",
-      features: ["전문 홈케어", "반려동물 보호", "따뜻한 서비스", "안전한 공간"],
-      image: "/main-banner-talez.png",
-      primaryAction: { text: "자세히 보기", path: "/home" },
-      secondaryAction: { text: "더 알아보기", path: "/about" }
-    },
-    {
-      id: 2,
-      title: "TALEZ 체험 서비스 - 회원가입 전 무료 체험",
-      subtitle: "강아지 영상을 업로드하고 AI 분석과 전문가 상담을 미리 체험해보세요",
-      features: ["영상 업로드", "AI 행동 분석", "전문가 상담", "무료 체험"],
-      image: "https://images.unsplash.com/photo-1583512603805-3cc6b41f3edb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "무료 체험하기", path: "/experience" },
-      secondaryAction: { text: "서비스 안내", path: "/about" }
-    },
-    {
-      id: 3,
-      title: "반려견 친화적 장소 찾기",
-      subtitle: "전국의 반려견 동반 가능한 카페, 공원, 펜션을 한눈에 확인하세요",
-      features: ["지역별 검색", "실시간 정보", "커뮤니티 리뷰"],
-      image: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "장소 찾기", path: "/locations" },
-      secondaryAction: { text: "지도 보기", path: "/map" }
-    },
-    {
-      id: 4,
-      title: "전문 훈련사와 실시간 화상 교육",
-      subtitle: "언제 어디서나 편리하게 전문가와 실시간 화상으로 교육받으세요",
-      features: ["실시간 화상", "개별 커리큘럼", "녹화 복습"],
-      image: "https://images.unsplash.com/photo-1593077791793-fcabc92e3b31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "화상 교육", path: "/video-training" },
-      secondaryAction: { text: "훈련사 보기", path: "/trainers" }
-    },
-    {
-      id: 5,
-      title: "반려견 건강 관리 & 기록",
-      subtitle: "반려견의 건강 상태를 체계적으로 관리하고 기록해보세요",
-      features: ["건강 기록", "예방접종 알림", "병원 예약"],
-      image: "https://images.unsplash.com/photo-1576089172869-4f5f6f315620?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "건강 관리", path: "/health" },
-      secondaryAction: { text: "기록 시작", path: "/health-record" }
-    },
-    {
-      id: 6,
-      title: "반려견 교육 용품 쇼핑몰",
-      subtitle: "교육에 필요한 다양한 용품들을 한 곳에서 만나보세요",
-      features: ["훈련사 추천", "교육 연계 할인", "빠른 배송"],
-      image: "https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "쇼핑하기", path: "/shop" },
-      secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
-    },
-    {
-      id: 7,
-      title: "반려인 커뮤니티",
-      subtitle: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
-      features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
-      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "커뮤니티", path: "/community" },
-      secondaryAction: { text: "게시글 작성", path: "/community/create" }
-    },
-    {
-      id: 8,
-      title: "기관 및 훈련소 등록",
-      subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 Talez와 함께하세요",
-      features: ["기관 등록", "코스 관리", "수익 창출"],
-      image: "https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "기관 등록", path: "/institutes/register" },
-      secondaryAction: { text: "파트너 안내", path: "/partners" }
-    }
-  ];
+  // 관리자 배너를 슬라이드 형식으로 변환
+  const convertAdminBannerToSlide = (banner: Banner) => ({
+    id: banner.id,
+    title: banner.title,
+    subtitle: banner.content,
+    features: ["전문 교육", "맞춤 서비스", "안전한 관리"],
+    image: banner.imageUrl,
+    primaryAction: { text: "자세히 보기", path: banner.actionUrl || "/courses" },
+    secondaryAction: { text: "더 알아보기", path: "/about" }
+  });
 
   // 훈련사 전용 배너 슬라이드
   const trainerBannerSlides = [
