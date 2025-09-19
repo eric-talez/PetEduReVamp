@@ -1,11 +1,5 @@
 import { QueryClient, QueryFunction, QueryClientConfig } from "@tanstack/react-query";
-
-// 오류 코드와 메시지 매핑
-interface ApiError extends Error {
-  statusCode?: number;
-  errorCode?: string;
-  fieldErrors?: Record<string, string[]>;
-}
+import { ApiError } from "@/lib/errorHelpers";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -37,6 +31,57 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Helper function to redact sensitive data from logs
+const redactSensitiveData = (data: any): any => {
+  if (!data || typeof data !== 'object') return data;
+  
+  const sensitiveFields = [
+    'password', 'token', 'accessToken', 'refreshToken', 'apiKey', 'secret',
+    'authorization', 'auth', 'key', 'credential', 'sessionId', 'ssn', 'sin',
+    'cardNumber', 'cvv', 'pin', 'otp', 'privateKey'
+  ];
+  
+  const redacted = { ...data };
+  
+  for (const field of sensitiveFields) {
+    const lowerField = field.toLowerCase();
+    for (const key in redacted) {
+      if (key.toLowerCase().includes(lowerField)) {
+        redacted[key] = '[REDACTED]';
+      }
+    }
+  }
+  
+  return redacted;
+};
+
+// Development environment check - use Vite's built-in environment variables
+const isDevelopment = import.meta.env.DEV;
+
+// Production error telemetry (simplified for now, can be extended)
+const reportError = (error: ApiError, context: { method: string; url: string; statusCode?: number }) => {
+  if (!isDevelopment) {
+    // In production, send structured error data to monitoring service
+    // This is a placeholder for actual telemetry service integration
+    const telemetryData = {
+      timestamp: new Date().toISOString(),
+      error: {
+        message: error.message,
+        statusCode: error.statusCode,
+        errorCode: error.errorCode,
+      },
+      context: {
+        method: context.method,
+        url: context.url.replace(/\/\d+/g, '/:id'), // Replace IDs with placeholders for privacy
+        userAgent: navigator.userAgent.substring(0, 100), // Truncate for privacy
+      }
+    };
+    
+    // TODO: Send to actual monitoring service (Sentry, DataDog, etc.)
+    console.error('[TELEMETRY]', JSON.stringify(telemetryData));
+  }
+};
+
 export const apiRequest = async (method: string, url: string, data?: any) => {
   const config: RequestInit = {
     method: method.toUpperCase(),
@@ -55,33 +100,69 @@ export const apiRequest = async (method: string, url: string, data?: any) => {
     url += `?${params}`;
   }
 
-  console.log(`[apiRequest] ${method.toUpperCase()} ${url}`, data ? { body: data } : {});
+  // Gate debugging logs behind development environment
+  if (isDevelopment) {
+    console.log(`[apiRequest] ${method.toUpperCase()} ${url}`, data ? { body: redactSensitiveData(data) } : {});
+  }
 
   try {
     const response = await fetch(url, config);
 
-    console.log(`[apiRequest] Response: ${response.status} ${response.statusText}`);
+    // Development-only response logging
+    if (isDevelopment) {
+      console.log(`[apiRequest] Response: ${response.status} ${response.statusText}`);
+    }
 
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      let errorCode: string | undefined;
+      let fieldErrors: Record<string, string[]> | undefined;
 
       try {
         const errorBody = await response.text();
         if (errorBody) {
           const errorData = JSON.parse(errorBody);
           errorMessage = errorData.message || errorData.error || errorMessage;
+          errorCode = errorData.code;
+          fieldErrors = errorData.fieldErrors;
         }
       } catch (parseError) {
-        console.warn('[apiRequest] 오류 응답 파싱 실패:', parseError);
+        if (isDevelopment) {
+          console.warn('[apiRequest] 오류 응답 파싱 실패:', parseError);
+        }
       }
 
-      throw new Error(errorMessage);
+      const error = new Error(errorMessage) as ApiError;
+      error.statusCode = response.status;
+      error.errorCode = errorCode;
+      error.fieldErrors = fieldErrors;
+
+      // Report error to telemetry system
+      reportError(error, { method, url, statusCode: response.status });
+
+      throw error;
     }
 
     return response;
   } catch (networkError) {
-    console.error(`[apiRequest] 네트워크 오류:`, networkError);
-    throw new Error(`네트워크 오류: ${networkError instanceof Error ? networkError.message : String(networkError)}`);
+    const errorMessage = `네트워크 오류: ${networkError instanceof Error ? networkError.message : String(networkError)}`;
+    
+    // 네트워크 오류도 ApiError 타입으로 생성
+    const error = new Error(errorMessage) as ApiError;
+    error.statusCode = 0;
+    error.errorCode = 'NETWORK_ERROR';
+    
+    // Report network error to telemetry
+    reportError(error, { method, url });
+    
+    // Always log network errors but redact sensitive context in production
+    if (isDevelopment) {
+      console.error(`[apiRequest] 네트워크 오류:`, networkError);
+    } else {
+      console.error(`[apiRequest] 네트워크 오류: ${error.message}`);
+    }
+    
+    throw error;
   }
 };
 
@@ -102,9 +183,6 @@ export const getQueryFn: <T>(options: {
     await throwIfResNotOk(res);
     return await res.json();
   };
-
-// 환경별 캐시 설정
-const isDevelopment = process.env.NODE_ENV === 'development';
 
 // 확장된 QueryClient 설정
 const queryClientConfig: QueryClientConfig = {

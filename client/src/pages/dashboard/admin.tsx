@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Users, Shield, Bell, CheckSquare, Settings, 
   TrendingUp, Database, BarChart3, Activity, Globe, Building
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface AdminDashboardProps {
   onAction: (action: string, data?: any) => void;
@@ -39,6 +41,7 @@ interface AdminStats {
 export default function AdminDashboard({ onAction }: AdminDashboardProps) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [processingActions, setProcessingActions] = useState<Set<string>>(new Set());
 
   // 시스템 상태 데이터 로드
@@ -165,13 +168,17 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
   const fetchAdminStats = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const response = await apiRequest('GET', '/api/dashboard/admin/stats');
       if (response.ok) {
         const data = await response.json();
         setStats(data.data);
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
       console.error('관리자 통계 조회 실패:', error);
+      setError(error instanceof Error ? error.message : '데이터를 불러오는 중 오류가 발생했습니다.');
       // 연결 실패 시 기본값 설정
       setStats({
         totalUsers: 0,
@@ -238,119 +245,162 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
       </div>
       
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
-        
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
-              <CheckSquare className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">승인 대기</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">
-                {isLoading ? "..." : `${stats?.pendingApprovals || 0}건`}
-              </p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>사용자 및 기관 승인</span>
-              <Button 
-                onClick={() => window.location.href = '/admin/approvals'}
-                variant="ghost"
-                size="sm"
-                className="text-primary hover:text-primary/80 text-xs font-medium h-6 px-2"
-              >
-                검토
-              </Button>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-accent/20 dark:bg-accent/10 text-accent dark:text-accent/90 rounded-full flex items-center justify-center">
-              <Bell className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">미해결 신고</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">
-                {isLoading ? "..." : `${stats?.unreadReports || 0}건`}
-              </p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>처리 대기 중</span>
-              <Button 
-                onClick={() => window.location.href = '/admin/reports'}
-                variant="ghost"
-                size="sm"
-                className="text-primary hover:text-primary/80 text-xs font-medium h-6 px-2"
-              >
-                처리
-              </Button>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center">
-              <Activity className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">시스템 상태</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">정상</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-xs text-gray-700 dark:text-gray-300">
-              <div className="flex items-center mb-1">
-                <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                <span>API: 100% 가동</span>
+      <div className="mb-8">
+        {isLoading ? (
+          <LoadingSkeleton variant="dashboard" data-testid="admin-dashboard-loading" />
+        ) : error ? (
+          <ErrorState
+            type="loading-failed"
+            title="대시보드 데이터를 불러올 수 없습니다"
+            message={error}
+            retryAction={fetchAdminStats}
+            data-testid="admin-dashboard-error"
+            className="mx-auto max-w-md"
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="p-6 border border-gray-100 dark:border-gray-700" data-testid="pending-approvals-card">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
+                  <CheckSquare className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">승인 대기</h2>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-white" data-testid="pending-approvals-count">
+                    {`${stats?.pendingApprovals || 0}건`}
+                  </p>
+                </div>
               </div>
-            </div>
+              <div className="mt-4">
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span>사용자 및 기관 승인</span>
+                  <Button 
+                    onClick={() => window.location.href = '/admin/approvals'}
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:text-primary/80 text-xs font-medium h-6 px-2"
+                    data-testid="button-approvals-review"
+                  >
+                    검토
+                  </Button>
+                </div>
+              </div>
+            </Card>
+            
+            <Card className="p-6 border border-gray-100 dark:border-gray-700" data-testid="unread-reports-card">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 h-12 w-12 bg-accent/20 dark:bg-accent/10 text-accent dark:text-accent/90 rounded-full flex items-center justify-center">
+                  <Bell className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">미해결 신고</h2>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-white" data-testid="unread-reports-count">
+                    {`${stats?.unreadReports || 0}건`}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span>처리 대기 중</span>
+                  <Button 
+                    onClick={() => window.location.href = '/admin/reports'}
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:text-primary/80 text-xs font-medium h-6 px-2"
+                    data-testid="button-reports-process"
+                  >
+                    처리
+                  </Button>
+                </div>
+              </div>
+            </Card>
+            
+            <Card className="p-6 border border-gray-100 dark:border-gray-700" data-testid="system-status-card">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 h-12 w-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center">
+                  <Activity className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">시스템 상태</h2>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-white" data-testid="system-status">정상</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-xs text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center mb-1">
+                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                    <span>API: 100% 가동</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+            
+            <Card className="p-6 border border-gray-100 dark:border-gray-700" data-testid="active-users-card">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 h-12 w-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">활성 사용자</h2>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-white" data-testid="active-users-count">
+                    {`${stats?.activeUsers || 0}명`}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <span>현재 온라인</span>
+                </div>
+              </div>
+            </Card>
           </div>
-        </Card>
+        )}
       </div>
       
       {/* Performance Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card className="border border-gray-100 dark:border-gray-700">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">사용자 증가 추이</h2>
-              <Badge variant="info">최근 12개월</Badge>
-            </div>
-            <div className="h-64 flex items-center justify-center">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-6 w-6 text-primary" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  여기에 사용자 증가 추이 차트가 표시됩니다.
-                </span>
+        {isLoading ? (
+          <>
+            <LoadingSkeleton variant="card" showImage={false} lines={2} data-testid="chart-1-loading" />
+            <LoadingSkeleton variant="card" showImage={false} lines={2} data-testid="chart-2-loading" />
+          </>
+        ) : (
+          <>
+            <Card className="border border-gray-100 dark:border-gray-700" data-testid="user-growth-chart">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-white">사용자 증가 추이</h2>
+                  <Badge variant="info">최근 12개월</Badge>
+                </div>
+                <div className="h-64 flex items-center justify-center">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      여기에 사용자 증가 추이 차트가 표시됩니다.
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="border border-gray-100 dark:border-gray-700">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">사용자 역할 분포</h2>
-              <Badge variant="success">전체</Badge>
-            </div>
-            <div className="h-64 flex items-center justify-center">
-              <div className="flex items-center space-x-2">
-                <BarChart3 className="h-6 w-6 text-primary" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  여기에 사용자 역할 분포 차트가 표시됩니다.
-                </span>
+            </Card>
+            
+            <Card className="border border-gray-100 dark:border-gray-700" data-testid="user-distribution-chart">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-white">사용자 역할 분포</h2>
+                  <Badge variant="success">전체</Badge>
+                </div>
+                <div className="h-64 flex items-center justify-center">
+                  <div className="flex items-center space-x-2">
+                    <BarChart3 className="h-6 w-6 text-primary" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      여기에 사용자 역할 분포 차트가 표시됩니다.
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </Card>
+            </Card>
+          </>
+        )}
       </div>
       
       {/* Recent Activities & Pending Approvals */}
@@ -433,11 +483,13 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
               <div className="p-5">
                 <div className="flex items-center">
-                  <Avatar 
-                    src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
-                    alt="최훈련" 
-                    className="w-10 h-10"
-                  />
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage 
+                      src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
+                      alt="최훈련" 
+                    />
+                    <AvatarFallback>최훈</AvatarFallback>
+                  </Avatar>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-800 dark:text-white">최훈련</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">훈련사 인증 신청</p>
@@ -517,11 +569,13 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
               
               <div className="p-5">
                 <div className="flex items-center">
-                  <Avatar 
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
-                    alt="박전문" 
-                    className="w-10 h-10"
-                  />
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage 
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
+                      alt="박전문" 
+                    />
+                    <AvatarFallback>박전</AvatarFallback>
+                  </Avatar>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-800 dark:text-white">박전문</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">전문가 뱃지 신청</p>

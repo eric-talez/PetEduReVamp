@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { LoadingErrorWrapper } from "@/components/ui/loading-error-wrapper";
+import { getStatusCodeFromError } from "@/lib/errorHelpers";
 import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -266,16 +268,8 @@ export default function Courses(props?: CoursesPageProps) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-12">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-500">강의 목록을 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
+  const [error, setError] = useState<any>(null);
+  const statusCode = getStatusCodeFromError(error);
 
   // 검색 기능
   const handleSearch = () => {
@@ -332,8 +326,23 @@ export default function Courses(props?: CoursesPageProps) {
           </div>
         </div>
 
-      {/* Filters */}
-      <div className="mb-8 flex flex-wrap items-center gap-2">
+      <LoadingErrorWrapper
+        isLoading={loading}
+        isError={!!error}
+        isEmpty={!loading && !error && courses.length === 0}
+        error={error}
+        data={courses}
+        loadingVariant="course"
+        loadingMessage="강의 목록을 불러오는 중..."
+        errorMessage={typeof error === 'string' ? error : error?.message}
+        emptyMessage="현재 발행된 강의가 없습니다."
+        emptyTitle="강의를 찾을 수 없습니다"
+        retry={() => fetchPublishedCourses()}
+        statusCode={statusCode}
+        data-testid="courses-content"
+      >
+        {/* Filters */}
+        <div className="mb-8 flex flex-wrap items-center gap-2">
         <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mr-4">
           <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
           <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">필터:</span>
@@ -570,6 +579,7 @@ export default function Courses(props?: CoursesPageProps) {
           </nav>
         </div>
       )}
+      </LoadingErrorWrapper>
 
       {/* 강의 상세 정보 모달 */}
       <Dialog open={showCourseModal} onOpenChange={setShowCourseModal}>

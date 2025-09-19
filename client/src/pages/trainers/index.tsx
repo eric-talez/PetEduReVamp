@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle, Loader2 } from "lucide-react";
+import { LoadingErrorWrapper } from "@/components/ui/loading-error-wrapper";
+import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -253,43 +254,15 @@ export default function Trainers() {
     setLocation('/auth');
   };
 
-  // 로딩 상태 처리
-  if (loading) {
-    return (
-      <div className="py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-gray-600 dark:text-gray-400">훈련사 정보를 불러오는 중...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Extract status code from error if it's an ApiError
+  const getStatusCodeFromError = (error: string | Error | null) => {
+    if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+      return (error as any).statusCode;
+    }
+    return undefined;
+  };
 
-  // 에러 상태 처리
-  if (error) {
-    return (
-      <div className="py-8 px-4 sm:px-6 lg:px-8 animate-slide-up">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-500" />
-            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button 
-              onClick={() => {
-                setError(null);
-                setLoading(true);
-                fetchTrainers();
-              }}
-              className="focus-visible-enhanced"
-            >
-              다시 시도
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const statusCode = getStatusCodeFromError(error);
 
   // 검색 기능
   const handleSearch = async () => {
@@ -380,6 +353,22 @@ export default function Trainers() {
           </div>
         </div>
       </div>
+
+      <LoadingErrorWrapper
+        isLoading={loading}
+        isError={!!error}
+        isEmpty={!loading && !error && trainers.length === 0}
+        error={error}
+        data={trainers}
+        loadingVariant="list"
+        loadingMessage="훈련사 정보를 불러오는 중..."
+        errorMessage={typeof error === 'string' ? error : error?.message}
+        emptyMessage="등록된 훈련사가 없습니다."
+        emptyTitle="훈련사를 찾을 수 없습니다"
+        retry={fetchTrainers}
+        statusCode={statusCode}
+        data-testid="trainers-content"
+      >
 
       {/* Filters */}
       <div className="mb-8 space-y-4">
@@ -703,6 +692,7 @@ export default function Trainers() {
           </nav>
         </div>
       )}
+      </LoadingErrorWrapper>
 
       {/* 회원 전용 서비스 알림 */}
       <AlertDialog open={showMemberAlert} onOpenChange={setShowMemberAlert}>
