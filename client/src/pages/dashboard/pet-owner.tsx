@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { EnhancedAnalytics } from "@/components/dashboard/EnhancedAnalytics";
+import { AppLayout } from "@/layout/AppLayout";
 
 import { useLocation, Link } from "wouter";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock, BarChart3 } from "lucide-react";
@@ -276,16 +277,20 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
   ];
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Welcome Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          안녕하세요, {userName || '반려인'}님! 🐾
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
+    <AppLayout 
+      title={`안녕하세요, ${userName || '반려인'}님! 🐾`}
+      breadcrumbs={[
+        { label: '홈', href: '/' },
+        { label: '대시보드', current: true }
+      ]}
+      headerActions={
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           반려견과 함께하는 즐거운 학습 여정을 계속해보세요.
-        </p>
-      </div>
+        </div>
+      }
+      contentClassName="py-0"
+    >
+      <div className="space-y-8">
 
       {/* Tab Navigation */}
       <div className="mb-8">
@@ -762,6 +767,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           </Card>
         </div>
       )}
-    </div>
+      </div>
+    </AppLayout>
   );
 }

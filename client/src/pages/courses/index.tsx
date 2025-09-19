@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AppLayout } from "@/layout/AppLayout";
 
 interface CoursesPageProps {
   mode?: 'view' | 'create' | 'edit';
@@ -287,43 +288,49 @@ export default function Courses(props?: CoursesPageProps) {
   };
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
-        <img 
-          src="https://images.unsplash.com/photo-1541599468348-e96984315921?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="강의 탐색"
-          className="w-full h-full object-cover absolute"
-        />
-
-
-
-        <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <h1 className="text-primary dark:text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
-            반려견을 위한 체계적인 교육 과정
-          </h1>
-          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
-            평생 함께할 반려견에게 필요한 훈련과 교육을 전문가와 함께 시작하세요.
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
-            <div className="px-2">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="원하는 강의를 검색하세요" 
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
-            />
-            <Button className="ml-2" onClick={handleSearch}>
-              검색
-            </Button>
+    <AppLayout 
+      title="강의"
+      breadcrumbs={[
+        { label: '홈', href: '/' },
+        { label: '강의', current: true }
+      ]}
+      headerActions={
+        <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1 shadow-sm border">
+          <div className="px-2">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input 
+            type="text" 
+            placeholder="원하는 강의를 검색하세요" 
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+          />
+          <Button className="ml-2" onClick={handleSearch}>
+            검색
+          </Button>
+        </div>
+      }
+      contentClassName="py-0"
+    >
+      <div className="space-y-8">
+        {/* Banner */}
+        <div className="relative rounded-xl overflow-hidden h-48 md:h-64 shadow-lg">
+          <img 
+            src="https://images.unsplash.com/photo-1541599468348-e96984315921?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
+            alt="강의 탐색"
+            className="w-full h-full object-cover absolute"
+          />
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
+            <h2 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+              반려견을 위한 체계적인 교육 과정
+            </h2>
+            <p className="text-white/90 text-sm md:text-base max-w-xl">
+              평생 함께할 반려견에게 필요한 훈련과 교육을 전문가와 함께 시작하세요.
+            </p>
           </div>
         </div>
-      </div>
 
       {/* Filters */}
       <div className="mb-8 flex flex-wrap items-center gap-2">
@@ -935,6 +942,7 @@ export default function Courses(props?: CoursesPageProps) {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

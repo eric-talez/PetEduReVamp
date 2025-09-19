@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { AppLayout } from '@/layout/AppLayout';
 
 // 게시글 카드 컴포넌트
 const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }) => {
@@ -453,23 +454,31 @@ function CommunityPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
-      {/* 헤더 */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">커뮤니티</h1>
-            <p className="text-gray-600 mt-1">반려동물 교육과 훈련 정보를 공유하는 공간입니다</p>
-          </div>
+    <AppLayout 
+      title="커뮤니티"
+      breadcrumbs={[
+        { label: '홈', href: '/' },
+        { label: '커뮤니티', current: true }
+      ]}
+      headerActions={
+        <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              글쓰기
+            </Button>
+          </DialogTrigger>
+        </Dialog>
+      }
+      contentClassName="max-w-6xl mx-auto py-0"
+    >
+      <div className="space-y-6">
+        <p className="text-gray-600 dark:text-gray-400">
+          반려동물 교육과 훈련 정보를 공유하는 공간입니다
+        </p>
 
-          {/* 게시글 작성 버튼 */}
-          <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                글쓰기
-              </Button>
-            </DialogTrigger>
+        {/* 게시글 작성 다이얼로그 - 나머지 다이얼로그 내용 */}
+        <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
             <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>새 게시글 작성</DialogTitle>
@@ -657,10 +666,8 @@ function CommunityPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
 
-      {/* 검색 및 뷰 컨트롤 */}
+        {/* 검색 및 뷰 컨트롤 */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -1048,7 +1055,8 @@ function CommunityPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AppLayout>
   );
 }
 
