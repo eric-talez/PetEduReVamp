@@ -13,8 +13,7 @@ import { AccessibleNavItem } from "./AccessibleNavItem";
 import { SidebarMenuGroup } from "./SidebarMenuGroup";
 import { ScrollReveal } from "@/components/ui/AnimatedContent";
 import { useQuery } from "@tanstack/react-query";
-const TalezSymbol = "/logo-compact.svg";
-const TalezLogoType = "/logo.svg";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import {
@@ -529,25 +528,26 @@ export function Sidebar({
     staleTime: 30000 // 30초
   });
 
-  // 로고 URL 결정
+  // Note: Logo rendering now handled by BrandLogo component
+  // This function is kept for backward compatibility with dynamic logo loading
   const getLogoUrl = (type: 'expanded' | 'collapsed') => {
     console.log('[Sidebar] logoData:', logoData, 'type:', type);
     
     if (!logoData || typeof logoData !== 'object') {
-      // 기본 로고 사용
-      return type === 'expanded' ? TalezLogoType : TalezSymbol;
+      // BrandLogo component will handle default logos
+      return null;
     }
     
     const logos = logoData as any;
     
     if (type === 'expanded') {
       // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
-      const expandedLogo = logos.logoLight || logos.logoUrl || TalezLogoType;
+      const expandedLogo = logos.logoLight || logos.logoUrl;
       console.log('[Sidebar] Expanded logo URL:', expandedLogo);
       return expandedLogo;
     } else {
       // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
-      const collapsedLogo = logos.logoSymbolLight || logos.compactLogoUrl || TalezSymbol;
+      const collapsedLogo = logos.logoSymbolLight || logos.compactLogoUrl;
       console.log('[Sidebar] Collapsed logo URL:', collapsedLogo);
       return collapsedLogo;
     }
@@ -584,42 +584,30 @@ export function Sidebar({
         <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
           {expanded ? (
             <ScrollReveal direction="left" delay={100}>
-              <a 
-                href="/" 
-                className="flex items-center justify-center w-full h-full group"
-                aria-label="TALEZ 홈페이지로 이동"
-                data-testid="link-logo-expanded"
-              >
-                <img 
-                  src={getLogoUrl('expanded')} 
-                  alt="TALEZ 로고" 
-                  className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
-                  onError={(e) => {
-                    // 이미지 로드 실패시 기본 이미지로 대체
-                    e.currentTarget.src = TalezLogoType;
-                  }}
-                  data-testid="img-logo-expanded"
+              <div className="flex items-center justify-center w-full h-full group">
+                <BrandLogo 
+                  variant="full"
+                  size="lg"
+                  clickable={true}
+                  customSrc={getLogoUrl('expanded')}
+                  fallbackToDefault={true}
+                  testId="sidebar-logo-expanded"
+                  altText="TALEZ 로고"
                 />
-              </a>
+              </div>
             </ScrollReveal>
           ) : (
-            <a 
-              href="/" 
-              className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110"
-              aria-label="TALEZ 홈페이지로 이동"
-              data-testid="link-logo-collapsed"
-            >
-              <img 
-                src={getLogoUrl('collapsed')} 
-                alt="TALEZ" 
-                className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
-                onError={(e) => {
-                  // 이미지 로드 실패시 기본 이미지로 대체
-                  e.currentTarget.src = TalezSymbol;
-                }}
-                data-testid="img-logo-collapsed"
+            <div className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
+              <BrandLogo 
+                variant="compact"
+                size="md"
+                clickable={true}
+                customSrc={getLogoUrl('collapsed')}
+                fallbackToDefault={true}
+                testId="sidebar-logo-collapsed"
+                altText="TALEZ"
               />
-            </a>
+            </div>
           )}
           <button
             onClick={toggleSidebar}
