@@ -87,9 +87,9 @@ export default function PetDetailPage() {
     enabled: !!petId
   });
 
-  const pet: Pet = petData?.pet;
-  const vaccinations: Vaccination[] = vaccinationsData?.vaccinations || [];
-  const checkups: HealthCheckup[] = checkupsData?.checkups || [];
+  const pet: Pet = (petData as any)?.pet;
+  const vaccinations: Vaccination[] = (vaccinationsData as any)?.vaccinations || [];
+  const checkups: HealthCheckup[] = (checkupsData as any)?.checkups || [];
 
   if (isPetLoading) {
     return (
@@ -134,7 +134,7 @@ export default function PetDetailPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'overdue':
-        return <Badge variant="destructive">기한 초과</Badge>;
+        return <Badge variant="secondary" className="bg-red-100 text-red-800">기한 초과</Badge>;
       case 'due-soon':
         return <Badge variant="outline" className="border-yellow-500 text-yellow-600">접종 예정</Badge>;
       case 'current':
