@@ -4632,6 +4632,9 @@ class HybridStorage extends Storage {
   }
 
   getActiveBanners() {
+    // 배너 초기화 먼저 수행
+    this.getAllBanners();
+    
     const now = new Date();
     return this.banners.filter(banner => {
       if (!banner.isActive) return false;
@@ -4831,6 +4834,9 @@ class HybridStorage extends Storage {
   }
 
   getBannersWithPagination(page: number = 1, limit: number = 10, filters: any = {}) {
+    // 배너 초기화 먼저 수행
+    this.getAllBanners();
+    
     let filteredBanners = [...this.banners];
     
     // 필터 적용

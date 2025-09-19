@@ -148,16 +148,6 @@ export default function Home() {
     setUploadError('');
   };
 
-  // 관리자 배너를 슬라이드 형식으로 변환
-  const convertAdminBannerToSlide = (banner: Banner) => ({
-    id: banner.id,
-    title: banner.title,
-    subtitle: banner.content,
-    features: ["전문 교육", "맞춤 서비스", "안전한 관리"],
-    image: banner.imageUrl,
-    primaryAction: { text: "자세히 보기", path: banner.actionUrl || "/courses" },
-    secondaryAction: { text: "더 알아보기", path: "/about" }
-  });
 
   // 훈련사 전용 배너 슬라이드
   const trainerBannerSlides = [
@@ -326,7 +316,7 @@ export default function Home() {
     secondaryAction: banner.secondaryAction
   });
 
-  // 표시할 배너 슬라이드 결정 (사용자 역할에 따라 다른 배너 표시)
+  // 표시할 배너 슬라이드 결정 (데이터베이스 관리 배너만 사용)
   const bannerSlides = useMemo(() => {
     // 전역 상태에서 인증 정보도 확인
     const globalAuth = (window as any).__peteduAuthState;
@@ -335,7 +325,7 @@ export default function Home() {
     
     console.log('[Banner Debug] 인증 상태:', actualIsAuthenticated, '사용자 역할:', actualUserRole);
     console.log('[Banner Debug] useAuth 상태:', { isAuthenticated, userRole });
-    console.log('[Banner Debug] 전역 상태:', globalAuth);
+    console.log('[Banner Debug] 관리자 배너 수:', adminBanners.length);
     
     // 인증된 훈련사인 경우 훈련사 전용 배너 표시
     if (actualIsAuthenticated && actualUserRole === 'trainer') {
@@ -343,18 +333,16 @@ export default function Home() {
       return trainerBannerSlides.map(convertTrainerBannerToSlide);
     }
     
-    // 새로운 배너를 항상 첫 번째로 표시 (관리자 배너가 있어도 우선)
-    const heroSlide = defaultBannerSlides[0];
-    console.log('[Banner Debug] 새 히어로 배너 추가:', heroSlide.title);
-    
+    // 관리자가 등록한 배너가 있으면 우선 표시
     if (adminBanners.length > 0) {
       const adminSlides = adminBanners.map(convertAdminBannerToSlide);
-      console.log('[Banner Debug] 관리자 배너와 함께 표시, 총 수:', 1 + adminSlides.length);
-      return [heroSlide, ...adminSlides];
+      console.log('[Banner Debug] 관리자 배너 표시, 총 수:', adminSlides.length);
+      return adminSlides;
     }
     
-    console.log('[Banner Debug] 기본 배너만 표시, 배너 수:', defaultBannerSlides.length);
-    return defaultBannerSlides;
+    // 배너가 없으면 빈 배열 반환 (기본 배너 없음)
+    console.log('[Banner Debug] 표시할 배너 없음');
+    return [];
   }, [isAuthenticated, userRole, adminBanners, trainerBannerSlides.length]);
   
   console.log('[Banner Debug] 최종 배너 슬라이드 수:', bannerSlides.length, '첫 번째 배너:', bannerSlides[0]?.title);
