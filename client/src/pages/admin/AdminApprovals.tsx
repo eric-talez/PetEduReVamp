@@ -25,8 +25,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
 interface PendingApproval {
-  id: number;
-  type: 'user' | 'institute' | 'course' | 'trainer';
+  id: string | number;
+  type: 'user' | 'institute' | 'course' | 'trainer' | 'curriculum';
   applicantName: string;
   applicantEmail: string;
   appliedAt: string;
@@ -39,6 +39,11 @@ interface PendingApproval {
     instituteName?: string;
     businessNumber?: string;
     address?: string;
+    price?: number;
+    difficulty?: string;
+    category?: string;
+    modulesCount?: number;
+    videosCount?: number;
   };
   documents?: string[];
 }
@@ -46,6 +51,7 @@ interface PendingApproval {
 export default function AdminApprovals() {
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
   const [filteredApprovals, setFilteredApprovals] = useState<PendingApproval[]>([]);
+  const [pendingCurriculums, setPendingCurriculums] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -122,12 +128,32 @@ export default function AdminApprovals() {
     filterApprovals();
   }, [approvals, searchTerm, statusFilter, typeFilter]);
 
+  const loadPendingCurriculums = async () => {
+    try {
+      const response = await apiRequest('GET', '/api/admin/pending-curriculums');
+      const result = await response.json();
+      console.log('[AdminApprovals] 승인 대기 커리큘럼 응답:', result);
+      
+      if (result.success && result.data?.curriculums) {
+        setPendingCurriculums(result.data.curriculums);
+      } else {
+        console.warn('[AdminApprovals] 승인 대기 커리큘럼 데이터 없음');
+        setPendingCurriculums([]);
+      }
+    } catch (error) {
+      console.error('[AdminApprovals] 승인 대기 커리큘럼 조회 오류:', error);
+      setPendingCurriculums([]);
+    }
+  };
+
   const loadApprovals = async () => {
     try {
       setIsLoading(true);
       // 실제 API 호출 시뮬레이션
       await new Promise(resolve => setTimeout(resolve, 1000));
       setApprovals(sampleApprovals);
+      // 승인 대기 중인 커리큘럼도 함께 로드
+      await loadPendingCurriculums();
     } catch (error) {
       console.error('승인 목록 로딩 실패:', error);
       toast({
@@ -162,7 +188,40 @@ export default function AdminApprovals() {
     setFilteredApprovals(filtered);
   };
 
-  const handleApprovalAction = async (approvalId: number, action: 'approve' | 'reject', comment?: string) => {
+  const handleCurriculumApproval = async (curriculumId: string, action: 'approve' | 'reject', comment?: string) => {
+    setIsProcessing(true);
+    try {
+      const endpoint = `/api/admin/curriculums/${curriculumId}/${action}`;
+      const response = await apiRequest('POST', endpoint, { reviewComment: comment });
+      const result = await response.json();
+      
+      if (result.success) {
+        // 성공 시 목록 새로고침
+        await loadPendingCurriculums();
+        
+        toast({
+          title: action === 'approve' ? "커리큘럼 승인 완료" : "커리큘럼 거절 완료",
+          description: `커리큘럼이 성공적으로 ${action === 'approve' ? '승인' : '거절'}되었습니다.`,
+        });
+        
+        setIsDetailModalOpen(false);
+        setReviewComment('');
+      } else {
+        throw new Error(result.message || '처리 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error(`커리큘럼 ${action} 오류:`, error);
+      toast({
+        title: "처리 실패",
+        description: error.message || `커리큘럼 ${action === 'approve' ? '승인' : '거절'} 중 오류가 발생했습니다.`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleApprovalAction = async (approvalId: string | number, action: 'approve' | 'reject', comment?: string) => {
     setIsProcessing(true);
     try {
       // API 호출 시뮬레이션
@@ -208,6 +267,7 @@ export default function AdminApprovals() {
       case 'institute': return <Building className="h-4 w-4" />;
       case 'trainer': return <User className="h-4 w-4" />;
       case 'course': return <BookOpen className="h-4 w-4" />;
+      case 'curriculum': return <BookOpen className="h-4 w-4" />;
       default: return <AlertCircle className="h-4 w-4" />;
     }
   };
@@ -218,6 +278,7 @@ export default function AdminApprovals() {
       case 'institute': return '기관';
       case 'trainer': return '훈련사';
       case 'course': return '강좌';
+      case 'curriculum': return '커리큘럼';
       default: return '기타';
     }
   };
@@ -330,6 +391,7 @@ export default function AdminApprovals() {
                 <SelectItem value="trainer">훈련사</SelectItem>
                 <SelectItem value="institute">기관</SelectItem>
                 <SelectItem value="course">강좌</SelectItem>
+                <SelectItem value="curriculum">커리큘럼</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -429,6 +491,127 @@ export default function AdminApprovals() {
         </CardContent>
       </Card>
 
+      {/* 커리큘럼 승인 대기 섹션 */}
+      {pendingCurriculums.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              커리큘럼 승인 대기
+            </CardTitle>
+            <CardDescription>
+              총 {pendingCurriculums.length}개의 커리큘럼이 승인을 기다리고 있습니다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {pendingCurriculums.map((curriculum) => (
+                <div 
+                  key={curriculum.id}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <BookOpen className="h-6 w-6 text-white" />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 mb-1">{curriculum.title}</h4>
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">{curriculum.description}</p>
+                      
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {curriculum.trainerName || '익명'}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {curriculum.difficulty} 난이도
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <BookOpen className="h-3 w-3" />
+                          {curriculum.modules?.length || 0}개 모듈
+                        </span>
+                        {curriculum.price > 0 && (
+                          <span className="flex items-center gap-1">
+                            💰 {curriculum.price.toLocaleString()}원
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                          승인 대기
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {curriculum.category}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedApproval({
+                          id: curriculum.id,
+                          type: 'curriculum',
+                          applicantName: curriculum.trainerName || '익명',
+                          applicantEmail: curriculum.trainerEmail || '',
+                          appliedAt: curriculum.submittedForApprovalAt || curriculum.updatedAt,
+                          status: 'pending',
+                          details: {
+                            title: curriculum.title,
+                            description: curriculum.description,
+                            price: curriculum.price,
+                            difficulty: curriculum.difficulty,
+                            category: curriculum.category,
+                            modulesCount: curriculum.modules?.length || 0,
+                            videosCount: curriculum.modules?.reduce((sum, module) => sum + (module.videos?.length || 0), 0) || 0
+                          }
+                        });
+                        setIsDetailModalOpen(true);
+                      }}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      상세보기
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        handleCurriculumApproval(String(curriculum.id), 'approve');
+                      }}
+                      disabled={isProcessing}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      승인
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        handleCurriculumApproval(String(curriculum.id), 'reject');
+                      }}
+                      disabled={isProcessing}
+                      className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      거절
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 상세보기 모달 */}
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -504,6 +687,56 @@ export default function AdminApprovals() {
                   </div>
                 )}
 
+                {/* 커리큘럼 전용 정보 */}
+                {selectedApproval.type === 'curriculum' && (
+                  <>
+                    {selectedApproval.details.price !== undefined && (
+                      <div>
+                        <Label className="text-sm font-medium">수강료</Label>
+                        <p className="mt-1 text-lg font-semibold text-green-600">
+                          {selectedApproval.details.price === 0 
+                            ? '무료' 
+                            : `${selectedApproval.details.price.toLocaleString()}원`
+                          }
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedApproval.details.difficulty && (
+                      <div>
+                        <Label className="text-sm font-medium">난이도</Label>
+                        <Badge variant="outline" className="mt-1">
+                          {selectedApproval.details.difficulty}
+                        </Badge>
+                      </div>
+                    )}
+
+                    {selectedApproval.details.category && (
+                      <div>
+                        <Label className="text-sm font-medium">카테고리</Label>
+                        <Badge variant="secondary" className="mt-1">
+                          {selectedApproval.details.category}
+                        </Badge>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">모듈 수</Label>
+                        <p className="mt-1 text-2xl font-bold text-blue-600">
+                          {selectedApproval.details.modulesCount || 0}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">영상 수</Label>
+                        <p className="mt-1 text-2xl font-bold text-purple-600">
+                          {selectedApproval.details.videosCount || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 {selectedApproval.status === 'pending' && (
                   <div>
                     <Label className="text-sm font-medium">검토 의견</Label>
@@ -529,14 +762,26 @@ export default function AdminApprovals() {
                     <Button 
                       variant="outline"
                       className="text-red-600 border-red-600 hover:bg-red-50"
-                      onClick={() => handleApprovalAction(selectedApproval.id, 'reject', reviewComment)}
+                      onClick={() => {
+                        if (selectedApproval.type === 'curriculum') {
+                          handleCurriculumApproval(String(selectedApproval.id), 'reject', reviewComment);
+                        } else {
+                          handleApprovalAction(selectedApproval.id, 'reject', reviewComment);
+                        }
+                      }}
                       disabled={isProcessing}
                     >
                       {isProcessing ? '처리중...' : '거부'}
                     </Button>
                     <Button 
                       className="bg-green-600 hover:bg-green-700"
-                      onClick={() => handleApprovalAction(selectedApproval.id, 'approve', reviewComment)}
+                      onClick={() => {
+                        if (selectedApproval.type === 'curriculum') {
+                          handleCurriculumApproval(String(selectedApproval.id), 'approve', reviewComment);
+                        } else {
+                          handleApprovalAction(selectedApproval.id, 'approve', reviewComment);
+                        }
+                      }}
                       disabled={isProcessing}
                     >
                       {isProcessing ? '처리중...' : '승인'}

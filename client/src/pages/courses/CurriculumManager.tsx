@@ -16,8 +16,10 @@ import {
   Users,
   BookOpen,
   Star,
-  CheckCircle
+  CheckCircle,
+  FileCheck
 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 
 interface VideoContent {
   id: string;
@@ -55,7 +57,7 @@ interface Course {
   price: number;
   enrollmentCount: number;
   rating: number;
-  status: 'draft' | 'published' | 'archived';
+  status: 'draft' | 'pending' | 'published' | 'archived' | 'rejected';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -108,6 +110,38 @@ export default function CurriculumManager() {
       }
     } catch (error) {
       console.error('강의 목록 로딩 실패:', error);
+    }
+  };
+
+  // 승인 요청 함수
+  const submitForApproval = async (courseId: string) => {
+    try {
+      const response = await apiRequest('POST', `/api/admin/curriculums/${courseId}/submit-approval`);
+      const result = await response.json();
+      
+      if (result.success) {
+        // 강의 목록 새로고침
+        await loadCourses();
+        
+        // 선택된 강의의 상태도 업데이트
+        if (selectedCourse && selectedCourse.id === courseId) {
+          setSelectedCourse({ ...selectedCourse, status: 'pending' });
+        }
+        
+        toast({
+          title: "승인 요청 완료",
+          description: "커리큘럼이 관리자 검토를 위해 제출되었습니다.",
+        });
+      } else {
+        throw new Error(result.message || '승인 요청에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('승인 요청 오류:', error);
+      toast({
+        title: "승인 요청 실패",
+        description: error.message || "승인 요청 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -382,8 +416,23 @@ export default function CurriculumManager() {
                           {getDifficultyText(selectedCourse.difficulty)}
                         </Badge>
                         <Badge variant="outline">
-                          {selectedCourse.status}
+                          {selectedCourse.status === 'draft' ? '임시저장' : 
+                           selectedCourse.status === 'pending' ? '승인 대기' :
+                           selectedCourse.status === 'published' ? '발행됨' :
+                           selectedCourse.status === 'rejected' ? '거절됨' : selectedCourse.status}
                         </Badge>
+                        {selectedCourse.status === 'draft' && (
+                          <Button 
+                            size="sm"
+                            onClick={() => submitForApproval(selectedCourse.id)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            disabled={selectedCourse.modules.length === 0}
+                            data-testid="button-submit-approval"
+                          >
+                            <FileCheck className="w-4 h-4 mr-1" />
+                            승인 요청
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardHeader>

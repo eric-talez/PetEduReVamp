@@ -498,11 +498,10 @@ export default function Courses(props?: CoursesPageProps) {
 
 
           {/* 활성화된 필터 개수 표시 */}
-            <div className="ml-auto">
-              <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
-                {filteredCourses.length}개 강의 발견
-              </span>
-            </div>
+          <div className="ml-auto mt-4">
+            <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
+              {filteredCourses.length}개 강의 발견
+            </span>
           </div>
         </div>
 

@@ -12924,6 +12924,241 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   );
 
+  /**
+   * POST /api/admin/curriculums/:id/submit-approval - 커리큘럼 승인 요청
+   * 
+   * 보안: requireAuth() + csrfProtection + 소유권 검증
+   */
+  app.post('/api/admin/curriculums/:id/submit-approval',
+    requireAuth('admin', 'institute', 'trainer'),
+    csrfProtection,
+    async (req, res) => {
+      try {
+        const curriculumId = req.params.id;
+        console.log('[Curriculum Approval] 커리큘럼 승인 요청:', curriculumId);
+        
+        // 커리큘럼 확인
+        const curriculum = await storage.getCurriculumById(curriculumId);
+        if (!curriculum) {
+          return res.error(
+            ApiErrorCode.RESOURCE_NOT_FOUND,
+            '승인 요청할 커리큘럼을 찾을 수 없습니다.'
+          );
+        }
+        
+        // 소유권 확인
+        if (req.user?.role !== 'admin' && curriculum.creatorId !== req.user?.id) {
+          return res.error(
+            ApiErrorCode.INSUFFICIENT_PERMISSIONS,
+            '이 커리큘럼에 대한 승인 요청 권한이 없습니다.'
+          );
+        }
+        
+        // 상태 확인
+        if (curriculum.status !== 'draft') {
+          return res.error(
+            ApiErrorCode.BAD_REQUEST,
+            '임시저장 상태의 커리큘럼만 승인 요청할 수 있습니다.'
+          );
+        }
+        
+        // 상태를 pending으로 변경
+        const updatedCurriculum = await storage.updateCurriculum(curriculumId, { 
+          status: 'pending',
+          submittedForApprovalAt: new Date().toISOString()
+        });
+        
+        if (!updatedCurriculum) {
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '승인 요청 처리에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Curriculum Approval] 커리큘럼 승인 요청 성공:', curriculum.title);
+        
+        return res.success(
+          updatedCurriculum,
+          '커리큘럼 승인 요청이 성공적으로 제출되었습니다.'
+        );
+        
+      } catch (error) {
+        console.error('[Curriculum Approval] 승인 요청 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '승인 요청 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * POST /api/admin/curriculums/:id/approve - 커리큘럼 승인 (관리자 전용)
+   * 
+   * 보안: requireAuth('admin') + csrfProtection
+   */
+  app.post('/api/admin/curriculums/:id/approve',
+    requireAuth('admin'),
+    csrfProtection,
+    async (req, res) => {
+      try {
+        const curriculumId = req.params.id;
+        const { reviewComment } = req.body;
+        console.log('[Curriculum Approval] 커리큘럼 승인:', curriculumId);
+        
+        // 커리큘럼 확인
+        const curriculum = await storage.getCurriculumById(curriculumId);
+        if (!curriculum) {
+          return res.error(
+            ApiErrorCode.RESOURCE_NOT_FOUND,
+            '승인할 커리큘럼을 찾을 수 없습니다.'
+          );
+        }
+        
+        // 상태 확인
+        if (curriculum.status !== 'pending') {
+          return res.error(
+            ApiErrorCode.BAD_REQUEST,
+            '승인 대기 중인 커리큘럼만 승인할 수 있습니다.'
+          );
+        }
+        
+        // 상태를 published로 변경
+        const updatedCurriculum = await storage.updateCurriculum(curriculumId, { 
+          status: 'published',
+          approvedAt: new Date().toISOString(),
+          approvedBy: req.user?.id,
+          reviewComment: reviewComment || null,
+          isPublic: true
+        });
+        
+        if (!updatedCurriculum) {
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '커리큘럼 승인 처리에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Curriculum Approval] 커리큘럼 승인 성공:', curriculum.title);
+        
+        return res.success(
+          updatedCurriculum,
+          '커리큘럼이 성공적으로 승인되었습니다.'
+        );
+        
+      } catch (error) {
+        console.error('[Curriculum Approval] 승인 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '커리큘럼 승인 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * POST /api/admin/curriculums/:id/reject - 커리큘럼 거절 (관리자 전용)
+   * 
+   * 보안: requireAuth('admin') + csrfProtection
+   */
+  app.post('/api/admin/curriculums/:id/reject',
+    requireAuth('admin'),
+    csrfProtection,
+    async (req, res) => {
+      try {
+        const curriculumId = req.params.id;
+        const { reviewComment } = req.body;
+        console.log('[Curriculum Approval] 커리큘럼 거절:', curriculumId);
+        
+        // 커리큘럼 확인
+        const curriculum = await storage.getCurriculumById(curriculumId);
+        if (!curriculum) {
+          return res.error(
+            ApiErrorCode.RESOURCE_NOT_FOUND,
+            '거절할 커리큘럼을 찾을 수 없습니다.'
+          );
+        }
+        
+        // 상태 확인
+        if (curriculum.status !== 'pending') {
+          return res.error(
+            ApiErrorCode.BAD_REQUEST,
+            '승인 대기 중인 커리큘럼만 거절할 수 있습니다.'
+          );
+        }
+        
+        // 상태를 rejected로 변경
+        const updatedCurriculum = await storage.updateCurriculum(curriculumId, { 
+          status: 'rejected',
+          rejectedAt: new Date().toISOString(),
+          rejectedBy: req.user?.id,
+          reviewComment: reviewComment || '승인 기준을 충족하지 않습니다.',
+          isPublic: false
+        });
+        
+        if (!updatedCurriculum) {
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '커리큘럼 거절 처리에 실패했습니다.'
+          );
+        }
+        
+        console.log('[Curriculum Approval] 커리큘럼 거절 성공:', curriculum.title);
+        
+        return res.success(
+          updatedCurriculum,
+          '커리큘럼이 거절되었습니다.'
+        );
+        
+      } catch (error) {
+        console.error('[Curriculum Approval] 거절 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '커리큘럼 거절 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
+  /**
+   * GET /api/admin/pending-curriculums - 승인 대기 중인 커리큘럼 목록 (관리자 전용)
+   * 
+   * 보안: requireAuth('admin')
+   */
+  app.get('/api/admin/pending-curriculums',
+    requireAuth('admin'),
+    async (req, res) => {
+      try {
+        console.log('[Curriculum Approval] 승인 대기 중인 커리큘럼 목록 조회');
+        
+        // 승인 대기 중인 커리큘럼 조회
+        const allCurriculums = await storage.getAllCurriculums();
+        const pendingCurriculums = allCurriculums
+          .filter(curriculum => curriculum.status === 'pending')
+          .sort((a, b) => new Date(a.submittedForApprovalAt || a.updatedAt).getTime() - 
+                         new Date(b.submittedForApprovalAt || b.updatedAt).getTime());
+        
+        console.log('[Curriculum Approval] 승인 대기 중인 커리큘럼 수:', pendingCurriculums.length);
+        
+        return res.success(
+          { curriculums: pendingCurriculums },
+          `승인 대기 중인 커리큘럼 ${pendingCurriculums.length}개를 조회했습니다.`
+        );
+        
+      } catch (error) {
+        console.error('[Curriculum Approval] 대기 목록 조회 오류:', error);
+        return res.error(
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+          '승인 대기 목록 조회 중 오류가 발생했습니다.',
+          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
+        );
+      }
+    }
+  );
+
   // =============================================================================
   // 강의 CRUD API (표준화된 버전)
   // =============================================================================

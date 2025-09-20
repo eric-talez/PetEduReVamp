@@ -1019,7 +1019,7 @@ export const curriculums = pgTable("curriculums", {
   materials: text("materials").array(),
   assessmentMethods: text("assessment_methods").array(),
   isPublic: boolean("is_public").default(false),
-  status: varchar("status", { length: 20 }).default("draft"), // draft, pending, approved, rejected
+  status: varchar("status", { length: 20 }).default("draft"), // draft, pending, published, rejected
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
