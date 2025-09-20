@@ -1393,8 +1393,8 @@ function CommunityPage() {
                           {replyingTo === comment.id && (
                             <div className="mt-3 flex gap-2">
                               <Avatar className="h-6 w-6">
-                                <AvatarImage src={user?.image} alt={user?.username} />
-                                <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
+                                <AvatarImage src={undefined} alt={user?.name || '사용자'} />
+                                <AvatarFallback>{(user?.name || 'U')[0]}</AvatarFallback>
                               </Avatar>
                               <div className="flex-1 space-y-2">
                                 <Textarea
