@@ -7319,12 +7319,12 @@ app.get('/api/search', async (req, res) => {
 
   // ===== Course Routes =====
 
-  // 발행된 강의 목록 조회 API (공개용) - 통합 버전
+  // 발행된 강의 목록 조회 API (공개용) - 통합 버전 (커리큘럼 + 화상강의)
   app.get("/api/courses", async (req, res) => {
     try {
       console.log('🔥 [API] 공개 강의 목록 조회 요청 (통합 버전)');
       
-      // 실제 커리큘럼 데이터 조회
+      // 1. 실제 커리큘럼 데이터 조회
       const allCurriculums = await storage.getAllCurriculums();
       console.log('🔥 [API] 전체 커리큘럼 수:', allCurriculums.length);
       
@@ -7370,12 +7370,60 @@ app.get('/api/search', async (req, res) => {
           thumbnailUrl: curriculum.thumbnailUrl,
           hasAnyVideo: totalVideos > 0,
           totalVideos,
-          modulesWithVideoCount
+          modulesWithVideoCount,
+          productType: 'course' // 일반 강의 구분
         };
       });
+
+      // 2. 화상 강의 데이터 조회
+      const videoLectures = await storage.getVideoLectures();
+      console.log('🔥 [API] 화상 강의 수:', videoLectures.length);
       
-      console.log('🔥 [API] 최종 강의 목록:', courses.length, '개');
-      res.json({ courses, total: courses.length });
+      const videoLectureProducts = videoLectures.map((videoLecture: any) => {
+        // 화상 강의는 강의 형태로 변환
+        return {
+          id: `video_${videoLecture.id}`, // 화상 강의 ID 구분을 위해 prefix 추가
+          title: videoLecture.title,
+          description: videoLecture.description,
+          price: videoLecture.price || 0,
+          difficulty: videoLecture.difficulty || 'beginner',
+          category: videoLecture.category || '화상 강의',
+          duration: videoLecture.duration || 1, // 화상 강의는 보통 1회 세션
+          modules: [], // 화상 강의는 모듈이 없음
+          trainerName: videoLecture.trainerName || '전문 훈련사',
+          status: 'published', // 화상 강의는 기본적으로 발행 상태
+          enrollmentCount: videoLecture.enrollmentCount || 0,
+          averageRating: videoLecture.averageRating || 0,
+          createdAt: videoLecture.createdAt || new Date().toISOString(),
+          updatedAt: videoLecture.updatedAt || new Date().toISOString(),
+          // 화상 강의 고유 정보
+          thumbnailUrl: videoLecture.thumbnailUrl || 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop',
+          hasAnyVideo: false, // 실시간 화상이므로 녹화된 영상은 없음
+          totalVideos: 0,
+          modulesWithVideoCount: 0,
+          productType: 'video_lecture', // 화상 강의 구분
+          // 화상 강의 전용 필드
+          isLive: true,
+          maxParticipants: videoLecture.maxParticipants || 10,
+          currentParticipants: videoLecture.currentParticipants || 0,
+          nextSessionDate: videoLecture.nextSessionDate,
+          sessionDuration: videoLecture.sessionDuration || 60,
+          zoomRequired: true
+        };
+      });
+
+      // 3. 두 목록을 합치기
+      const allProducts = [...courses, ...videoLectureProducts];
+      
+      console.log('🔥 [API] 최종 상품 목록:', allProducts.length, '개 (일반강의:', courses.length, '개, 화상강의:', videoLectureProducts.length, '개)');
+      res.json({ 
+        courses: allProducts, 
+        total: allProducts.length,
+        breakdown: {
+          regularCourses: courses.length,
+          videoLectures: videoLectureProducts.length
+        }
+      });
     } catch (error: any) {
       console.error('🔥 [API] 강의 목록 조회 실패:', error);
       res.status(500).json({ 

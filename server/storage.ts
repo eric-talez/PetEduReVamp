@@ -5374,6 +5374,69 @@ class HybridStorage extends Storage {
         updatedAt: course.updatedAt
       }));
   }
+
+  // 화상 강의 관련 메서드들
+  async getVideoLectures(): Promise<any[]> {
+    // 화상 강의 세션들을 화상 강의 상품 형태로 변환
+    const videoLectureGroups = new Map();
+    
+    // 세션들을 강의별로 그룹화
+    this.videoLectureSessions.forEach(session => {
+      const courseId = session.courseId;
+      
+      if (!videoLectureGroups.has(courseId)) {
+        // 관련 강의 정보 찾기
+        const relatedCourse = this.courses.find(course => course.id === courseId);
+        
+        videoLectureGroups.set(courseId, {
+          id: courseId,
+          title: relatedCourse?.title || session.title,
+          description: relatedCourse?.description || session.description,
+          price: relatedCourse?.price || 50000, // 기본 가격
+          difficulty: relatedCourse?.difficulty || 'beginner',
+          category: relatedCourse?.category || '화상 강의',
+          duration: 1, // 화상 강의는 1회 세션
+          trainerName: relatedCourse?.trainerName || '전문 훈련사',
+          enrollmentCount: 0,
+          averageRating: 4.5,
+          createdAt: session.createdAt,
+          updatedAt: session.updatedAt,
+          // 화상 강의 고유 필드
+          maxParticipants: session.maxParticipants,
+          currentParticipants: session.currentParticipants,
+          nextSessionDate: session.scheduledStartTime,
+          sessionDuration: 60, // 기본 60분
+          sessions: [session],
+          thumbnailUrl: relatedCourse?.thumbnailUrl || 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop'
+        });
+      } else {
+        // 기존 강의에 세션 추가
+        const existingLecture = videoLectureGroups.get(courseId);
+        existingLecture.sessions.push(session);
+        
+        // 통계 업데이트
+        existingLecture.currentParticipants = Math.max(existingLecture.currentParticipants, session.currentParticipants);
+        
+        // 가장 빠른 다음 세션 날짜 찾기
+        if (new Date(session.scheduledStartTime) < new Date(existingLecture.nextSessionDate)) {
+          existingLecture.nextSessionDate = session.scheduledStartTime;
+        }
+      }
+    });
+
+    // 예약 수 계산
+    this.videoLectureBookings.forEach(booking => {
+      const session = this.videoLectureSessions.find(s => s.id === booking.sessionId);
+      if (session) {
+        const lecture = videoLectureGroups.get(session.courseId);
+        if (lecture) {
+          lecture.enrollmentCount = (lecture.enrollmentCount || 0) + 1;
+        }
+      }
+    });
+
+    return Array.from(videoLectureGroups.values());
+  }
 }
 
 const storage = new HybridStorage();
