@@ -2535,10 +2535,10 @@ function UnauthenticatedRoutes() {
         {/* Zoom 테스트 페이지 */}
         <Route path="/zoom-test">
           {() => {
-            const ZoomTestPage = lazy(() => import('./pages/zoom-test'));
+            const ZoomTestPageLazy = lazy(() => import('./pages/zoom-test'));
             return (
-              <Suspense fallback={<div>페이지 로딩 중...</div>}>
-                <ZoomTestPage />
+              <Suspense fallback={<div className="flex items-center justify-center h-64">페이지 로딩 중...</div>}>
+                <ZoomTestPageLazy />
               </Suspense>
             );
           }}
