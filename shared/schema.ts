@@ -50,6 +50,57 @@ export const courses = pgTable("courses", {
   isActive: boolean("is_active").default(true),
   rating: decimal("rating", { precision: 3, scale: 2 }),
   enrollmentCount: integer("enrollment_count").default(0),
+  // 화상 강의 관련 필드 추가
+  courseType: varchar("course_type", { length: 50 }).default("regular"), // regular, video_lecture, hybrid
+  isLiveClass: boolean("is_live_class").default(false), // 실시간 화상 수업 여부
+  maxParticipants: integer("max_participants"), // 최대 참가자 수 (화상 강의용)
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 화상 강의 세션 테이블 (줌 화상 수업)
+export const videoLectureSessions = pgTable("video_lecture_sessions", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  instructorId: integer("instructor_id").references(() => users.id).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  scheduledStartTime: timestamp("scheduled_start_time").notNull(),
+  scheduledEndTime: timestamp("scheduled_end_time").notNull(),
+  actualStartTime: timestamp("actual_start_time"),
+  actualEndTime: timestamp("actual_end_time"),
+  maxParticipants: integer("max_participants").default(50),
+  currentParticipants: integer("current_participants").default(0),
+  // 줌 관련 정보
+  zoomMeetingId: varchar("zoom_meeting_id", { length: 100 }),
+  zoomJoinUrl: text("zoom_join_url"),
+  zoomStartUrl: text("zoom_start_url"),
+  zoomMeetingPassword: varchar("zoom_meeting_password", { length: 50 }),
+  // 세션 상태
+  status: varchar("status", { length: 50 }).default("scheduled"), // scheduled, live, completed, cancelled
+  recordingUrl: text("recording_url"), // 녹화본 URL (있는 경우)
+  isRecorded: boolean("is_recorded").default(false),
+  // 메타데이터
+  sessionNotes: text("session_notes"),
+  materials: text("materials").array().default([]), // 수업 자료 링크들
+  tags: text("tags").array().default([]), // 태그
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 화상 강의 예약 테이블
+export const videoLectureBookings = pgTable("video_lecture_bookings", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").references(() => videoLectureSessions.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  petId: integer("pet_id").references(() => pets.id), // 반려동물 관련 강의인 경우
+  bookingStatus: varchar("booking_status", { length: 50 }).default("confirmed"), // confirmed, cancelled, no_show
+  joinTime: timestamp("join_time"), // 실제 참가 시간
+  leaveTime: timestamp("leave_time"), // 실제 퇴장 시간
+  attendanceStatus: varchar("attendance_status", { length: 50 }).default("registered"), // registered, attended, absent
+  feedback: text("feedback"), // 수강 후기
+  rating: integer("rating"), // 1-5 평점
+  specialRequests: text("special_requests"), // 특별 요청사항
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
