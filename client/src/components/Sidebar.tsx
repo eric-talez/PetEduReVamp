@@ -531,8 +531,6 @@ export function Sidebar({
   // Note: Logo rendering now handled by BrandLogo component
   // This function is kept for backward compatibility with dynamic logo loading
   const getLogoUrl = (type: 'expanded' | 'collapsed') => {
-    console.log('[Sidebar] logoData:', logoData, 'type:', type);
-    
     if (!logoData || typeof logoData !== 'object') {
       // BrandLogo component will handle default logos
       return null;
@@ -543,7 +541,6 @@ export function Sidebar({
     if (type === 'expanded') {
       // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
       const expandedLogo = logos.logoLight || logos.logoUrl;
-      console.log('[Sidebar] Expanded logo URL:', expandedLogo);
       return expandedLogo;
     } else {
       // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
