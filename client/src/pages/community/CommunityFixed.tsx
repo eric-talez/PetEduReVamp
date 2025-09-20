@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { LoadingErrorWrapper } from '@/components/ui/loading-error-wrapper';
 import { getStatusCodeFromError } from '@/lib/errorHelpers';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink, CheckSquare, Circle, Type, Calendar, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
@@ -160,6 +160,24 @@ function CommunityPage() {
     linkDescription: "",
     linkImage: ""
   });
+  
+  // 설문 관련 상태
+  const [surveyForm, setSurveyForm] = useState({
+    title: "",
+    description: "",
+    type: "single_choice", // single_choice, multiple_choice, text_answer
+    questions: [
+      {
+        id: 1,
+        question: "",
+        type: "single_choice",
+        options: ["", ""],
+        required: true
+      }
+    ],
+    endDate: "",
+    anonymous: false
+  });
   const [showLinkSection, setShowLinkSection] = useState(false);
   const [isExtractingLink, setIsExtractingLink] = useState(false);
 
@@ -176,6 +194,75 @@ function CommunityPage() {
 
   // 카테고리 목록
   const categories = ['일반', '훈련팁', '건강', '행동교정', '사회화', '질문', '후기'];
+
+  // 설문 관련 헬퍼 함수들
+  const addSurveyQuestion = () => {
+    const newQuestion = {
+      id: Date.now(),
+      question: "",
+      type: "single_choice",
+      options: ["", ""],
+      required: true
+    };
+    setSurveyForm(prev => ({
+      ...prev,
+      questions: [...prev.questions, newQuestion]
+    }));
+  };
+
+  const removeSurveyQuestion = (questionId: number) => {
+    setSurveyForm(prev => ({
+      ...prev,
+      questions: prev.questions.filter(q => q.id !== questionId)
+    }));
+  };
+
+  const updateSurveyQuestion = (questionId: number, field: string, value: any) => {
+    setSurveyForm(prev => ({
+      ...prev,
+      questions: prev.questions.map(q => 
+        q.id === questionId ? { ...q, [field]: value } : q
+      )
+    }));
+  };
+
+  const addOption = (questionId: number) => {
+    setSurveyForm(prev => ({
+      ...prev,
+      questions: prev.questions.map(q => 
+        q.id === questionId 
+          ? { ...q, options: [...q.options, ""] }
+          : q
+      )
+    }));
+  };
+
+  const removeOption = (questionId: number, optionIndex: number) => {
+    setSurveyForm(prev => ({
+      ...prev,
+      questions: prev.questions.map(q => 
+        q.id === questionId 
+          ? { ...q, options: q.options.filter((_, index) => index !== optionIndex) }
+          : q
+      )
+    }));
+  };
+
+  const updateOption = (questionId: number, optionIndex: number, value: string) => {
+    setSurveyForm(prev => ({
+      ...prev,
+      questions: prev.questions.map(q => 
+        q.id === questionId 
+          ? { 
+              ...q, 
+              options: q.options.map((option, index) => 
+                index === optionIndex ? value : option
+              )
+            }
+          : q
+      )
+    }));
+  };
 
   // 게시글 목록 조회 (탭별 필터링)
   const { data: postsData = [], isLoading, error } = useQuery({
@@ -384,6 +471,115 @@ function CommunityPage() {
     }
   };
 
+  // 설문 생성 뮤테이션
+  const createSurveyMutation = useMutation({
+    mutationFn: async (surveyData: any) => {
+      const response = await fetch('/api/community/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(surveyData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('설문 생성에 실패했습니다');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+      toast({
+        title: "설문이 성공적으로 생성되었습니다! 📊",
+        description: "커뮤니티에서 설문을 확인할 수 있습니다."
+      });
+      
+      // 폼 초기화
+      setSurveyForm({
+        title: "",
+        description: "",
+        type: "single_choice",
+        questions: [
+          {
+            id: 1,
+            question: "",
+            type: "single_choice",
+            options: ["", ""],
+            required: true
+          }
+        ],
+        endDate: "",
+        anonymous: false
+      });
+      
+      setIsCreatePostOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "설문 생성 실패",
+        description: error.message || "설문 생성 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // 설문 제출 핸들러
+  const handleSubmitSurvey = () => {
+    if (!surveyForm.title.trim()) {
+      toast({
+        title: "설문 제목을 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!surveyForm.description.trim()) {
+      toast({
+        title: "설문 설명을 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (surveyForm.questions.some(q => !q.question.trim())) {
+      toast({
+        title: "모든 질문을 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (surveyForm.questions.some(q => 
+      (q.type === 'single_choice' || q.type === 'multiple_choice') && 
+      q.options.some(opt => !opt.trim())
+    )) {
+      toast({
+        title: "모든 선택지를 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // 설문 데이터 구성
+    const surveyData = {
+      title: surveyForm.title,
+      content: surveyForm.description,
+      category: "설문",
+      type: "survey",
+      surveyData: {
+        questions: surveyForm.questions,
+        endDate: surveyForm.endDate,
+        anonymous: surveyForm.anonymous
+      },
+      endDate: surveyForm.endDate ? new Date(surveyForm.endDate).toISOString() : null,
+      anonymous: surveyForm.anonymous
+    };
+
+    // 뮤테이션 실행
+    createSurveyMutation.mutate(surveyData);
+  };
+
   // 댓글 작성 핸들러
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -392,8 +588,8 @@ function CommunityPage() {
       id: Date.now(),
       content: newComment,
       author: {
-        name: user?.username || '익명 사용자',
-        image: user?.image || null
+        name: user?.name || '익명 사용자',
+        image: null
       },
       createdAt: new Date().toISOString(),
       replies: []
@@ -411,8 +607,8 @@ function CommunityPage() {
       id: Date.now(),
       content: replyText,
       author: {
-        name: user?.username || '익명 사용자',
-        image: user?.image || null
+        name: user?.name || '익명 사용자',
+        image: null
       },
       createdAt: new Date().toISOString()
     };
@@ -483,24 +679,233 @@ function CommunityPage() {
 
         {/* 게시글 작성 다이얼로그 - 나머지 다이얼로그 내용 */}
         <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
-            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>새 게시글 작성</DialogTitle>
+                <DialogTitle>
+                  {activeTab === 'survey' ? '새 설문조사 작성' : '새 게시글 작성'}
+                </DialogTitle>
                 <DialogDescription>
-                  커뮤니티에 공유할 게시글을 작성해주세요.
+                  {activeTab === 'survey' 
+                    ? '커뮤니티 설문조사를 작성해주세요.' 
+                    : '커뮤니티에 공유할 게시글을 작성해주세요.'
+                  }
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="title" className="text-right">제목</Label>
-                  <Input
-                    id="title"
-                    value={newPost.title}
-                    onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="게시글 제목을 입력하세요"
-                    className="col-span-3"
-                  />
-                </div>
+                {activeTab === 'survey' ? (
+                  // 설문 작성 폼
+                  <div className="space-y-6">
+                    {/* 설문 기본 정보 */}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="survey-title" className="text-right">설문 제목</Label>
+                        <Input
+                          id="survey-title"
+                          value={surveyForm.title}
+                          onChange={(e) => setSurveyForm(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="설문조사 제목을 입력하세요"
+                          className="col-span-3"
+                          data-testid="input-survey-title"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 items-start gap-4">
+                        <Label htmlFor="survey-description" className="text-right pt-2">설문 설명</Label>
+                        <Textarea
+                          id="survey-description"
+                          value={surveyForm.description}
+                          onChange={(e) => setSurveyForm(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="설문조사에 대한 설명을 입력하세요"
+                          className="col-span-3 min-h-[80px]"
+                          data-testid="textarea-survey-description"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="survey-enddate" className="text-right">마감일</Label>
+                        <Input
+                          id="survey-enddate"
+                          type="date"
+                          value={surveyForm.endDate}
+                          onChange={(e) => setSurveyForm(prev => ({ ...prev, endDate: e.target.value }))}
+                          className="col-span-3"
+                          data-testid="input-survey-enddate"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label className="text-right">설문 옵션</Label>
+                        <div className="col-span-3 flex items-center gap-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="anonymous"
+                              checked={surveyForm.anonymous}
+                              onChange={(e) => setSurveyForm(prev => ({ ...prev, anonymous: e.target.checked }))}
+                              className="rounded"
+                              data-testid="checkbox-anonymous"
+                            />
+                            <Label htmlFor="anonymous" className="text-sm">익명 응답</Label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 설문 질문들 */}
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">설문 질문</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addSurveyQuestion}
+                          data-testid="button-add-question"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          질문 추가
+                        </Button>
+                      </div>
+
+                      {surveyForm.questions.map((question, questionIndex) => (
+                        <div key={question.id} className="border rounded-lg p-4 space-y-4" data-testid={`question-${question.id}`}>
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">질문 {questionIndex + 1}</h4>
+                            {surveyForm.questions.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeSurveyQuestion(question.id)}
+                                data-testid={`button-remove-question-${question.id}`}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">질문 유형</Label>
+                            <Select
+                              value={question.type}
+                              onValueChange={(value) => updateSurveyQuestion(question.id, 'type', value)}
+                            >
+                              <SelectTrigger className="col-span-3" data-testid={`select-question-type-${question.id}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="single_choice">
+                                  <div className="flex items-center gap-2">
+                                    <Circle className="h-4 w-4" />
+                                    객관식 (단일 선택)
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="multiple_choice">
+                                  <div className="flex items-center gap-2">
+                                    <CheckSquare className="h-4 w-4" />
+                                    객관식 (다중 선택)
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="text_answer">
+                                  <div className="flex items-center gap-2">
+                                    <Type className="h-4 w-4" />
+                                    주관식 (텍스트 입력)
+                                  </div>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="grid grid-cols-4 items-start gap-4">
+                            <Label className="text-right pt-2">질문</Label>
+                            <Textarea
+                              value={question.question}
+                              onChange={(e) => updateSurveyQuestion(question.id, 'question', e.target.value)}
+                              placeholder="질문을 입력하세요"
+                              className="col-span-3"
+                              data-testid={`textarea-question-${question.id}`}
+                            />
+                          </div>
+
+                          {(question.type === 'single_choice' || question.type === 'multiple_choice') && (
+                            <div className="grid grid-cols-4 items-start gap-4">
+                              <Label className="text-right pt-2">선택지</Label>
+                              <div className="col-span-3 space-y-2">
+                                {question.options.map((option, optionIndex) => (
+                                  <div key={optionIndex} className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-1">
+                                      {question.type === 'single_choice' ? (
+                                        <Circle className="h-4 w-4 text-gray-400" />
+                                      ) : (
+                                        <CheckSquare className="h-4 w-4 text-gray-400" />
+                                      )}
+                                      <Input
+                                        value={option}
+                                        onChange={(e) => updateOption(question.id, optionIndex, e.target.value)}
+                                        placeholder={`선택지 ${optionIndex + 1}`}
+                                        className="flex-1"
+                                        data-testid={`input-option-${question.id}-${optionIndex}`}
+                                      />
+                                    </div>
+                                    {question.options.length > 2 && (
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeOption(question.id, optionIndex)}
+                                        data-testid={`button-remove-option-${question.id}-${optionIndex}`}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                ))}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => addOption(question.id)}
+                                  className="w-full"
+                                  data-testid={`button-add-option-${question.id}`}
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  선택지 추가
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">필수 응답</Label>
+                            <div className="col-span-3 flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={question.required}
+                                onChange={(e) => updateSurveyQuestion(question.id, 'required', e.target.checked)}
+                                className="rounded"
+                                data-testid={`checkbox-required-${question.id}`}
+                              />
+                              <Label className="text-sm">필수 응답 질문</Label>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  // 일반 게시글 작성 폼
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="title" className="text-right">제목</Label>
+                      <Input
+                        id="title"
+                        value={newPost.title}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="게시글 제목을 입력하세요"
+                        className="col-span-3"
+                        data-testid="input-post-title"
+                      />
+                    </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label htmlFor="content" className="text-right pt-2">내용</Label>
                   <Textarea
@@ -659,13 +1064,19 @@ function CommunityPage() {
                     </div>
                   </div>
                 )}
+                </div>
+              )}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsCreatePostOpen(false)}>
                   취소
                 </Button>
-                <Button onClick={handleSubmitPost} disabled={createPostMutation.isPending}>
-                  {createPostMutation.isPending ? '작성 중...' : '게시'}
+                <Button 
+                  onClick={activeTab === 'survey' ? handleSubmitSurvey : handleSubmitPost} 
+                  disabled={activeTab === 'survey' ? createSurveyMutation.isPending : createPostMutation.isPending}
+                  data-testid={activeTab === 'survey' ? 'button-submit-survey' : 'button-submit-post'}
+                >
+                  {(activeTab === 'survey' ? createSurveyMutation.isPending : createPostMutation.isPending) ? '작성 중...' : (activeTab === 'survey' ? '설문 생성' : '게시')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -927,8 +1338,8 @@ function CommunityPage() {
                   {/* 댓글 작성 */}
                   <div className="flex gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.image} alt={user?.username} />
-                      <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
+                      <AvatarImage src="" alt={user?.name} />
+                      <AvatarFallback>{user?.name?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-2">
                       <Textarea

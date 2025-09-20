@@ -34,6 +34,31 @@ export const users = pgTable("users", {
   videoCallPreference: varchar("video_call_preference", { length: 50 }).default("zoom"), // zoom, teams, webex 등
 });
 
+// 설문 질문 스키마 (surveyData JSON 구조)
+export const surveyQuestionSchema = z.object({
+  id: z.number(),
+  question: z.string(),
+  type: z.enum(["single_choice", "multiple_choice", "text_answer"]),
+  options: z.array(z.string()).optional(),
+  required: z.boolean().default(true),
+});
+
+// 설문 응답 스키마
+export const surveyResponseSchema = z.object({
+  questionId: z.number(),
+  answer: z.union([
+    z.string(), // 텍스트 답변
+    z.array(z.string()), // 다중 선택 답변
+  ]),
+});
+
+// 설문 데이터 스키마
+export const surveyDataSchema = z.object({
+  questions: z.array(surveyQuestionSchema),
+  endDate: z.string().optional(),
+  anonymous: z.boolean().default(false),
+});
+
 // 강의 테이블
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
@@ -173,7 +198,7 @@ export const pets = pgTable("pets", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 커뮤니티 게시글 테이블
+// 커뮤니티 게시글 테이블 (설문 기능 포함)
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 200 }).notNull(),
@@ -184,6 +209,17 @@ export const posts = pgTable("posts", {
   views: integer("views").default(0),
   likes: integer("likes").default(0),
   commentsCount: integer("comments_count").default(0),
+  type: varchar("type", { length: 20 }).default("post"), // post, survey
+  // 링크 관련 필드
+  linkUrl: text("link_url"),
+  linkTitle: text("link_title"),
+  linkDescription: text("link_description"),
+  linkImage: text("link_image"),
+  // 설문 관련 필드
+  surveyData: jsonb("survey_data"), // 설문 질문, 옵션, 설정 등
+  surveyResponses: jsonb("survey_responses"), // 설문 응답 데이터
+  endDate: timestamp("end_date"), // 설문 마감일
+  anonymous: boolean("anonymous").default(false), // 익명 설문 여부
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -863,9 +899,17 @@ export type NewInstitute = z.infer<typeof insertInstituteSchema>;
 export type Pet = z.infer<typeof selectPetSchema>;
 export type NewPet = z.infer<typeof insertPetSchema>;
 
+// Posts 관련 스키마 (설문 기능 포함)
+export const insertPostSchema = createInsertSchema(posts).extend({
+  surveyData: surveyDataSchema.optional(),
+});
+
+export const selectPostSchema = createSelectSchema(posts);
+
 // Missing type exports for storage.ts compatibility
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type Post = typeof posts.$inferSelect;
+export type NewPost = z.infer<typeof insertPostSchema>;
 export type Reservation = typeof reservations.$inferSelect;
 
 export type Event = typeof events.$inferSelect;

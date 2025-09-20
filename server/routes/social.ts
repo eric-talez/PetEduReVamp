@@ -863,10 +863,43 @@ export function setupSocialRoutes(app: Express) {
   // 게시글 작성
   app.post('/api/community/posts', (req, res) => {
     try {
-      const { title, content, category = '일반', tag, linkUrl, linkTitle, linkDescription, linkImage } = req.body;
+      const { 
+        title, 
+        content, 
+        category = '일반', 
+        tag, 
+        type = 'post',
+        linkUrl, 
+        linkTitle, 
+        linkDescription, 
+        linkImage,
+        // 설문 관련 필드
+        surveyData,
+        endDate,
+        anonymous = false
+      } = req.body;
 
       if (!title || !content) {
         return res.status(400).json({ error: '제목과 내용을 입력해주세요.' });
+      }
+
+      // 설문일 경우 추가 검증
+      if (type === 'survey') {
+        if (!surveyData || !surveyData.questions || surveyData.questions.length === 0) {
+          return res.status(400).json({ error: '설문 질문을 입력해주세요.' });
+        }
+
+        // 질문별 검증
+        for (const question of surveyData.questions) {
+          if (!question.question || !question.question.trim()) {
+            return res.status(400).json({ error: '모든 질문을 입력해주세요.' });
+          }
+          
+          if ((question.type === 'single_choice' || question.type === 'multiple_choice') && 
+              (!question.options || question.options.some(opt => !opt || !opt.trim()))) {
+            return res.status(400).json({ error: '모든 선택지를 입력해주세요.' });
+          }
+        }
       }
 
       const newPost: any = {
@@ -875,6 +908,7 @@ export function setupSocialRoutes(app: Express) {
         content,
         category,
         tag: tag || '',
+        type,
         authorId: 1, // 임시 사용자 ID
         author: { id: 1, username: 'user', name: '반려인', avatar: null },
         likes: 0,
@@ -883,6 +917,14 @@ export function setupSocialRoutes(app: Express) {
         createdAt: new Date(),
         updatedAt: new Date()
       };
+
+      // 설문 관련 필드 추가
+      if (type === 'survey') {
+        newPost.surveyData = surveyData;
+        newPost.surveyResponses = [];
+        newPost.endDate = endDate ? new Date(endDate) : null;
+        newPost.anonymous = anonymous;
+      }
 
       // linkInfo 추가 (링크 정보가 있는 경우)
       if (linkUrl) {
@@ -896,9 +938,13 @@ export function setupSocialRoutes(app: Express) {
 
       posts.unshift(newPost);
 
+      const postType = type === 'survey' ? '설문' : '게시글';
+      console.log(`[커뮤니티] 새 ${postType} 생성: ${title} (ID: ${newPost.id})`);
+
       res.status(201).json({ 
-        message: '게시글이 작성되었습니다.',
-        post: newPost 
+        message: `${postType}이 작성되었습니다.`,
+        post: newPost,
+        success: true
       });
     } catch (error) {
       console.error('게시글 작성 오류:', error);
