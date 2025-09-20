@@ -190,7 +190,7 @@ function CommunityPage() {
     if (newSearchQuery !== searchQuery) {
       setSearchQuery(newSearchQuery);
     }
-  }, [window.location.search]);
+  }, []);
 
   // 카테고리 목록
   const categories = ['일반', '훈련팁', '건강', '행동교정', '사회화', '질문', '후기'];
@@ -299,7 +299,10 @@ function CommunityPage() {
           throw new Error('게시글을 불러올 수 없습니다');
         }
         const data = await response.json();
-        console.log(`API에서 받은 게시글 데이터 (${activeTab}):`, data);
+        // 개발 모드에서만 API 데이터 로깅
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`API에서 받은 게시글 데이터 (${activeTab}):`, data);
+        }
         // API 응답의 posts 배열을 반환
         return Array.isArray(data.posts) ? data.posts : [];
       } catch (error) {
@@ -331,14 +334,17 @@ function CommunityPage() {
     currentPage * itemsPerPage
   );
   
-  console.log('페이지네이션 정보:', {
-    totalPages,
-    currentPage,
-    itemsPerPage,
-    filteredPostsLength: filteredPosts.length,
-    paginatedPostsLength: paginatedPosts.length,
-    activeTab
-  });
+  // 개발 모드에서만 페이지네이션 정보 로깅
+  if (process.env.NODE_ENV === 'development') {
+    console.log('페이지네이션 정보:', {
+      totalPages,
+      currentPage,
+      itemsPerPage,
+      filteredPostsLength: filteredPosts.length,
+      paginatedPostsLength: paginatedPosts.length,
+      activeTab
+    });
+  }
 
   // 페이지 변경 시 탭 변경도 페이지 리셋
   const handlePageChange = (page: number) => {
