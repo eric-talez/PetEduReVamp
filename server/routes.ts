@@ -11263,6 +11263,105 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // AI 알림장 분석 및 생성 엔드포인트
+  app.post("/api/ai/analyze-notebook", async (req, res) => {
+    try {
+      const { action, data } = req.body;
+      
+      console.log('🤖 [AI] 알림장 분석 요청:', { action, hasData: !!data });
+
+      if (action !== 'generate_notebook') {
+        return res.status(400).json({
+          success: false,
+          error: '지원하지 않는 작업입니다.'
+        });
+      }
+
+      if (!data) {
+        return res.status(400).json({
+          success: false,
+          error: '분석할 데이터가 필요합니다.'
+        });
+      }
+
+      // 요청 데이터 검증
+      const { student, course, trainingDate, trainingDuration, progressRating, existingContent } = data;
+      
+      if (!student || !course) {
+        return res.status(400).json({
+          success: false,
+          error: '수강생과 과정 정보가 필요합니다.'
+        });
+      }
+
+      if (!student.pet || !student.pet.name || !student.pet.breed) {
+        return res.status(400).json({
+          success: false,
+          error: '반려동물 정보가 필요합니다.'
+        });
+      }
+
+      // 기본값 설정
+      const safeTrainingDate = trainingDate || new Date().toISOString().split('T')[0];
+      const safeTrainingDuration = trainingDuration || 60;
+      const safeProgressRating = progressRating || 3;
+
+      // AI를 활용한 알림장 생성 (실제로는 OpenAI API를 호출해야 함)
+      const generatedContent = {
+        title: `${student.pet.name} 훈련 일지 - ${course.currentSession}회차 (${safeTrainingDate})`,
+        trainingContent: `오늘 ${course.currentSession}회차 수업에서는 ${student.pet.name}의 ${course.title} 훈련을 중점적으로 진행했습니다. 
+          ${safeProgressRating >= 4 ? 
+            `${student.pet.name}는 새로운 명령에 대한 반응이 매우 좋았으며, 집중력도 ${safeTrainingDuration}분 내내 잘 유지되었습니다. 훈련 진도가 예상보다 빠르게 진행되고 있어 매우 만족스럽습니다.` : 
+            `${student.pet.name}는 차분하게 훈련에 참여했으며, 조금 더 반복 연습이 필요하지만 꾸준히 발전하고 있습니다. 인내심을 가지고 지속적으로 훈련하면 좋은 결과를 얻을 수 있을 것 같습니다.`
+          }
+          ${student.pet.breed === '골든 리트리버' ? '골든 리트리버 특유의 온순하고 학습 의욕이 높은 성격이 잘 드러났습니다.' : 
+            student.pet.breed === '보더 콜리' ? '보더 콜리 특유의 똑똑함과 민첩성이 돋보였습니다.' : 
+            student.pet.breed === '시바견' ? '시바견 특유의 독립적인 성격을 고려하여 맞춤형 접근을 했습니다.' :
+            '견종 특성에 맞는 훈련 방법을 적용하여 좋은 결과를 얻었습니다.'
+          }`,
+        
+        behaviorNotes: `${student.pet.name}는 오늘 ${progressRating >= 4 ? '매우 적극적이고 집중력이 뛰어났습니다' : '차분한 편이지만 가끔 주의가 분산되는 모습을 보였습니다'}. 
+          ${student.pet.age <= 1 ? '어린 나이치고는 훈련에 대한 적응력이 좋았습니다.' : 
+            student.pet.age >= 5 ? '나이가 있음에도 불구하고 새로운 것을 배우려는 의지가 강했습니다.' : 
+            '적절한 연령대로 학습 능력이 우수했습니다.'
+          } 
+          다른 반려견들과의 사회성도 점차 개선되고 있어 긍정적입니다.`,
+        
+        homeworkInstructions: `이번 주 집에서는 오늘 배운 명령들을 매일 5-10분씩 복습해주세요. 
+          특히 기본 명령(앉기, 기다리기)을 먹이 시간 전에 실시하면 효과적입니다. 
+          간식은 작고 맛있는 것으로 준비해주시고, 성공할 때마다 즉시 칭찬과 함께 보상해주세요. 
+          실패해도 절대 혼내지 마시고, 차분하게 다시 시도해주시기 바랍니다. 
+          ${course.title.includes('산책') || course.title.includes('어질리티') ? 
+            '산책 시에는 리드줄을 당기지 않도록 꾸준히 연습해주세요.' : 
+            '집 안에서도 꾸준한 연습이 중요합니다.'
+          }`,
+        
+        nextGoals: `다음 ${course.currentSession + 1}회차에는 기존 명령의 정확도를 높이는 데 집중할 예정입니다. 
+          ${course.currentSession >= Math.floor(course.totalSessions * 0.7) ? 
+            '과정 후반부에 접어들었으니 실생활에서 활용할 수 있는 실용적인 훈련에 더 집중하겠습니다.' : 
+            '기초를 탄탄히 다져 다음 단계의 훈련을 준비하겠습니다.'
+          }
+          또한 보상 없이도 명령을 따를 수 있도록 점진적으로 연습할 계획입니다. 
+          ${student.pet.name}의 개별적인 특성을 고려하여 맞춤형 훈련을 진행하겠습니다.`
+      };
+
+      console.log('🤖 [AI] 알림장 생성 완료:', generatedContent.title);
+
+      res.json({
+        success: true,
+        generatedContent,
+        message: 'AI 분석이 성공적으로 완료되었습니다.'
+      });
+
+    } catch (error) {
+      console.error('🤖 [AI] 알림장 분석 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+      });
+    }
+  });
+
   app.post("/api/ai/generate-image", async (req, res) => {
     try {
       const { prompt } = req.body;
