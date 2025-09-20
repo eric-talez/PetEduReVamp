@@ -228,6 +228,8 @@ export default function Courses(props?: CoursesPageProps) {
       }
     } catch (error) {
       console.error('🔥 강의 데이터 로딩 실패:', error);
+      console.error('🔥 에러 스택:', error instanceof Error ? error.stack : '스택 없음');
+      console.error('🔥 에러 메시지:', error instanceof Error ? error.message : String(error));
       toast({
         title: "오류",
         description: "강의 목록을 불러오는데 실패했습니다.",
