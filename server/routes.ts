@@ -13383,6 +13383,62 @@ export function registerTrainerCertificationRoutes(app: Express) {
 
   // 모든 인증 API들은 setupAuth()에서 처리됩니다 (/api/auth/login, /api/auth/logout, /api/auth/me)
 
+  // Zoom Meeting SDK 인증 토큰 생성 API
+  app.post('/api/zoom/signature', async (req, res) => {
+    try {
+      const { meetingNumber, role } = req.body;
+      
+      if (!meetingNumber) {
+        return res.status(400).json({ error: 'Meeting number is required' });
+      }
+      
+      const ZOOM_SDK_KEY = process.env.ZOOM_SDK_KEY;
+      const ZOOM_SDK_SECRET = process.env.ZOOM_SDK_SECRET;
+      
+      if (!ZOOM_SDK_KEY || !ZOOM_SDK_SECRET) {
+        console.error('Zoom SDK credentials not configured');
+        return res.status(500).json({ error: 'Zoom SDK not configured' });
+      }
+      
+      // JWT 토큰 생성을 위한 라이브러리 import
+      const jwt = require('jsonwebtoken');
+      
+      const iat = Math.round(new Date().getTime() / 1000) - 30;
+      const exp = iat + 60 * 60 * 2; // 2시간 유효
+      
+      const oHeader = {
+        alg: 'HS256',
+        typ: 'JWT'
+      };
+      
+      const oPayload = {
+        iss: ZOOM_SDK_KEY,
+        exp: exp,
+        iat: iat,
+        aud: 'zoom',
+        appKey: ZOOM_SDK_KEY,
+        tokenExp: exp,
+        alg: 'HS256'
+      };
+      
+      const signature = jwt.sign(oPayload, ZOOM_SDK_SECRET, { header: oHeader });
+      
+      console.log('[Zoom] JWT 서명 생성 성공:', { meetingNumber, role });
+      
+      res.json({
+        success: true,
+        signature: signature
+      });
+      
+    } catch (error) {
+      console.error('[Zoom] JWT 서명 생성 실패:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to generate Zoom signature' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

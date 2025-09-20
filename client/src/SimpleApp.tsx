@@ -2531,6 +2531,19 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
+        
+        {/* Zoom 테스트 페이지 */}
+        <Route path="/zoom-test">
+          {() => {
+            const ZoomTestPage = lazy(() => import('./pages/zoom-test'));
+            return (
+              <Suspense fallback={<div>페이지 로딩 중...</div>}>
+                <ZoomTestPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
         <Route path="/" component={Home} />
 
         {/* 404 페이지 */}
