@@ -330,17 +330,19 @@ export const selectUserSchema = createSelectSchema(users);
 export const insertInstituteSchema = createInsertSchema(institutes);
 export const selectInstituteSchema = createSelectSchema(institutes);
 // Basic Pet Zod Schemas
-export const insertPetSchema = createInsertSchema(pets).omit({ 
+export const insertPetSchema = createInsertSchema(pets, {
+  // 선택적 검증 규칙 추가 가능
+}).omit({ 
   id: true, 
   createdAt: true, 
   updatedAt: true,
   assignedTrainerId: true, // 관리자만 설정 가능
   assignedTrainerName: true
-});
+} as const);
 
 export const updatePetSchema = insertPetSchema.partial().omit({ 
   ownerId: true // 소유자는 변경 불가
-});
+} as const);
 
 export const selectPetSchema = createSelectSchema(pets);
 
@@ -1033,7 +1035,7 @@ export const updateCurriculumSchema = insertCurriculumSchema.partial().omit({
   updatedAt: true, 
   creatorId: true, 
   instituteId: true  // Prevent ownership modification
-});
+} as const);
 
 // 훈련사 인증 신청 테이블
 export const trainerApplications = pgTable("trainer_applications", {
@@ -1506,7 +1508,7 @@ export type InsertAiUsageLimits = typeof aiUsageLimits.$inferInsert;
 export const insertNotificationSchema = createInsertSchema(notifications).omit({
   id: true,
   createdAt: true,
-});
+} as const);
 
 export const updateNotificationSchema = z.object({
   title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다").optional(),
@@ -1564,7 +1566,7 @@ export const insertTrainingJournalSchema = createInsertSchema(trainingJournals).
   readAt: true,
   isRead: true,
   status: true, // 기본값 사용
-}).extend({
+} as const).extend({
   trainerId: z.number().int().positive("올바른 훈련사 ID가 필요합니다"),
   petOwnerId: z.number().int().positive("올바른 견주 ID가 필요합니다"),
   petId: z.number().int().positive("올바른 반려동물 ID가 필요합니다"),
@@ -1650,7 +1652,7 @@ export const insertBannerSchema = createInsertSchema(banners).omit({
   viewCount: true, 
   createdAt: true, 
   updatedAt: true 
-});
+} as const);
 
 // 배너 수정 스키마
 export const updateBannerSchema = insertBannerSchema.partial().extend({
@@ -1729,7 +1731,7 @@ export const insertLogoSettingsSchema = createInsertSchema(logoSettings).omit({
   id: true,
   createdAt: true,
   updatedAt: true
-});
+} as const);
 
 // 로고 설정 업데이트 스키마 - 비즈니스 로직과 검증 포함
 export const updateLogoSettingsSchema = z.object({
@@ -1772,7 +1774,13 @@ export type LogoSettingsQuery = z.infer<typeof logoSettingsQuerySchema>;
 // =============================================================================
 
 // 강의 기본 스키마
-export const insertCourseSchema = createInsertSchema(courses, {
+export const insertCourseSchema = createInsertSchema(courses).omit({
+  id: true,
+  rating: true,
+  enrollmentCount: true,
+  createdAt: true,
+  updatedAt: true
+} as const).extend({
   title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
   description: z.string().max(5000, "설명은 5000자를 초과할 수 없습니다").optional().nullable(),
   content: z.string().max(10000, "내용은 10000자를 초과할 수 없습니다").optional().nullable(),
@@ -1782,19 +1790,13 @@ export const insertCourseSchema = createInsertSchema(courses, {
   category: z.string().max(100, "카테고리는 100자를 초과할 수 없습니다").optional().nullable(),
   imageUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable(),
   videoUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable()
-}).omit({
-  id: true,
-  rating: true,
-  enrollmentCount: true,
-  createdAt: true,
-  updatedAt: true
 });
 
 // 강의 수정 스키마 - 보안: instituteId, instructorId 보호
 export const updateCourseSchema = insertCourseSchema.partial().omit({
   instituteId: true,    // 소유권 필드 보호 - RBAC Critical
   instructorId: true    // 소유권 필드 보호 - RBAC Critical
-});
+} as const);
 
 // 강의 조회 스키마
 export const selectCourseSchema = createSelectSchema(courses);
