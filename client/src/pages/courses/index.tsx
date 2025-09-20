@@ -10,7 +10,6 @@ import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, Vide
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AppLayout } from "@/layout/AppLayout";
 
 interface CoursesPageProps {
   mode?: 'view' | 'create' | 'edit';
@@ -322,31 +321,34 @@ export default function Courses(props?: CoursesPageProps) {
   };
 
   return (
-    <AppLayout 
-      breadcrumbs={[
-        { label: '홈', href: '/' },
-        { label: '강의', current: true }
-      ]}
-      headerActions={
-        <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1 shadow-sm border">
-          <div className="px-2">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
-          <input 
-            type="text" 
-            placeholder="원하는 강의를 검색하세요" 
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
-          />
-          <Button className="ml-2" onClick={handleSearch}>
-            검색
-          </Button>
-        </div>
-      }
-      contentClassName="py-0"
-    >
+    <div className="container mx-auto px-4 py-6">
       <div className="space-y-8">
+        {/* 페이지 헤더 */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
+              강의 찾기
+            </h1>
+            <p className="text-muted-foreground">
+              반려견 교육에 필요한 다양한 강의를 찾아보세요
+            </p>
+          </div>
+          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1 shadow-sm border">
+            <div className="px-2">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input 
+              type="text" 
+              placeholder="원하는 강의를 검색하세요" 
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+            />
+            <Button className="ml-2" onClick={handleSearch}>
+              검색
+            </Button>
+          </div>
+        </div>
         {/* Banner */}
         <div className="relative rounded-xl overflow-hidden h-48 md:h-64 shadow-lg">
           <img 
@@ -1058,6 +1060,6 @@ export default function Courses(props?: CoursesPageProps) {
         </DialogContent>
       </Dialog>
       </div>
-    </AppLayout>
+    </div>
   );
 }
