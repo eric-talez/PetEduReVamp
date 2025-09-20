@@ -7319,14 +7319,39 @@ app.get('/api/search', async (req, res) => {
 
   // ===== Course Routes =====
 
-  // Get all courses
+  // 발행된 강의 목록 조회 API (공개용) - 통합 버전
   app.get("/api/courses", async (req, res) => {
     try {
-      // 실제 커리큘럼 데이터를 강좌 형태로 제공
-      const curricula = storage.getAllCurricula();
-      const courses = curricula
-        .filter(c => c.status === 'published')
-        .map(curriculum => ({
+      console.log('🔥 [API] 공개 강의 목록 조회 요청 (통합 버전)');
+      
+      // 실제 커리큘럼 데이터 조회
+      const allCurriculums = await storage.getAllCurriculums();
+      console.log('🔥 [API] 전체 커리큘럼 수:', allCurriculums.length);
+      
+      // 발행된 상태의 커리큘럼만 필터링하여 강의 형태로 변환
+      const publishedCurriculums = allCurriculums.filter((curriculum: any) => 
+        curriculum.status === 'published'
+      );
+      console.log('🔥 [API] 발행된 커리큘럼 수:', publishedCurriculums.length);
+      
+      const courses = publishedCurriculums.map((curriculum: any) => {
+        // 각 모듈의 영상 정보 포함하여 매핑
+        const modulesWithVideos = (curriculum.modules || []).map((module: any) => ({
+          ...module,
+          hasVideo: module.videos && module.videos.length > 0,
+          videoCount: module.videos ? module.videos.length : 0,
+          videos: module.videos || []
+        }));
+        
+        // 전체 강의의 영상 통계
+        const totalVideos = modulesWithVideos.reduce((sum: number, module: any) => 
+          sum + module.videoCount, 0
+        );
+        const modulesWithVideoCount = modulesWithVideos.filter((module: any) => 
+          module.hasVideo
+        ).length;
+        
+        return {
           id: curriculum.id,
           title: curriculum.title,
           description: curriculum.description,
@@ -7334,19 +7359,29 @@ app.get('/api/search', async (req, res) => {
           difficulty: curriculum.difficulty || 'beginner',
           category: curriculum.category || '기본 훈련',
           duration: curriculum.duration || 0,
-          modules: curriculum.modules || [],
+          modules: modulesWithVideos,
           trainerName: curriculum.trainerName || '전문 훈련사',
           status: curriculum.status,
           enrollmentCount: curriculum.enrollmentCount || 0,
-          averageRating: curriculum.averageRating || 4.5,
+          averageRating: curriculum.averageRating || 0,
           createdAt: curriculum.createdAt || new Date().toISOString(),
-          updatedAt: curriculum.updatedAt || new Date().toISOString()
-        }));
+          updatedAt: curriculum.updatedAt || new Date().toISOString(),
+          // 클라이언트에서 필요한 영상 관련 정보
+          thumbnailUrl: curriculum.thumbnailUrl,
+          hasAnyVideo: totalVideos > 0,
+          totalVideos,
+          modulesWithVideoCount
+        };
+      });
       
-      return res.status(200).json(courses);
+      console.log('🔥 [API] 최종 강의 목록:', courses.length, '개');
+      res.json({ courses, total: courses.length });
     } catch (error: any) {
-      console.error("Get courses error:", error);
-      return res.status(500).json({ message: "강좌 조회 중 오류가 발생했습니다." });
+      console.error('🔥 [API] 강의 목록 조회 실패:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: '강의 목록을 불러올 수 없습니다.' 
+      });
     }
   });
 
