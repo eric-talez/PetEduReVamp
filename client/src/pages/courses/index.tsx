@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingErrorWrapper } from "@/components/ui/loading-error-wrapper";
 import { getStatusCodeFromError } from "@/lib/errorHelpers";
-import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2 } from "lucide-react";
+import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AppLayout } from "@/layout/AppLayout";
@@ -44,6 +45,9 @@ export default function Courses(props?: CoursesPageProps) {
   const [filter, setFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all"); // 유료/무료 필터
   const [categoryFilter, setCategoryFilter] = useState("all"); // 카테고리 필터
+  const [ratingFilter, setRatingFilter] = useState("all"); // 평점 필터
+  const [enrollmentFilter, setEnrollmentFilter] = useState("all"); // 수강생 수 필터
+  const [videoFilter, setVideoFilter] = useState("all"); // 영상 유무 필터
   const [searchTerm, setSearchTerm] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -256,10 +260,27 @@ export default function Courses(props?: CoursesPageProps) {
     const matchesDifficultyFilter = filter === "all" ||
                                   (filter === "beginner" && course.difficulty === "beginner") ||
                                   (filter === "intermediate" && course.difficulty === "intermediate") ||
-                                  (filter === "advanced" && course.difficulty === "advanced") ||
-                                  course.category === filter; // 기존 카테고리 필터 호환
+                                  (filter === "advanced" && course.difficulty === "advanced");
     
-    return matchesSearch && matchesPriceFilter && matchesCategoryFilter && matchesDifficultyFilter;
+    // 평점 필터
+    const matchesRatingFilter = ratingFilter === "all" ||
+                              (ratingFilter === "4.5" && (course.averageRating || 0) >= 4.5) ||
+                              (ratingFilter === "4.0" && (course.averageRating || 0) >= 4.0) ||
+                              (ratingFilter === "3.5" && (course.averageRating || 0) >= 3.5);
+    
+    // 수강생 수 필터
+    const matchesEnrollmentFilter = enrollmentFilter === "all" ||
+                                   (enrollmentFilter === "20" && (course.enrollmentCount || 0) >= 20) ||
+                                   (enrollmentFilter === "10" && (course.enrollmentCount || 0) >= 10) ||
+                                   (enrollmentFilter === "5" && (course.enrollmentCount || 0) >= 5);
+    
+    // 영상 유무 필터
+    const matchesVideoFilter = videoFilter === "all" ||
+                              (videoFilter === "with_video" && course.hasAnyVideo) ||
+                              (videoFilter === "without_video" && !course.hasAnyVideo);
+    
+    return matchesSearch && matchesPriceFilter && matchesCategoryFilter && matchesDifficultyFilter && 
+           matchesRatingFilter && matchesEnrollmentFilter && matchesVideoFilter;
   });
 
   // 페이지네이션을 위한 현재 페이지 강의 목록
@@ -270,7 +291,7 @@ export default function Courses(props?: CoursesPageProps) {
   // 검색/필터 변경 시 첫 페이지로 리셋
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filter, priceFilter, categoryFilter]);
+  }, [searchTerm, filter, priceFilter, categoryFilter, ratingFilter, enrollmentFilter, videoFilter]);
 
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
@@ -360,127 +381,123 @@ export default function Courses(props?: CoursesPageProps) {
       >
         {/* 강화된 필터 시스템 */}
         <div className="mb-8 space-y-4">
-          {/* 가격 필터 (유료/무료) */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center bg-green-100 dark:bg-green-900/30 rounded-lg p-1 mr-4">
-              <span className="text-sm font-medium text-green-700 dark:text-green-300 ml-2 mr-2">💰 가격:</span>
+          {/* 필터 섹션 - Select 컴포넌트 사용 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* 가격 필터 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                <Package className="h-4 w-4 mr-1 text-green-500" />
+                가격
+              </label>
+              <Select value={priceFilter} onValueChange={setPriceFilter}>
+                <SelectTrigger data-testid="filter-price">
+                  <SelectValue placeholder="가격 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="free">무료</SelectItem>
+                  <SelectItem value="paid">유료</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            
-            <Button
-              variant={priceFilter === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPriceFilter("all")}
-              className="text-xs"
-            >
-              전체 강의
-            </Button>
 
-            <Button
-              variant={priceFilter === "free" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPriceFilter("free")}
-              className="text-xs"
-            >
-              🆓 무료 강의
-            </Button>
+            {/* 난이도 필터 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                <Filter className="h-4 w-4 mr-1 text-blue-500" />
+                난이도
+              </label>
+              <Select value={filter} onValueChange={setFilter}>
+                <SelectTrigger data-testid="filter-difficulty">
+                  <SelectValue placeholder="난이도 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="beginner">초급</SelectItem>
+                  <SelectItem value="intermediate">중급</SelectItem>
+                  <SelectItem value="advanced">고급</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Button
-              variant={priceFilter === "paid" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPriceFilter("paid")}
-              className="text-xs"
-            >
-              💳 유료 강의
-            </Button>
+            {/* 카테고리 필터 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                <BookOpen className="h-4 w-4 mr-1 text-purple-500" />
+                카테고리
+              </label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger data-testid="filter-category">
+                  <SelectValue placeholder="카테고리 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="기본 훈련">기본 훈련</SelectItem>
+                  <SelectItem value="행동 교정">행동 교정</SelectItem>
+                  <SelectItem value="사회화 훈련">사회화 훈련</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 평점 필터 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                <Star className="h-4 w-4 mr-1 text-yellow-500" />
+                평점
+              </label>
+              <Select value={ratingFilter} onValueChange={setRatingFilter}>
+                <SelectTrigger data-testid="filter-rating">
+                  <SelectValue placeholder="평점 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="4.5">4.5점 이상</SelectItem>
+                  <SelectItem value="4.0">4.0점 이상</SelectItem>
+                  <SelectItem value="3.5">3.5점 이상</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 수강생 수 필터 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                <Users className="h-4 w-4 mr-1 text-indigo-500" />
+                수강생 수
+              </label>
+              <Select value={enrollmentFilter} onValueChange={setEnrollmentFilter}>
+                <SelectTrigger data-testid="filter-enrollment">
+                  <SelectValue placeholder="수강생 수 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="20">20명 이상</SelectItem>
+                  <SelectItem value="10">10명 이상</SelectItem>
+                  <SelectItem value="5">5명 이상</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 영상 유무 필터 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                <Video className="h-4 w-4 mr-1 text-red-500" />
+                영상
+              </label>
+              <Select value={videoFilter} onValueChange={setVideoFilter}>
+                <SelectTrigger data-testid="filter-video">
+                  <SelectValue placeholder="영상 유무 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="with_video">영상 포함</SelectItem>
+                  <SelectItem value="without_video">영상 없음</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* 난이도 필터 */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center bg-blue-100 dark:bg-blue-900/30 rounded-lg p-1 mr-4">
-              <Filter className="h-4 w-4 text-blue-500 dark:text-blue-400 ml-2 mr-1" />
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300 mr-2">난이도:</span>
-            </div>
 
-            <Button
-              variant={filter === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilter("all")}
-              className="text-xs"
-            >
-              전체
-            </Button>
-
-            <Button
-              variant={filter === "beginner" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilter("beginner")}
-              className="text-xs"
-            >
-              🌱 초급
-            </Button>
-
-            <Button
-              variant={filter === "intermediate" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilter("intermediate")}
-              className="text-xs"
-            >
-              🌿 중급
-            </Button>
-
-            <Button
-              variant={filter === "advanced" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilter("advanced")}
-              className="text-xs"
-            >
-              🌳 고급
-            </Button>
-          </div>
-
-          {/* 카테고리 및 추가 필터 */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center bg-purple-100 dark:bg-purple-900/30 rounded-lg p-1 mr-4">
-              <span className="text-sm font-medium text-purple-700 dark:text-purple-300 ml-2 mr-2">📚 카테고리:</span>
-            </div>
-
-            <Button
-              variant={categoryFilter === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCategoryFilter("all")}
-              className="text-xs"
-            >
-              전체 분야
-            </Button>
-
-            <Button
-              variant={categoryFilter === "기본 훈련" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCategoryFilter("기본 훈련")}
-              className="text-xs"
-            >
-              🎯 기본 훈련
-            </Button>
-
-            <Button
-              variant={categoryFilter === "행동 교정" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCategoryFilter("행동 교정")}
-              className="text-xs"
-            >
-              🔧 행동 교정
-            </Button>
-
-            <Button
-              variant={categoryFilter === "사회화 훈련" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCategoryFilter("사회화 훈련")}
-              className="text-xs"
-            >
-              👥 사회화 훈련
-            </Button>
-
-            {/* 활성화된 필터 개수 표시 */}
+          {/* 활성화된 필터 개수 표시 */}
             <div className="ml-auto">
               <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
                 {filteredCourses.length}개 강의 발견
