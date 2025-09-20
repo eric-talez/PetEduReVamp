@@ -11,9 +11,10 @@ import { AccessibleIconButton } from "./AccessibleIconButton";
 import { AccessibleMenuToggle } from "./AccessibleMenuToggle";
 import { AccessibleNavItem } from "./AccessibleNavItem";
 import { SidebarMenuGroup } from "./SidebarMenuGroup";
-import { ScrollReveal } from "@/components/ui/AnimatedContent";
 import { useQuery } from "@tanstack/react-query";
-import { BrandLogo } from "@/components/ui/BrandLogo";
+
+// 개발 모드 체크를 위한 상수 정의
+const isDev = import.meta.env.DEV;
 
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import {
@@ -120,7 +121,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     if (onClick) {
       onClick(href);
     } else {
-      console.log("기본 네비게이션 시도:", href);
+      if (isDev) console.log("기본 네비게이션 시도:", href);
       // wouter를 사용한 라우팅
       setLocation(href);
     }
@@ -210,7 +211,10 @@ export function Sidebar({
   expanded: externalExpanded,
   onToggleExpand
 }: SidebarProps) {
-  console.log('Sidebar render - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
+  // 개발 모드에서만 렌더링 정보 로깅
+  if (isDev) {
+    console.log('Sidebar render - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
+  }
   const [location, setLocation] = useLocation();
   const [internalExpanded, setInternalExpanded] = useState(true);
 
@@ -251,7 +255,7 @@ export function Sidebar({
   });
 
   useEffect(() => {
-    console.log('Sidebar useEffect - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
+    if (isDev) console.log('Sidebar useEffect - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
 
     // 권한별 메뉴 표시 권한 확인
     const isInstituteAdmin = userRole === 'institute-admin';
@@ -265,7 +269,7 @@ export function Sidebar({
     const canAccessCourses = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
     const canAccessMessaging = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
 
-    console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
+    if (isDev) console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
 
     // 로그인 상태가 변경되면 메뉴 그룹 상태 업데이트
     setMenuGroups((prevGroups) => {
@@ -286,7 +290,7 @@ export function Sidebar({
 
       // localStorage에 메뉴 상태 저장 안함 (기본 닫힌 상태 유지)
 
-      console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
+      if (isDev) console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
       return updatedMenuGroups;
     });
   }, [userRole, isAuthenticated]);
@@ -308,7 +312,7 @@ export function Sidebar({
       };
 
       // 메뉴 그룹 상태 변경 로그 (localStorage 저장 안함)
-      console.log(`✅ 메뉴 그룹 [${groupId}] 상태 변경:`, updated[groupId] ? '열림' : '닫힘');
+      if (isDev) console.log(`✅ 메뉴 그룹 [${groupId}] 상태 변경:`, updated[groupId] ? '열림' : '닫힘');
 
       return updated;
     });
@@ -327,7 +331,7 @@ export function Sidebar({
       return;
     }
 
-    console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
+    if (isDev) console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
 
     // 특정 페이지 접근 권한 및 라우팅 처리
     const publicPaths = [
@@ -342,7 +346,7 @@ export function Sidebar({
         !path.startsWith('/institutes/') && 
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
-      console.log('로그인 필요: ', path);
+      if (isDev) console.log('로그인 필요: ', path);
 
       // 로딩 표시를 위한 오버레이 요소 생성
       const overlay = document.createElement('div');
@@ -363,14 +367,14 @@ export function Sidebar({
             document.body.removeChild(overlay);
           }
         } catch (e) {
-          console.log('오버레이 제거 중 오류:', e);
+          if (isDev) console.log('오버레이 제거 중 오류:', e);
         }
 
         // 페이지 이동 시도 (여러 방식으로 시도)
         try {
           setLocation('/auth');
         } catch (e) {
-          console.log('setLocation 실패, window.location 사용:', e);
+          if (isDev) console.log('setLocation 실패, window.location 사용:', e);
           window.location.href = '/auth';
         }
       }, 1500);
@@ -381,7 +385,7 @@ export function Sidebar({
     if (isAuthenticated) {
       // 훈련사 전용 페이지
       if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin' && userRole !== 'institute-admin') {
-        console.log('훈련사 권한 필요');
+        if (isDev) console.log('훈련사 권한 필요');
 
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
@@ -411,7 +415,7 @@ export function Sidebar({
 
       // 기관 관리자 전용 페이지
       if ((path.startsWith('/institute-dashboard') || path.startsWith('/institute/')) && userRole !== 'institute-admin' && userRole !== 'admin') {
-        console.log('기관 관리자 권한 필요');
+        if (isDev) console.log('기관 관리자 권한 필요');
 
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
@@ -441,7 +445,7 @@ export function Sidebar({
 
       // 시스템 관리자 전용 페이지
       if (path.startsWith('/admin') && userRole !== 'admin') {
-        console.log('관리자 권한 필요');
+        if (isDev) console.log('관리자 권한 필요');
 
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
@@ -486,7 +490,7 @@ export function Sidebar({
 
     // 쇼핑 페이지는 새 창에서 열기
     if (path === '/shop') {
-      console.log('쇼핑 페이지를 새 창에서 열기');
+      if (isDev) console.log('쇼핑 페이지를 새 창에서 열기');
       window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
       // 모바일 화면에서만 사이드바 닫기
       if (onClose && window.innerWidth < 768) onClose();
@@ -495,7 +499,7 @@ export function Sidebar({
 
     // SPA 라우팅 함수
     const navigateToPage = (targetPath: string) => {
-      console.log(`페이지 이동: ${targetPath}`);
+      if (isDev) console.log(`페이지 이동: ${targetPath}`);
 
       // wouter를 사용한 SPA 라우팅
       setLocation(targetPath);
@@ -505,10 +509,10 @@ export function Sidebar({
     };
 
     if (path in specialRoutes) {
-      console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
+      if (isDev) console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
       // /notifications를 /alerts로 리다이렉션
       if (path === '/notifications') {
-        console.log('알림 페이지로 리다이렉션: /alerts');
+        if (isDev) console.log('알림 페이지로 리다이렉션: /alerts');
         navigateToPage('/alerts');
       } else {
         navigateToPage(path);
@@ -520,7 +524,7 @@ export function Sidebar({
     navigateToPage(path);
   };
 
-  // 동적 로고 로딩
+  // 로고 데이터 조회 (현재 사용되지 않으나 향후 확장성을 위해 유지)
   const { data: logoData } = useQuery({
     queryKey: ['/api/admin/logos'],
     retry: false,
@@ -528,27 +532,6 @@ export function Sidebar({
     staleTime: 30000 // 30초
   });
 
-  // Note: Logo rendering now handled by BrandLogo component
-  // This function is kept for backward compatibility with dynamic logo loading
-  const getLogoUrl = (type: 'expanded' | 'collapsed') => {
-    if (!logoData || typeof logoData !== 'object') {
-      // BrandLogo component will handle default logos
-      return null;
-    }
-    
-    const logos = logoData as any;
-    
-    if (type === 'expanded') {
-      // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
-      const expandedLogo = logos.logoLight || logos.logoUrl;
-      return expandedLogo;
-    } else {
-      // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
-      const collapsedLogo = logos.logoSymbolLight || logos.compactLogoUrl;
-      console.log('[Sidebar] Collapsed logo URL:', collapsedLogo);
-      return collapsedLogo;
-    }
-  };
 
   const contextValue = {
     expanded,
@@ -566,8 +549,11 @@ export function Sidebar({
 
   // 이 useEffect는 중복되므로 제거 (위에서 이미 처리됨)
 
-  console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
-  console.log('메뉴 그룹 상태:', menuGroups);
+  // 개발 모드에서만 메뉴 상태 로깅
+  if (isDev) {
+    console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
+    console.log('메뉴 그룹 상태:', menuGroups);
+  }
 
 
   return (
@@ -580,34 +566,8 @@ export function Sidebar({
           expanded ? "w-64" : "w-[70px]"
         )}
       >
-        <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
-          {expanded ? (
-            <ScrollReveal direction="left" delay={100}>
-              <div className="flex items-center justify-center w-full h-full group">
-                <BrandLogo 
-                  variant="full"
-                  size="lg"
-                  clickable={true}
-                  customSrc={getLogoUrl('expanded')}
-                  fallbackToDefault={true}
-                  testId="sidebar-logo-expanded"
-                  altText="TALEZ 로고"
-                />
-              </div>
-            </ScrollReveal>
-          ) : (
-            <div className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
-              <BrandLogo 
-                variant="compact"
-                size="md"
-                clickable={true}
-                customSrc={getLogoUrl('collapsed')}
-                fallbackToDefault={true}
-                testId="sidebar-logo-collapsed"
-                altText="TALEZ"
-              />
-            </div>
-          )}
+        {/* 사이드바 헤더 영역 - TopBar와의 중복을 방지하기 위해 로고 제거 */}
+        <div className="h-16 flex items-center justify-end border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
           <button
             onClick={toggleSidebar}
             className="hidden lg:flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md border border-transparent hover:border-gray-300 dark:hover:border-gray-600 hover:scale-110"

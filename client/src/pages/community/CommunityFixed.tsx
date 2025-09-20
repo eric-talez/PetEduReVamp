@@ -300,7 +300,7 @@ function CommunityPage() {
         }
         const data = await response.json();
         // 개발 모드에서만 API 데이터 로깅
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           console.log(`API에서 받은 게시글 데이터 (${activeTab}):`, data);
         }
         // API 응답의 posts 배열을 반환
@@ -335,7 +335,7 @@ function CommunityPage() {
   );
   
   // 개발 모드에서만 페이지네이션 정보 로깅
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.log('페이지네이션 정보:', {
       totalPages,
       currentPage,
