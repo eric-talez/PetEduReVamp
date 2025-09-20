@@ -4,6 +4,8 @@ import { db } from "./db";
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
 import { registerAdminRoutes } from "./routes/admin";
+import { kakaoMessaging } from "./services/kakaoMessaging";
+import { sendKakaoMessageSchema } from "../shared/schema";
 // import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
 import { productRoutes } from "./routes/products";
@@ -11260,6 +11262,140 @@ app.get('/api/search', async (req, res) => {
     } catch (error) {
       console.error('감정 분석 오류:', error);
       res.status(500).json({ error: "감정 분석 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 카카오톡 알림장 전송 엔드포인트 (보안 강화)
+  app.post("/api/kakao/send-notebook", 
+    requireAuth('trainer'), 
+    csrfProtection, 
+    validateBody(sendKakaoMessageSchema), 
+    async (req, res) => {
+    try {
+      // Zod 스키마로 이미 검증된 데이터
+      const { studentId, notebookData } = req.body;
+      
+      console.log('📱 [Kakao] 알림장 전송 요청:', { studentId, title: notebookData.title });
+
+      // 1. 수강생 정보 조회 및 권한 확인
+      const currentTrainer = req.session.user!;
+      const allUsers = await storage.getAllUsers();
+      const student = allUsers.find(user => user.id.toString() === studentId.toString());
+      
+      if (!student) {
+        return res.status(404).json({
+          success: false,
+          error: '수강생 정보를 찾을 수 없습니다.'
+        });
+      }
+
+      // 2. 훈련사-수강생 권한 확인 (학생의 모든 반려동물 확인)
+      const allPets = await storage.getAllPets();
+      const studentPets = allPets.filter(pet => pet.ownerId === student.id);
+      
+      if (studentPets.length === 0) {
+        return res.status(403).json({
+          success: false,
+          error: '해당 수강생의 반려동물 정보를 찾을 수 없습니다.'
+        });
+      }
+
+      // 3. 담당 훈련사 확인 (훈련사가 담당하는 반려동물이 있는지 확인)
+      const assignedPet = studentPets.find(pet => pet.assignedTrainerId === currentTrainer.id);
+      
+      if (!assignedPet) {
+        console.warn('📱 [Kakao] 권한 없는 메시지 전송 시도:', {
+          trainerId: currentTrainer.id,
+          trainerName: currentTrainer.name,
+          targetStudentId: studentId,
+          studentPetIds: studentPets.map(p => p.id),
+          assignedTrainerIds: studentPets.map(p => p.assignedTrainerId)
+        });
+        
+        return res.status(403).json({
+          success: false,
+          error: '본인이 담당하는 수강생에게만 메시지를 전송할 수 있습니다.'
+        });
+      }
+
+      console.log('📱 [Kakao] 권한 확인 완료:', {
+        trainerId: currentTrainer.id,
+        trainerName: currentTrainer.name,
+        studentId: studentId,
+        authorizedPetName: assignedPet.name
+      });
+
+      console.log('📱 [Kakao] 수강생 정보:', { 
+        name: student.name, 
+        hasPhoneNumber: !!student.phoneNumber,
+        phoneNumber: student.phoneNumber?.substring(0, 3) + '***' // 로그에서 전화번호 마스킹
+      });
+
+      // 4. 전화번호 확인 및 유효성 검사
+      if (!student.phoneNumber) {
+        return res.json({
+          success: false,
+          error: '수강생의 전화번호가 등록되지 않았습니다.',
+          needsPhoneNumber: true
+        });
+      }
+
+      if (!kakaoMessaging.isValidPhoneNumber(student.phoneNumber)) {
+        return res.json({
+          success: false,
+          error: '등록된 전화번호 형식이 올바르지 않습니다.',
+          needsPhoneNumber: true
+        });
+      }
+
+      // 전화번호 정규화
+      const normalizedPhoneNumber = kakaoMessaging.normalizePhoneNumber(student.phoneNumber);
+
+      // 5. 카카오톡 알림톡 메시지 전송 (권한 확인 완료 후)
+      const messageResult = await kakaoMessaging.sendNotebookMessage(normalizedPhoneNumber, {
+        title: notebookData.title,
+        content: notebookData.content,
+        studentName: notebookData.studentName,
+        petName: notebookData.petName,
+        trainingDate: notebookData.trainingDate,
+        progressRating: notebookData.progressRating,
+        trainerName: notebookData.trainerName
+      });
+
+      if (messageResult.success) {
+        console.log('📱 [Kakao] 메시지 전송 성공:', messageResult.messageId);
+        
+        res.json({
+          success: true,
+          messageId: messageResult.messageId,
+          message: '카카오톡 메시지가 성공적으로 전송되었습니다.'
+        });
+      } else {
+        console.error('📱 [Kakao] 메시지 전송 실패:', messageResult.error);
+        
+        // API 키가 없는 경우 503, 기타는 400으로 구분
+        if (messageResult.error?.includes('Kakao API 키가 설정되지 않았습니다')) {
+          return res.status(503).json({
+            success: false,
+            error: messageResult.error,
+            configurationRequired: true
+          });
+        }
+        
+        res.json({
+          success: false,
+          error: messageResult.error,
+          fallback: true // 실패했지만 알림장은 저장됨을 의미
+        });
+      }
+
+    } catch (error) {
+      console.error('📱 [Kakao] 전송 엔드포인트 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.',
+        fallback: true
+      });
     }
   });
 

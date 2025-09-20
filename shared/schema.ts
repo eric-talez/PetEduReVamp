@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   name: varchar("name", { length: 100 }),
   phone: varchar("phone", { length: 20 }),
   phoneNumber: varchar("phone_number", { length: 20 }), // 새로운 휴대폰 번호 필드
+  kakaoId: varchar("kakao_id", { length: 100 }), // 카카오톡 ID (알림장 전송용)
   birthDate: varchar("birth_date", { length: 10 }), // YYYY-MM-DD 형식
   age: integer("age"), // 연령
   gender: varchar("gender", { length: 10 }), // 성별 (male/female)
@@ -1978,4 +1979,20 @@ export type CourseType = "regular" | "video_lecture" | "hybrid";
 
 // UserRole 타입 정의 (이미 정의되어 있지만 확실히 하기 위해)
 export type UserRole = "user" | "pet-owner" | "trainer" | "institute-admin" | "admin";
+
+// 카카오톡 메시지 전송 스키마
+export const sendKakaoMessageSchema = z.object({
+  studentId: z.coerce.number().int().positive("올바른 수강생 ID가 필요합니다"),
+  notebookData: z.object({
+    title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
+    content: z.string().min(1, "내용은 필수입니다").max(2000, "내용은 2000자를 초과할 수 없습니다"),
+    studentName: z.string().min(1, "수강생 이름은 필수입니다").max(100, "이름은 100자를 초과할 수 없습니다"),
+    petName: z.string().min(1, "반려동물 이름은 필수입니다").max(100, "이름은 100자를 초과할 수 없습니다"),
+    trainingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "올바른 날짜 형식이 필요합니다 (YYYY-MM-DD)"),
+    progressRating: z.number().int().min(1, "평점은 1점 이상이어야 합니다").max(5, "평점은 5점 이하여야 합니다"),
+    trainerName: z.string().min(1, "훈련사 이름은 필수입니다").max(100, "이름은 100자를 초과할 수 없습니다"),
+  })
+});
+
+export type SendKakaoMessage = z.infer<typeof sendKakaoMessageSchema>;
 

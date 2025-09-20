@@ -288,8 +288,8 @@ export default function TrainerNotebookPage() {
     }
   };
 
-  // 알림장 제출 핸들러
-  const handleSubmitNotebook = () => {
+  // 알림장 제출 핸들러 (카카오톡 전송 포함)
+  const handleSubmitNotebook = async () => {
     if (!notebookForm.title.trim()) {
       toast({
         title: "제목을 입력해주세요",
@@ -314,7 +314,98 @@ export default function TrainerNotebookPage() {
       return;
     }
 
-    createNotebookMutation.mutate(notebookForm);
+    const selectedStudentData = students?.find(s => s.id.toString() === notebookForm.studentId);
+    if (!selectedStudentData) {
+      toast({
+        title: "수강생 정보를 찾을 수 없습니다",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // 1. 알림장 저장
+      await createNotebookMutation.mutateAsync(notebookForm);
+
+      // 2. 카카오톡 메시지 전송
+      console.log('📱 카카오톡 메시지 전송 시작...');
+      
+      const messageResponse = await apiRequest('/api/kakao/send-notebook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          studentId: notebookForm.studentId,
+          notebookData: {
+            title: notebookForm.title,
+            content: notebookForm.content,
+            studentName: selectedStudentData.name,
+            petName: selectedStudentData.pet.name,
+            trainingDate: notebookForm.trainingDate,
+            progressRating: notebookForm.progressRating,
+            trainerName: "김민수" // TODO: req.session.user.name 사용하도록 서버에서 처리
+          }
+        })
+      });
+
+      const result = await messageResponse.json();
+      
+      if (messageResponse.ok && result.success) {
+        toast({
+          title: "알림장 전송 완료! 📱",
+          description: `${selectedStudentData.name}님에게 카카오톡 알림장이 전송되었습니다.`,
+        });
+      } else if (messageResponse.status === 503 && result.configurationRequired) {
+        toast({
+          title: "알림장 저장 완료",
+          description: "카카오톡 서비스가 설정되지 않았습니다. 알림장은 정상적으로 저장되었습니다.",
+          variant: "default"
+        });
+      } else if (result.needsPhoneNumber) {
+        toast({
+          title: "알림장 저장 완료",
+          description: "수강생의 전화번호가 등록되지 않아 카카오톡을 전송할 수 없습니다. 알림장은 정상적으로 저장되었습니다.",
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "알림장 저장 완료",
+          description: result.error || "카카오톡 전송에 실패했지만 알림장은 정상적으로 저장되었습니다.",
+          variant: "default"
+        });
+      }
+
+      // 3. 다이얼로그 닫기
+      setIsCreateJournalOpen(false);
+      
+      // 4. 폼 초기화
+      setNotebookForm({
+        title: '',
+        content: '',
+        studentId: '',
+        petId: '',
+        trainingDate: new Date().toISOString().split('T')[0],
+        trainingDuration: 60,
+        progressRating: 3,
+        behaviorNotes: '',
+        homeworkInstructions: '',
+        nextGoals: '',
+        activities: {
+          bathroom: { times: [], notes: '' },
+          walk: { times: [], durations: [], notes: '' },
+          play: { times: [], activities: [], notes: '' }
+        }
+      });
+
+    } catch (error) {
+      console.error('알림장 전송 오류:', error);
+      toast({
+        title: "전송 실패",
+        description: "알림장 전송 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive"
+      });
+    }
   };
 
   // 알림장 목록 조회
