@@ -169,7 +169,7 @@ export default function Courses(props?: CoursesPageProps) {
       setLoading(true);
       console.log('🔥 강의 찾기 - 발행된 강의 목록 조회 시작');
       
-      const response = await fetch('/api/admin/curriculums');
+      const response = await fetch('/api/courses');
       if (response.ok) {
         const data = await response.json();
         console.log('🔥 커리큘럼 데이터:', data);
