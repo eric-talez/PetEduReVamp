@@ -783,7 +783,6 @@ export function Sidebar({
                     <AccessibleNavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>전문가 찾기</AccessibleNavItem>
                     <AccessibleNavItem href="/location-finder" icon={<MapPin className="w-5 h-5 mr-2" />} hoverIcon={<Navigation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/location-finder")} onClick={handleItemClick} show={true}>위치 찾기</AccessibleNavItem>
                     <AccessibleNavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</AccessibleNavItem>
-                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
                   </>
                 )}
 
