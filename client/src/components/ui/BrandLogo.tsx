@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import talezLogo from "@assets/Talez_상하조합_1758290618770.png";
 
 interface BrandLogoProps {
   /** Logo variant to display */
@@ -68,9 +69,9 @@ export function BrandLogo({
 
   // Logo file mapping
   const logoFiles = {
-    full: "/logo.svg",
-    compact: "/logo-compact.svg", 
-    symbol: "/logo-symbol.svg",
+    full: talezLogo,
+    compact: talezLogo, 
+    symbol: talezLogo,
     'text-only': null // No image for text-only
   };
 
