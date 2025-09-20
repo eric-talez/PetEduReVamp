@@ -179,7 +179,7 @@ export default function Courses(props?: CoursesPageProps) {
         console.log('🔥 커리큘럼 데이터:', data);
         
         // 발행된 상태의 커리큘럼만 필터링하여 강의 형태로 변환
-        const publishedCourses = data.curriculums
+        const publishedCourses = (data.courses || [])
           .filter((curriculum: any) => curriculum.status === 'published')
           .map((curriculum: any) => {
             // 각 모듈의 영상 정보 포함하여 매핑
