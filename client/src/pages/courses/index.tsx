@@ -31,12 +31,19 @@ interface Course {
   averageRating?: number;
   createdAt: string;
   updatedAt: string;
+  // 추가 필드들
+  thumbnailUrl?: string;
+  hasAnyVideo?: boolean;
+  totalVideos?: number;
+  modulesWithVideoCount?: number;
 }
 
 export default function Courses(props?: CoursesPageProps) {
   const { mode = 'view', userType } = props || {};
   const [, navigate] = useLocation();
   const [filter, setFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all"); // 유료/무료 필터
+  const [categoryFilter, setCategoryFilter] = useState("all"); // 카테고리 필터
   const [searchTerm, setSearchTerm] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +73,7 @@ export default function Courses(props?: CoursesPageProps) {
   const handleJoinCourse = (courseId: string) => {
     console.log('강좌 참여하기 클릭:', courseId);
     // 로그인 체크 후 수강 신청 프로세스 시작
-    handleEnrollment(parseInt(courseId));
+    handleEnroll();
   };
 
   // 미리보기 핸들러
@@ -237,12 +244,22 @@ export default function Courses(props?: CoursesPageProps) {
                          course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          course.trainerName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    if (filter === "all") return matchesSearch;
-    if (filter === "beginner") return matchesSearch && course.difficulty === "beginner";
-    if (filter === "intermediate") return matchesSearch && course.difficulty === "intermediate";
-    if (filter === "advanced") return matchesSearch && course.difficulty === "advanced";
+    // 가격 필터 (유료/무료)
+    const matchesPriceFilter = priceFilter === "all" || 
+                              (priceFilter === "free" && course.price === 0) ||
+                              (priceFilter === "paid" && course.price > 0);
     
-    return matchesSearch && course.category === filter;
+    // 카테고리 필터
+    const matchesCategoryFilter = categoryFilter === "all" || course.category === categoryFilter;
+    
+    // 난이도 필터
+    const matchesDifficultyFilter = filter === "all" ||
+                                  (filter === "beginner" && course.difficulty === "beginner") ||
+                                  (filter === "intermediate" && course.difficulty === "intermediate") ||
+                                  (filter === "advanced" && course.difficulty === "advanced") ||
+                                  course.category === filter; // 기존 카테고리 필터 호환
+    
+    return matchesSearch && matchesPriceFilter && matchesCategoryFilter && matchesDifficultyFilter;
   });
 
   // 페이지네이션을 위한 현재 페이지 강의 목록
@@ -253,7 +270,7 @@ export default function Courses(props?: CoursesPageProps) {
   // 검색/필터 변경 시 첫 페이지로 리셋
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filter]);
+  }, [searchTerm, filter, priceFilter, categoryFilter]);
 
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
@@ -262,7 +279,7 @@ export default function Courses(props?: CoursesPageProps) {
       case 'intermediate':
         return <Badge className="bg-blue-500 text-white">중급</Badge>;
       case 'advanced':
-        return <Badge variant="destructive">고급</Badge>;
+        return <Badge className="bg-red-500 text-white">고급</Badge>;
       default:
         return <Badge variant="secondary">미설정</Badge>;
     }
@@ -341,67 +358,136 @@ export default function Courses(props?: CoursesPageProps) {
         statusCode={statusCode}
         data-testid="courses-content"
       >
-        {/* Filters */}
-        <div className="mb-8 flex flex-wrap items-center gap-2">
-        <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mr-4">
-          <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
-          <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">필터:</span>
+        {/* 강화된 필터 시스템 */}
+        <div className="mb-8 space-y-4">
+          {/* 가격 필터 (유료/무료) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center bg-green-100 dark:bg-green-900/30 rounded-lg p-1 mr-4">
+              <span className="text-sm font-medium text-green-700 dark:text-green-300 ml-2 mr-2">💰 가격:</span>
+            </div>
+            
+            <Button
+              variant={priceFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setPriceFilter("all")}
+              className="text-xs"
+            >
+              전체 강의
+            </Button>
+
+            <Button
+              variant={priceFilter === "free" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setPriceFilter("free")}
+              className="text-xs"
+            >
+              🆓 무료 강의
+            </Button>
+
+            <Button
+              variant={priceFilter === "paid" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setPriceFilter("paid")}
+              className="text-xs"
+            >
+              💳 유료 강의
+            </Button>
+          </div>
+
+          {/* 난이도 필터 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center bg-blue-100 dark:bg-blue-900/30 rounded-lg p-1 mr-4">
+              <Filter className="h-4 w-4 text-blue-500 dark:text-blue-400 ml-2 mr-1" />
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300 mr-2">난이도:</span>
+            </div>
+
+            <Button
+              variant={filter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter("all")}
+              className="text-xs"
+            >
+              전체
+            </Button>
+
+            <Button
+              variant={filter === "beginner" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter("beginner")}
+              className="text-xs"
+            >
+              🌱 초급
+            </Button>
+
+            <Button
+              variant={filter === "intermediate" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter("intermediate")}
+              className="text-xs"
+            >
+              🌿 중급
+            </Button>
+
+            <Button
+              variant={filter === "advanced" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter("advanced")}
+              className="text-xs"
+            >
+              🌳 고급
+            </Button>
+          </div>
+
+          {/* 카테고리 및 추가 필터 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center bg-purple-100 dark:bg-purple-900/30 rounded-lg p-1 mr-4">
+              <span className="text-sm font-medium text-purple-700 dark:text-purple-300 ml-2 mr-2">📚 카테고리:</span>
+            </div>
+
+            <Button
+              variant={categoryFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter("all")}
+              className="text-xs"
+            >
+              전체 분야
+            </Button>
+
+            <Button
+              variant={categoryFilter === "기본 훈련" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter("기본 훈련")}
+              className="text-xs"
+            >
+              🎯 기본 훈련
+            </Button>
+
+            <Button
+              variant={categoryFilter === "행동 교정" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter("행동 교정")}
+              className="text-xs"
+            >
+              🔧 행동 교정
+            </Button>
+
+            <Button
+              variant={categoryFilter === "사회화 훈련" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter("사회화 훈련")}
+              className="text-xs"
+            >
+              👥 사회화 훈련
+            </Button>
+
+            {/* 활성화된 필터 개수 표시 */}
+            <div className="ml-auto">
+              <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
+                {filteredCourses.length}개 강의 발견
+              </span>
+            </div>
+          </div>
         </div>
-
-        <Button
-          variant={filter === "all" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("all")}
-          className="text-xs"
-        >
-          전체
-        </Button>
-
-        <Button
-          variant={filter === "beginner" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("beginner")}
-          className="text-xs"
-        >
-          초급
-        </Button>
-
-        <Button
-          variant={filter === "intermediate" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("intermediate")}
-          className="text-xs"
-        >
-          중급
-        </Button>
-
-        <Button
-          variant={filter === "advanced" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("advanced")}
-          className="text-xs"
-        >
-          고급
-        </Button>
-
-        <Button
-          variant={filter === "기본 훈련" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("기본 훈련")}
-          className="text-xs"
-        >
-          기본 훈련
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-auto text-xs"
-        >
-          <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
-          고급 필터
-        </Button>
-      </div>
 
       {/* Course Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -476,7 +562,9 @@ export default function Courses(props?: CoursesPageProps) {
                     <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">{course.trainerName}</span>
                   </div>
 
-                  <span className="font-medium text-sm text-primary">{course.price.toLocaleString()}원</span>
+                  <span className={`font-medium text-sm ${course.price === 0 ? 'text-green-600 bg-green-50 px-2 py-1 rounded' : 'text-primary'}`}>
+                    {course.price === 0 ? '🆓 무료' : `💳 ${course.price.toLocaleString()}원`}
+                  </span>
                 </div>
 
                 <div className="mt-3 text-xs text-gray-500">
