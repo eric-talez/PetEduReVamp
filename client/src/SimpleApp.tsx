@@ -90,6 +90,7 @@ import ApiManagement from "./pages/admin/ApiManagement";
 import AIApiManagement from "./pages/admin/AIApiManagement";
 import AIOptimizationDashboard from "./pages/admin/AIOptimizationDashboard";
 import MenuVisibilityControl from "./pages/admin/MenuVisibilityControl";
+import CoursePurchase from "./pages/payment/CoursePurchase";
 import NavigationProgress from "./components/NavigationProgress";
 import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
 
@@ -1411,6 +1412,10 @@ function AuthenticatedRoutes() {
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id" component={EventDetailPage} />
+        
+        {/* 강의 결제 페이지 */}
+        <Route path="/payment/course/:courseId" component={CoursePurchase} />
+        
         <Route path="/my-courses" component={MyCourses} />
 
         <Route path="/my-pets" component={MyPets} />

@@ -8401,7 +8401,7 @@ app.get('/api/search', async (req, res) => {
   // 강의 구매 및 상품 구매 결제 인텐트 생성
   app.post('/api/create-payment-intent', async (req, res) => {
     try {
-      const { amount, courseId, courseTitle, itemId, itemName, itemType } = req.body;
+      const { courseId, itemId, itemType, paymentMethod } = req.body;
       
       // Stripe 사용 가능 여부 확인
       const currentStripeKey = process.env.STRIPE_SECRET_KEY;
@@ -8414,20 +8414,36 @@ app.get('/api/search', async (req, res) => {
         });
       }
       
-      if (!amount || (!courseId && !itemId)) {
-        return res.status(400).json({ error: '결제 금액과 구매 항목 ID가 필요합니다.' });
+      if (!courseId && !itemId) {
+        return res.status(400).json({ error: '구매 항목 ID가 필요합니다.' });
       }
 
-      // 메타데이터 생성
+      // 서버에서 실제 가격 조회 (보안)
+      let amount: number;
+      let itemName: string;
       const metadata: any = {};
-      if (itemType === 'product') {
-        metadata.productId = itemId;
-        metadata.productName = itemName || '상품 구매';
-        metadata.type = 'product';
-      } else {
-        metadata.courseId = courseId || itemId;
-        metadata.courseTitle = courseTitle || itemName || '강의 구매';
+      
+      if (courseId) {
+        // 강의 가격 조회
+        const courses = await storage.getAllCurriculums();
+        const course = courses.find(c => c.id.toString() === courseId);
+        
+        if (!course) {
+          return res.status(404).json({ error: '강의를 찾을 수 없습니다.' });
+        }
+        
+        amount = course.price;
+        itemName = course.title;
+        metadata.courseId = courseId;
+        metadata.courseTitle = course.title;
         metadata.type = 'course';
+      } else if (itemId) {
+        // 상품 가격 조회 (향후 구현)
+        metadata.productId = itemId;
+        metadata.type = 'product';
+        // 임시로 기본값 설정
+        amount = 10000;
+        itemName = '상품 구매';
       }
 
       // 실시간 Stripe 인스턴스 생성 (캐시 방지)
@@ -8443,7 +8459,7 @@ app.get('/api/search', async (req, res) => {
 
       // Stripe PaymentIntent 생성
       const paymentIntent = await currentStripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // 센트 단위로 변환
+        amount: Math.round(amount! * 100), // 센트 단위로 변환 (서버 검증된 금액)
         currency: 'krw',
         metadata: metadata
       });
