@@ -29,6 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { QuickLoginButtons } from "@/components/QuickLoginButtons";
 
 // Debounce utility function
 const debounce = (func: Function, wait: number) => {
@@ -1000,6 +1001,13 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 >
                   회원가입
                 </Button>
+                {/* 개발 환경에서만 퀴컬로그인 버튼 표시 */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="ml-4 border-l border-gray-300 pl-4">
+                    <div className="text-xs text-gray-500 mb-1">개발 테스트</div>
+                    <QuickLoginButtons />
+                  </div>
+                )}
               </div>
             )}
           </div>

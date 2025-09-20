@@ -6,7 +6,7 @@ import { createContext, ReactNode, useContext, useState, useEffect } from "react
 import { useToast } from "@/hooks/use-toast";
 
 // shared/schema.ts의 UserRole 타입 사용 (타입 일관성 유지)
-import { UserRole } from '../../shared/schema';
+import { UserRole } from '@shared/schema';
 
 // 상수로도 제공 (상호 참조 문제 해결)
 export const USER_ROLES = {

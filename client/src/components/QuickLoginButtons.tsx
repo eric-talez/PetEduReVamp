@@ -40,8 +40,8 @@ export function QuickLoginButtons() {
     window.dispatchEvent(logoutEvent);
   };
 
-  // QuickLogin 버튼 숨김 - 챗봇 버튼 가시성을 위해
-  const isDevEnv = false; // 챗봇 버튼을 보이게 하기 위해 숨김 처리
+  // QuickLogin 버튼 표시 - 개발 환경에서 테스트용
+  const isDevEnv = process.env.NODE_ENV === 'development'; // 개발 환경에서만 표시
   
   if (!isDevEnv) {
     return null; // 개발 모드가 아닌 경우 아무것도 렌더링하지 않음
