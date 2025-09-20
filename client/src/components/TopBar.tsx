@@ -29,7 +29,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { BrandLogo } from "@/components/ui/BrandLogo";
 
 // Debounce utility function
 const debounce = (func: Function, wait: number) => {
@@ -391,23 +390,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
 
-            {/* TALEZ Logo - Standardized Brand Component */}
-            <BrandLogo 
-              variant="compact" 
-              size="md" 
-              clickable 
-              showText 
-              className="hidden sm:flex"
-              testId="topbar-logo"
-            />
-            {/* Mobile-only logo (no text) */}
-            <BrandLogo 
-              variant="compact" 
-              size="md" 
-              clickable 
-              className="sm:hidden"
-              testId="topbar-logo-mobile"
-            />
           </div>
           
           {/* Search */}
