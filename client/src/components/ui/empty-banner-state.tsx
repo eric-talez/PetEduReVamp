@@ -13,6 +13,7 @@ import {
   Info
 } from 'lucide-react';
 import { Link } from 'wouter';
+import talezLogo from '@assets/Talez_심볼마크_1758380892792.png';
 
 export type EmptyBannerVariant = 
   | 'admin'           // Admin users - show banner management CTA
@@ -180,10 +181,31 @@ export function EmptyBannerState({
       role="region"
       aria-label={`배너 빈 상태 - ${content.title}`}
     >
+      {/* Background with gradient and logo pattern */}
       <div className={cn(
         "absolute inset-0 bg-gradient-to-br opacity-50",
         content.bgGradient
       )} />
+      
+      {/* Talez Logo Background Pattern */}
+      <div 
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: `url(${talezLogo})`,
+          backgroundSize: '120px 120px',
+          backgroundRepeat: 'repeat',
+          backgroundPosition: 'center center'
+        }}
+      />
+      
+      {/* Centered Large Logo Watermark */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <img 
+          src={talezLogo} 
+          alt="TALEZ" 
+          className="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 opacity-5 select-none pointer-events-none"
+        />
+      </div>
       
       <CardContent className="relative h-full flex flex-col items-center justify-center text-center p-8">
         {/* Icon */}
