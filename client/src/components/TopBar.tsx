@@ -375,7 +375,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-sm z-40 transition-colors sticky top-0 w-full">
+    <header className="bg-white dark:bg-gray-900 shadow-sm z-header transition-colors sticky top-0 w-full">
       <div className="w-full mx-auto px-0">
         <div className="flex justify-between items-center h-16 px-4">
           {/* Left Section: Mobile Menu + Logo */}

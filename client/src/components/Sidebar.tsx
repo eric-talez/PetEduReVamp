@@ -577,7 +577,9 @@ export function Sidebar({
     <SidebarContext.Provider value={contextValue}>
       <div
         className={cn(
-          "fixed left-0 top-0 bottom-0 h-screen bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md z-20 flex flex-col",
+          "fixed left-0 bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md flex flex-col",
+          // 모바일: TopBar 아래에서 시작하고, 높이는 TopBar를 제외한 전체 화면
+          "top-16 h-[calc(100vh-4rem)] z-mobile-menu lg:top-0 lg:h-screen lg:z-sidebar",
           expanded ? "w-64" : "w-[70px]"
         )}
       >
