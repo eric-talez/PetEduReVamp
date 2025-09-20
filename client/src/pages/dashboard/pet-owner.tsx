@@ -2,6 +2,7 @@ import { useAuth } from "../../SimpleApp";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import bannerImage5 from "@/assets/main-banner-talez.png";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { EnhancedAnalytics } from "@/components/dashboard/EnhancedAnalytics";
 import { AppLayout } from "@/layout/AppLayout";
@@ -329,15 +330,15 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       {activeTab === 'dashboard' && (
         <div className="space-y-8">
           {/* Banner Slider - 5개 슬라이드 */}
-          <div className="relative rounded-xl overflow-hidden h-48 md:h-60 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+          <div className="relative rounded-xl overflow-hidden h-48 md:h-60 mb-8 shadow-lg">
         {/* 슬라이드 이미지 (현재 슬라이드만 표시) */}
         <div className="absolute inset-0 transition-all duration-500 ease-in-out">
           <img 
             src={bannerSlides[currentSlide].image} 
             alt={bannerSlides[currentSlide].title}
-            className="w-full h-full object-cover absolute"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-black/40"></div>
         </div>
 
         {/* 슬라이드 콘텐츠 (현재 슬라이드만 표시) */}

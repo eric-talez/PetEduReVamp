@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
-import talezLogo from "@assets/Talez_상하조합_1758290618770.png";
+import talezLogo from "@/assets/main-banner-talez.png";
 
 interface BrandLogoProps {
   /** Logo variant to display */

@@ -4,6 +4,7 @@ import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import bannerImage2 from "@/assets/main-banner-talez.png";
 import { Avatar } from "@/components/ui/avatar";
 import { LoadingErrorWrapper } from "@/components/ui/loading-error-wrapper";
 import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart3, ChevronLeft, ChevronRight } from "lucide-react";
@@ -34,35 +35,35 @@ const trainerDashboardBanners = [
     id: 1,
     title: "더 많은 반려인들이 당신을 찾고 있습니다",
     subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
-    image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    image: bannerImage2,
     action: { text: "고객 연결", path: "/trainer/customer-connect" }
   },
   {
     id: 2,
     title: "전문 훈련사의 가치를 제대로 인정받으세요",
     subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
-    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    image: bannerImage2,
     action: { text: "수수료 확인", path: "/trainer/commission-info" }
   },
   {
     id: 3,
     title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
     subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
-    image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    image: bannerImage2,
     action: { text: "새로운 교육법", path: "/trainer/hybrid-education" }
   },
   {
     id: 4,
     title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
     subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    image: bannerImage2,
     action: { text: "커뮤니티 참여", path: "/trainer/community" }
   },
   {
     id: 5,
     title: "반려견 교육의 미래를 함께 만들어갑니다",
     subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
-    image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    image: bannerImage2,
     action: { text: "혁신 참여", path: "/trainer/innovation" }
   }
 ];
@@ -134,7 +135,7 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
         />
         
         {/* 배너 오버레이 */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+        <div className="absolute inset-0 bg-black/40"></div>
         
         <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
           <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">
