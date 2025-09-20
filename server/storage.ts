@@ -1,4 +1,4 @@
-import { User, Pet, Course, Curriculum, Notification, Institute, SubscriptionPlan, Product, Post, Reservation } from '../shared/schema';
+import { User, Pet, Course, Curriculum, Notification, Institute, SubscriptionPlan, Product, Post, Reservation, VideoLectureSession, VideoLectureBooking } from '../shared/schema';
 
 class Storage {
   users: User[] = [];
@@ -7,6 +7,9 @@ class Storage {
   curriculums: Curriculum[] = [];
   notifications: Notification[] = [];
   registrations: Reservation[] = [];
+  // 화상 강의 관련 데이터
+  videoLectureSessions: VideoLectureSession[] = [];
+  videoLectureBookings: VideoLectureBooking[] = [];
   institutes: Institute[] = [];
   subscriptionPlans: SubscriptionPlan[] = [];
   paymentRequests: any[] = []; // Keep as any for now
@@ -1107,6 +1110,80 @@ class Storage {
         ],
         createdAt: new Date('2025-01-05').toISOString(),
         updatedAt: new Date().toISOString()
+      },
+      // 화상 강의 과정들
+      {
+        id: 4,
+        title: "실시간 퍼피 트레이닝 화상 클래스",
+        description: "강동훈 전문 훈련사와 함께하는 실시간 화상 훈련 수업입니다. 퍼피의 기본 훈련부터 문제행동 교정까지 1:1 맞춤 지도를 받을 수 있습니다.",
+        trainerId: 1,
+        trainerName: "강동훈",
+        duration: 1, // 1시간 세션
+        level: "beginner",
+        category: "화상 강의",
+        price: 80000,
+        maxStudents: 5, // 화상 강의 특성상 소수 정원
+        currentStudents: 3,
+        status: "published",
+        enrollmentCount: 12,
+        averageRating: 4.9,
+        reviewCount: 8,
+        thumbnailUrl: "https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=300&fit=crop&crop=center&auto=format",
+        // 화상 강의 관련 필드
+        courseType: "video_lecture",
+        isLiveClass: true,
+        maxParticipants: 5,
+        modules: [],
+        createdAt: new Date('2025-01-15').toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 5,
+        title: "온라인 반려견 행동 상담 세션",
+        description: "김민수 행동 전문가와 함께하는 1:1 화상 상담입니다. 반려견의 문제 행동에 대한 전문적인 분석과 해결책을 제시해드립니다.",
+        trainerId: 2,
+        trainerName: "김민수",
+        duration: 1,
+        level: "intermediate",
+        category: "화상 강의",
+        price: 120000,
+        maxStudents: 1, // 1:1 상담
+        currentStudents: 0,
+        status: "published",
+        enrollmentCount: 25,
+        averageRating: 4.8,
+        reviewCount: 15,
+        thumbnailUrl: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop&crop=center&auto=format",
+        courseType: "video_lecture",
+        isLiveClass: true,
+        maxParticipants: 1,
+        modules: [],
+        createdAt: new Date('2025-01-18').toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 6,
+        title: "그룹 화상 아질리티 트레이닝",
+        description: "박지혜 전문 트레이너와 함께하는 그룹 화상 아질리티 훈련입니다. 집에서도 할 수 있는 아질리티 기초부터 고급 기술까지 배워보세요.",
+        trainerId: 3,
+        trainerName: "박지혜",
+        duration: 1.5,
+        level: "advanced",
+        category: "화상 강의",
+        price: 95000,
+        maxStudents: 8,
+        currentStudents: 6,
+        status: "published",
+        enrollmentCount: 18,
+        averageRating: 4.7,
+        reviewCount: 12,
+        thumbnailUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop&crop=center&auto=format",
+        courseType: "video_lecture",
+        isLiveClass: true,
+        maxParticipants: 8,
+        modules: [],
+        createdAt: new Date('2025-01-20').toISOString(),
+        updatedAt: new Date().toISOString()
       }
     ];
 
@@ -1242,6 +1319,205 @@ class Storage {
         incentiveAmount: "45000",
         metadata: { consultationId: "cons002", duration: "45분", rating: 4.8 },
         createdAt: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString()
+      }
+    ];
+
+    // 화상 강의 세션 데이터 초기화
+    this.videoLectureSessions = [
+      {
+        id: 1,
+        courseId: 4, // 실시간 퍼피 트레이닝 화상 클래스
+        instructorId: 1, // 강동훈 훈련사
+        title: "퍼피 기초 훈련 실시간 세션",
+        description: "생후 3-8개월 퍼피를 위한 기초 훈련 화상 수업입니다. 기본 명령어와 사회화 훈련을 진행합니다.",
+        scheduledStartTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2일 후
+        scheduledEndTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(), // 1시간 후
+        actualStartTime: null,
+        actualEndTime: null,
+        maxParticipants: 5,
+        currentParticipants: 3,
+        zoomMeetingId: "123456789",
+        zoomJoinUrl: "https://zoom.us/j/123456789?pwd=abc123",
+        zoomStartUrl: "https://zoom.us/s/123456789?zak=def456",
+        zoomMeetingPassword: "talez123",
+        status: "scheduled",
+        recordingUrl: null,
+        isRecorded: false,
+        sessionNotes: "퍼피 기본 훈련에 집중합니다. 간식과 장난감을 준비해주세요.",
+        materials: ["https://example.com/training-guide.pdf", "https://example.com/puppy-checklist.pdf"],
+        tags: ["퍼피", "기초훈련", "실시간"],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        courseId: 5, // 온라인 반려견 행동 상담 세션
+        instructorId: 2, // 김민수 전문가
+        title: "1:1 반려견 행동 상담",
+        description: "개별 맞춤형 행동 상담 세션입니다. 반려견의 문제 행동에 대한 전문적인 분석과 해결책을 제시합니다.",
+        scheduledStartTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 1일 후
+        scheduledEndTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(), // 1시간 후
+        actualStartTime: null,
+        actualEndTime: null,
+        maxParticipants: 1,
+        currentParticipants: 1,
+        zoomMeetingId: "987654321",
+        zoomJoinUrl: "https://zoom.us/j/987654321?pwd=xyz789",
+        zoomStartUrl: "https://zoom.us/s/987654321?zak=uvw012",
+        zoomMeetingPassword: "consult99",
+        status: "scheduled",
+        recordingUrl: null,
+        isRecorded: true,
+        sessionNotes: "행동 문제에 대한 상세한 분석을 진행합니다. 반려견의 최근 행동 영상이 있으면 도움이 됩니다.",
+        materials: ["https://example.com/behavior-analysis.pdf"],
+        tags: ["1:1상담", "행동교정", "전문분석"],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        courseId: 6, // 그룹 화상 아질리티 트레이닝
+        instructorId: 3, // 박지혜 트레이너
+        title: "홈 아질리티 그룹 트레이닝",
+        description: "집에서 할 수 있는 아질리티 훈련을 그룹으로 진행합니다. 기초부터 고급 기술까지 단계별로 학습합니다.",
+        scheduledStartTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3일 후
+        scheduledEndTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 90 * 60 * 1000).toISOString(), // 1.5시간 후
+        actualStartTime: null,
+        actualEndTime: null,
+        maxParticipants: 8,
+        currentParticipants: 6,
+        zoomMeetingId: "456789123",
+        zoomJoinUrl: "https://zoom.us/j/456789123?pwd=agility2024",
+        zoomStartUrl: "https://zoom.us/s/456789123?zak=trainer123",
+        zoomMeetingPassword: "agility24",
+        status: "scheduled",
+        recordingUrl: null,
+        isRecorded: false,
+        sessionNotes: "장애물 없이도 할 수 있는 아질리티 동작들을 배웁니다. 넓은 공간과 간식을 준비해주세요.",
+        materials: ["https://example.com/agility-basics.pdf", "https://example.com/home-agility-setup.pdf"],
+        tags: ["아질리티", "그룹수업", "홈트레이닝"],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 4,
+        courseId: 4, // 추가 퍼피 트레이닝 세션
+        instructorId: 1, // 강동훈 훈련사
+        title: "퍼피 사회화 특별 세션",
+        description: "퍼피의 사회화에 초점을 맞춘 특별 세션입니다. 다른 강아지와 사람들과의 올바른 상호작용을 배웁니다.",
+        scheduledStartTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 1주일 후
+        scheduledEndTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(), // 1시간 후
+        actualStartTime: null,
+        actualEndTime: null,
+        maxParticipants: 5,
+        currentParticipants: 2,
+        zoomMeetingId: "789123456",
+        zoomJoinUrl: "https://zoom.us/j/789123456?pwd=social123",
+        zoomStartUrl: "https://zoom.us/s/789123456?zak=puppy456",
+        zoomMeetingPassword: "social24",
+        status: "scheduled",
+        recordingUrl: null,
+        isRecorded: false,
+        sessionNotes: "사회화 훈련에 집중합니다. 가능하면 다른 가족 구성원도 함께 참여해주세요.",
+        materials: ["https://example.com/socialization-guide.pdf"],
+        tags: ["퍼피", "사회화", "상호작용"],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+
+    // 화상 강의 예약 데이터 초기화
+    this.videoLectureBookings = [
+      {
+        id: 1,
+        sessionId: 1, // 퍼피 기초 훈련 실시간 세션
+        userId: 3, // 테스트 사용자
+        petId: 1, // 첫 번째 반려동물
+        bookingStatus: "confirmed",
+        joinTime: null,
+        leaveTime: null,
+        attendanceStatus: "registered",
+        feedback: null,
+        rating: null,
+        specialRequests: "퍼피가 아직 어려서 집중력이 짧습니다. 짧은 세션으로 진행해주세요.",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        sessionId: 2, // 1:1 반려견 행동 상담
+        userId: 3, // 테스트 사용자
+        petId: 1, // 첫 번째 반려동물
+        bookingStatus: "confirmed",
+        joinTime: null,
+        leaveTime: null,
+        attendanceStatus: "registered",
+        feedback: null,
+        rating: null,
+        specialRequests: "최근 다른 개들에게 짖는 행동이 심해졌습니다. 이에 대한 상담을 받고 싶습니다.",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        sessionId: 3, // 그룹 화상 아질리티 트레이닝
+        userId: 3, // 테스트 사용자
+        petId: 1, // 첫 번째 반려동물
+        bookingStatus: "confirmed",
+        joinTime: null,
+        leaveTime: null,
+        attendanceStatus: "registered",
+        feedback: null,
+        rating: null,
+        specialRequests: "아질리티가 처음이라 기초부터 천천히 배우고 싶습니다.",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 4,
+        sessionId: 1, // 퍼피 기초 훈련 실시간 세션 (다른 사용자)
+        userId: 2, // 강동훈 (테스트용)
+        petId: null, // 반려동물 정보 없음
+        bookingStatus: "confirmed",
+        joinTime: null,
+        leaveTime: null,
+        attendanceStatus: "registered",
+        feedback: null,
+        rating: null,
+        specialRequests: "훈련사로서 다른 관점에서 세션을 참관하고 싶습니다.",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 5,
+        sessionId: 4, // 퍼피 사회화 특별 세션
+        userId: 3, // 테스트 사용자
+        petId: 1, // 첫 번째 반려동물
+        bookingStatus: "confirmed",
+        joinTime: null,
+        leaveTime: null,
+        attendanceStatus: "registered",
+        feedback: null,
+        rating: null,
+        specialRequests: "사회화 훈련이 처음입니다. 기본적인 내용부터 알려주세요.",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      // 완료된 세션 예제 (과거 데이터)
+      {
+        id: 6,
+        sessionId: 1, // 가상의 이전 세션
+        userId: 2,
+        petId: null,
+        bookingStatus: "confirmed",
+        joinTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3일 전 참가
+        leaveTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000 + 55 * 60 * 1000).toISOString(), // 55분간 참가
+        attendanceStatus: "attended",
+        feedback: "매우 유익한 세션이었습니다. 퍼피 훈련에 대한 새로운 관점을 얻을 수 있었고, 실제로 적용해보니 효과가 좋았습니다.",
+        rating: 5,
+        specialRequests: null,
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
       }
     ];
   }
