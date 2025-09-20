@@ -5376,9 +5376,17 @@ class HybridStorage extends Storage {
   }
 
   // 화상 강의 관련 메서드들
-  async getVideoLectures(): Promise<any[]> {
+  getVideoLectures(): any[] {
     // 화상 강의 세션들을 화상 강의 상품 형태로 변환
     const videoLectureGroups = new Map();
+    
+    // 안전한 배열 접근
+    if (!this.videoLectureSessions || !Array.isArray(this.videoLectureSessions)) {
+      console.log('🔥 [Storage] videoLectureSessions가 없거나 배열이 아님:', this.videoLectureSessions);
+      return [];
+    }
+    
+    console.log('🔥 [Storage] 화상 강의 세션 수:', this.videoLectureSessions.length);
     
     // 세션들을 강의별로 그룹화
     this.videoLectureSessions.forEach(session => {

@@ -36,6 +36,14 @@ interface Course {
   hasAnyVideo?: boolean;
   totalVideos?: number;
   modulesWithVideoCount?: number;
+  // 화상 강의 관련 필드들
+  productType?: 'course' | 'video_lecture';
+  isLive?: boolean;
+  maxParticipants?: number;
+  currentParticipants?: number;
+  nextSessionDate?: string;
+  sessionDuration?: number;
+  zoomRequired?: boolean;
 }
 
 export default function Courses(props?: CoursesPageProps) {
@@ -47,6 +55,7 @@ export default function Courses(props?: CoursesPageProps) {
   const [ratingFilter, setRatingFilter] = useState("all"); // 평점 필터
   const [enrollmentFilter, setEnrollmentFilter] = useState("all"); // 수강생 수 필터
   const [videoFilter, setVideoFilter] = useState("all"); // 영상 유무 필터
+  const [productTypeFilter, setProductTypeFilter] = useState("all"); // 상품 타입 필터
   const [searchTerm, setSearchTerm] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,46 +186,90 @@ export default function Courses(props?: CoursesPageProps) {
         const data = await response.json();
         console.log('🔥 커리큘럼 데이터:', data);
         
-        // 발행된 상태의 커리큘럼만 필터링하여 강의 형태로 변환
-        const publishedCourses = (data.courses || [])
-          .filter((curriculum: any) => curriculum.status === 'published')
-          .map((curriculum: any) => {
-            // 각 모듈의 영상 정보 포함하여 매핑
-            const modulesWithVideos = (curriculum.modules || []).map((module: any) => ({
-              ...module,
-              hasVideo: module.videos && module.videos.length > 0,
-              videoCount: module.videos ? module.videos.length : 0,
-              videos: module.videos || []
-            }));
+        // API에서 받은 모든 강의/화상강의 데이터를 올바르게 매핑
+        const allCourses = (data.courses || [])
+          .filter((item: any) => item.status === 'published')
+          .map((item: any) => {
+            // 화상 강의인지 일반 강의인지 확인
+            const isVideoLecture = item.productType === 'video_lecture';
             
-            // 전체 강의의 영상 통계
-            const totalVideos = modulesWithVideos.reduce((sum: number, module: any) => sum + module.videoCount, 0);
-            const modulesWithVideoCount = modulesWithVideos.filter((module: any) => module.hasVideo).length;
-            
-            return {
-              id: curriculum.id,
-              title: curriculum.title,
-              description: curriculum.description,
-              price: curriculum.price || 0,
-              difficulty: curriculum.difficulty || 'beginner',
-              category: curriculum.category || '기본 훈련',
-              duration: curriculum.duration || 0,
-              modules: modulesWithVideos,
-              trainerName: curriculum.trainerName || '전문 훈련사',
-              status: curriculum.status,
-              enrollmentCount: curriculum.enrollmentCount || 0,
-              averageRating: curriculum.averageRating || 0,
-              createdAt: curriculum.createdAt || new Date().toISOString(),
-              updatedAt: curriculum.updatedAt || new Date().toISOString(),
-              // 영상 관련 정보 추가
-              totalVideos,
-              modulesWithVideoCount,
-              hasAnyVideo: totalVideos > 0
-            };
+            if (isVideoLecture) {
+              // 화상 강의 매핑
+              return {
+                id: item.id,
+                title: item.title,
+                description: item.description,
+                price: item.price || 0,
+                difficulty: item.difficulty || 'beginner',
+                category: item.category || '화상 강의',
+                duration: item.duration || 1,
+                modules: item.modules || [],
+                trainerName: item.trainerName || '전문 훈련사',
+                status: item.status,
+                enrollmentCount: item.enrollmentCount || 0,
+                averageRating: item.averageRating || 0,
+                createdAt: item.createdAt || new Date().toISOString(),
+                updatedAt: item.updatedAt || new Date().toISOString(),
+                thumbnailUrl: item.thumbnailUrl,
+                // 화상 강의 고유 필드들
+                productType: item.productType,
+                isLive: item.isLive,
+                maxParticipants: item.maxParticipants,
+                currentParticipants: item.currentParticipants,
+                nextSessionDate: item.nextSessionDate,
+                sessionDuration: item.sessionDuration,
+                zoomRequired: item.zoomRequired,
+                // 일반 강의 필드들 (기본값)
+                hasAnyVideo: false,
+                totalVideos: 0,
+                modulesWithVideoCount: 0
+              };
+            } else {
+              // 일반 강의 매핑
+              const modulesWithVideos = (item.modules || []).map((module: any) => ({
+                ...module,
+                hasVideo: module.videos && module.videos.length > 0,
+                videoCount: module.videos ? module.videos.length : 0,
+                videos: module.videos || []
+              }));
+              
+              const totalVideos = modulesWithVideos.reduce((sum: number, module: any) => sum + module.videoCount, 0);
+              const modulesWithVideoCount = modulesWithVideos.filter((module: any) => module.hasVideo).length;
+              
+              return {
+                id: item.id,
+                title: item.title,
+                description: item.description,
+                price: item.price || 0,
+                difficulty: item.difficulty || 'beginner',
+                category: item.category || '기본 훈련',
+                duration: item.duration || 0,
+                modules: modulesWithVideos,
+                trainerName: item.trainerName || '전문 훈련사',
+                status: item.status,
+                enrollmentCount: item.enrollmentCount || 0,
+                averageRating: item.averageRating || 0,
+                createdAt: item.createdAt || new Date().toISOString(),
+                updatedAt: item.updatedAt || new Date().toISOString(),
+                thumbnailUrl: item.thumbnailUrl,
+                // 일반 강의 필드들
+                productType: item.productType || 'course',
+                hasAnyVideo: totalVideos > 0,
+                totalVideos,
+                modulesWithVideoCount,
+                // 화상 강의 필드들 (기본값)
+                isLive: false,
+                maxParticipants: 0,
+                currentParticipants: 0,
+                nextSessionDate: null,
+                sessionDuration: 0,
+                zoomRequired: false
+              };
+            }
           });
         
-        console.log('🔥 발행된 강의 목록:', publishedCourses);
-        setCourses(publishedCourses);
+        console.log('🔥 발행된 강의 목록:', allCourses);
+        setCourses(allCourses);
       } else {
         console.error('🔥 커리큘럼 API 응답 실패:', response.status);
         toast({
@@ -280,8 +333,13 @@ export default function Courses(props?: CoursesPageProps) {
                               (videoFilter === "with_video" && course.hasAnyVideo) ||
                               (videoFilter === "without_video" && !course.hasAnyVideo);
     
+    // 상품 타입 필터
+    const matchesProductTypeFilter = productTypeFilter === "all" ||
+                                   (productTypeFilter === "course" && course.productType === "course") ||
+                                   (productTypeFilter === "video_lecture" && course.productType === "video_lecture");
+    
     return matchesSearch && matchesPriceFilter && matchesCategoryFilter && matchesDifficultyFilter && 
-           matchesRatingFilter && matchesEnrollmentFilter && matchesVideoFilter;
+           matchesRatingFilter && matchesEnrollmentFilter && matchesVideoFilter && matchesProductTypeFilter;
   });
 
   // 페이지네이션을 위한 현재 페이지 강의 목록
@@ -292,7 +350,7 @@ export default function Courses(props?: CoursesPageProps) {
   // 검색/필터 변경 시 첫 페이지로 리셋
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filter, priceFilter, categoryFilter, ratingFilter, enrollmentFilter, videoFilter]);
+  }, [searchTerm, filter, priceFilter, categoryFilter, ratingFilter, enrollmentFilter, videoFilter, productTypeFilter]);
 
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
@@ -385,7 +443,7 @@ export default function Courses(props?: CoursesPageProps) {
         {/* 강화된 필터 시스템 */}
         <div className="mb-8 space-y-4">
           {/* 필터 섹션 - Select 컴포넌트 사용 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             {/* 가격 필터 */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
@@ -497,6 +555,24 @@ export default function Courses(props?: CoursesPageProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* 상품 타입 필터 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                <Play className="h-4 w-4 mr-1 text-orange-500" />
+                수업 형태
+              </label>
+              <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
+                <SelectTrigger data-testid="filter-product-type">
+                  <SelectValue placeholder="수업 형태 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="course">일반 강의</SelectItem>
+                  <SelectItem value="video_lecture">화상 강의</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
 
@@ -512,8 +588,34 @@ export default function Courses(props?: CoursesPageProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {currentCourses.length > 0 ? (
           currentCourses.map((course) => (
-            <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+            <Card key={course.id} className={`overflow-hidden border hover:shadow-md transition-shadow ${
+              course.productType === 'video_lecture' 
+                ? 'border-orange-200 dark:border-orange-800 shadow-orange-50 dark:shadow-orange-900/20' 
+                : 'border-gray-100 dark:border-gray-700'
+            }`}>
               <div className="relative h-40 overflow-hidden">
+                {/* 화상 강의 뱃지 */}
+                {course.productType === 'video_lecture' && (
+                  <div 
+                    className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md"
+                    data-testid="live-badge"
+                  >
+                    <Video className="h-3 w-3" />
+                    LIVE
+                  </div>
+                )}
+                {/* 다음 세션 일정 */}
+                {course.productType === 'video_lecture' && course.nextSessionDate && (
+                  <div 
+                    className="absolute top-2 right-2 z-10 bg-black/70 text-white px-2 py-1 rounded text-xs"
+                    data-testid="next-session-date"
+                  >
+                    {new Date(course.nextSessionDate).toLocaleDateString('ko-KR', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  </div>
+                )}
                 {course.thumbnailUrl ? (
                   <img 
                     src={course.thumbnailUrl} 
@@ -587,20 +689,40 @@ export default function Courses(props?: CoursesPageProps) {
                 </div>
 
                 <div className="mt-3 text-xs text-gray-500">
-                  <span>{Math.floor(course.duration / 60)}시간 {course.duration % 60}분</span>
-                  <span className="mx-2">•</span>
-                  <span>{course.modules.length}개 모듈</span>
-                  {course.hasAnyVideo && (
+                  {course.productType === 'video_lecture' ? (
+                    // 화상 강의 정보
                     <>
-                      <span className="mx-2">•</span>
-                      <span className="text-green-600 font-medium">
-                        <Video className="w-3 h-3 inline mr-1" />
-                        영상 {course.modulesWithVideoCount}/{course.modules.length}
+                      <span className="text-orange-600 font-medium" data-testid="session-duration">
+                        <Clock className="w-3 h-3 inline mr-1" />
+                        {course.sessionDuration || 60}분 세션
                       </span>
+                      <span className="mx-2">•</span>
+                      <span className="text-blue-600 font-medium" data-testid="participants-count">
+                        <Users className="w-3 h-3 inline mr-1" />
+                        {course.currentParticipants || 0}/{course.maxParticipants || 10}명
+                      </span>
+                      <span className="mx-2">•</span>
+                      <span>{course.category}</span>
+                    </>
+                  ) : (
+                    // 일반 강의 정보
+                    <>
+                      <span>{Math.floor(course.duration / 60)}시간 {course.duration % 60}분</span>
+                      <span className="mx-2">•</span>
+                      <span>{course.modules.length}개 모듈</span>
+                      {course.hasAnyVideo && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span className="text-green-600 font-medium">
+                            <Video className="w-3 h-3 inline mr-1" />
+                            영상 {course.modulesWithVideoCount}/{course.modules.length}
+                          </span>
+                        </>
+                      )}
+                      <span className="mx-2">•</span>
+                      <span>{course.category}</span>
                     </>
                   )}
-                  <span className="mx-2">•</span>
-                  <span>{course.category}</span>
                 </div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
@@ -611,14 +733,18 @@ export default function Courses(props?: CoursesPageProps) {
                     className="flex-1 text-xs"
                     onClick={() => handlePreview(course.id)}
                   >
-                    미리보기
+                    {course.productType === 'video_lecture' ? '세션 정보' : '미리보기'}
                   </Button>
                   <Button 
                     size="sm"
-                    className="flex-1 text-xs"
+                    className={`flex-1 text-xs ${
+                      course.productType === 'video_lecture' 
+                        ? 'bg-orange-500 hover:bg-orange-600' 
+                        : ''
+                    }`}
                     onClick={() => handlePurchase(course.id)}
                   >
-                    구매하기
+                    {course.productType === 'video_lecture' ? '세션 예약' : '구매하기'}
                   </Button>
                 </div>
               </div>
