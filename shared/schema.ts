@@ -1856,3 +1856,126 @@ export const selectCourseSchema = createSelectSchema(courses);
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type UpdateCourse = z.infer<typeof updateCourseSchema>;
 
+// =============================================================================
+// 화상 강의 세션 (줌 화상 수업) 스키마 정의
+// =============================================================================
+
+// 화상 강의 세션 생성 스키마
+export const insertVideoLectureSessionSchema = createInsertSchema(videoLectureSessions).omit({
+  id: true,
+  actualStartTime: true,
+  actualEndTime: true,
+  currentParticipants: true,
+  zoomMeetingId: true,
+  zoomJoinUrl: true,
+  zoomStartUrl: true,
+  zoomMeetingPassword: true,
+  createdAt: true,
+  updatedAt: true
+} as const).extend({
+  courseId: z.number().int().positive("올바른 강의 ID가 필요합니다"),
+  instructorId: z.number().int().positive("올바른 강사 ID가 필요합니다"),
+  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
+  description: z.string().max(1000, "설명은 1000자를 초과할 수 없습니다").optional().nullable(),
+  scheduledStartTime: z.string().datetime("올바른 날짜 시간 형식이 필요합니다"),
+  scheduledEndTime: z.string().datetime("올바른 날짜 시간 형식이 필요합니다"),
+  maxParticipants: z.number().int().min(1, "최소 1명 이상 참가 가능해야 합니다").max(500, "최대 500명까지 참가 가능합니다").default(50),
+  sessionNotes: z.string().max(2000, "세션 노트는 2000자를 초과할 수 없습니다").optional().nullable(),
+  materials: z.array(z.string().url("올바른 URL 형식이 아닙니다")).default([]),
+  tags: z.array(z.string().max(50, "태그는 50자를 초과할 수 없습니다")).default([])
+});
+
+// 화상 강의 세션 수정 스키마
+export const updateVideoLectureSessionSchema = insertVideoLectureSessionSchema.partial().omit({
+  courseId: true,
+  instructorId: true
+} as const).extend({
+  status: z.enum(["scheduled", "live", "completed", "cancelled"]).optional(),
+  recordingUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable()
+});
+
+// 화상 강의 세션 조회 스키마
+export const selectVideoLectureSessionSchema = createSelectSchema(videoLectureSessions);
+
+// 화상 강의 예약 생성 스키마
+export const insertVideoLectureBookingSchema = createInsertSchema(videoLectureBookings).omit({
+  id: true,
+  joinTime: true,
+  leaveTime: true,
+  createdAt: true,
+  updatedAt: true
+} as const).extend({
+  sessionId: z.number().int().positive("올바른 세션 ID가 필요합니다"),
+  userId: z.number().int().positive("올바른 사용자 ID가 필요합니다"),
+  petId: z.number().int().positive().optional().nullable(),
+  specialRequests: z.string().max(500, "특별 요청사항은 500자를 초과할 수 없습니다").optional().nullable()
+});
+
+// 화상 강의 예약 수정 스키마
+export const updateVideoLectureBookingSchema = z.object({
+  bookingStatus: z.enum(["confirmed", "cancelled", "no_show"]).optional(),
+  attendanceStatus: z.enum(["registered", "attended", "absent"]).optional(),
+  feedback: z.string().max(1000, "피드백은 1000자를 초과할 수 없습니다").optional().nullable(),
+  rating: z.number().int().min(1, "평점은 1~5 사이여야 합니다").max(5, "평점은 1~5 사이여야 합니다").optional().nullable()
+});
+
+// 화상 강의 예약 조회 스키마
+export const selectVideoLectureBookingSchema = createSelectSchema(videoLectureBookings);
+
+// 화상 강의 세션 쿼리 스키마
+export const videoLectureSessionQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  courseId: z.coerce.number().int().positive().optional(),
+  instructorId: z.coerce.number().int().positive().optional(),
+  status: z.enum(["scheduled", "live", "completed", "cancelled"]).optional(),
+  fromDate: z.string().optional(), // YYYY-MM-DD 형식
+  toDate: z.string().optional(),   // YYYY-MM-DD 형식
+  sortBy: z.enum(["scheduledStartTime", "createdAt", "title", "status"]).default("scheduledStartTime"),
+  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+});
+
+// 화상 강의 예약 쿼리 스키마
+export const videoLectureBookingQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  sessionId: z.coerce.number().int().positive().optional(),
+  userId: z.coerce.number().int().positive().optional(),
+  bookingStatus: z.enum(["confirmed", "cancelled", "no_show"]).optional(),
+  attendanceStatus: z.enum(["registered", "attended", "absent"]).optional(),
+  sortBy: z.enum(["createdAt", "scheduledStartTime", "rating"]).default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+// 줌 미팅 생성 스키마
+export const createZoomMeetingSchema = z.object({
+  sessionId: z.number().int().positive("올바른 세션 ID가 필요합니다"),
+  topic: z.string().min(1, "주제는 필수입니다").max(200, "주제는 200자를 초과할 수 없습니다"),
+  startTime: z.string().datetime("올바른 날짜 시간 형식이 필요합니다"),
+  duration: z.number().int().min(15, "최소 15분 이상이어야 합니다").max(480, "최대 8시간까지 가능합니다"),
+  password: z.string().min(4, "비밀번호는 최소 4자 이상이어야 합니다").max(10, "비밀번호는 최대 10자까지 가능합니다").optional(),
+  waitingRoom: z.boolean().default(true),
+  joinBeforeHost: z.boolean().default(false),
+  muteUponEntry: z.boolean().default(true),
+  autoRecording: z.enum(["none", "local", "cloud"]).default("none")
+});
+
+// 화상 강의 타입 정의
+export type VideoLectureSession = typeof videoLectureSessions.$inferSelect;
+export type InsertVideoLectureSession = z.infer<typeof insertVideoLectureSessionSchema>;
+export type UpdateVideoLectureSession = z.infer<typeof updateVideoLectureSessionSchema>;
+export type VideoLectureSessionQuery = z.infer<typeof videoLectureSessionQuerySchema>;
+
+export type VideoLectureBooking = typeof videoLectureBookings.$inferSelect;
+export type InsertVideoLectureBooking = z.infer<typeof insertVideoLectureBookingSchema>;
+export type UpdateVideoLectureBooking = z.infer<typeof updateVideoLectureBookingSchema>;
+export type VideoLectureBookingQuery = z.infer<typeof videoLectureBookingQuerySchema>;
+
+export type CreateZoomMeeting = z.infer<typeof createZoomMeetingSchema>;
+
+// 확장된 강의 타입 (화상 강의 포함)
+export type CourseType = "regular" | "video_lecture" | "hybrid";
+
+// UserRole 타입 정의 (이미 정의되어 있지만 확실히 하기 위해)
+export type UserRole = "user" | "pet-owner" | "trainer" | "institute-admin" | "admin";
+
