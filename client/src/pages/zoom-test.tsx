@@ -3,8 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import ZoomMeeting from '@/components/ZoomMeeting';
-import { Video, User, Phone, Calendar } from 'lucide-react';
+import { Video, User, Phone, Calendar, LogIn, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'wouter';
 
 export default function ZoomTestPage() {
   const [showMeeting, setShowMeeting] = useState(false);
@@ -12,8 +15,14 @@ export default function ZoomTestPage() {
   const [password, setPassword] = useState('');
   const [userName, setUserName] = useState('테스트 사용자');
   const [isSpeaker, setIsSpeaker] = useState(false);
+  const auth = useAuth();
 
   const handleJoinMeeting = () => {
+    if (!auth.isAuthenticated) {
+      alert('화상수업을 이용하시려면 로그인이 필요합니다.');
+      return;
+    }
+    
     if (!meetingId.trim()) {
       alert('미팅 ID를 입력해주세요.');
       return;
@@ -58,6 +67,55 @@ export default function ZoomTestPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            
+            {/* 비로그인 사용자 안내 */}
+            {!auth.isAuthenticated && (
+              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 dark:text-blue-200">
+                  <div className="space-y-2">
+                    <p className="font-medium">화상수업 이용 안내</p>
+                    <p className="text-sm">
+                      화상수업 기능을 이용하시려면 로그인이 필요합니다. 
+                      로그인 후 다음과 같은 기능을 이용하실 수 있습니다:
+                    </p>
+                    <ul className="text-sm space-y-1 ml-4 list-disc">
+                      <li>개인 Zoom 계정 연동 (무료, 40분 제한)</li>
+                      <li>서비스 계정 이용 (유료, 시간 제한 없음)</li>
+                      <li>강의 녹화 및 자료 공유</li>
+                      <li>참여자 관리 및 채팅 기능</li>
+                    </ul>
+                    <div className="flex gap-2 mt-3">
+                      <Link href="/auth/login">
+                        <Button size="sm" className="text-xs">
+                          <LogIn className="w-3 h-3 mr-1" />
+                          로그인하기
+                        </Button>
+                      </Link>
+                      <Link href="/auth/register">
+                        <Button variant="outline" size="sm" className="text-xs">
+                          <User className="w-3 h-3 mr-1" />
+                          회원가입
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* 로그인 사용자용 안내 */}
+            {auth.isAuthenticated && (
+              <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
+                <User className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800 dark:text-green-200">
+                  <p className="font-medium">환영합니다, {auth.userName}님!</p>
+                  <p className="text-sm mt-1">
+                    화상수업 기능을 자유롭게 테스트해보세요. 개인 Zoom 계정이나 테스트용 미팅 ID를 입력하여 기능을 체험할 수 있습니다.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-4">
               <div>
                 <Label htmlFor="meetingId">미팅 ID *</Label>
@@ -127,10 +185,11 @@ export default function ZoomTestPage() {
               <Button 
                 onClick={handleJoinMeeting}
                 className="flex-1"
+                disabled={!auth.isAuthenticated}
                 data-testid="button-join-meeting"
               >
                 <Video className="w-4 h-4 mr-2" />
-                화상수업 참여
+                {auth.isAuthenticated ? '화상수업 참여' : '로그인 후 이용 가능'}
               </Button>
               
               <Button 
