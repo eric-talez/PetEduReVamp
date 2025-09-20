@@ -321,7 +321,6 @@ export default function Courses(props?: CoursesPageProps) {
 
   return (
     <AppLayout 
-      title="강의"
       breadcrumbs={[
         { label: '홈', href: '/' },
         { label: '강의', current: true }
