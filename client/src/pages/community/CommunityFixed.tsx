@@ -502,6 +502,7 @@ function CommunityPage() {
       'training': '훈련팁 공유하기',
       'survey': '설문조사 만들기',
       'info': '정보 공유하기',
+      'events': '이벤트/행사 등록하기',
       'notices': '공지사항 작성'
     };
     return titles[tabValue as keyof typeof titles] || titles.latest;
@@ -515,6 +516,7 @@ function CommunityPage() {
       'training': '반려동물 훈련 노하우와 팁을 체계적으로 공유해주세요.',
       'survey': '커뮤니티 구성원들의 의견을 수집하는 설문을 만들어주세요.',
       'info': '유용한 정보와 자료를 다른 회원들과 공유해주세요.',
+      'events': '전국의 반려동물 관련 이벤트와 행사 정보를 등록해주세요.',
       'notices': '중요한 공지사항을 작성해주세요.'
     };
     return descriptions[tabValue as keyof typeof descriptions] || descriptions.latest;
@@ -528,6 +530,7 @@ function CommunityPage() {
       'training': '훈련 방법의 제목을 입력하세요 (예: 강아지 기본 앉아 훈련법)',
       'survey': '설문 제목을 입력하세요 (예: 반려동물 사료 선호도 조사)',
       'info': '정보 제목을 입력하세요 (예: 2024년 동물병원 진료비 안내)',
+      'events': '이벤트/행사 제목을 입력하세요 (예: 서울 펫페어 2024)',
       'notices': '공지사항 제목을 입력하세요'
     };
     return placeholders[tabValue as keyof typeof placeholders] || placeholders.latest;
@@ -547,6 +550,10 @@ function CommunityPage() {
       'info': {
         title: '정보공유 게시글이 없습니다',
         description: '유용한 정보를 공유해주세요!'
+      },
+      'events': {
+        title: '이벤트/행사가 없습니다',
+        description: '전국의 반려동물 관련 이벤트와 행사 정보를 등록해주세요!'
       },
       'notices': {
         title: '공지사항이 없습니다',
@@ -952,17 +959,18 @@ function CommunityPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="latest">최신 글</TabsTrigger>
           <TabsTrigger value="popular">인기 글</TabsTrigger>
           <TabsTrigger value="training">훈련팁</TabsTrigger>
           <TabsTrigger value="survey">설문</TabsTrigger>
           <TabsTrigger value="info">정보공유</TabsTrigger>
+          <TabsTrigger value="events">이벤트/행사</TabsTrigger>
           <TabsTrigger value="notices">공지사항</TabsTrigger>
         </TabsList>
 
         {/* 모든 탭에서 사용할 공통 콘텐츠 */}
-        {['latest', 'popular', 'training', 'survey', 'info', 'notices'].map(tabValue => (
+        {['latest', 'popular', 'training', 'survey', 'info', 'events', 'notices'].map(tabValue => (
           <TabsContent key={tabValue} value={tabValue} className="mt-6">
             {isLoading && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
