@@ -71,14 +71,14 @@ export function setupLocalAuth() {
 function getTestAccounts() {
   return {
     'admin': { 
-      password: process.env.TEST_ADMIN_PASSWORD || 'change-this-password-in-production', 
+      password: process.env.TEST_ADMIN_PASSWORD || 'admin123', 
       role: 'admin', 
       name: '관리자',
       email: 'admin@talez.com',
       id: 1
     },
     '관리자': { 
-      password: process.env.TEST_ADMIN_PASSWORD || 'change-this-password-in-production', 
+      password: process.env.TEST_ADMIN_PASSWORD || 'admin123', 
       role: 'admin', 
       name: '관리자',
       email: 'admin@talez.com',
