@@ -539,23 +539,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       fileSize: 100 * 1024 * 1024, // 100MB
     },
     fileFilter: (req, file, cb) => {
-      const allowedMimes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-        'application/vnd.ms-excel', // .xls
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-        'application/msword', // .doc
-        'application/x-hwp', // .hwp
-        'application/vnd.hancom.hwpx', // .hwpx
-        'text/plain' // .txt
-      ];
-      
-      const allowedExts = ['.xlsx', '.xls', '.docx', '.doc', '.hwp', '.hwpx', '.txt'];
+      const allowedExts = ['.xlsx', '.xls', '.docx', '.doc', '.hwpx', '.txt']; // HWP 제외
       const fileExt = path.extname(file.originalname).toLowerCase();
       
-      if (allowedMimes.includes(file.mimetype) || allowedExts.includes(fileExt)) {
+      // MIME 타입과 확장자를 모두 확인하여 보안 강화
+      const mimeExtMap = {
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+        'application/vnd.ms-excel': '.xls',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+        'application/msword': '.doc',
+        'application/zip': '.hwpx', // HWPX는 ZIP 기반이므로 확장자도 확인
+        'text/plain': '.txt'
+      };
+      
+      const expectedExt = mimeExtMap[file.mimetype];
+      
+      if (allowedExts.includes(fileExt) && (!expectedExt || expectedExt === fileExt)) {
         cb(null, true);
       } else {
-        cb(new Error('지원되지 않는 파일 형식입니다. (.hwp, .hwpx, .docx, .doc, .txt, .xlsx, .xls 파일만 지원)'), false);
+        cb(new Error('지원되지 않는 파일 형식입니다. (.hwpx, .docx, .doc, .txt, .xlsx, .xls 파일만 지원, HWP는 HWPX로 저장해주세요)'), false);
       }
     }
   });
@@ -594,9 +596,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // AI를 사용하여 가격 제안
       const pricingSuggestion = await suggestCurriculumPricing(aiCurriculum);
 
-      // 임시 파일 정리
+      // 임시 파일 정리 (성공 시)
       fs.unlink(req.file.path, (err) => {
         if (err) console.error('[AI 커리큘럼] 임시 파일 삭제 실패:', err);
+        else console.log('[AI 커리큘럼] 임시 파일 정리 완료:', req.file.originalname);
       });
 
       console.log('[AI 커리큘럼] 분석 완료:', {
@@ -622,10 +625,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[AI 커리큘럼] 분석 실패:', error);
       
-      // 임시 파일 정리
+      // 임시 파일 정리 (에러 시)
       if (req.file) {
         fs.unlink(req.file.path, (err) => {
           if (err) console.error('[AI 커리큘럼] 임시 파일 삭제 실패:', err);
+          else console.log('[AI 커리큘럼] 에러 후 임시 파일 정리 완료:', req.file.originalname);
         });
       }
 

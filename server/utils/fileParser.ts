@@ -87,15 +87,21 @@ async function parseExcelFile(filePath: string, fileName: string, fileSize: numb
     allText += `\n=== ${sheetName} ===\n${sheetText}\n`;
   }
 
+  // 텍스트 길이 제한 (20,000자)
+  const limitedText = allText.trim().slice(0, 20000);
+  if (allText.length > 20000) {
+    console.log(`[파일파서] 텍스트 길이 제한 적용: ${allText.length} -> 20,000자`);
+  }
+
   return {
-    text: allText.trim(),
-    tables,
+    text: limitedText,
+    tables: tables.slice(0, 5), // 테이블도 최대 5개로 제한
     metadata: {
       fileName,
       fileType: 'excel',
       fileSize,
-      extractedTables: tables.length,
-      extractedTextLength: allText.length
+      extractedTables: Math.min(tables.length, 5),
+      extractedTextLength: limitedText.length
     }
   };
 }
@@ -110,15 +116,21 @@ async function parseDocxFile(filePath: string, fileName: string, fileSize: numbe
   const text = result.value;
   const tables = extractTablesFromText(text);
 
+  // 텍스트 길이 제한 (20,000자)
+  const limitedText = text.slice(0, 20000);
+  if (text.length > 20000) {
+    console.log(`[파일파서] 텍스트 길이 제한 적용: ${text.length} -> 20,000자`);
+  }
+
   return {
-    text,
-    tables,
+    text: limitedText,
+    tables: tables.slice(0, 5), // 테이블도 최대 5개로 제한
     metadata: {
       fileName,
       fileType: 'docx',
       fileSize,
-      extractedTables: tables.length,
-      extractedTextLength: text.length
+      extractedTables: Math.min(tables.length, 5),
+      extractedTextLength: limitedText.length
     }
   };
 }
@@ -154,15 +166,21 @@ async function parseHwpxFile(filePath: string, fileName: string, fileSize: numbe
 
   const tables = extractTablesFromText(allText);
 
+  // 텍스트 길이 제한 (20,000자)
+  const limitedText = allText.slice(0, 20000);
+  if (allText.length > 20000) {
+    console.log(`[파일파서] 텍스트 길이 제한 적용: ${allText.length} -> 20,000자`);
+  }
+
   return {
-    text: allText,
-    tables,
+    text: limitedText,
+    tables: tables.slice(0, 5), // 테이블도 최대 5개로 제한
     metadata: {
       fileName,
       fileType: 'hwpx',
       fileSize,
-      extractedTables: tables.length,
-      extractedTextLength: allText.length
+      extractedTables: Math.min(tables.length, 5),
+      extractedTextLength: limitedText.length
     }
   };
 }
@@ -174,15 +192,21 @@ async function parseTextFile(filePath: string, fileName: string, fileSize: numbe
   const text = fs.readFileSync(filePath, 'utf-8');
   const tables = extractTablesFromText(text);
 
+  // 텍스트 길이 제한 (20,000자)
+  const limitedText = text.slice(0, 20000);
+  if (text.length > 20000) {
+    console.log(`[파일파서] 텍스트 길이 제한 적용: ${text.length} -> 20,000자`);
+  }
+
   return {
-    text,
-    tables,
+    text: limitedText,
+    tables: tables.slice(0, 5), // 테이블도 최대 5개로 제한
     metadata: {
       fileName,
       fileType: 'text',
       fileSize,
-      extractedTables: tables.length,
-      extractedTextLength: text.length
+      extractedTables: Math.min(tables.length, 5),
+      extractedTextLength: limitedText.length
     }
   };
 }
@@ -229,7 +253,7 @@ function extractTablesFromText(text: string): Array<{ headers: string[]; rows: s
  * 파일 업로드 안전성 검증
  */
 export function validateUploadedFile(filePath: string, originalName: string): void {
-  const allowedExtensions = ['.hwp', '.hwpx', '.docx', '.doc', '.txt', '.xlsx', '.xls'];
+  const allowedExtensions = ['.hwpx', '.docx', '.doc', '.txt', '.xlsx', '.xls']; // HWP 제외
   const maxSize = 100 * 1024 * 1024; // 100MB
   
   const fileExtension = path.extname(originalName).toLowerCase();

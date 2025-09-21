@@ -1182,14 +1182,14 @@ export default function AdminCurriculum() {
   const handleCurriculumFileUpload = async (file: File) => {
     if (!file) return;
 
-    // 파일 타입 검증
-    const allowedTypes = ['.hwp', '.hwpx', '.docx', '.doc', '.txt', '.xlsx', '.xls'];
+    // 파일 타입 검증 (HWP는 지원하지 않으므로 제외)
+    const allowedTypes = ['.hwpx', '.docx', '.doc', '.txt', '.xlsx', '.xls'];
     const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
     
     if (!allowedTypes.includes(fileExtension)) {
       toast({
         title: "파일 형식 오류",
-        description: "지원하는 파일 형식: .hwp, .hwpx, .docx, .doc, .txt, .xlsx, .xls",
+        description: "지원하는 파일 형식: .hwpx, .docx, .doc, .txt, .xlsx, .xls (HWP 파일은 HWPX 형식으로 저장해주세요)",
         variant: "destructive"
       });
       return;
@@ -2123,24 +2123,44 @@ export default function AdminCurriculum() {
                           </p>
                           <input
                             type="file"
-                            accept=".hwp,.hwpx,.docx,.doc,.txt,.xlsx,.xls"
+                            accept=".hwpx,.docx,.doc,.txt,.xlsx,.xls"
+                            disabled={isAnalyzing}
                             onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (file) handleCurriculumFileUpload(file);
+                              if (file && !isAnalyzing) handleCurriculumFileUpload(file);
                             }}
                             className="hidden"
                             id="curriculum-file-upload"
                           />
                           <label
                             htmlFor="curriculum-file-upload"
-                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer transition-colors"
+                            className={`inline-flex items-center px-4 py-2 text-white text-sm font-medium rounded-md transition-colors ${
+                              isAnalyzing 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+                            }`}
                           >
-                            <FileText className="w-4 h-4 mr-2" />
-                            파일 선택
+                            {isAnalyzing ? (
+                              <>
+                                <RotateCcw className="w-4 h-4 mr-2 animate-spin" />
+                                AI 분석 중...
+                              </>
+                            ) : (
+                              <>
+                                <FileText className="w-4 h-4 mr-2" />
+                                AI로 커리큘럼 생성
+                              </>
+                            )}
                           </label>
-                          {isProcessingFile && (
+                          {(isProcessingFile || isAnalyzing) && (
                             <div className="mt-2">
-                              <div className="text-xs text-blue-600">파일 처리 중...</div>
+                              <div className="text-xs text-blue-600 flex items-center gap-2">
+                                <RotateCcw className="w-3 h-3 animate-spin" />
+                                {isAnalyzing ? 'AI가 파일을 분석하여 커리큘럼을 생성중입니다...' : '파일 처리 중...'}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                ⚡ 파일 크기와 내용에 따라 1-3분 소요될 수 있습니다
+                              </div>
                             </div>
                           )}
                           {uploadedFile && (
@@ -3318,10 +3338,11 @@ export default function AdminCurriculum() {
                   </p>
                   <input
                     type="file"
-                    accept=".hwp,.hwpx,.docx,.doc,.txt,.xlsx,.xls"
+                    accept=".hwpx,.docx,.doc,.txt,.xlsx,.xls"
+                    disabled={isAnalyzing}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) {
+                      if (file && !isAnalyzing) {
                         handleCurriculumFileUpload(file);
                         setShowAdvancedCreation(false);
                       }
@@ -3331,10 +3352,23 @@ export default function AdminCurriculum() {
                   />
                   <label
                     htmlFor="advanced-file-upload"
-                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer transition-colors shadow-sm hover:shadow-md"
+                    className={`inline-flex items-center px-6 py-3 text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md ${
+                      isAnalyzing 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+                    }`}
                   >
-                    <FileText className="w-5 h-5 mr-2" />
-                    파일 선택하기
+                    {isAnalyzing ? (
+                      <>
+                        <RotateCcw className="w-5 h-5 mr-2 animate-spin" />
+                        AI 분석 중...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-5 h-5 mr-2" />
+                        AI로 커리큘럼 생성
+                      </>
+                    )}
                   </label>
                 </div>
               </div>
