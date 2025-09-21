@@ -144,7 +144,6 @@ function CommunityPage() {
   const [activeTab, setActiveTab] = useState('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const [isSurveyCreateOpen, setIsSurveyCreateOpen] = useState(false);
   const [viewType, setViewType] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
   const [selectedPost, setSelectedPost] = useState<any>(null);
@@ -162,15 +161,6 @@ function CommunityPage() {
     linkTitle: "",
     linkDescription: "",
     linkImage: ""
-  });
-  
-  const [newSurvey, setNewSurvey] = useState({
-    title: "",
-    description: "",
-    questions: [{ id: 1, type: 'multiple', question: '', options: ['', ''] }],
-    duration: 7, // days
-    allowAnonymous: true,
-    allowMultipleResponses: false
   });
   const [showLinkSection, setShowLinkSection] = useState(false);
   const [isExtractingLink, setIsExtractingLink] = useState(false);
@@ -397,7 +387,7 @@ function CommunityPage() {
       id: Date.now(),
       content: newComment,
       author: {
-        name: user?.name || '익명 사용자',
+        name: user?.username || '익명 사용자',
         image: user?.image || null
       },
       createdAt: new Date().toISOString(),
@@ -416,7 +406,7 @@ function CommunityPage() {
       id: Date.now(),
       content: replyText,
       author: {
-        name: user?.name || '익명 사용자',
+        name: user?.username || '익명 사용자',
         image: user?.image || null
       },
       createdAt: new Date().toISOString()
@@ -473,22 +463,13 @@ function CommunityPage() {
           </div>
 
           {/* 게시글 작성 버튼 */}
-          <Button 
-            className="bg-green-600 hover:bg-green-700 text-white"
-            onClick={() => {
-              if (activeTab === 'survey') {
-                setIsSurveyCreateOpen(true);
-              } else {
-                setIsCreatePostOpen(true);
-              }
-            }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {activeTab === 'survey' ? '설문 만들기' : '글쓰기'}
-          </Button>
-
-          {/* 일반 게시글 작성 다이얼로그 */}
           <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <Plus className="h-4 w-4 mr-2" />
+                글쓰기
+              </Button>
+            </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>새 게시글 작성</DialogTitle>
@@ -676,294 +657,6 @@ function CommunityPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-          {/* 설문 작성 다이얼로그 */}
-          <Dialog open={isSurveyCreateOpen} onOpenChange={setIsSurveyCreateOpen}>
-            <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>설문조사 만들기</DialogTitle>
-                <DialogDescription>
-                  커뮤니티 구성원들에게 묻고 싶은 설문을 만들어보세요.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-6">
-                {/* 설문 기본 정보 */}
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="survey-title">설문 제목</Label>
-                    <Input
-                      id="survey-title"
-                      placeholder="설문조사 제목을 입력하세요"
-                      value={newSurvey.title}
-                      onChange={(e) => setNewSurvey(prev => ({ ...prev, title: e.target.value }))}
-                      data-testid="input-survey-title"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="survey-description">설문 설명</Label>
-                    <Textarea
-                      id="survey-description"
-                      placeholder="설문조사에 대한 설명을 입력하세요"
-                      value={newSurvey.description}
-                      onChange={(e) => setNewSurvey(prev => ({ ...prev, description: e.target.value }))}
-                      className="min-h-[80px]"
-                    />
-                  </div>
-                </div>
-
-                {/* 설문 질문들 */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium">설문 질문</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const newQuestion = {
-                          id: Date.now(),
-                          type: 'multiple',
-                          question: '',
-                          options: ['', '']
-                        };
-                        setNewSurvey(prev => ({
-                          ...prev,
-                          questions: [...prev.questions, newQuestion]
-                        }));
-                      }}
-                      data-testid="button-add-question"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      질문 추가
-                    </Button>
-                  </div>
-
-                  {newSurvey.questions.map((question, qIndex) => (
-                    <div key={question.id} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label>질문 {qIndex + 1}</Label>
-                        {newSurvey.questions.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setNewSurvey(prev => ({
-                                ...prev,
-                                questions: prev.questions.filter(q => q.id !== question.id)
-                              }));
-                            }}
-                          >
-                            삭제
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <Input
-                          placeholder="질문을 입력하세요"
-                          value={question.question}
-                          onChange={(e) => {
-                            setNewSurvey(prev => ({
-                              ...prev,
-                              questions: prev.questions.map(q =>
-                                q.id === question.id ? { ...q, question: e.target.value } : q
-                              )
-                            }));
-                          }}
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-sm">답변 옵션</Label>
-                        <div className="space-y-2 mt-2">
-                          {question.options.map((option, oIndex) => (
-                            <div key={oIndex} className="flex items-center gap-2">
-                              <Input
-                                placeholder={`옵션 ${oIndex + 1}`}
-                                value={option}
-                                onChange={(e) => {
-                                  setNewSurvey(prev => ({
-                                    ...prev,
-                                    questions: prev.questions.map(q =>
-                                      q.id === question.id
-                                        ? {
-                                            ...q,
-                                            options: q.options.map((opt, i) =>
-                                              i === oIndex ? e.target.value : opt
-                                            )
-                                          }
-                                        : q
-                                    )
-                                  }));
-                                }}
-                              />
-                              {question.options.length > 2 && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setNewSurvey(prev => ({
-                                      ...prev,
-                                      questions: prev.questions.map(q =>
-                                        q.id === question.id
-                                          ? {
-                                              ...q,
-                                              options: q.options.filter((_, i) => i !== oIndex)
-                                            }
-                                          : q
-                                      )
-                                    }));
-                                  }}
-                                >
-                                  삭제
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setNewSurvey(prev => ({
-                                ...prev,
-                                questions: prev.questions.map(q =>
-                                  q.id === question.id
-                                    ? { ...q, options: [...q.options, ''] }
-                                    : q
-                                )
-                              }));
-                            }}
-                          >
-                            <Plus className="h-3 w-3 mr-1" />
-                            옵션 추가
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 설문 설정 */}
-                <div className="space-y-4 border-t pt-4">
-                  <Label className="text-base font-medium">설문 설정</Label>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="survey-duration">설문 기간 (일)</Label>
-                      <Input
-                        id="survey-duration"
-                        type="number"
-                        min="1"
-                        max="30"
-                        value={newSurvey.duration}
-                        onChange={(e) => setNewSurvey(prev => ({ ...prev, duration: parseInt(e.target.value) || 7 }))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="allow-anonymous"
-                        checked={newSurvey.allowAnonymous}
-                        onChange={(e) => setNewSurvey(prev => ({ ...prev, allowAnonymous: e.target.checked }))}
-                        className="rounded border-gray-300"
-                      />
-                      <Label htmlFor="allow-anonymous">익명 참여 허용</Label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="allow-multiple"
-                        checked={newSurvey.allowMultipleResponses}
-                        onChange={(e) => setNewSurvey(prev => ({ ...prev, allowMultipleResponses: e.target.checked }))}
-                        className="rounded border-gray-300"
-                      />
-                      <Label htmlFor="allow-multiple">중복 응답 허용</Label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsSurveyCreateOpen(false)}>
-                  취소
-                </Button>
-                <Button 
-                  onClick={() => {
-                    // 기본 검증
-                    if (!newSurvey.title.trim()) {
-                      toast({
-                        title: "제목을 입력해주세요",
-                        description: "설문조사 제목은 필수입니다.",
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-                    
-                    const validQuestions = newSurvey.questions.filter(q => 
-                      q.question.trim() && q.options.filter(opt => opt.trim()).length >= 2
-                    );
-                    
-                    if (validQuestions.length === 0) {
-                      toast({
-                        title: "질문을 추가해주세요",
-                        description: "최소 1개의 질문과 2개 이상의 답변 옵션이 필요합니다.",
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-
-                    // 설문 데이터를 게시글 형태로 변환
-                    const surveyPost = {
-                      title: newSurvey.title,
-                      content: newSurvey.description,
-                      category: "설문",
-                      tags: "설문조사",
-                      surveyData: {
-                        questions: validQuestions.map(q => ({
-                          ...q,
-                          options: q.options.filter(opt => opt.trim())
-                        })),
-                        duration: newSurvey.duration,
-                        allowAnonymous: newSurvey.allowAnonymous,
-                        allowMultipleResponses: newSurvey.allowMultipleResponses
-                      }
-                    };
-
-                    console.log('설문 생성:', surveyPost);
-                    
-                    // 임시로 성공 메시지 표시 (실제 API 연동 시 수정 필요)
-                    toast({
-                      title: "설문이 생성되었습니다",
-                      description: "커뮤니티에 설문조사가 게시되었습니다.",
-                    });
-                    
-                    // 폼 초기화
-                    setNewSurvey({
-                      title: "",
-                      description: "",
-                      questions: [{ id: 1, type: 'multiple', question: '', options: ['', ''] }],
-                      duration: 7,
-                      allowAnonymous: true,
-                      allowMultipleResponses: false
-                    });
-                    
-                    setIsSurveyCreateOpen(false);
-                  }}
-                  data-testid="button-create-survey"
-                >
-                  설문 만들기
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
 
@@ -1145,15 +838,9 @@ function CommunityPage() {
               <div className="text-center py-12">
                 <p className="text-xl mb-2">{getEmptyMessage(tabValue).title}</p>
                 <p className="text-muted-foreground mb-4">{getEmptyMessage(tabValue).description}</p>
-                <Button onClick={() => {
-                  if (tabValue === 'survey') {
-                    setIsSurveyCreateOpen(true);
-                  } else {
-                    setIsCreatePostOpen(true);
-                  }
-                }}>
+                <Button onClick={() => setIsCreatePostOpen(true)}>
                   <Plus className="h-4 w-4 mr-1" />
-                  {tabValue === 'survey' ? '설문 만들기' : '글쓰기'}
+                  글쓰기
                 </Button>
               </div>
             )}
@@ -1247,8 +934,8 @@ function CommunityPage() {
                   {/* 댓글 작성 */}
                   <div className="flex gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.image} alt={user?.name} />
-                      <AvatarFallback>{user?.name?.[0] || 'U'}</AvatarFallback>
+                      <AvatarImage src={user?.image} alt={user?.username} />
+                      <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-2">
                       <Textarea
@@ -1296,8 +983,8 @@ function CommunityPage() {
                           {replyingTo === comment.id && (
                             <div className="mt-3 flex gap-2">
                               <Avatar className="h-6 w-6">
-                                <AvatarImage src={user?.image} alt={user?.name} />
-                                <AvatarFallback>{user?.name?.[0] || 'U'}</AvatarFallback>
+                                <AvatarImage src={user?.image} alt={user?.username} />
+                                <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
                               </Avatar>
                               <div className="flex-1 space-y-2">
                                 <Textarea
