@@ -1122,6 +1122,11 @@ export default function AdminCurriculum() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null);
+  
+  // AI 커리큘럼 분석 상태
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<any>(null);
+  const [showAiPreview, setShowAiPreview] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAddingVideo, setIsAddingVideo] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
   const [newVideo, setNewVideo] = useState({
@@ -1190,14 +1195,20 @@ export default function AdminCurriculum() {
       return;
     }
 
-    setIsProcessingFile(true);
+    setIsAnalyzing(true);
     setUploadedFile(file);
 
     try {
+      toast({
+        title: "AI 분석 시작",
+        description: "파일을 분석하여 커리큘럼을 자동 생성 중입니다...",
+        variant: "default"
+      });
+
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/admin/curriculum/upload', {
+      const response = await fetch('/api/ai/curriculum/analyze', {
         method: 'POST',
         body: formData
       });
@@ -1205,78 +1216,32 @@ export default function AdminCurriculum() {
       if (response.ok) {
         const result = await response.json();
         
-        // 파일에서 추출된 내용으로 커리큘럼 폼 자동 입력
-        const extractedData = result.extractedData || {};
-        const registrantInfo = result.registrantInfo || {};
+        console.log('[AI 커리큘럼] 분석 결과:', result);
         
-        // 등록자 정보가 있는지 확인하고 회원 여부 검증
-        if (registrantInfo.email) {
-          // 회원 정보 확인 API 호출
-          try {
-            const memberResponse = await fetch(`/api/members/verify?email=${encodeURIComponent(registrantInfo.email)}`);
-            const memberData = await memberResponse.json();
-            
-            if (!memberData.isRegistered) {
-              toast({
-                title: "회원 가입 필요",
-                description: `${registrantInfo.email}은 등록되지 않은 이메일입니다. 커리큘럼 등록은 회원만 가능합니다.`,
-                variant: "destructive"
-              });
-              return;
-            }
-
-            toast({
-              title: "회원 확인 완료",
-              description: `${registrantInfo.name}님의 회원 정보가 확인되었습니다.`,
-              variant: "default"
-            });
-          } catch (memberError) {
-            console.warn('회원 확인 실패:', memberError);
-            toast({
-              title: "회원 확인 실패",
-              description: "회원 정보 확인 중 오류가 발생했습니다. 다시 시도해주세요.",
-              variant: "destructive"
-            });
-            return;
-          }
-        }
+        // AI 분석 결과 저장
+        setAiAnalysisResult(result.data);
         
-        const modulesData = extractedData.modules || [];
-        console.log('[클라이언트] 추출된 모듈 데이터:', modulesData.length, '개');
-        
-        setNewCurriculum(prev => ({
-          ...prev,
-          title: extractedData.title || file.name.replace(/\.[^/.]+$/, ""),
-          description: extractedData.description || "파일에서 추출된 커리큘럼",
-          category: extractedData.category || "행동교정",
-          difficulty: extractedData.difficulty || 'advanced',
-          duration: extractedData.duration || 480, // 8시간 기본값
-          price: extractedData.price || 300000,    // 30만원 기본값
-          trainerId: registrantInfo.name || '강동훈',
-          trainerName: registrantInfo.name || '강동훈',
-          modules: modulesData // 중요: 추출된 모듈 데이터 저장
-        }));
-
-        // 새 커리큘럼 생성 모드로 전환
-        setIsCreating(true);
-        setSelectedCurriculum(null);
+        // AI 미리보기 모달 표시
+        setShowAiPreview(true);
 
         toast({
-          title: "파일 업로드 및 자동 입력 완료",
-          description: `"${extractedData.title || file.name}" 커리큘럼 정보가 자동으로 입력되었습니다. 모듈 ${extractedData.modules?.length || 0}개, 등록자: ${registrantInfo.name || '미확인'}`,
+          title: "AI 분석 완료",
+          description: `AI가 "${result.data.curriculum.title}" 커리큘럼을 생성했습니다. 미리보기에서 확인하고 수정하세요.`,
           variant: "default"
         });
       } else {
-        throw new Error('파일 처리 실패');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '파일 분석 실패');
       }
     } catch (error) {
+      console.error('[AI 커리큘럼] 분석 실패:', error);
       toast({
-        title: "파일 처리 오류",
-        description: "파일을 처리하는 중 오류가 발생했습니다.",
+        title: "AI 분석 실패",
+        description: `파일 분석 중 오류가 발생했습니다: ${error.message}`,
         variant: "destructive"
       });
     } finally {
-      setIsProcessingFile(false);
+      setIsAnalyzing(false);
     }
   };
 
@@ -4796,6 +4761,323 @@ export default function AdminCurriculum() {
                 저장
               </Button>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* AI 커리큘럼 미리보기 모달 */}
+        <Dialog open={showAiPreview} onOpenChange={setShowAiPreview}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-blue-500" />
+                AI 커리큘럼 분석 결과
+              </DialogTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                AI가 분석한 커리큘럼을 확인하고 필요한 부분을 수정한 후 적용하세요.
+              </p>
+            </DialogHeader>
+
+            {aiAnalysisResult && (
+              <div className="space-y-6">
+                {/* 기본 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">커리큘럼 제목</label>
+                    <Input
+                      value={aiAnalysisResult.curriculum?.title || ''}
+                      onChange={(e) => setAiAnalysisResult(prev => ({
+                        ...prev,
+                        curriculum: { ...prev.curriculum, title: e.target.value }
+                      }))}
+                      placeholder="커리큘럼 제목"
+                      data-testid="input-ai-curriculum-title"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">카테고리</label>
+                    <Select
+                      value={aiAnalysisResult.curriculum?.category || ''}
+                      onValueChange={(value) => setAiAnalysisResult(prev => ({
+                        ...prev,
+                        curriculum: { ...prev.curriculum, category: value }
+                      }))}
+                    >
+                      <SelectTrigger data-testid="select-ai-curriculum-category">
+                        <SelectValue placeholder="카테고리 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="기초훈련">기초훈련</SelectItem>
+                        <SelectItem value="문제행동교정">문제행동교정</SelectItem>
+                        <SelectItem value="어질리티">어질리티</SelectItem>
+                        <SelectItem value="사회화">사회화</SelectItem>
+                        <SelectItem value="전문가과정">전문가과정</SelectItem>
+                        <SelectItem value="재활치료">재활치료</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">커리큘럼 설명</label>
+                  <Textarea
+                    value={aiAnalysisResult.curriculum?.description || ''}
+                    onChange={(e) => setAiAnalysisResult(prev => ({
+                      ...prev,
+                      curriculum: { ...prev.curriculum, description: e.target.value }
+                    }))}
+                    placeholder="커리큘럼 설명"
+                    rows={3}
+                    data-testid="textarea-ai-curriculum-description"
+                  />
+                </div>
+
+                {/* 가격 정보 */}
+                {aiAnalysisResult.pricing && (
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />
+                      AI 가격 제안
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">제안 가격</p>
+                        <p className="text-lg font-bold text-yellow-800 dark:text-yellow-200">
+                          ₩{aiAnalysisResult.pricing.suggestedPrice?.toLocaleString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">가격 범위</p>
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                          ₩{aiAnalysisResult.pricing.priceRange?.min?.toLocaleString()} - 
+                          ₩{aiAnalysisResult.pricing.priceRange?.max?.toLocaleString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">신뢰도</p>
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                          {Math.round((aiAnalysisResult.pricing.confidence || 0) * 100)}%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-1">가격 산정 근거:</p>
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        {aiAnalysisResult.pricing.reasoning}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 모듈 목록 */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    커리큘럼 모듈 ({aiAnalysisResult.curriculum?.modules?.length || 0}개)
+                  </h3>
+                  <div className="space-y-4 max-h-60 overflow-y-auto">
+                    {aiAnalysisResult.curriculum?.modules?.map((module, index) => (
+                      <div key={index} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium mb-1">모듈 제목</label>
+                            <Input
+                              value={module.title || ''}
+                              onChange={(e) => {
+                                const newModules = [...(aiAnalysisResult.curriculum?.modules || [])];
+                                newModules[index] = { ...newModules[index], title: e.target.value };
+                                setAiAnalysisResult(prev => ({
+                                  ...prev,
+                                  curriculum: { ...prev.curriculum, modules: newModules }
+                                }));
+                              }}
+                              placeholder="모듈 제목"
+                              className="text-sm"
+                              data-testid={`input-ai-module-title-${index}`}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium mb-1">소요 시간 (분)</label>
+                            <Input
+                              type="number"
+                              value={module.duration || 0}
+                              onChange={(e) => {
+                                const newModules = [...(aiAnalysisResult.curriculum?.modules || [])];
+                                newModules[index] = { ...newModules[index], duration: parseInt(e.target.value) || 0 };
+                                setAiAnalysisResult(prev => ({
+                                  ...prev,
+                                  curriculum: { ...prev.curriculum, modules: newModules }
+                                }));
+                              }}
+                              placeholder="60"
+                              className="text-sm"
+                              data-testid={`input-ai-module-duration-${index}`}
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <label className="block text-xs font-medium mb-1">모듈 설명</label>
+                          <Textarea
+                            value={module.description || ''}
+                            onChange={(e) => {
+                              const newModules = [...(aiAnalysisResult.curriculum?.modules || [])];
+                              newModules[index] = { ...newModules[index], description: e.target.value };
+                              setAiAnalysisResult(prev => ({
+                                ...prev,
+                                curriculum: { ...prev.curriculum, modules: newModules }
+                              }));
+                            }}
+                            placeholder="모듈 설명"
+                            rows={2}
+                            className="text-sm"
+                            data-testid={`textarea-ai-module-description-${index}`}
+                          />
+                        </div>
+                        {module.objectives && module.objectives.length > 0 && (
+                          <div className="mt-2">
+                            <label className="block text-xs font-medium mb-1">학습 목표</label>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              {module.objectives.map((objective, objIndex) => (
+                                <div key={objIndex} className="flex items-start gap-1">
+                                  <span className="text-blue-500 mt-1">•</span>
+                                  <span>{objective}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 원본 파일 정보 */}
+                {aiAnalysisResult.sourceFile && (
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2 flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      원본 파일 정보
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-600 dark:text-gray-400">파일명</p>
+                        <p className="font-medium">{aiAnalysisResult.sourceFile.name}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 dark:text-gray-400">파일 크기</p>
+                        <p className="font-medium">{(aiAnalysisResult.sourceFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 dark:text-gray-400">추출된 텍스트</p>
+                        <p className="font-medium">{aiAnalysisResult.sourceFile.metadata?.extractedTextLength || 0} 자</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 액션 버튼 */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowAiPreview(false);
+                      setAiAnalysisResult(null);
+                    }}
+                    data-testid="button-ai-preview-cancel"
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        // AI 생성 커리큘럼을 기본 폼에 적용
+                        const curriculum = aiAnalysisResult.curriculum;
+                        const pricing = aiAnalysisResult.pricing;
+                        
+                        setNewCurriculum(prev => ({
+                          ...prev,
+                          title: curriculum.title || '',
+                          description: curriculum.description || '',
+                          category: curriculum.category || '',
+                          difficulty: curriculum.difficulty || 'intermediate',
+                          duration: curriculum.duration || 0,
+                          price: pricing?.suggestedPrice || 0,
+                          trainerName: curriculum.trainerName || '관리자',
+                          modules: curriculum.modules || []
+                        }));
+
+                        // 새 커리큘럼 생성 모드로 전환
+                        setIsCreating(true);
+                        setSelectedCurriculum(null);
+                        setShowAiPreview(false);
+
+                        toast({
+                          title: "AI 커리큘럼 적용 완료",
+                          description: "AI가 생성한 커리큘럼이 편집기에 적용되었습니다.",
+                          variant: "default"
+                        });
+                      } catch (error) {
+                        toast({
+                          title: "적용 실패",
+                          description: "커리큘럼 적용 중 오류가 발생했습니다.",
+                          variant: "destructive"
+                        });
+                      }
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    data-testid="button-ai-preview-apply"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    커리큘럼 적용
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const saveData = {
+                          curriculum: aiAnalysisResult.curriculum,
+                          pricing: aiAnalysisResult.pricing,
+                          sourceInfo: aiAnalysisResult.sourceFile
+                        };
+
+                        const response = await fetch('/api/ai/curriculum/save-draft', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(saveData)
+                        });
+
+                        if (response.ok) {
+                          const result = await response.json();
+                          
+                          // 캐시 무효화
+                          queryClient.invalidateQueries({ queryKey: ['/api/admin/curriculum'] });
+                          
+                          setShowAiPreview(false);
+                          setAiAnalysisResult(null);
+
+                          toast({
+                            title: "AI 커리큘럼 저장 완료",
+                            description: "AI가 생성한 커리큘럼이 임시저장되었습니다.",
+                            variant: "default"
+                          });
+                        } else {
+                          throw new Error('저장 실패');
+                        }
+                      } catch (error) {
+                        toast({
+                          title: "저장 실패",
+                          description: "커리큘럼 저장 중 오류가 발생했습니다.",
+                          variant: "destructive"
+                        });
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                    data-testid="button-ai-preview-save"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    임시저장
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
