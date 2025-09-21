@@ -200,7 +200,7 @@ export default function Home() {
       title: "반려견 교육 용품 쇼핑몰",
       subtitle: "교육에 필요한 다양한 용품들을 한 곳에서 만나보세요",
       features: ["훈련사 추천", "교육 연계 할인", "빠른 배송"],
-      image: "https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
       primaryAction: { text: "쇼핑하기", path: "/shop" },
       secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
     },
@@ -209,7 +209,7 @@ export default function Home() {
       title: "반려인 커뮤니티",
       subtitle: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
       features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
-      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/image_1746582251297.png",
       primaryAction: { text: "커뮤니티", path: "/community" },
       secondaryAction: { text: "게시글 작성", path: "/community/create" }
     },
@@ -218,7 +218,7 @@ export default function Home() {
       title: "기관 및 훈련소 등록",
       subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 Talez와 함께하세요",
       features: ["기관 등록", "코스 관리", "수익 창출"],
-      image: "https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       primaryAction: { text: "기관 등록", path: "/institutes/register" },
       secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
@@ -231,7 +231,7 @@ export default function Home() {
       title: "더 많은 반려인들이 당신을 찾고 있습니다",
       subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
       features: ["전국 고객 연결", "안정적 수익", "브랜드 인지도"],
-      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       primaryAction: { text: "고객 연결", path: "/trainer/customer-connect" },
       secondaryAction: { text: "성공 사례", path: "/trainer/success-stories" }
     },
@@ -240,7 +240,7 @@ export default function Home() {
       title: "전문 훈련사의 가치를 제대로 인정받으세요",
       subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
       features: ["공정한 보상", "투명한 정산", "전문가 대우"],
-      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/image_1746582251297.png",
       primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
       secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
     },
@@ -249,7 +249,7 @@ export default function Home() {
       title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
       subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
       features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
-      image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
       primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
       secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
     },
@@ -258,7 +258,7 @@ export default function Home() {
       title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
       subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
       features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
       secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
     },
@@ -267,7 +267,7 @@ export default function Home() {
       title: "반려견 교육의 미래를 함께 만들어갑니다",
       subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
       features: ["업계 선도", "혁신 기술", "미래 교육"],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/image_1746582251297.png",
       primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
       secondaryAction: { text: "미래 교육", path: "/trainer/future-education" }
     },
@@ -276,7 +276,7 @@ export default function Home() {
       title: "더 많은 반려인들이 당신을 찾고 있습니다",
       subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
       features: ["전국 고객 연결", "안정적 수익", "브랜드 인지도"],
-      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       primaryAction: { text: "고객 연결", path: "/trainer/customer-connect" },
       secondaryAction: { text: "성공 사례", path: "/trainer/success-stories" }
     },
@@ -285,7 +285,7 @@ export default function Home() {
       title: "전문 훈련사의 가치를 제대로 인정받으세요",
       subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
       features: ["공정한 보상", "투명한 정산", "전문가 대우"],
-      image: "https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
       primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
       secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
     },
@@ -294,7 +294,7 @@ export default function Home() {
       title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
       subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
       features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
-      image: "https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/image_1746582251297.png",
       primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
       secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
     },
@@ -303,7 +303,7 @@ export default function Home() {
       title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
       subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
       features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
       secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
     },
@@ -312,7 +312,7 @@ export default function Home() {
       title: "반려견 교육의 미래를 함께 만들어갑니다",
       subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
       features: ["업계 선도", "혁신 기술", "미래 교육"],
-      image: "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/image_1746582251297.png",
       primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
       secondaryAction: { text: "미래 교육", path: "/trainer/future-education" }
     },
@@ -321,7 +321,7 @@ export default function Home() {
       title: "성공하는 훈련사들의 비밀, TALEZ가 알려드립니다.",
       subtitle: "검증된 성공 사례와 전략으로 당신의 훈련사 비즈니스를 성장시키세요",
       features: ["성공 전략", "사례 분석", "비즈니스 멘토링"],
-      image: "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       primaryAction: { text: "성공 전략", path: "/trainer/success-strategies" },
       secondaryAction: { text: "멘토링 신청", path: "/trainer/mentoring" }
     },
@@ -330,7 +330,7 @@ export default function Home() {
       title: "24시간 언제든지 상담 예약이 들어옵니다.",
       subtitle: "TALEZ 플랫폼으로 시간과 장소에 구애받지 않고 더 많은 수익을 창출하세요",
       features: ["24시간 예약", "자동 스케줄링", "수익 극대화"],
-      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
       primaryAction: { text: "예약 시스템", path: "/trainer/booking-system" },
       secondaryAction: { text: "수익 통계", path: "/trainer/revenue" }
     },
@@ -339,7 +339,7 @@ export default function Home() {
       title: "전국 어디서든 당신의 전문성을 인정받으세요.",
       subtitle: "지역 제약 없이 전국의 반려인들에게 서비스를 제공할 수 있습니다",
       features: ["전국 서비스", "원격 상담", "무제한 고객"],
-      image: "https://images.unsplash.com/photo-1583511655826-05700d52f4d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/image_1746582251297.png",
       primaryAction: { text: "서비스 확장", path: "/trainer/expand-service" },
       secondaryAction: { text: "원격 상담", path: "/trainer/remote-consulting" }
     },
@@ -348,7 +348,7 @@ export default function Home() {
       title: "프리미엄 훈련사로 차별화된 서비스를 제공하세요.",
       subtitle: "고급 인증과 특별한 혜택으로 더 높은 수준의 서비스를 제공할 수 있습니다",
       features: ["프리미엄 인증", "차별화 서비스", "높은 수수료"],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       primaryAction: { text: "프리미엄 등급", path: "/trainer/premium-tier" },
       secondaryAction: { text: "인증 신청", path: "/trainer/certification-apply" }
     },
@@ -357,7 +357,7 @@ export default function Home() {
       title: "AI 기술로 더 효과적인 훈련 결과를 만들어보세요.",
       subtitle: "최신 AI 분석 도구와 데이터를 활용해 훈련 효과를 극대화하세요",
       features: ["AI 분석", "데이터 활용", "효과 최적화"],
-      image: "https://images.unsplash.com/photo-1587300942307-4f2e1ce14d6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "/attached_assets/image_1746582251297.png",
       primaryAction: { text: "AI 도구", path: "/trainer/ai-tools" },
       secondaryAction: { text: "분석 리포트", path: "/trainer/analytics-report" }
     }
