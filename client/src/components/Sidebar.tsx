@@ -177,7 +177,10 @@ export function Sidebar({
                       ? "bg-gray-100 dark:bg-zinc-800 text-red-600" 
                       : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
                   )}
-                  onClick={() => onClose?.()} // 모바일에서 메뉴 클릭 시 사이드바 자동 닫기
+                  onClick={(e) => {
+                    e.stopPropagation(); // 이벤트 전파 방지
+                    onClose?.(); // 모바일에서 메뉴 클릭 시 사이드바 자동 닫기
+                  }}
                 >
                   {item.icon}
                 </div>
@@ -201,7 +204,10 @@ export function Sidebar({
               ? "bg-gray-100 dark:bg-zinc-800 text-red-600 font-medium" 
               : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
           )}
-          onClick={() => onClose?.()} // 모바일에서 메뉴 클릭 시 사이드바 자동 닫기
+          onClick={(e) => {
+            e.stopPropagation(); // 이벤트 전파 방지
+            onClose?.(); // 모바일에서 메뉴 클릭 시 사이드바 자동 닫기
+          }}
         >
           <div className="flex-shrink-0 mr-6">
             {item.icon}
@@ -243,16 +249,38 @@ export function Sidebar({
         </Button>
       </div>
       {/* 스크롤 영역 */}
-      <ScrollArea className="flex-1">
-        <div className="py-2">
+      <ScrollArea 
+        className="flex-1 cursor-pointer" 
+        onClick={(e) => {
+          // 메뉴 아이템이나 버튼이 아닌 빈 공간을 클릭했을 때만 사이드바 토글
+          if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.scroll-area-content')) {
+            onClose?.();
+          }
+        }}
+      >
+        <div 
+          className="py-2"
+          onClick={(e) => {
+            // 빈 공간 클릭 시 사이드바 토글
+            if (e.target === e.currentTarget) {
+              onClose?.();
+            }
+          }}
+        >
           {/* 로그인되지 않은 사용자를 위한 안내 - YouTube 스타일 */}
           {!isAuthenticated && expanded && (
-            <div className="px-6 py-4 mb-4">
+            <div 
+              className="px-6 py-4 mb-4"
+              onClick={(e) => e.stopPropagation()} // 이벤트 전파 방지
+            >
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                 로그인하여 더 많은 기능을 이용하세요.
               </p>
               <Link href="/auth">
-                <Button className="w-full text-sm bg-red-600 hover:bg-red-700 text-white">
+                <Button 
+                  className="w-full text-sm bg-red-600 hover:bg-red-700 text-white"
+                  onClick={(e) => e.stopPropagation()} // 이벤트 전파 방지
+                >
                   로그인
                 </Button>
               </Link>
