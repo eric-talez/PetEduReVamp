@@ -217,11 +217,11 @@ export function AppLayout({
           aria-label="메인 콘텐츠"
           tabIndex={-1}
           className={cn(
-            "flex-1 outline-none",
-            // 기본 컨테이너 스타일 - 페이지에서 오버라이드 가능
-            !contentClassName?.includes('container') && "container mx-auto",
-            !contentClassName?.includes('p-') && !contentClassName?.includes('px-') && "px-4",
-            !contentClassName?.includes('p-') && !contentClassName?.includes('py-') && "py-6",
+            "flex-1 outline-none min-h-[calc(100vh-4rem)]",
+            // 표준화된 반응형 컨테이너
+            !contentClassName?.includes('container') && "container-responsive mx-auto",
+            !contentClassName?.includes('p-') && !contentClassName?.includes('px-') && "px-4 sm:px-6 md:px-8",
+            !contentClassName?.includes('p-') && !contentClassName?.includes('py-') && "py-6 sm:py-8 md:py-10",
             contentClassName
           )}
         >

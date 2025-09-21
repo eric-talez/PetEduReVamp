@@ -78,10 +78,12 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             variant="ghost" 
             size="icon"
             onClick={onToggleSidebar}
-            className="h-11 w-11 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full min-h-[44px] min-w-[44px]"
+            className="h-11 w-11 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-ring focus:ring-offset-2"
             aria-label="메뉴 토글"
+            aria-expanded={sidebarOpen}
+            data-testid="menu-toggle-button"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6" aria-hidden="true" />
           </Button>
           
           <Link href="/" className="flex items-center space-x-2">

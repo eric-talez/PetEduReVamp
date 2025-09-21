@@ -199,15 +199,25 @@ export function Sidebar({
       <Link key={item.id} href={item.href}>
         <div 
           className={cn(
-            "flex items-center h-11 px-3 mx-3 rounded-lg cursor-pointer transition-all duration-200 group min-h-[44px]",
+            "flex items-center h-11 px-3 mx-3 rounded-lg cursor-pointer transition-all duration-200 group min-h-[44px] focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
             active 
               ? "bg-gray-100 dark:bg-zinc-800 text-red-600 font-medium" 
               : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
           )}
           onClick={(e) => {
-            e.stopPropagation(); // 이벤트 전파 방지
-            onClose?.(); // 모바일에서 메뉴 클릭 시 사이드바 자동 닫기
+            e.stopPropagation();
+            onClose?.();
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose?.();
+            }
+          }}
+          tabIndex={0}
+          role="menuitem"
+          aria-current={active ? 'page' : undefined}
         >
           <div className="flex-shrink-0 mr-6">
             {item.icon}
