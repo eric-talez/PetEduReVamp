@@ -160,7 +160,21 @@ function CommunityPage() {
     linkUrl: "",
     linkTitle: "",
     linkDescription: "",
-    linkImage: ""
+    linkImage: "",
+    // 훈련팁 전용 필드
+    difficulty: "",
+    duration: "",
+    trainingType: "",
+    // 설문 전용 필드
+    surveyType: "",
+    surveyOptions: "",
+    surveyEndDate: "",
+    // 정보공유 전용 필드
+    infoSource: "",
+    infoCategory: "",
+    // 공지사항 전용 필드
+    noticeType: "",
+    noticeEndDate: ""
   });
   const [showLinkSection, setShowLinkSection] = useState(false);
   const [isExtractingLink, setIsExtractingLink] = useState(false);
@@ -421,6 +435,45 @@ function CommunityPage() {
     setReplyingTo(null);
   };
 
+  // 탭별 글쓰기 다이얼로그 제목
+  const getWriteDialogTitle = (tabValue: string) => {
+    const titles = {
+      'latest': '새 게시글 작성',
+      'popular': '새 게시글 작성',
+      'training': '훈련팁 공유하기',
+      'survey': '설문조사 만들기',
+      'info': '정보 공유하기',
+      'notices': '공지사항 작성'
+    };
+    return titles[tabValue as keyof typeof titles] || titles.latest;
+  };
+
+  // 탭별 글쓰기 다이얼로그 설명
+  const getWriteDialogDescription = (tabValue: string) => {
+    const descriptions = {
+      'latest': '커뮤니티에 공유할 게시글을 작성해주세요.',
+      'popular': '커뮤니티에 공유할 게시글을 작성해주세요.',
+      'training': '반려동물 훈련 노하우와 팁을 체계적으로 공유해주세요.',
+      'survey': '커뮤니티 구성원들의 의견을 수집하는 설문을 만들어주세요.',
+      'info': '유용한 정보와 자료를 다른 회원들과 공유해주세요.',
+      'notices': '중요한 공지사항을 작성해주세요.'
+    };
+    return descriptions[tabValue as keyof typeof descriptions] || descriptions.latest;
+  };
+
+  // 탭별 제목 플레이스홀더
+  const getTitlePlaceholder = (tabValue: string) => {
+    const placeholders = {
+      'latest': '게시글 제목을 입력하세요',
+      'popular': '게시글 제목을 입력하세요',
+      'training': '훈련 방법의 제목을 입력하세요 (예: 강아지 기본 앉아 훈련법)',
+      'survey': '설문 제목을 입력하세요 (예: 반려동물 사료 선호도 조사)',
+      'info': '정보 제목을 입력하세요 (예: 2024년 동물병원 진료비 안내)',
+      'notices': '공지사항 제목을 입력하세요'
+    };
+    return placeholders[tabValue as keyof typeof placeholders] || placeholders.latest;
+  };
+
   // 탭별 메시지 정의
   const getEmptyMessage = (tabValue: string) => {
     const messages = {
@@ -472,22 +525,170 @@ function CommunityPage() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>새 게시글 작성</DialogTitle>
+                <DialogTitle>{getWriteDialogTitle(activeTab)}</DialogTitle>
                 <DialogDescription>
-                  커뮤니티에 공유할 게시글을 작성해주세요.
+                  {getWriteDialogDescription(activeTab)}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
+                {/* 제목 필드 - 탭별 플레이스홀더 */}
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="title" className="text-right">제목</Label>
                   <Input
                     id="title"
                     value={newPost.title}
                     onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="게시글 제목을 입력하세요"
+                    placeholder={getTitlePlaceholder(activeTab)}
                     className="col-span-3"
                   />
                 </div>
+                
+                {/* 훈련팁 전용 필드 */}
+                {activeTab === 'training' && (
+                  <>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="difficulty" className="text-right">난이도</Label>
+                      <Select value={newPost.difficulty || '초급'} onValueChange={(value) => setNewPost(prev => ({ ...prev, difficulty: value }))}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="초급">초급 (기본적인 훈련)</SelectItem>
+                          <SelectItem value="중급">중급 (일정 경험 필요)</SelectItem>
+                          <SelectItem value="고급">고급 (전문 지식 필요)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="duration" className="text-right">소요시간</Label>
+                      <Input
+                        id="duration"
+                        value={newPost.duration || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, duration: e.target.value }))}
+                        placeholder="예: 10-15분"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="trainingType" className="text-right">훈련유형</Label>
+                      <Select value={newPost.trainingType || ''} onValueChange={(value) => setNewPost(prev => ({ ...prev, trainingType: value }))}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="훈련 유형을 선택하세요" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="기본훈련">기본훈련 (앉아, 기다려, 오라)</SelectItem>
+                          <SelectItem value="사회화">사회화 훈련</SelectItem>
+                          <SelectItem value="행동교정">문제행동 교정</SelectItem>
+                          <SelectItem value="놀이훈련">놀이를 통한 훈련</SelectItem>
+                          <SelectItem value="화장실훈련">화장실 훈련</SelectItem>
+                          <SelectItem value="산책훈련">산책 훈련</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+
+                {/* 설문 전용 필드 */}
+                {activeTab === 'survey' && (
+                  <>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="surveyType" className="text-right">설문유형</Label>
+                      <Select value={newPost.surveyType || '객관식'} onValueChange={(value) => setNewPost(prev => ({ ...prev, surveyType: value }))}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="객관식">객관식 (선택지 제공)</SelectItem>
+                          <SelectItem value="주관식">주관식 (자유 응답)</SelectItem>
+                          <SelectItem value="복수선택">복수선택 (여러 개 선택 가능)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                      <Label htmlFor="surveyOptions" className="text-right pt-2">선택지</Label>
+                      <Textarea
+                        id="surveyOptions"
+                        value={newPost.surveyOptions || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, surveyOptions: e.target.value }))}
+                        placeholder={`각 선택지를 한 줄씩 입력하세요\n예:\n찬성\n반대\n모르겠음`}
+                        className="col-span-3 min-h-[100px]"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="surveyEndDate" className="text-right">종료일</Label>
+                      <Input
+                        id="surveyEndDate"
+                        type="date"
+                        value={newPost.surveyEndDate || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, surveyEndDate: e.target.value }))}
+                        className="col-span-3"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* 정보공유 전용 필드 */}
+                {activeTab === 'info' && (
+                  <>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="infoSource" className="text-right">정보출처</Label>
+                      <Input
+                        id="infoSource"
+                        value={newPost.infoSource || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, infoSource: e.target.value }))}
+                        placeholder="출처를 입력하세요 (예: 농림축산식품부)"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="infoCategory" className="text-right">정보분야</Label>
+                      <Select value={newPost.infoCategory || ''} onValueChange={(value) => setNewPost(prev => ({ ...prev, infoCategory: value }))}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="정보 분야를 선택하세요" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="건강정보">건강정보</SelectItem>
+                          <SelectItem value="법률정보">법률정보</SelectItem>
+                          <SelectItem value="정책뉴스">정책뉴스</SelectItem>
+                          <SelectItem value="연구자료">연구자료</SelectItem>
+                          <SelectItem value="제품정보">제품정보</SelectItem>
+                          <SelectItem value="시설정보">시설정보</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+
+                {/* 공지사항 전용 필드 */}
+                {activeTab === 'notices' && (
+                  <>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="noticeType" className="text-right">공지유형</Label>
+                      <Select value={newPost.noticeType || '일반'} onValueChange={(value) => setNewPost(prev => ({ ...prev, noticeType: value }))}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="일반">일반 공지</SelectItem>
+                          <SelectItem value="중요">중요 공지</SelectItem>
+                          <SelectItem value="긴급">긴급 공지</SelectItem>
+                          <SelectItem value="이벤트">이벤트 공지</SelectItem>
+                          <SelectItem value="점검">시스템 점검</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="noticeEndDate" className="text-right">공지종료일</Label>
+                      <Input
+                        id="noticeEndDate"
+                        type="date"
+                        value={newPost.noticeEndDate || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, noticeEndDate: e.target.value }))}
+                        className="col-span-3"
+                      />
+                    </div>
+                  </>
+                )}
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label htmlFor="content" className="text-right pt-2">내용</Label>
                   <Textarea
