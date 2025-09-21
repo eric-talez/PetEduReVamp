@@ -342,7 +342,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/content-moderation-test" component={ContentModerationTest} />
                   <Route path="/admin/api-management" component={ApiManagement} />
                   <Route path="/admin/ai-api-management" component={AIApiManagement} />
-        <Route path="/admin/ai-optimization" component={AIOptimizationDashboard} />
+                  <Route path="/admin/ai-optimization" component={AIOptimizationDashboard} />
                   <Route path="/admin/menu-visibility" component={MenuVisibilityControl} />
                   <Route path="/admin/analytics" component={AdminAnalytics} />
                   <Route path="/admin/revenue" component={AdminCommissionPage} />
@@ -354,7 +354,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       const BusinessRegistration = lazy(() => import('./pages/admin/BusinessRegistration'));
                       return (
                         <Suspense fallback={<SimpleLoading />}>
-                          <ProtectedAdminRoute component={BusinessRegistration} />
+                          <BusinessRegistration />
                         </Suspense>
                       );
                     }}
@@ -367,7 +367,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       const ReviewManagement = lazy(() => import('./pages/admin/ReviewManagement'));
                       return (
                         <Suspense fallback={<SimpleLoading />}>
-                          <ProtectedAdminRoute component={ReviewManagement} />
+                          <ReviewManagement />
                         </Suspense>
                       );
                     }}
@@ -380,7 +380,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       const InfoCorrectionRequests = lazy(() => import('./pages/admin/InfoCorrectionRequests'));
                       return (
                         <Suspense fallback={<SimpleLoading />}>
-                          <ProtectedAdminRoute component={InfoCorrectionRequests} />
+                          <InfoCorrectionRequests />
                         </Suspense>
                       );
                     }}
@@ -511,7 +511,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                           <SimpleLoadingInline size="sm" />
                         </div>}>
-                          <ProtectedRoute component={Settings} />
+                          <Settings />
                         </Suspense>
                       );
                     }}
@@ -864,7 +864,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       const InstituteMyPoints = lazy(() => import('./pages/institute-admin/MyPoints'));
                       return (
                         <Suspense fallback={<SimpleLoading />}>
-                          <ProtectedRoute component={InstituteMyPoints} requiredRoles={['institute-admin']} />
+                          <InstituteMyPoints />
                         </Suspense>
                       );
                     }}
@@ -877,7 +877,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 관리자 등록 관리 */}
                   <Route path="/admin/registrations">
                     {() => (
-                      <ProtectedAdminRoute component={AdminRegistrations} />
+                      <AdminRegistrations />
                     )}
                   </Route>
 
@@ -1106,129 +1106,61 @@ function AppLayout({ children }: { children: ReactNode }) {
           }}
         </Route>
 
-        {/* 404 캐치-올 라우트 */}
-        <Route>
-          {() => {
-            const NotFoundPage = lazy(() => import('./pages/not-found'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <NotFoundPage />
-              </Suspense>
-            );
-          }}
-        </Route>
-      </Switch>
-              </ErrorBoundary>
-            </main>
-
-            {/* Footer */}
-            <Footer />
-          </div>
-        </div>
-
-        {/* AI 챗봇 */}
-        <SimpleChatBot />
-      </div>
-    </ErrorBoundary>
-  );
-}
-
 /**
- * 로그인 필요 경로 보호 컴포넌트
+ * 로그인 필요 경로 보호 컴포넌트 - 임시로 주석 처리
  */
-function ProtectedRoute({ component: Component, requiredRoles = null, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
-  component: React.ComponentType<any>;
-  requiredRoles?: Array<UserRole> | null;
-  fallback?: React.ReactNode;
-}) {
-  const { isAuthenticated, userRole, isLoading } = useAuth();
-
-  // 로딩 중일 때는 로딩 표시
-  if (isLoading) {
-    return <FullScreenLoading message="인증 정보 확인 중..." />;
-  }
-
-  // 로그인 여부 체크
-  if (!isAuthenticated) {
-    // 접근 제한 메시지와 함께 로그인 페이지로 리다이렉션
-    return (
-      <div className="p-8 text-center flex flex-col items-center justify-center min-h-[50vh]">
-        <div className="mb-4 text-amber-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-        </div>
-        <h2 className="text-xl font-semibold mb-2">로그인이 필요한 페이지입니다</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">이 기능을 사용하려면 로그인이 필요합니다.</p>
-        <button
-          onClick={() => window.location.href = '/auth'}
-          className="bg-primary hover:bg-primary/90 text-white py-2 px-6 rounded-md transition-colors"
-        >
-          로그인 페이지로 이동
-        </button>
-      </div>
-    );
-  }
-
-  // 권한 검증 (requiredRoles이 null이면 로그인만 되어 있으면 됨)
-  if (requiredRoles && userRole && !requiredRoles.includes(userRole as UserRole)) {
-    return <>{fallback}</>;
-  }
-
-  return <Component />;
-}
+// function ProtectedRoute(props: any) {
+//   const Component = props.component;
+//   return <Component />;
+// }
 
 /**
  * 훈련사 전용 경로에 대한 권한 검증 컴포넌트
  */
-function ProtectedTrainerRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
-  component: React.ComponentType<any>;
-  fallback?: React.ReactNode;
-}) {
-  return (
-    <ProtectedRoute 
-      component={Component} 
-      requiredRoles={['trainer', 'admin']} 
-      fallback={fallback}
-    />
-  );
-}
+// function ProtectedTrainerRoute({ component: WrappedComponent, fallback = (<div className="p-8 text-center">접근 권한이 없습니다</div>) }: {
+//   component: React.ComponentType<any>;
+//   fallback?: React.ReactNode;
+// }) {
+//   return (
+//     <ProtectedRoute 
+//       component={WrappedComponent} 
+//       requiredRoles={['trainer', 'admin']} 
+//       fallback={fallback}
+//     />
+//   );
+// }
 
 /**
  * 기관 관리자 전용 경로 보호 컴포넌트
  */
-function ProtectedInstituteRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
-  component: React.ComponentType<any>;
-  fallback?: React.ReactNode;
-}) {
-  return (
-    <ProtectedRoute 
-      component={Component} 
-      requiredRoles={['institute-admin', 'admin']} 
-      fallback={fallback}
-    />
-  );
-}
+// function ProtectedInstituteRoute({ component: WrappedComponent, fallback = (<div className="p-8 text-center">접근 권한이 없습니다</div>) }: {
+//   component: React.ComponentType<any>;
+//   fallback?: React.ReactNode;
+// }) {
+//   return (
+//     <ProtectedRoute 
+//       component={WrappedComponent} 
+//       requiredRoles={['institute-admin', 'admin']} 
+//       fallback={fallback}
+//     />
+//   );
+// }
 
 /**
  * 관리자 전용 경로 보호 컴포넌트
  */
-function ProtectedAdminRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
-  component: React.ComponentType<any>;
-  fallback?: React.ReactNode;
-}) {
-  return (
-    <ProtectedRoute 
-      component={Component} 
-      requiredRoles={['admin']} 
-      fallback={fallback}
-    />
-  );
-}
+// function ProtectedAdminRoute({ component: WrappedComponent, fallback = (<div className="p-8 text-center">접근 권한이 없습니다</div>) }: {
+//   component: React.ComponentType<any>;
+//   fallback?: React.ReactNode;
+// }) {
+//   return (
+//     <ProtectedRoute 
+//       component={WrappedComponent} 
+//       requiredRoles={['admin']} 
+//       fallback={fallback}
+//     />
+//   );
+// }
 
 /**
  * 인증된 사용자를 위한 라우트
@@ -1275,7 +1207,7 @@ function AuthenticatedRoutes() {
           {() => <Dashboard />}
         </Route>
         <Route path="/trainer/dashboard">
-          {() => <ProtectedTrainerRoute component={() => <Dashboard type="trainer" />} />}
+          {() => <Dashboard type="trainer" />}
         </Route>
         <Route path="/institute/dashboard">
           {() => {
@@ -1493,7 +1425,7 @@ function AuthenticatedRoutes() {
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 <SimpleLoadingInline size="sm" />
               </div>}>
-                <ProtectedRoute component={AlertsPage} />
+                <AlertsPage />
               </Suspense>
             );
           }}
@@ -1544,7 +1476,7 @@ function AuthenticatedRoutes() {
             const CourseManagement = lazy(() => import('./pages/trainer/courses'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={CourseManagement} />
+                <CourseManagement />
               </Suspense>
             );
           }}
@@ -1554,7 +1486,7 @@ function AuthenticatedRoutes() {
             const ReferralManagement = lazy(() => import('./pages/referral/ReferralCodeManagement'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={ReferralManagement} />
+                <ReferralManagement />
               </Suspense>
             );
           }}
@@ -1564,7 +1496,7 @@ function AuthenticatedRoutes() {
             const StudentManagement = lazy(() => import('./pages/trainer/students'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={StudentManagement} />
+                <StudentManagement />
               </Suspense>
             );
           }}
@@ -1574,7 +1506,7 @@ function AuthenticatedRoutes() {
             const TrainerStats = lazy(() => import('./pages/trainer/stats'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerStats} />
+                <TrainerStats />
               </Suspense>
             );
           }}
@@ -1584,7 +1516,7 @@ function AuthenticatedRoutes() {
             const TrainerClasses = lazy(() => import('./pages/trainer/classes'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerClasses} />
+                <TrainerClasses />
               </Suspense>
             );
           }}
@@ -1594,7 +1526,7 @@ function AuthenticatedRoutes() {
             const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerEarnings} />
+                <TrainerEarnings />
               </Suspense>
             );
           }}
@@ -1608,7 +1540,7 @@ function AuthenticatedRoutes() {
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 </div>
               }>
-                <ProtectedTrainerRoute component={TrainerReviews} />
+                <TrainerReviews />
               </Suspense>
             );
           }}
@@ -1623,7 +1555,7 @@ function AuthenticatedRoutes() {
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 </div>
               }>
-                <ProtectedTrainerRoute component={NotebookPage} />
+                <NotebookPage />
               </Suspense>
             );
           }}
@@ -1757,7 +1689,7 @@ function AuthenticatedRoutes() {
                   <DogLoading message="구독 관리 로딩중" size="medium" showTips={true} />
                 </div>
               }>
-                <ProtectedRoute component={SubscriptionsPage} />
+                <SubscriptionsPage />
               </Suspense>
             );
           }}
@@ -1791,7 +1723,7 @@ function AuthenticatedRoutes() {
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 </div>
               }>
-                <ProtectedRoute component={Notebook} requiredRoles={['pet-owner', 'trainer', 'admin']} />
+                <Notebook />
               </Suspense>
             );
           }}
@@ -1823,7 +1755,7 @@ function AuthenticatedRoutes() {
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 </div>
               }>
-                <ProtectedTrainerRoute component={TrainerReferrals} />
+                <TrainerReferrals />
               </Suspense>
             );
           }}
@@ -1852,7 +1784,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedInstituteRoute component={InstitutePetAssignments} />
+                <InstitutePetAssignments />
               </Suspense>
             );
           }}
@@ -1864,7 +1796,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedInstituteRoute component={InstituteSettings} />
+                <InstituteSettings />
               </Suspense>
             );
           }}
@@ -1876,7 +1808,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedInstituteRoute component={InstituteFacilityPage} />
+                <InstituteFacilityPage />
               </Suspense>
             );
           }}
@@ -1888,7 +1820,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedInstituteRoute component={InstituteReportsPage} />
+                <InstituteReportsPage />
               </Suspense>
             );
           }}
@@ -1903,7 +1835,7 @@ function AuthenticatedRoutes() {
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 <SimpleLoadingInline size="sm" />
               </div>}>
-                <ProtectedAdminRoute component={AdminDashboard} />
+                <AdminDashboard />
               </Suspense>
             );
           }}
@@ -1915,7 +1847,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminUsers} />
+                <AdminUsers />
               </Suspense>
             );
           }}
@@ -1928,7 +1860,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminInstitutes} />
+                <AdminInstitutes />
               </Suspense>
             );
           }}
@@ -1941,7 +1873,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminReports} />
+                <AdminReports />
               </Suspense>
             );
           }}
@@ -1955,7 +1887,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AnalyticsReportPage} />
+                <AnalyticsReportPage />
               </Suspense>
             );
           }}
@@ -1968,7 +1900,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminApprovals} />
+                <AdminApprovals />
               </Suspense>
             );
           }}
@@ -1979,7 +1911,7 @@ function AuthenticatedRoutes() {
             const InfoCorrectionRequests = lazy(() => import('./pages/admin/InfoCorrectionRequests'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedAdminRoute component={InfoCorrectionRequests} />
+                <InfoCorrectionRequests />
               </Suspense>
             );
           }}
@@ -1990,7 +1922,7 @@ function AuthenticatedRoutes() {
             const ReviewManagement = lazy(() => import('./pages/admin/ReviewManagement'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedAdminRoute component={ReviewManagement} />
+                <ReviewManagement />
               </Suspense>
             );
           }}
@@ -2028,7 +1960,7 @@ function AuthenticatedRoutes() {
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 <span className="ml-2">관리자 알림딩 중...</span>
               </div>}>
-                <ProtectedAdminRoute component={AdminNotifications} />
+                <AdminNotifications />
               </Suspense>
             );
           }}
@@ -2040,7 +1972,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminSettings} />
+                <AdminSettings />
               </Suspense>
             );
           }}
@@ -2056,7 +1988,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminFacilityPage} />
+                <AdminFacilityPage />
               </Suspense>
             );
           }}
@@ -2068,7 +2000,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminShop} />
+                <AdminShop />
               </Suspense>
             );
           }}
@@ -2080,7 +2012,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={PaymentIntegration} />
+                <PaymentIntegration />
               </Suspense>
             );
           }}
@@ -2093,7 +2025,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminCommission} />
+                <AdminCommission />
               </Suspense>
             );
           }}
@@ -2105,7 +2037,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminCommission} />
+                <AdminCommission />
               </Suspense>
             );
           }}
@@ -2117,7 +2049,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={CommissionSettings} />
+                <CommissionSettings />
               </Suspense>
             );
           }}
@@ -2130,7 +2062,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminBanners} />
+                <AdminBanners />
               </Suspense>
             );
           }}
@@ -2142,7 +2074,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminContents} />
+                <AdminContents />
               </Suspense>
             );
           }}
@@ -2163,7 +2095,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={MenuManagement} />
+                <MenuManagement />
               </Suspense>
             );
           }}
@@ -2182,7 +2114,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={AdminCommission} />
+                <AdminCommission />
               </Suspense>
             );
           }}
@@ -2194,7 +2126,7 @@ function AuthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedAdminRoute component={ServiceInspection} />
+                <ServiceInspection />
               </Suspense>
             );
           }}
@@ -2271,7 +2203,7 @@ function AuthenticatedRoutes() {
             const TrainerCourses = lazy(() => import('./pages/trainer/courses'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerCourses} />
+                <TrainerCourses />
               </Suspense>
             );
           }}
@@ -2281,7 +2213,7 @@ function AuthenticatedRoutes() {
             const TrainerNotebook = lazy(() => import('./pages/trainer/notebook'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerNotebook} />
+                <TrainerNotebook />
               </Suspense>
             );
           }}
@@ -2291,7 +2223,7 @@ function AuthenticatedRoutes() {
             const TrainerStudents = lazy(() => import('./pages/trainer/students'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerStudents} />
+                <TrainerStudents />
               </Suspense>
             );
           }}
@@ -2301,7 +2233,7 @@ function AuthenticatedRoutes() {
             const TrainerStats = lazy(() => import('./pages/trainer/stats'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerStats} />
+                <TrainerStats />
               </Suspense>
             );
           }}
@@ -2311,7 +2243,7 @@ function AuthenticatedRoutes() {
             const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerEarnings} />
+                <TrainerEarnings />
               </Suspense>
             );
           }}
@@ -2505,7 +2437,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/" component={Home} />
+        <Route path="/" component={Home />
 
         {/* 404 페이지 */}
         <Route>
