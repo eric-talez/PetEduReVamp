@@ -121,6 +121,8 @@ import { setupSocialRoutes } from './routes/social';
 import { registerCourseManagementRoutes } from './routes/course-management';
 import { registerAIErrorFixRoutes } from './routes/ai-error-fix';
 import { registerAIUsageRoutes } from './routes/ai-usage';
+import { analyzeCurriculumContent, suggestCurriculumPricing } from './ai/openai';
+import { extractTextAndTables, validateUploadedFile } from './utils/fileParser';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -529,6 +531,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI 에러 자동 수정 라우트 등록
   registerAIErrorFixRoutes(app);
   registerAIUsageRoutes(app);
+
+  // AI 커리큘럼 분석을 위한 multer 설정
+  const aiCurriculumUpload = multer({
+    dest: 'uploads/ai-curriculum/',
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100MB
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedMimes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+        'application/vnd.ms-excel', // .xls
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        'application/msword', // .doc
+        'application/x-hwp', // .hwp
+        'application/vnd.hancom.hwpx', // .hwpx
+        'text/plain' // .txt
+      ];
+      
+      const allowedExts = ['.xlsx', '.xls', '.docx', '.doc', '.hwp', '.hwpx', '.txt'];
+      const fileExt = path.extname(file.originalname).toLowerCase();
+      
+      if (allowedMimes.includes(file.mimetype) || allowedExts.includes(fileExt)) {
+        cb(null, true);
+      } else {
+        cb(new Error('지원되지 않는 파일 형식입니다. (.hwp, .hwpx, .docx, .doc, .txt, .xlsx, .xls 파일만 지원)'), false);
+      }
+    }
+  });
+
+  // AI 커리큘럼 분석 API
+  app.post('/api/ai/curriculum/analyze', requireAuth(['admin', 'institute']), aiCurriculumUpload.single('file'), async (req, res) => {
+    try {
+      console.log('[AI 커리큘럼] 분석 요청 받음:', req.file?.originalname);
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: '분석할 파일이 필요합니다.'
+        });
+      }
+
+      // 파일 안전성 검증
+      validateUploadedFile(req.file.path, req.file.originalname);
+
+      // 파일에서 텍스트와 테이블 추출
+      const parsedContent = await extractTextAndTables(req.file.path, req.file.originalname);
+      
+      console.log('[AI 커리큘럼] 파일 파싱 완료:', {
+        fileName: parsedContent.metadata.fileName,
+        textLength: parsedContent.metadata.extractedTextLength,
+        tables: parsedContent.metadata.extractedTables
+      });
+
+      // AI를 사용하여 커리큘럼 생성
+      const aiCurriculum = await analyzeCurriculumContent(
+        parsedContent.text,
+        req.file.originalname,
+        req.body.context // 추가 컨텍스트 (선택사항)
+      );
+
+      // AI를 사용하여 가격 제안
+      const pricingSuggestion = await suggestCurriculumPricing(aiCurriculum);
+
+      // 임시 파일 정리
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('[AI 커리큘럼] 임시 파일 삭제 실패:', err);
+      });
+
+      console.log('[AI 커리큘럼] 분석 완료:', {
+        title: aiCurriculum.title,
+        modules: aiCurriculum.modules.length,
+        suggestedPrice: pricingSuggestion.suggestedPrice
+      });
+
+      res.json({
+        success: true,
+        message: 'AI 커리큘럼 분석이 완료되었습니다.',
+        data: {
+          curriculum: aiCurriculum,
+          pricing: pricingSuggestion,
+          sourceFile: {
+            name: req.file.originalname,
+            size: req.file.size,
+            metadata: parsedContent.metadata
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('[AI 커리큘럼] 분석 실패:', error);
+      
+      // 임시 파일 정리
+      if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error('[AI 커리큘럼] 임시 파일 삭제 실패:', err);
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: `AI 커리큘럼 분석에 실패했습니다: ${error.message}`
+      });
+    }
+  });
+
+  // AI 생성 커리큘럼 저장 API
+  app.post('/api/ai/curriculum/save-draft', requireAuth(['admin', 'institute']), csrfProtection, async (req, res) => {
+    try {
+      console.log('[AI 커리큘럼] 임시저장 요청 받음');
+      
+      const { curriculum, pricing, sourceInfo } = req.body;
+      
+      if (!curriculum) {
+        return res.status(400).json({
+          success: false,
+          message: '저장할 커리큘럼 데이터가 필요합니다.'
+        });
+      }
+
+      // 커리큘럼 데이터 구성
+      const curriculumData = {
+        title: curriculum.title,
+        description: curriculum.description,
+        category: curriculum.category,
+        difficulty: curriculum.difficulty,
+        duration: curriculum.duration,
+        price: pricing?.suggestedPrice || 0,
+        modules: curriculum.modules,
+        trainerName: curriculum.trainerName || '관리자',
+        trainerEmail: 'admin@talez.com',
+        aiMeta: {
+          generatedAt: new Date().toISOString(),
+          sourceFileName: sourceInfo?.name,
+          model: 'gpt-5',
+          pricing: pricing,
+          confidence: pricing?.confidence || 0.8
+        }
+      };
+
+      // 커리큘럼 저장
+      const savedCurriculum = await storage.createCurriculum(curriculumData);
+
+      console.log('[AI 커리큘럼] 임시저장 완료:', savedCurriculum.id);
+
+      res.json({
+        success: true,
+        message: 'AI 생성 커리큘럼이 임시저장되었습니다.',
+        data: savedCurriculum
+      });
+
+    } catch (error) {
+      console.error('[AI 커리큘럼] 임시저장 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: `커리큘럼 임시저장에 실패했습니다: ${error.message}`
+      });
+    }
+  });
 
   // 성능 모니터링 라우트 등록
   const { performanceRoutes } = await import('./routes/performance');
