@@ -93,9 +93,9 @@ import MenuVisibilityControl from "./pages/admin/MenuVisibilityControl";
 import NavigationProgress from "./components/NavigationProgress";
 import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
 
-// 레이아웃 및 컴포넌트 임포트
-import { TopBar } from "@/components/TopBar";
-import { Sidebar } from "@/components/Sidebar";
+// 레이아웃 및 컴포넌트 임포트 - YouTube Style
+import { YouTubeTopBar } from "@/components/YouTubeTopBar";
+import { YouTubeSidebar } from "@/components/YouTubeSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import Footer from "@/components/Footer";
 
@@ -277,56 +277,35 @@ function AppLayout({ children }: { children: ReactNode }) {
         {/* 접근성 개선: 콘텐츠로 건너뛰기 링크 */}
         <SkipToContent contentId="main-content" />
 
-        <div className="flex flex-grow">
-          {/* 사이드바 - 항상 고정된 너비를 가짐 */}
-          <aside 
+        {/* YouTube-style layout */}
+        {/* Top Bar - Fixed at top */}
+        <YouTubeTopBar
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          sidebarExpanded={sidebarExpanded}
+          onToggleSidebarExpanded={toggleSidebarSize}
+        />
+
+        <div className="flex">
+          {/* Sidebar - Starts below top bar */}
+          <YouTubeSidebar 
+            open={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)} 
+            userRole={auth.userRole} 
+            isAuthenticated={auth.isAuthenticated}
+            expanded={sidebarExpanded}
+            onToggleExpand={toggleSidebarSize}
+          />
+
+          {/* Main content area - Adjusted for YouTube layout */}
+          <main 
+            id="main-content" 
             className={`
-              shrink-0 h-screen fixed left-0 top-0 z-20
-              transition-all duration-300
-              ${sidebarExpanded ? 'w-64' : 'w-[70px]'}
-              ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
+              flex-grow pt-16 transition-all duration-200
+              ${isDesktop ? (sidebarExpanded ? 'ml-60' : 'ml-[72px]') : 'ml-0'}
             `}
-            aria-label="사이드바 메뉴"
+            tabIndex={-1}
           >
-            <Sidebar 
-              open={sidebarOpen} 
-              onClose={() => setSidebarOpen(false)} 
-              userRole={auth.userRole} 
-              isAuthenticated={auth.isAuthenticated}
-              expanded={sidebarExpanded}
-              onToggleExpand={toggleSidebarSize}
-            />
-            {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="fixed bottom-4 right-4 p-2 bg-card border border-border text-card-foreground text-xs rounded z-50">
-                역할: {auth.userRole || '미로그인'} / 
-                인증: {auth.isAuthenticated ? 'true' : 'false'}
-              </div>
-            )}
-          </aside>
-
-          {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
-          {sidebarOpen && !isDesktop && (
-            <div 
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-10" 
-              onClick={() => setSidebarOpen(false)}
-              aria-hidden="true"
-            />
-          )}
-
-          {/* 우측 컨텐츠 영역 (헤더 + 메인) */}
-          <div className={`
-            flex-grow flex flex-col min-h-screen transition-all duration-300 w-full
-            ${isDesktop ? (sidebarExpanded ? 'ml-64' : 'ml-[70px]') : 'ml-0'}
-          `}>
-            {/* 상단바 */}
-            <TopBar
-              sidebarOpen={sidebarOpen}
-              onToggleSidebar={isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)}
-            />
-
-            {/* 메인 컨텐츠 영역 */}
-            <main id="main-content" className="flex-grow" tabIndex={-1}>
               <ErrorBoundary>
                 <Switch>
                   {/* 홈 페이지 */}
@@ -2539,10 +2518,24 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-      </Switch>
-      {/* AI 챗봇 */}
-      <SimpleChatBot />
-    </AppLayout>
+                </Switch>
+              </ErrorBoundary>
+              
+              {/* AI 챗봇 */}
+              <SimpleChatBot />
+            </main>
+          </div>
+        </div>
+        
+        {/* Debug info - only shown in development mode */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="fixed bottom-4 right-4 p-2 bg-card border border-border text-card-foreground text-xs rounded z-50">
+            역할: {auth.userRole || '미로그인'} / 
+            인증: {auth.isAuthenticated ? 'true' : 'false'}
+          </div>
+        )}
+      </div>
+    </ErrorBoundary>
   );
 }
 
