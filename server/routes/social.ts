@@ -578,6 +578,18 @@ export function setupSocialRoutes(app: Express) {
       createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
       hidden: false,
+      surveyStats: {
+        totalParticipants: 2847,
+        genderStats: {
+          male: 45,
+          female: 55
+        },
+        regionStats: {
+          seoul: 38,
+          others: 62
+        }
+      },
+      surveyEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       linkInfo: {
         url: "https://www.example.com/pet-food-survey",
         title: "반려동물 사료 선택 설문조사",
@@ -598,6 +610,18 @@ export function setupSocialRoutes(app: Express) {
       createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
       hidden: false,
+      surveyStats: {
+        totalParticipants: 1924,
+        genderStats: {
+          male: 42,
+          female: 58
+        },
+        regionStats: {
+          seoul: 45,
+          others: 55
+        }
+      },
+      surveyEndDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
       linkInfo: {
         url: "https://www.example.com/health-checkup-survey",
         title: "반려동물 건강검진 설문조사",
@@ -618,6 +642,18 @@ export function setupSocialRoutes(app: Express) {
       createdAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
       hidden: false,
+      surveyStats: {
+        totalParticipants: 3156,
+        genderStats: {
+          male: 38,
+          female: 62
+        },
+        regionStats: {
+          seoul: 52,
+          others: 48
+        }
+      },
+      surveyEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       linkInfo: {
         url: "https://www.example.com/pet-travel-survey",
         title: "반려동물 여행 경험 설문조사",

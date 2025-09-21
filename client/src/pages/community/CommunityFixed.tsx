@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink, Users, UserCheck, MapPin, TrendingUp, BarChart3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -79,8 +79,67 @@ const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }
       <CardContent className="pb-2">
         <p className="text-sm text-gray-600 line-clamp-3">{post.content}</p>
         
+        {/* 설문 통계 정보 (설문 게시글인 경우) */}
+        {post.tag === '설문' && (
+          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart3 className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">설문 참여 현황</span>
+            </div>
+            
+            {/* 전체 참여율 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1">
+                  <UserCheck className="h-3 w-3 text-green-600" />
+                  <span>총 참여자</span>
+                </div>
+                <span className="font-medium text-green-700">{post.surveyStats?.totalParticipants || 0}명</span>
+              </div>
+              
+              {/* 참여율 프로그레스 바 */}
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${Math.min(100, (post.surveyStats?.totalParticipants || 0) / 100 * 100)}%` }}
+                ></div>
+              </div>
+              
+              {/* 성별/지역 분포 */}
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="text-xs">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Users className="h-3 w-3 text-purple-600" />
+                    <span>성별 분포</span>
+                  </div>
+                  <div className="text-gray-600">
+                    남성 {post.surveyStats?.genderStats?.male || 0}% • 여성 {post.surveyStats?.genderStats?.female || 0}%
+                  </div>
+                </div>
+                <div className="text-xs">
+                  <div className="flex items-center gap-1 mb-1">
+                    <MapPin className="h-3 w-3 text-orange-600" />
+                    <span>지역 분포</span>
+                  </div>
+                  <div className="text-gray-600">
+                    서울 {post.surveyStats?.regionStats?.seoul || 0}% • 기타 {post.surveyStats?.regionStats?.others || 0}%
+                  </div>
+                </div>
+              </div>
+              
+              {/* 설문 종료일 */}
+              {post.surveyEndDate && (
+                <div className="flex items-center gap-1 text-xs text-gray-500 mt-2 pt-2 border-t border-blue-200">
+                  <Clock className="h-3 w-3" />
+                  <span>종료: {new Date(post.surveyEndDate).toLocaleDateString('ko-KR')}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         {/* 링크 정보 미리보기 (썸네일이 없을 때만) */}
-        {post.linkInfo && !post.linkInfo.image && (
+        {post.linkInfo && !post.linkInfo.image && post.tag !== '설문' && (
           <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
             <div className="flex items-start gap-3">
               <div className="flex-1">
