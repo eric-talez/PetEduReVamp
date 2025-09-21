@@ -208,8 +208,21 @@ function CommunityPage() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '크롤링에 실패했습니다.');
+        let errorMessage = '크롤링에 실패했습니다.';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // JSON 파싱 실패 시 상태 코드에 따른 메시지
+          if (response.status === 401) {
+            errorMessage = '로그인이 필요합니다.';
+          } else if (response.status === 403) {
+            errorMessage = '관리자 권한이 필요합니다.';
+          } else if (response.status === 429) {
+            errorMessage = '요청이 너무 빠릅니다. 잠시 후 다시 시도해주세요.';
+          }
+        }
+        throw new Error(errorMessage);
       }
       
       return response.json();
@@ -217,9 +230,10 @@ function CommunityPage() {
     onSuccess: (data) => {
       toast({
         title: "크롤링 완료",
-        description: data.message || `${data.events}개의 이벤트/행사 정보가 수집되었습니다.`,
+        description: data.message || `${data.createdCount || data.events || 0}개의 이벤트/행사 정보가 수집되었습니다.`,
       });
-      // 게시글 목록 새로고침
+      // 게시글 목록 새로고침 (이벤트 탭 전용)
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts', 'events'] });
       queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
     },
     onError: (error) => {
@@ -616,12 +630,13 @@ function CommunityPage() {
             <p className="text-gray-600 mt-1">반려동물 교육과 훈련 정보를 공유하는 공간입니다</p>
           </div>
 
-          {/* 이벤트/행사 탭에서만 크롤링 버튼 표시 */}
-          {activeTab === 'events' && (
+          {/* 이벤트/행사 탭에서만 크롤링 버튼 표시 (관리자 전용) */}
+          {activeTab === 'events' && user && (user.role === 'admin' || user.role === 'institute-admin') && (
             <Button 
               onClick={() => crawlEventsMutation.mutate()}
               disabled={crawlEventsMutation.isPending}
               className="bg-blue-600 hover:bg-blue-700 text-white mr-2"
+              data-testid="button-crawl-events"
             >
               {crawlEventsMutation.isPending ? (
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
