@@ -73,7 +73,7 @@ export default function Login() {
     
     try {
       // CSRF 토큰 먼저 가져오기
-      const csrfResponse = await fetch('/api/csrf', {
+      const csrfResponse = await fetch('/api/auth/csrf', {
         method: 'GET',
         credentials: 'include',
       });
@@ -85,7 +85,7 @@ export default function Login() {
       const csrfData = await csrfResponse.json();
       
       // 서버에 로그인 요청 (CSRF 토큰 포함)
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
