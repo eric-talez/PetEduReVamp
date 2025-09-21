@@ -9,7 +9,7 @@
 // 전역 인증 상태 관리 기능 사용
 import { useGlobalAuth, initGlobalAuthListener } from '@/hooks/useGlobalAuth';
 import type { AuthState } from '@/lib/global-auth-store';
-import type { UserRole } from '@shared/schema';
+import type { UserRole } from '../../../shared/schema';
 import { useToast } from '@/hooks/use-toast';
 import { authStore } from '@/lib/global-auth-store';
 
