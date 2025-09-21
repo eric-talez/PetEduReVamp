@@ -1350,14 +1350,14 @@ export function setupSocialRoutes(app: Express) {
         });
       }
 
-      // 속도 제한 체크 (관리자 계정당 5분에 1회)
+      // 사용자별 속도 제한 체크 (관리자 계정당 5분에 1회) - 글로벌 락 이전에 체크
       const RATE_LIMIT_MINUTES = 5;
       const now = Date.now();
-      const lastCrawlKey = `crawl_events_${req.session.userId}`;
+      const userRateLimitKey = `crawl_events_${user.id}`;
       
       // 메모리에 저장된 마지막 크롤링 시간 확인
       if (!global.crawlLimits) global.crawlLimits = new Map();
-      const lastCrawlTime = global.crawlLimits.get(lastCrawlKey) || 0;
+      const lastCrawlTime = global.crawlLimits.get(userRateLimitKey) || 0;
       
       if (now - lastCrawlTime < RATE_LIMIT_MINUTES * 60 * 1000) {
         const remainingMinutes = Math.ceil((RATE_LIMIT_MINUTES * 60 * 1000 - (now - lastCrawlTime)) / (60 * 1000));
@@ -1379,19 +1379,82 @@ export function setupSocialRoutes(app: Express) {
         });
       }
 
-      // 검색할 키워드들
-      const searchQueries = [
-        '반려동물 박람회',
-        '펫페어',
-        '강아지 대회',
-        '반려동물 축제',
-        '펫 이벤트',
-        '동물병원 무료검진',
-        '반려동물 입양',
-        '애견 아질리티'
-      ];
+      // 동시성 제어 (Global lock for crawling)
+      if (!global.crawlInProgress) global.crawlInProgress = false;
+      if (global.crawlInProgress) {
+        return res.status(429).json({ 
+          success: false, 
+          error: '다른 관리자가 이미 크롤링을 진행 중입니다. 잠시 후 다시 시도해주세요.' 
+        });
+      }
+      
+      // 최종 방어: 다시 한 번 권한 확인
+      if (!user || (user.role !== 'admin' && user.role !== 'institute-admin')) {
+        return res.status(403).json({ 
+          success: false, 
+          error: '관리자 권한이 필요합니다.' 
+        });
+      }
+      
+      global.crawlInProgress = true;
+      
+      try {
+        // 검색할 키워드들
+        const searchQueries = [
+          '반려동물 박람회',
+          '펫페어',
+          '강아지 대회',
+          '반려동물 축제',
+          '펫 이벤트',
+          '동물병원 무료검진',
+          '반려동물 입양',
+          '애견 아질리티'
+        ];
 
-      const eventPosts = [];
+        const eventPosts = [];
+        let skippedDuplicates = 0;
+        let failedQueries = 0;
+        
+        // 고급 URL 정규화 함수
+        const normalizeUrl = (url: string): string => {
+          try {
+            const parsed = new URL(url);
+            
+            // 호스트 정규화
+            parsed.hostname = parsed.hostname.toLowerCase();
+            
+            // 기본 포트 제거
+            if ((parsed.protocol === 'http:' && parsed.port === '80') || 
+                (parsed.protocol === 'https:' && parsed.port === '443')) {
+              parsed.port = '';
+            }
+            
+            // 경로 정규화 (후행 슬래시 제거)
+            parsed.pathname = parsed.pathname.replace(/\/+$/, '') || '/';
+            
+            // 추적 파라미터 제거
+            const trackingParams = [
+              'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 
+              'fbclid', 'gclid', 'mc_eid', 'mc_cid', '_ga', '_gl'
+            ];
+            trackingParams.forEach(param => parsed.searchParams.delete(param));
+            
+            // 해시 제거
+            parsed.hash = '';
+            
+            return parsed.toString();
+          } catch {
+            // URL 파싱 실패 시 기본 정규화
+            return url.toLowerCase().trim().replace(/\/+$/, '');
+          }
+        };
+        
+        const existingUrls = new Set(
+          posts
+            .map(p => p.linkInfo?.url)
+            .filter(Boolean)
+            .map(url => normalizeUrl(url))
+        );
 
       for (const query of searchQueries) {
         try {
@@ -1407,7 +1470,8 @@ export function setupSocialRoutes(app: Express) {
           });
 
           if (!response.ok) {
-            console.error(`[이벤트 크롤링] API 요청 실패 (${query}):`, response.status, response.statusText);
+            console.error(`[이벤트 크롤링] API 요청 실패 (${query}):`, response.status);
+            failedQueries++;
             continue;
           }
 
@@ -1423,6 +1487,14 @@ export function setupSocialRoutes(app: Express) {
 
               const title = stripHtml(item.title);
               const description = stripHtml(item.description);
+              
+              // 중복 방지: 정규화된 URL로 체크
+              const normalizedUrl = normalizeUrl(item.link);
+              if (existingUrls.has(normalizedUrl)) {
+                console.log(`[이벤트 크롤링] 중복된 URL 건너뛴: ${item.link}`);
+                skippedDuplicates++;
+                continue;
+              }
               
               // 이벤트/행사 관련 게시글로 변환
               const eventPost = {
@@ -1443,18 +1515,11 @@ export function setupSocialRoutes(app: Express) {
                   title: title,
                   description: description,
                   image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&h=600&fit=crop"
-                },
-                eventInfo: {
-                  eventDate: new Date(),
-                  location: '상세 내용 확인 필요',
-                  organizer: stripHtml(item.bloggername || '정보 없음'),
-                  website: item.link,
-                  ticketPrice: '상세 내용 확인 필요',
-                  category: '기타'
                 }
               };
               
               eventPosts.push(eventPost);
+              existingUrls.add(normalizedUrl);
             }
           }
           
@@ -1467,28 +1532,38 @@ export function setupSocialRoutes(app: Express) {
         }
       }
 
-      // 크롤링된 이벤트 게시글들을 커뮤니티에 추가
-      for (const eventPost of eventPosts) {
-        posts.push(eventPost);
+        // 크롤링된 이벤트 게시글들을 커뮤니티에 추가
+        for (const eventPost of eventPosts) {
+          posts.push(eventPost);
+        }
+
+        // 사용자별 크롤링 시간 업데이트
+        global.crawlLimits.set(userRateLimitKey, now);
+
+        console.log(`[이벤트 크롤링] 완료 - 생성: ${eventPosts.length}, 중복: ${skippedDuplicates}, 실패: ${failedQueries}`);
+        
+        res.json({
+          success: true,
+          message: `${eventPosts.length}개의 이벤트/행사 정보가 성공적으로 등록되었습니다.`,
+          createdCount: eventPosts.length,
+          skippedDuplicates: skippedDuplicates,
+          failedQueries: failedQueries,
+          totalProcessed: eventPosts.length + skippedDuplicates
+        });
+        
+      } catch (innerError) {
+        console.error('[이벤트 크롤링] 내부 오류:', innerError instanceof Error ? innerError.message : innerError);
+        throw innerError;
+      } finally {
+        // 동시성 제어 해제 (모든 경우에 실행)
+        global.crawlInProgress = false;
       }
-
-      // 크롤링 시간 업데이트
-      global.crawlLimits.set(lastCrawlKey, now);
-
-      console.log(`[이벤트 크롤링] 총 ${eventPosts.length}개의 이벤트/행사 정보가 커뮤니티에 등록되었습니다.`);
-      
-      res.json({
-        success: true,
-        message: `${eventPosts.length}개의 이벤트/행사 정보가 성공적으로 등록되었습니다.`,
-        events: eventPosts.length,
-        createdCount: eventPosts.length
-      });
     } catch (error) {
-      console.error('[이벤트 크롤링] 오류:', error);
+      console.error('[이벤트 크롤링] 외부 오류:', error instanceof Error ? error.message : error);
+      
       res.status(500).json({ 
         success: false, 
-        error: '이벤트/행사 크롤링 중 오류가 발생했습니다.',
-        details: error instanceof Error ? error.message : '알 수 없는 오류'
+        error: '이벤트/행사 크롤링 중 오류가 발생했습니다.'
       });
     }
   });
