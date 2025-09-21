@@ -8,20 +8,20 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 
 class ApiError extends Error {
   statusCode: number;
-  
+
   constructor(statusCode: number, message: string) {
     super(message);
     this.statusCode = statusCode;
   }
-  
+
   static forbidden(message: string) {
     return new ApiError(403, message);
   }
-  
+
   static unauthorized() {
     return new ApiError(401, 'Unauthorized');
   }
-  
+
   static internal(message: string) {
     return new ApiError(500, message);
   }
@@ -33,25 +33,38 @@ export function registerDashboardRoutes(app: Express) {
   // 대시보드 통계 API
   app.get('/api/dashboard/stats', asyncHandler(async (req: any, res: any) => {
     console.log('[Dashboard] 대시보드 통계 요청받음');
-    
+
     try {
+      // 실제 데이터베이스에서 통계 조회
+      const users = storage.getAllUsers();
+      const institutes = storage.getAllInstitutes();
+      const trainers = storage.getAllTrainers();
+      const events = storage.getAllEvents();
+
+      // 활성 사용자 계산 (최근 7일 내 로그인)
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const activeUsers = users.filter(user => {
+        if (!user.lastLoginAt) return false;
+        return new Date(user.lastLoginAt) >= weekAgo;
+      }).length;
+
       const stats = {
-        totalUsers: 6,
-        totalCourses: 15,
-        totalInstitutes: 3,
-        totalTrainers: 5,
-        totalOrders: 42,
-        totalRevenue: 2580000,
-        activeUsers: 5,
-        activeCourses: 12,
-        pendingApplications: 8,
+        totalUsers: users.length,
+        totalCourses: 15, // TODO: 실제 데이터 연결 필요
+        totalInstitutes: institutes.length,
+        totalTrainers: trainers.length,
+        totalOrders: 42, // TODO: 실제 데이터 연결 필요
+        totalRevenue: 2580000, // TODO: 실제 데이터 연결 필요
+        activeUsers: activeUsers,
+        activeCourses: 12, // TODO: 실제 데이터 연결 필요
+        pendingApplications: 8, // TODO: 실제 데이터 연결 필요
         recentActivity: [
           { type: 'user_registered', message: '새로운 사용자가 등록되었습니다', timestamp: new Date().toISOString() },
           { type: 'course_completed', message: '기본 순종 훈련 과정이 완료되었습니다', timestamp: new Date().toISOString() },
           { type: 'payment_received', message: '결제가 완료되었습니다', timestamp: new Date().toISOString() }
         ]
       };
-      
+
       console.log('[Dashboard] 대시보드 통계 응답:', stats);
       res.json(stats);
     } catch (error) {
@@ -63,26 +76,64 @@ export function registerDashboardRoutes(app: Express) {
   // 관리자 대시보드 통계 API
   app.get('/api/admin/dashboard/stats', asyncHandler(async (req: any, res: any) => {
     console.log('[Dashboard] 관리자 대시보드 통계 요청받음');
-    
+
     try {
+      // 실제 데이터베이스에서 통계 조회
+      const users = storage.getAllUsers();
+      const institutes = storage.getAllInstitutes();
+      const trainers = storage.getAllTrainers();
+      const events = storage.getAllEvents();
+      const courses = storage.getAllCourses();
+      const products = storage.getAllProducts();
+
+      // 활성 사용자 계산 (최근 7일 내 로그인)
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const activeUsers = users.filter(user => {
+        if (!user.lastLoginAt) return false;
+        return new Date(user.lastLoginAt) >= weekAgo;
+      }).length;
+
+      // 승인 대기 계산 (활성화되지 않은 사용자 + 미검증 기관)
+      const pendingUsers = users.filter(user => !user.isActive).length;
+      const pendingInstitutes = institutes.filter(institute => !institute.isVerified).length;
+      const totalPendingApprovals = pendingUsers + pendingInstitutes;
+
+      // 미읽은 알림/신고 계산 (모든 사용자 대상)
+      const allNotifications = storage.getAllNotifications();
+      const unreadNotifications = allNotifications.filter(n => !n.isRead).length;
+
       const stats = {
-        totalUsers: 6,
-        totalCourses: 15,
-        totalInstitutes: 3,
-        totalTrainers: 5,
-        totalOrders: 42,
-        totalRevenue: 2580000,
-        activeUsers: 5,
-        activeCourses: 12,
-        pendingApplications: 8,
-        recentActivity: [
-          { type: 'user_registered', message: '새로운 사용자가 등록되었습니다', timestamp: new Date().toISOString() },
-          { type: 'course_completed', message: '기본 순종 훈련 과정이 완료되었습니다', timestamp: new Date().toISOString() },
-          { type: 'payment_received', message: '결제가 완료되었습니다', timestamp: new Date().toISOString() }
-        ]
+        totalUsers: users.length,
+        totalCourses: courses.length,
+        totalInstitutes: institutes.length,
+        totalTrainers: trainers.length,
+        totalEvents: events.length,
+        totalProducts: products.length,
+        activeUsers: activeUsers,
+        pendingApprovals: totalPendingApprovals,
+        unreadReports: unreadNotifications, // TODO: 신고 데이터 연결 필요
+        systemHealth: {
+          uptime: process.uptime(),
+          memoryUsage: process.memoryUsage(),
+          activeConnections: Math.floor(Math.random() * 10) + 1,
+          errorRate: Math.random() * 0.01
+        },
+        recentActivity: {
+          newUsersToday: users.filter(u =>
+            new Date(u.createdAt).toDateString() === new Date().toDateString()
+          ).length,
+          newCoursesToday: courses.filter(c =>
+            new Date(c.createdAt).toDateString() === new Date().toDateString()
+          ).length,
+          totalMessages: 0 // TODO: 메시지 데이터 연결 필요
+        }
       };
-      
-      console.log('[Dashboard] 관리자 대시보드 통계 응답:', stats);
+
+      console.log('[Dashboard] 관리자 대시보드 통계 응답:', {
+        totalUsers: stats.totalUsers,
+        activeUsers: stats.activeUsers,
+        uptime: Math.round(stats.systemHealth.uptime)
+      });
       res.json(stats);
     } catch (error) {
       console.error('[Dashboard] 관리자 대시보드 통계 오류:', error);
@@ -95,43 +146,22 @@ export function registerDashboardRoutes(app: Express) {
     console.log('[Dashboard] 시스템 상태 요청받음');
 
     try {
-      // 실제 시스템 메트릭 수집
-      // 샘플 데이터로 대체 (실제 구현에서는 데이터베이스 연결 필요)
-      const allUsers = [
-        { id: 1, name: '김반려', role: 'pet-owner', isActive: true, createdAt: '2024-01-15', updatedAt: '2024-01-15' },
-        { id: 2, name: '박훈련', role: 'trainer', isActive: true, createdAt: '2024-01-20', updatedAt: '2024-01-20' },
-        { id: 3, name: '이기관', role: 'institute-admin', isActive: true, createdAt: '2024-02-01', updatedAt: '2024-02-01' },
-        { id: 4, name: '최관리', role: 'admin', isActive: true, createdAt: '2024-01-10', updatedAt: '2024-01-10' },
-        { id: 5, name: '정반려', role: 'pet-owner', isActive: false, createdAt: '2024-02-15', updatedAt: '2024-02-15' },
-        { id: 6, name: '한훈련', role: 'trainer', isActive: true, createdAt: '2024-02-20', updatedAt: '2024-02-20' }
-      ];
-      
-      const allCourses = [
-        { id: 1, title: '기본 순종 훈련', isActive: true, createdAt: '2024-01-25' },
-        { id: 2, title: '어질리티 훈련', isActive: true, createdAt: '2024-02-01' },
-        { id: 3, title: '사회화 훈련', isActive: false, createdAt: '2024-02-10' }
-      ];
-      
-      const allInstitutes = [
-        { id: 1, name: '서울반려견센터', isVerified: true, createdAt: '2024-01-20' },
-        { id: 2, name: '부산훈련소', isVerified: false, createdAt: '2024-02-05' }
-      ];
-      
-      const allTrainers = [
-        { id: 1, name: '박훈련', isVerified: true, createdAt: '2024-01-20' },
-        { id: 2, name: '한훈련', isVerified: true, createdAt: '2024-02-20' }
-      ];
-      
-      const allEvents = [
-        { id: 1, title: '반려견 페스티벌', isActive: true, date: '2024-03-15', createdAt: '2024-02-01' },
-        { id: 2, title: '훈련 워크샵', isActive: true, date: '2024-04-10', createdAt: '2024-02-10' }
-      ];
+      const allUsers = storage.getAllUsers();
+      const allCourses = storage.getAllCourses();
+      const allInstitutes = storage.getAllInstitutes();
+      const allTrainers = storage.getAllTrainers();
+      const allEvents = storage.getAllEvents();
 
       // 시스템 건강 상태 계산
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const activeConnections = allUsers.filter((user: any) =>
+        user.lastLoginAt && new Date(user.lastLoginAt) >= weekAgo
+      ).length;
+
       const systemHealth = {
         uptime: process.uptime(),
         memoryUsage: process.memoryUsage(),
-        activeConnections: allUsers.filter((user: any) => user.isActive).length,
+        activeConnections: activeConnections,
         errorRate: Math.random() * 0.01 // 실제 환경에서는 실제 에러율을 계산
       };
 
@@ -141,7 +171,7 @@ export function registerDashboardRoutes(app: Express) {
         totalInstitutes: allInstitutes.length,
         totalTrainers: allTrainers.length,
         totalEvents: allEvents.length,
-        activeUsers: systemHealth.activeConnections,
+        activeUsers: activeConnections,
         systemHealth,
         timestamp: new Date().toISOString()
       };
@@ -155,10 +185,10 @@ export function registerDashboardRoutes(app: Express) {
       res.json(successResponse(stats));
     } catch (error: any) {
       console.error('[Dashboard] 시스템 상태 조회 실패:', error);
-      res.status(500).json({ 
-        success: false, 
+      res.status(500).json({
+        success: false,
         error: '시스템 상태를 가져오는데 실패했습니다.',
-        details: error.message 
+        details: error.message
       });
     }
   }));
@@ -169,76 +199,30 @@ export function registerDashboardRoutes(app: Express) {
     console.log('[Dashboard] 관리자 통계 요청받음');
 
     try {
-      // 개발 환경에서 임시 사용자 ID 설정
       const adminUserId = req.user?.id || 'admin-1';
-      
-      // 실제 데이터 조회
-      // 관리자 통계용 샘플 데이터
-      const allUsers = [
-        { id: 1, name: '김반려', role: 'pet-owner', isActive: true, createdAt: '2024-01-15', updatedAt: '2024-01-15' },
-        { id: 2, name: '박훈련', role: 'trainer', isActive: true, createdAt: '2024-01-20', updatedAt: '2024-01-20' },
-        { id: 3, name: '이기관', role: 'institute-admin', isActive: true, createdAt: '2024-02-01', updatedAt: '2024-02-01' },
-        { id: 4, name: '최관리', role: 'admin', isActive: true, createdAt: '2024-01-10', updatedAt: '2024-01-10' },
-        { id: 5, name: '정반려', role: 'pet-owner', isActive: false, createdAt: '2024-02-15', updatedAt: '2024-02-15' },
-        { id: 6, name: '한훈련', role: 'trainer', isActive: true, createdAt: '2024-02-20', updatedAt: '2024-02-20' }
-      ];
-      
-      const allCourses = [
-        { id: 1, title: '기본 순종 훈련', isActive: true, createdAt: '2024-01-25' },
-        { id: 2, title: '어질리티 훈련', isActive: true, createdAt: '2024-02-01' },
-        { id: 3, title: '사회화 훈련', isActive: false, createdAt: '2024-02-10' }
-      ];
-      
-      const allInstitutes = [
-        { id: 1, name: '서울반려견센터', isVerified: true, createdAt: '2024-01-20' },
-        { id: 2, name: '부산훈련소', isVerified: false, createdAt: '2024-02-05' }
-      ];
-      
-      const allTrainers = [
-        { id: 1, name: '박훈련', isVerified: true, createdAt: '2024-01-20' },
-        { id: 2, name: '한훈련', isVerified: true, createdAt: '2024-02-20' }
-      ];
-      
-      const allEvents = [
-        { id: 1, title: '반려견 페스티벌', isActive: true, date: '2024-03-15', createdAt: '2024-02-01' },
-        { id: 2, title: '훈련 워크샵', isActive: true, date: '2024-04-10', createdAt: '2024-02-10' }
-      ];
-      
-      const allProducts = [
-        { id: 1, name: '프리미엄 사료', price: 50000, category: 'food', isActive: true },
-        { id: 2, name: '훈련용 장난감', price: 15000, category: 'toy', isActive: true },
-        { id: 3, name: '목줄', price: 25000, category: 'accessory', isActive: true }
-      ];
 
-      // 알림과 메시지는 임시로 빈 배열로 처리
-      const allNotifications: any[] = [];
-      const allMessages: any[] = [];
+      const allUsers = storage.getAllUsers();
+      const allCourses = storage.getAllCourses();
+      const allInstitutes = storage.getAllInstitutes();
+      const allTrainers = storage.getAllTrainers();
+      const allEvents = storage.getAllEvents();
+      const allProducts = storage.getAllProducts();
+      const allNotifications = storage.getAllNotifications();
+      const allMessages = storage.getAllMessages(); // TODO: 실제 구현 필요
 
-      // 알림과 메시지는 임시로 시뮬레이션 데이터로 처리
-      // 실제 구현에서는 적절한 storage 메서드를 사용
-      allNotifications.push(
-        { id: 1, title: '새로운 승인 요청', message: '훈련사 승인 요청이 있습니다.', isRead: false },
-        { id: 2, title: '시스템 알림', message: '정기 점검 완료', isRead: true }
-      );
-      
-      allMessages.push(
-        { id: 1, content: '관리자 메시지', isRead: false },
-        { id: 2, content: '시스템 알림', isRead: true }
-      );
-
-      // 승인 대기 계산 (활성화되지 않은 사용자 + 기관)
+      // 승인 대기 계산 (활성화되지 않은 사용자 + 미검증 기관)
       const pendingUsers = allUsers.filter(user => !user.isActive).length;
       const pendingInstitutes = allInstitutes.filter(institute => !institute.isVerified).length;
       const totalPendingApprovals = pendingUsers + pendingInstitutes;
 
-      // 미읽은 알림/신고 계산
+      // 미읽은 알림
       const unreadNotifications = allNotifications.filter(n => !n.isRead).length;
-      
+
       // 활성 사용자 계산 (최근 30일 내 활동)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const activeUsers = allUsers.filter(user => 
-        user.isActive && new Date(user.updatedAt) > thirtyDaysAgo
+      const activeUsers = allUsers.filter(user =>
+        user.isActive && user.lastLoginAt && new Date(user.lastLoginAt) > thirtyDaysAgo
       ).length;
 
       // 시스템 상태 계산
@@ -261,13 +245,13 @@ export function registerDashboardRoutes(app: Express) {
         activeUsers,
         systemHealth,
         recentActivity: {
-          newUsersToday: allUsers.filter(u => 
+          newUsersToday: allUsers.filter(u =>
             new Date(u.createdAt).toDateString() === new Date().toDateString()
           ).length,
-          newCoursesToday: allCourses.filter(c => 
+          newCoursesToday: allCourses.filter(c =>
             new Date(c.createdAt).toDateString() === new Date().toDateString()
           ).length,
-          totalMessages: allMessages.length
+          totalMessages: allMessages.length // TODO: 실제 구현 필요
         }
       };
 
@@ -286,7 +270,7 @@ export function registerDashboardRoutes(app: Express) {
 
     try {
       const trainerId = req.user.id;
-      
+
       // 훈련사 관련 데이터 조회
       const [
         trainerCourses,
@@ -302,7 +286,7 @@ export function registerDashboardRoutes(app: Express) {
 
       // 훈련사의 예약 필터링
       const trainerReservations = allReservations.filter(r => r.trainerId === trainerId);
-      
+
       // 수강생 수 계산 (예약을 통해 계산)
       const uniqueStudents = new Set(trainerReservations.map(r => r.userId));
       const totalStudents = uniqueStudents.size;
@@ -310,10 +294,10 @@ export function registerDashboardRoutes(app: Express) {
       // 이번 달 수익 계산 (예약 기반)
       const thisMonth = new Date();
       thisMonth.setDate(1);
-      const thisMonthReservations = trainerReservations.filter(r => 
+      const thisMonthReservations = trainerReservations.filter(r =>
         new Date(r.createdAt) >= thisMonth && r.status === 'completed'
       );
-      const monthlyRevenue = thisMonthReservations.reduce((sum, r) => 
+      const monthlyRevenue = thisMonthReservations.reduce((sum, r) =>
         sum + (parseFloat(r.price) || 0), 0
       );
 
@@ -359,7 +343,7 @@ export function registerDashboardRoutes(app: Express) {
 
     try {
       const adminId = req.user.id;
-      
+
       // 기관 관련 데이터 조회
       const [
         allCourses,
@@ -378,7 +362,7 @@ export function registerDashboardRoutes(app: Express) {
       // 기관 소속 강좌 및 훈련사 (실제로는 기관 ID로 필터링해야 함)
       const instituteCourses = allCourses.slice(0, Math.ceil(allCourses.length * 0.6));
       const instituteTrainers = allTrainers.slice(0, Math.ceil(allTrainers.length * 0.4));
-      
+
       // 기관 예약 (실제로는 기관 ID로 필터링)
       const instituteReservations = allReservations.slice(0, Math.ceil(allReservations.length * 0.5));
 
@@ -430,7 +414,7 @@ export function registerDashboardRoutes(app: Express) {
 
     try {
       const userId = req.user.id;
-      
+
       // 반려인 관련 데이터 조회
       const [
         userPets,
@@ -448,12 +432,12 @@ export function registerDashboardRoutes(app: Express) {
 
       // 사용자 예약 필터링
       const myReservations = userReservations.filter(r => r.userId === userId);
-      
+
       // 수강 중인 강좌 (예약 기반)
       const enrolledCourses = new Set(myReservations.map(r => r.serviceType)).size;
-      
+
       // 다음 예약
-      const upcomingReservations = myReservations.filter(r => 
+      const upcomingReservations = myReservations.filter(r =>
         new Date(r.scheduledAt) > new Date() && r.status === 'confirmed'
       );
 
@@ -472,7 +456,7 @@ export function registerDashboardRoutes(app: Express) {
             storage.getCheckups(pet.id)
           ]);
           healthStats.totalVaccinations += vaccinations.length;
-          healthStats.upcomingCheckups += checkups.filter(c => 
+          healthStats.upcomingCheckups += checkups.filter(c =>
             new Date(c.nextCheckup) > new Date()
           ).length;
         } catch (error) {
@@ -540,7 +524,7 @@ export function registerDashboardRoutes(app: Express) {
         totalReservations: allReservations.length,
         activeUsers: allUsers.filter(u => u.isActive).length,
         activeCourses: allCourses.filter(c => c.isActive).length,
-        upcomingEvents: allEvents.filter(e => 
+        upcomingEvents: allEvents.filter(e =>
           new Date(e.date) > new Date() && e.isActive
         ).length,
         growth: {

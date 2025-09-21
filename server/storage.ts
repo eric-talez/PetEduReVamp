@@ -204,21 +204,22 @@ class Storage {
   private initializeData() {
     // 기본 사용자 데이터
     this.users = [
-      { 
-        id: 1, 
+      {
+        id: 1,
         name: '관리자',
+        email: 'admin@talez.com',
         username: 'admin',
-        email: 'admin@talez.com', 
-        role: 'admin', 
         password: 'admin123',
-        isVerified: true,
-        createdAt: new Date().toISOString()
+        role: 'admin',
+        verified: true,
+        createdAt: new Date('2025-01-01').toISOString(),
+        lastLoginAt: new Date().toISOString()
       },
-      { 
-        id: 2, 
-        name: '강동훈', 
-        email: 'donghoong@wangzzang.com', 
-        role: 'trainer', 
+      {
+        id: 2,
+        name: '강동훈',
+        email: 'donghoong@wangzzang.com',
+        role: 'trainer',
         password: 'trainer123',
         isVerified: true,
         certification: '반려동물행동지도사 국가자격증 2급',
@@ -226,14 +227,16 @@ class Storage {
         specialization: ['기초 훈련', '문제 행동 교정', '사회화 훈련'],
         createdAt: new Date().toISOString()
       },
-      { 
-        id: 3, 
-        name: '테스트 사용자', 
-        email: 'test@test.com', 
-        role: 'pet-owner', 
+      {
+        id: 3,
+        name: '테스트 사용자',
+        email: 'test@talez.com',
+        username: 'testuser',
         password: 'test123',
-        isVerified: true,
-        createdAt: new Date().toISOString()
+        role: 'user',
+        verified: true,
+        createdAt: new Date('2025-01-10').toISOString(),
+        lastLoginAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2일 전
       }
     ];
 
@@ -536,7 +539,7 @@ class Storage {
         createdAt: new Date().toISOString()
       }
     ];
-    
+
     // 훈련 일지 샘플 데이터 - 다양한 훈련사들의 알림장 포함
     this.trainingJournals = [
       // 강동훈 훈련사 (id: 1)
@@ -774,7 +777,7 @@ class Storage {
         pet: { name: "루나" }
       }
     ];
-    
+
     // courses data - 커리큘럼 가격 정보 포함
     this.courses = [
       {
@@ -903,7 +906,7 @@ class Storage {
         enrollmentCount: 8,
         averageRating: 4.8,
         reviewCount: 6,
-        thumbnailUrl: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop&crop=center&auto=format", // 퍼피 사회화 썸네일
+        thumbnailUrl: "https://images.unsplash.com/photo-1552053831-71594a2d55t?w=400&h=300&fit=crop&crop=center&auto=format", // 퍼피 사회화 썸네일
         modules: [
           {
             id: 1,
@@ -1006,14 +1009,14 @@ class Storage {
           },
           {
             id: 2,
-            title: "과도한 짖음 교정",
+            title: "짖음 교정 훈련",
             description: "짖음 행동의 원인별 교정 방법",
             duration: 90,
             isFree: false,
             price: 45000,
             order: 2,
             videoUrl: null,
-            materials: ['방음 도구', '진동 목걸이', '교정 간식', '조용한 장난감']
+            materials: ['무시 훈련 도구', '분산 장난감', '진정 스프레이']
           },
           {
             id: 3,
@@ -1035,7 +1038,7 @@ class Storage {
             price: 45000,
             order: 4,
             videoUrl: null,
-            materials: ['분리 훈련 도구', '위로 장난감', '안정 간식', '타이머']
+            materials: ['분리 훈련 도구', '안정화 음악', '퍼즐 장난감']
           },
           {
             id: 5,
@@ -1266,10 +1269,6 @@ class Storage {
     }));
   }
 
-
-
-
-
   // 기관 관련 메서드들
   getInstitutes() {
     return this.institutes || [];
@@ -1353,10 +1352,10 @@ class Storage {
   updatePet(id: number, updates: any) {
     const petIndex = this.pets.findIndex(pet => pet.id === id);
     if (petIndex !== -1) {
-      this.pets[petIndex] = { 
-        ...this.pets[petIndex], 
-        ...updates, 
-        updatedAt: new Date().toISOString() 
+      this.pets[petIndex] = {
+        ...this.pets[petIndex],
+        ...updates,
+        updatedAt: new Date().toISOString()
       };
       return this.pets[petIndex];
     }
@@ -1391,33 +1390,33 @@ class Storage {
 
   getNotificationsByUserId(userId: number, query: any = {}) {
     if (!this.notifications) return { notifications: [], total: 0, hasMore: false };
-    
+
     let filteredNotifications = this.notifications.filter(notification => notification.userId === userId);
-    
+
     // 타입 필터링
     if (query.type) {
       filteredNotifications = filteredNotifications.filter(n => n.type === query.type);
     }
-    
+
     // 읽음 상태 필터링
     if (query.isRead !== undefined) {
       filteredNotifications = filteredNotifications.filter(n => n.isRead === query.isRead);
     }
-    
+
     // 정렬
     const sortBy = query.sortBy || 'createdAt';
     const sortOrder = query.sortOrder || 'desc';
     filteredNotifications.sort((a, b) => {
       const aValue = a[sortBy];
       const bValue = b[sortBy];
-      
+
       if (sortOrder === 'desc') {
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       } else {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       }
     });
-    
+
     // 페이지네이션
     const page = query.page || 1;
     const limit = query.limit || 10;
@@ -1425,7 +1424,7 @@ class Storage {
     const total = filteredNotifications.length;
     const paginatedNotifications = filteredNotifications.slice(offset, offset + limit);
     const hasMore = offset + limit < total;
-    
+
     return {
       notifications: paginatedNotifications,
       total,
@@ -1439,20 +1438,20 @@ class Storage {
     if (!this.notifications) {
       this.notifications = [];
     }
-    
+
     const newNotification = {
       id: this.notifications.length ? Math.max(...this.notifications.map(n => n.id || 0)) + 1 : 1,
       ...notificationData,
       createdAt: new Date().toISOString()
     };
-    
+
     this.notifications.push(newNotification);
     return newNotification;
   }
 
   updateNotification(id: number, updates: any) {
     if (!this.notifications) return null;
-    
+
     const notificationIndex = this.notifications.findIndex(notification => notification.id === id);
     if (notificationIndex !== -1) {
       this.notifications[notificationIndex] = {
@@ -1467,7 +1466,7 @@ class Storage {
 
   deleteNotification(id: number) {
     if (!this.notifications) return false;
-    
+
     const notificationIndex = this.notifications.findIndex(notification => notification.id === id);
     if (notificationIndex !== -1) {
       this.notifications.splice(notificationIndex, 1);
@@ -1482,7 +1481,7 @@ class Storage {
 
   markAllNotificationsAsRead(userId: number) {
     if (!this.notifications) return 0;
-    
+
     let markedCount = 0;
     this.notifications.forEach(notification => {
       if (notification.userId === userId && !notification.isRead) {
@@ -1496,25 +1495,25 @@ class Storage {
 
   getUnreadNotificationCount(userId: number) {
     if (!this.notifications) return 0;
-    
-    return this.notifications.filter(notification => 
+
+    return this.notifications.filter(notification =>
       notification.userId === userId && !notification.isRead
     ).length;
   }
 
   bulkUpdateNotifications(notificationIds: number[], updates: any) {
     if (!this.notifications || !notificationIds.length) return [];
-    
+
     const updatedNotifications: any[] = [];
     const updateTime = new Date().toISOString();
-    
+
     this.notifications.forEach(notification => {
       if (notificationIds.includes(notification.id)) {
         Object.assign(notification, updates, { updatedAt: updateTime });
         updatedNotifications.push(notification);
       }
     });
-    
+
     return updatedNotifications;
   }
 
@@ -1574,7 +1573,7 @@ class Storage {
    */
   getLogoSettings(includeInactive: boolean = false) {
     console.log('[Storage] 로고 설정 조회 - includeInactive:', includeInactive);
-    
+
     if (!this.logoSettings || Object.keys(this.logoSettings).length === 0) {
       console.log('[Storage] 로고 설정이 없어서 초기화 실행');
       this.initializeLogoSettings();
@@ -1597,7 +1596,7 @@ class Storage {
    */
   updateLogoSettings(settings: any) {
     console.log('[Storage] 로고 설정 업데이트 요청:', settings);
-    
+
     if (!this.logoSettings || Object.keys(this.logoSettings).length === 0) {
       console.log('[Storage] 기존 로고 설정이 없어서 초기화 후 업데이트');
       this.initializeLogoSettings();
@@ -1610,18 +1609,18 @@ class Storage {
     };
 
     // 기존 설정과 병합
-    this.logoSettings = { 
-      ...this.logoSettings, 
+    this.logoSettings = {
+      ...this.logoSettings,
       ...updateData
     };
-    
+
     console.log('[Storage] 로고 설정 업데이트 완료:', this.logoSettings);
     return this.logoSettings;
   }
 
   /**
    * 로고 설정 검증
-   * @param settings - 검증할 설정 객체  
+   * @param settings - 검증할 설정 객체
    * @returns 검증 결과
    */
   validateLogoSettings(settings: any): { isValid: boolean; errors: string[] } {
@@ -1681,7 +1680,7 @@ class Storage {
   }
 
   /**
-   * 이미지 URL 검증 헬퍼  
+   * 이미지 URL 검증 헬퍼
    * @param url - 검증할 URL
    * @returns 이미지 형식 여부
    */
@@ -1691,7 +1690,7 @@ class Storage {
     return imageExtensions.some(ext => lowerUrl.includes(ext)) || lowerUrl.includes('placeholder');
   }
 
-  // 강좌 관련 메서드들  
+  // 강좌 관련 메서드들
   getAllCourses() {
     return this.courses || [];
   }
@@ -1840,7 +1839,7 @@ class Storage {
 
     // 기존 courses 배열과 샘플 커리큘럼 합치기
     const allCurriculums = [...(this.courses || []), ...sampleCurriculums];
-    
+
     return allCurriculums;
   }
 
@@ -1858,7 +1857,6 @@ class Storage {
         subscriptionEndDate: institute.subscriptionEndDate,
         maxMembers: institute.maxMembers,
         maxVideoHours: institute.maxVideoHours,
-        maxAiAnalysis: institute.maxAiAnalysis,
         featuresEnabled: institute.featuresEnabled
       };
     });
@@ -1891,7 +1889,7 @@ class Storage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     this.institutes.push(newInstitute);
     return newInstitute;
   }
@@ -1940,7 +1938,7 @@ class Storage {
   changeInstituteSubscription(instituteId: number, newPlanCode: string, paymentMethod: 'self' | 'admin') {
     const institute = this.institutes.find(i => i.id === instituteId);
     const newPlan = this.subscriptionPlans.find(p => p.code === newPlanCode);
-    
+
     if (!institute || !newPlan) {
       return null;
     }
@@ -2087,7 +2085,7 @@ class Storage {
       product.discountEndDate = pricingData.discountEndDate;
       product.isDiscountActive = pricingData.isDiscountActive;
       product.updatedAt = new Date().toISOString();
-      
+
       // 할인 가격 및 퍼센트 계산
       if (pricingData.discountType === 'percentage') {
         product.discountPercentage = pricingData.discountValue;
@@ -2099,7 +2097,7 @@ class Storage {
         product.discountPrice = undefined;
         product.discountPercentage = undefined;
       }
-      
+
       return product;
     }
     return null;
@@ -2192,8 +2190,8 @@ class Storage {
     try {
       const ownerPets = await this.getPetsByUserId(ownerId);
       const petIds = ownerPets.map(pet => pet.id);
-      
-      return (this.trainingJournals || []).filter(journal => 
+
+      return (this.trainingJournals || []).filter(journal =>
         petIds.includes(journal.petId)
       );
     } catch (error) {
@@ -2209,7 +2207,7 @@ class Storage {
       createdAt: new Date().toISOString(),
       status: 'draft'
     };
-    
+
     if (!this.trainingJournals) {
       this.trainingJournals = [];
     }
@@ -2243,15 +2241,15 @@ class Storage {
   }
 
   // 페이지네이션과 필터링을 지원하는 훈련 일지 조회
-  getTrainingJournalsWithPagination(query: any): { 
-    journals: any[], 
-    total: number, 
-    page: number, 
+  getTrainingJournalsWithPagination(query: any): {
+    journals: any[],
+    total: number,
+    page: number,
     limit: number,
-    totalPages: number 
+    totalPages: number
   } {
     let filteredJournals = [...(this.trainingJournals || [])];
-    
+
     // 필터링 적용
     if (query.petId) {
       filteredJournals = filteredJournals.filter(j => j.petId === query.petId);
@@ -2284,11 +2282,11 @@ class Storage {
     // 정렬
     const sortBy = query.sortBy || 'trainingDate';
     const sortOrder = query.sortOrder || 'desc';
-    
+
     filteredJournals.sort((a, b) => {
       const aValue = a[sortBy];
       const bValue = b[sortBy];
-      
+
       if (sortOrder === 'desc') {
         return bValue > aValue ? 1 : bValue < aValue ? -1 : 0;
       } else {
@@ -2302,7 +2300,7 @@ class Storage {
     const offset = (page - 1) * limit;
     const total = filteredJournals.length;
     const totalPages = Math.ceil(total / limit);
-    
+
     const journals = filteredJournals.slice(offset, offset + limit);
 
     return {
@@ -2317,41 +2315,41 @@ class Storage {
   // 권한 확인 메서드들
   canUserAccessTrainingJournal(userId: number, userRole: string, journal: any): boolean {
     if (!journal) return false;
-    
+
     // 관리자는 모든 일지 접근 가능
     if (userRole === 'admin') return true;
-    
+
     // 훈련사는 본인이 작성한 일지만 접근 가능
     if (userRole === 'trainer' && journal.trainerId === userId) return true;
-    
+
     // 반려동물 소유자는 본인 펫의 일지만 접근 가능
     if (userRole === 'pet-owner' && journal.petOwnerId === userId) return true;
-    
+
     return false;
   }
 
   canUserCreateTrainingJournal(userId: number, userRole: string, petId: number): boolean {
     // 관리자는 모든 일지 생성 가능
     if (userRole === 'admin') return true;
-    
+
     // 훈련사는 담당 펫의 일지만 생성 가능
     if (userRole === 'trainer') {
       const pet = this.getPetById(petId);
       return pet && pet.assignedTrainerId === userId;
     }
-    
+
     return false;
   }
 
   canUserModifyTrainingJournal(userId: number, userRole: string, journal: any): boolean {
     if (!journal) return false;
-    
+
     // 관리자는 모든 일지 수정 가능
     if (userRole === 'admin') return true;
-    
+
     // 훈련사는 본인이 작성한 일지만 수정 가능
     if (userRole === 'trainer' && journal.trainerId === userId) return true;
-    
+
     return false;
   }
 
@@ -2359,28 +2357,28 @@ class Storage {
   addTrainingJournalMedia(journalId: number, mediaUrl: string, description?: string): boolean {
     const journal = this.getTrainingJournalById(journalId);
     if (!journal) return false;
-    
+
     if (!journal.attachments) {
       journal.attachments = [];
     }
-    
+
     journal.attachments.push(mediaUrl);
     journal.updatedAt = new Date().toISOString();
-    
+
     return true;
   }
 
   removeTrainingJournalMedia(journalId: number, mediaUrl: string): boolean {
     const journal = this.getTrainingJournalById(journalId);
     if (!journal || !journal.attachments) return false;
-    
+
     const index = journal.attachments.indexOf(mediaUrl);
     if (index !== -1) {
       journal.attachments.splice(index, 1);
       journal.updatedAt = new Date().toISOString();
       return true;
     }
-    
+
     return false;
   }
 
@@ -2388,7 +2386,7 @@ class Storage {
   bulkUpdateTrainingJournalStatus(journalIds: number[], updates: any): { updated: number, errors: string[] } {
     let updated = 0;
     const errors: string[] = [];
-    
+
     for (const id of journalIds) {
       const journal = this.getTrainingJournalById(id);
       if (journal) {
@@ -2398,7 +2396,7 @@ class Storage {
         errors.push(`일지 ID ${id}를 찾을 수 없습니다`);
       }
     }
-    
+
     return { updated, errors };
   }
 
@@ -2412,7 +2410,7 @@ class Storage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     if (!this.curriculums) {
       this.curriculums = [];
     }
@@ -2551,7 +2549,7 @@ class Storage {
     }
 
     const curriculum = this.curriculums[curriculumIndex];
-    
+
     // 권한 확인
     const hasPermission = user.role === 'admin' ||
       (user.role === 'institute' && curriculum.instituteId === user.id) ||
@@ -2602,7 +2600,7 @@ class Storage {
 
     // 영상 데이터 추가
     module.videos.push(videoData);
-    
+
     // 모듈과 커리큘럼 업데이트 시간 갱신
     module.updatedAt = new Date().toISOString();
     curriculum.updatedAt = new Date().toISOString();
@@ -2767,7 +2765,7 @@ class Storage {
       updatedAt: new Date().toISOString(),
       applicants: []
     };
-    
+
     if (!this.substitutePosts) {
       this.substitutePosts = [];
     }
@@ -2916,7 +2914,7 @@ class Storage {
     // 모든 대체 훈련사 게시글에서 지원 신청 추출
     const allApplications: any[] = [];
     const posts = this.getSubstitutePosts();
-    
+
     posts.forEach(post => {
       if (post.applicants && Array.isArray(post.applicants)) {
         post.applicants.forEach((applicant: any) => {
@@ -2931,7 +2929,7 @@ class Storage {
         });
       }
     });
-    
+
     return allApplications;
   }
 
@@ -3002,28 +3000,28 @@ class Storage {
   // 정보 수정 요청 승인/반려 처리
   async reviewCorrectionRequest(requestId: string, action: string, adminNotes: string) {
     console.log('[Storage] 정보 수정 요청 처리:', requestId, action, adminNotes);
-    
+
     // 임시 데이터 소스에서 정보 수정 요청 찾기
     const correctionRequests = this.getCorrectionRequests();
     const requestIndex = correctionRequests.findIndex(req => req.id === requestId);
-    
+
     if (requestIndex === -1) {
       throw new Error('정보 수정 요청을 찾을 수 없습니다.');
     }
-    
+
     const request = correctionRequests[requestIndex];
-    
+
     // 요청 상태 업데이트
     request.status = action === 'approve' ? 'approved' : 'rejected';
     (request as any).reviewedAt = new Date().toISOString();
     (request as any).reviewedBy = '관리자';
     (request as any).adminNotes = adminNotes;
-    
+
     // 승인된 경우 실제 업체 정보 업데이트
     if (action === 'approve') {
       await this.updateBusinessInfo(request);
     }
-    
+
     console.log('[Storage] 정보 수정 요청 처리 완료:', request);
     return request;
   }
@@ -3031,7 +3029,7 @@ class Storage {
   // 업체 정보 업데이트 (승인된 수정 요청 반영)
   async updateBusinessInfo(request: any) {
     console.log('[Storage] 업체 정보 업데이트:', request.businessId, request.correctionType, request.proposedValue);
-    
+
     // 업체 유형에 따라 적절한 데이터 소스 업데이트
     if (request.businessType === 'institute') {
       await this.updateInstituteField(request.businessId, request.correctionType, request.proposedValue);
@@ -3040,7 +3038,7 @@ class Storage {
     } else if (request.businessType === 'business') {
       await this.updateBusinessField(request.businessId, request.correctionType, request.proposedValue);
     }
-    
+
     console.log('[Storage] 업체 정보 업데이트 완료');
   }
 
@@ -3211,7 +3209,7 @@ class Storage {
       }
 
       const course = this.courses[courseIndex];
-      
+
       // 권한 확인
       const hasPermission = user.role === 'admin' ||
         (user.role === 'institute' && course.instituteId === user.id) ||
@@ -3250,8 +3248,6 @@ class Storage {
     }
   }
 
-
-
   // 훈련사 생성
   async createTrainer(trainerData: any): Promise<any> {
     try {
@@ -3281,7 +3277,7 @@ class Storage {
         global.trainers = [];
       }
       global.trainers.push(newTrainer);
-      
+
       console.log('[Storage] 새 훈련사 생성:', newTrainer.name);
       return newTrainer;
     } catch (error) {
@@ -3339,8 +3335,6 @@ class Storage {
     }
   }
 
-
-
   // 강의 구매 관련 메소드
   async purchaseCourse(userId: number, courseId: number, purchaseAmount: number, paymentMethod: string) {
     try {
@@ -3356,9 +3350,9 @@ class Storage {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
+
       this.coursePurchases.push(purchase);
-      
+
       // 강의 진행 상황 초기화
       const progress = {
         id: this.courseProgress.length + 1,
@@ -3375,9 +3369,9 @@ class Storage {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
+
       this.courseProgress.push(progress);
-      
+
       return { purchase, progress };
     } catch (error) {
       console.error('[Storage] 강의 구매 실패:', error);
@@ -3389,17 +3383,17 @@ class Storage {
   async updateCourseProgress(userId: number, courseId: number, progressData: any) {
     try {
       const progressIndex = this.courseProgress.findIndex(p => p.userId === userId && p.courseId === courseId);
-      
+
       if (progressIndex === -1) {
         throw new Error('강의 진행 상황을 찾을 수 없습니다.');
       }
-      
+
       this.courseProgress[progressIndex] = {
         ...this.courseProgress[progressIndex],
         ...progressData,
         updatedAt: new Date().toISOString()
       };
-      
+
       return this.courseProgress[progressIndex];
     } catch (error) {
       console.error('[Storage] 강의 진행 상황 업데이트 실패:', error);
@@ -3427,7 +3421,7 @@ class Storage {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
+
       this.progressSharing.push(sharing);
       return sharing;
     } catch (error) {
@@ -3459,17 +3453,17 @@ class Storage {
   // 훈련사별 공유된 진행 상황 조회
   async getSharedProgressByTrainer(trainerId: number) {
     try {
-      const sharedProgress = this.progressSharing.filter(sharing => 
+      const sharedProgress = this.progressSharing.filter(sharing =>
         sharing.trainerId === trainerId && sharing.isActive
       );
-      
+
       const progressWithDetails = sharedProgress.map(sharing => {
-        const progress = this.courseProgress.find(p => 
+        const progress = this.courseProgress.find(p =>
           p.userId === sharing.userId && p.courseId === sharing.courseId
         );
         const user = this.users.find(u => u.id === sharing.userId);
         const course = this.courses.find(c => c.id === sharing.courseId);
-        
+
         return {
           ...sharing,
           progress,
@@ -3477,7 +3471,7 @@ class Storage {
           course
         };
       });
-      
+
       return progressWithDetails;
     } catch (error) {
       console.error('[Storage] 훈련사별 공유 진행 상황 조회 실패:', error);
@@ -3488,17 +3482,17 @@ class Storage {
   // 기관별 공유된 진행 상황 조회
   async getSharedProgressByInstitute(instituteId: number) {
     try {
-      const sharedProgress = this.progressSharing.filter(sharing => 
+      const sharedProgress = this.progressSharing.filter(sharing =>
         sharing.instituteId === instituteId && sharing.isActive
       );
-      
+
       const progressWithDetails = sharedProgress.map(sharing => {
-        const progress = this.courseProgress.find(p => 
+        const progress = this.courseProgress.find(p =>
           p.userId === sharing.userId && p.courseId === sharing.courseId
         );
         const user = this.users.find(u => u.id === sharing.userId);
         const course = this.courses.find(c => c.id === sharing.courseId);
-        
+
         return {
           ...sharing,
           progress,
@@ -3506,7 +3500,7 @@ class Storage {
           course
         };
       });
-      
+
       return progressWithDetails;
     } catch (error) {
       console.error('[Storage] 기관별 공유 진행 상황 조회 실패:', error);
@@ -3524,7 +3518,7 @@ class Storage {
         ...sessionData,
         createdAt: new Date().toISOString()
       };
-      
+
       this.lessonSessions.push(session);
       return session;
     } catch (error) {
@@ -3539,23 +3533,23 @@ class Storage {
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
         const matchesSearch = log.trainerName.toLowerCase().includes(searchTerm) ||
-                             log.activityTitle.toLowerCase().includes(searchTerm) ||
-                             log.activityDescription.toLowerCase().includes(searchTerm);
+          log.activityTitle.toLowerCase().includes(searchTerm) ||
+          log.activityDescription.toLowerCase().includes(searchTerm);
         if (!matchesSearch) return false;
       }
-      
+
       if (filters.activityType && filters.activityType !== 'all') {
         if (log.activityType !== filters.activityType) return false;
       }
-      
+
       if (filters.trainer && filters.trainer !== 'all') {
         if (log.trainerId.toString() !== filters.trainer) return false;
       }
-      
+
       if (filters.date && filters.date !== 'all') {
         const logDate = new Date(log.createdAt);
         const today = new Date();
-        
+
         switch (filters.date) {
           case 'today':
             if (logDate.toDateString() !== today.toDateString()) return false;
@@ -3570,19 +3564,19 @@ class Storage {
             break;
         }
       }
-      
+
       return true;
     });
   }
 
   getActivitySummary() {
     const logs = this.trainerActivityLogs;
-    
+
     const totalActivities = logs.length;
     const totalPoints = logs.reduce((sum, log) => sum + log.pointsEarned, 0);
     const totalIncentives = logs.reduce((sum, log) => sum + Number(log.incentiveAmount), 0);
     const activeTrainers = new Set(logs.map(log => log.trainerId)).size;
-    
+
     // 활동 타입별 집계
     const activityCounts: Record<string, any> = {};
     logs.forEach(log => {
@@ -3597,11 +3591,11 @@ class Storage {
       activityCounts[log.activityType].count++;
       activityCounts[log.activityType].totalPoints += log.pointsEarned;
     });
-    
+
     const topActivities = Object.values(activityCounts)
       .sort((a, b) => b.totalPoints - a.totalPoints)
       .slice(0, 5);
-    
+
     return {
       totalActivities,
       totalPoints,
@@ -3614,7 +3608,7 @@ class Storage {
   getTrainerStats() {
     const logs = this.trainerActivityLogs;
     const trainerStats: Record<number, any> = {};
-    
+
     logs.forEach(log => {
       if (!trainerStats[log.trainerId]) {
         trainerStats[log.trainerId] = {
@@ -3628,23 +3622,23 @@ class Storage {
           rank: 0
         };
       }
-      
+
       trainerStats[log.trainerId].totalActivities++;
       trainerStats[log.trainerId].totalPoints += log.pointsEarned;
       trainerStats[log.trainerId].totalIncentives += Number(log.incentiveAmount);
-      
+
       if (new Date(log.createdAt) > new Date(trainerStats[log.trainerId].lastActivity)) {
         trainerStats[log.trainerId].lastActivity = log.createdAt;
       }
     });
-    
+
     const statsArray = Object.values(trainerStats)
       .sort((a, b) => b.totalPoints - a.totalPoints)
       .map((stat, index) => ({
         ...stat,
         rank: index + 1
       }));
-    
+
     return statsArray;
   }
 
@@ -3660,13 +3654,13 @@ class Storage {
   recalculatePoints() {
     // 포인트 재계산 로직
     console.log('[Storage] 포인트 재계산 시작');
-    
+
     // 여기서 실제로는 복잡한 포인트 재계산 로직이 들어가야 함
     // 현재는 단순히 로그를 출력하고 성공 반환
     this.trainerActivityLogs.forEach(log => {
       log.pointsEarned = this.calculatePoints(log.activityType, log.metadata);
     });
-    
+
     console.log('[Storage] 포인트 재계산 완료');
     return true;
   }
@@ -3682,7 +3676,7 @@ class Storage {
       'consultation': 30,
       'course_creation': 150
     };
-    
+
     return pointValues[activityType as keyof typeof pointValues] || 0;
   }
 
@@ -3697,11 +3691,11 @@ class Storage {
   }
 
   // ===== 대체 훈련사 시스템 메서드들 =====
-  
+
   // 대체 훈련사 게시글 조회
   async getSubstituteTrainerPosts(options: any = {}) {
     const { page = 1, limit = 10, status = 'all', instituteId } = options;
-    
+
     let posts = this.substituteClassPosts.filter(post => {
       if (status !== 'all' && post.status !== status) return false;
       if (instituteId && post.instituteId !== instituteId) return false;
@@ -3717,7 +3711,7 @@ class Storage {
     // 페이지네이션 적용
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    
+
     return posts.slice(startIndex, endIndex);
   }
 
@@ -3729,7 +3723,7 @@ class Storage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     this.substituteClassPosts.push(newPost);
     return newPost;
   }
@@ -3738,7 +3732,7 @@ class Storage {
   async getSubstituteTrainerPost(postId: number) {
     const post = this.substituteClassPosts.find(p => p.id === postId);
     if (!post) return null;
-    
+
     return {
       ...post,
       trainer: this.trainers.find(t => t.id === post.trainerId),
@@ -3750,13 +3744,13 @@ class Storage {
   async updateSubstituteTrainerPost(postId: number, updateData: any) {
     const postIndex = this.substituteClassPosts.findIndex(p => p.id === postId);
     if (postIndex === -1) throw new Error('게시글을 찾을 수 없습니다.');
-    
+
     this.substituteClassPosts[postIndex] = {
       ...this.substituteClassPosts[postIndex],
       ...updateData,
       updatedAt: new Date().toISOString()
     };
-    
+
     return this.substituteClassPosts[postIndex];
   }
 
@@ -3768,7 +3762,7 @@ class Storage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     this.substituteClassApplications.push(newApplication);
     return newApplication;
   }
@@ -3776,9 +3770,9 @@ class Storage {
   // 대체 훈련사 지원 신청 조회
   async getSubstituteTrainerApplications(options: any = {}) {
     const { instituteId } = options;
-    
+
     let applications = this.substituteClassApplications;
-    
+
     if (instituteId) {
       // 기관 소속 훈련사들의 지원 신청만 필터링
       const institutePosts = this.substituteClassPosts.filter(p => p.instituteId === instituteId);
@@ -3797,18 +3791,18 @@ class Storage {
   async updateSubstituteTrainerApplication(applicationId: number, updateData: any) {
     const applicationIndex = this.substituteClassApplications.findIndex(a => a.id === applicationId);
     if (applicationIndex === -1) throw new Error('지원 신청을 찾을 수 없습니다.');
-    
+
     this.substituteClassApplications[applicationIndex] = {
       ...this.substituteClassApplications[applicationIndex],
       ...updateData,
       updatedAt: new Date().toISOString()
     };
-    
+
     return this.substituteClassApplications[applicationIndex];
   }
 
   // ===== 결제 관리 시스템 메서드들 =====
-  
+
   // 결제 수단 조회
   getPaymentMethods() {
     return this.paymentMethods;
@@ -3821,7 +3815,7 @@ class Storage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     this.paymentMethods.push(newMethod);
     console.log('[Payment] 새 결제 수단 추가:', newMethod.name);
     return newMethod;
@@ -3836,7 +3830,7 @@ class Storage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     this.paymentMethods.push(newMethod);
     return newMethod;
   }
@@ -3845,13 +3839,13 @@ class Storage {
   updatePaymentMethod(methodId: string, updateData: any) {
     const methodIndex = this.paymentMethods.findIndex(m => m.id === methodId);
     if (methodIndex === -1) throw new Error('결제 수단을 찾을 수 없습니다.');
-    
+
     this.paymentMethods[methodIndex] = {
       ...this.paymentMethods[methodIndex],
       ...updateData,
       updatedAt: new Date().toISOString()
     };
-    
+
     return this.paymentMethods[methodIndex];
   }
 
@@ -3859,7 +3853,7 @@ class Storage {
   deletePaymentMethod(methodId: string) {
     const methodIndex = this.paymentMethods.findIndex(m => m.id === methodId);
     if (methodIndex === -1) throw new Error('결제 수단을 찾을 수 없습니다.');
-    
+
     this.paymentMethods.splice(methodIndex, 1);
     return true;
   }
@@ -3872,7 +3866,7 @@ class Storage {
   // 사용자 요금제 업데이트
   updateUserPaymentPlan(role: string, planData: any) {
     const planIndex = this.userPaymentPlans.findIndex(p => p.role === role);
-    
+
     if (planIndex === -1) {
       // 새로운 요금제 생성
       const newPlan = {
@@ -3898,25 +3892,25 @@ class Storage {
   // 결제 내역 조회
   getPaymentHistory(options: any = {}) {
     const { startDate, endDate, status, methodId } = options;
-    
+
     let history = this.paymentHistory;
-    
+
     if (startDate) {
       history = history.filter(h => new Date(h.createdAt) >= new Date(startDate));
     }
-    
+
     if (endDate) {
       history = history.filter(h => new Date(h.createdAt) <= new Date(endDate));
     }
-    
+
     if (status) {
       history = history.filter(h => h.status === status);
     }
-    
+
     if (methodId) {
       history = history.filter(h => h.paymentMethod === methodId);
     }
-    
+
     return history.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
@@ -3927,7 +3921,7 @@ class Storage {
       ...historyData,
       createdAt: new Date().toISOString()
     };
-    
+
     this.paymentHistory.push(newHistory);
     return newHistory;
   }
@@ -3940,7 +3934,7 @@ class Storage {
       ...completionData,
       status: 'completed'
     };
-    
+
     return session;
   }
 
@@ -3953,7 +3947,7 @@ class Storage {
       paymentStatus: 'completed',
       processedAt: new Date().toISOString()
     };
-    
+
     return payment;
   }
 
@@ -4085,10 +4079,10 @@ class Storage {
 
     // 결제 수단 초기화
     this.initializePaymentMethods();
-    
+
     // 사용자 요금제 초기화
     this.initializeUserPaymentPlans();
-    
+
     // 결제 내역 초기화
     this.initializePaymentHistory();
   }
@@ -4275,7 +4269,7 @@ class Storage {
 // 개발 환경에서는 데이터베이스 연동을 위해 하이브리드 접근 방식 사용
 import { db } from "./db";
 import { eq } from "drizzle-orm";
-import { 
+import {
   users,
   contentApprovals,
   trainerApplications,
@@ -4284,7 +4278,7 @@ import {
 
 class HybridStorage extends Storage {
   // 데이터베이스 연동 메서드들 추가
-  
+
   // 훈련사 신청 관련
   async getTrainerApplication(id: number): Promise<any> {
     try {
@@ -4435,12 +4429,12 @@ class HybridStorage extends Storage {
     try {
       const { feePolicies } = await import('../shared/schema');
       const { eq, and, isNull, or } = await import('drizzle-orm');
-      
+
       const conditions = [
         eq(feePolicies.targetType, targetType),
         eq(feePolicies.isActive, true)
       ];
-      
+
       if (targetId) {
         conditions.push(
           or(
@@ -4451,7 +4445,7 @@ class HybridStorage extends Storage {
       } else {
         conditions.push(isNull(feePolicies.targetId));
       }
-      
+
       const policies = await db.select().from(feePolicies).where(and(...conditions));
       return policies.sort((a, b) => {
         // 특정 대상 > 전체 적용 순서로 정렬
@@ -4464,11 +4458,11 @@ class HybridStorage extends Storage {
       return [];
     }
   }
-  
+
   async createTransaction(transactionData: any) {
     try {
       const { transactions } = await import('../shared/schema');
-      
+
       const [result] = await db.insert(transactions).values(transactionData).returning({ id: transactions.id });
       console.log(`[DB] 거래 내역 생성: ID ${result.id}`);
       return result.id;
@@ -4477,12 +4471,12 @@ class HybridStorage extends Storage {
       throw error;
     }
   }
-  
+
   async getTransaction(transactionId: number) {
     try {
       const { transactions } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
-      
+
       const [transaction] = await db.select().from(transactions).where(eq(transactions.id, transactionId));
       return transaction;
     } catch (error) {
@@ -4490,12 +4484,12 @@ class HybridStorage extends Storage {
       return null;
     }
   }
-  
+
   async getTransactionsByPeriod(targetId: number, periodStart: Date, periodEnd: Date) {
     try {
       const { transactions } = await import('../shared/schema');
       const { eq, and, gte, lte } = await import('drizzle-orm');
-      
+
       const results = await db.select().from(transactions).where(
         and(
           eq(transactions.payeeId, targetId),
@@ -4504,18 +4498,18 @@ class HybridStorage extends Storage {
           lte(transactions.createdAt, periodEnd)
         )
       );
-      
+
       return results;
     } catch (error) {
       console.error('기간별 거래 내역 조회 오류:', error);
       return [];
     }
   }
-  
+
   async createSettlement(settlementData: any) {
     try {
       const { settlements } = await import('../shared/schema');
-      
+
       const [result] = await db.insert(settlements).values(settlementData).returning({ id: settlements.id });
       console.log(`[DB] 정산 내역 생성: ID ${result.id}`);
       return result.id;
@@ -4524,11 +4518,11 @@ class HybridStorage extends Storage {
       throw error;
     }
   }
-  
+
   async createSettlementItem(itemData: any) {
     try {
       const { settlementItems } = await import('../shared/schema');
-      
+
       const [result] = await db.insert(settlementItems).values(itemData).returning({ id: settlementItems.id });
       return result.id;
     } catch (error) {
@@ -4536,12 +4530,12 @@ class HybridStorage extends Storage {
       throw error;
     }
   }
-  
+
   async updateSettlement(settlementId: number, updates: any) {
     try {
       const { settlements } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
-      
+
       await db.update(settlements).set(updates).where(eq(settlements.id, settlementId));
       return true;
     } catch (error) {
@@ -4549,7 +4543,7 @@ class HybridStorage extends Storage {
       return false;
     }
   }
-  
+
   async updateRevenueStats(statsData: any) {
     try {
       // 매출 통계 업데이트 로직 (향후 별도 테이블로 관리 가능)
@@ -4560,7 +4554,7 @@ class HybridStorage extends Storage {
       return false;
     }
   }
-  
+
   async createRefund(refundData: any) {
     try {
       // 환불 내역 생성 로직 (향후 별도 테이블로 관리 가능)
@@ -4575,7 +4569,7 @@ class HybridStorage extends Storage {
   // =============================================================================
   // 배너 관리 메서드들 - 새로운 스키마에 맞게 구현
   // =============================================================================
-  
+
   getAllBanners() {
     // 기본 배너가 없으면 생성
     if (this.banners.length === 0) {
@@ -4606,26 +4600,26 @@ class HybridStorage extends Storage {
     const now = new Date();
     return this.banners.filter(banner => {
       if (!banner.isActive) return false;
-      
+
       // 시작일 체크
       if (banner.startDate && new Date(banner.startDate) > now) return false;
-      
+
       // 종료일 체크
       if (banner.endDate && new Date(banner.endDate) < now) return false;
-      
+
       return true;
     }).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   createBanner(bannerData: any) {
     const newId = Math.max(0, ...this.banners.map(b => b.id || 0)) + 1;
-    
+
     // 새로운 배너의 표시 순서 설정 (같은 위치에서 가장 높은 순서 + 1)
-    const samePositionBanners = this.banners.filter(b => 
+    const samePositionBanners = this.banners.filter(b =>
       b.targetPosition === (bannerData.targetPosition || 'home-hero')
     );
     const maxOrder = Math.max(0, ...samePositionBanners.map(b => b.displayOrder || 0));
-    
+
     const newBanner = {
       id: newId,
       title: bannerData.title,
@@ -4643,7 +4637,7 @@ class HybridStorage extends Storage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     this.banners.push(newBanner);
     return newBanner;
   }
@@ -4653,24 +4647,24 @@ class HybridStorage extends Storage {
     if (index === -1) {
       throw new Error('배너를 찾을 수 없습니다');
     }
-    
+
     // 표시 순서가 변경되는 경우 다른 배너들의 순서도 조정
     const currentBanner = this.banners[index];
-    if (bannerData.displayOrder !== undefined && 
-        bannerData.displayOrder !== currentBanner.displayOrder) {
+    if (bannerData.displayOrder !== undefined &&
+      bannerData.displayOrder !== currentBanner.displayOrder) {
       this.reorderBannersInPosition(
-        currentBanner.targetPosition, 
-        id, 
+        currentBanner.targetPosition,
+        id,
         bannerData.displayOrder
       );
     }
-    
+
     this.banners[index] = {
       ...this.banners[index],
       ...bannerData,
       updatedAt: new Date().toISOString()
     };
-    
+
     return this.banners[index];
   }
 
@@ -4679,18 +4673,18 @@ class HybridStorage extends Storage {
     if (index === -1) {
       throw new Error('배너를 찾을 수 없습니다');
     }
-    
+
     const deletedBanner = this.banners[index];
     this.banners.splice(index, 1);
-    
+
     // 삭제된 배너보다 뒤의 배너들 순서 조정
     this.banners
-      .filter(b => 
-        b.targetPosition === deletedBanner.targetPosition && 
+      .filter(b =>
+        b.targetPosition === deletedBanner.targetPosition &&
         b.displayOrder > deletedBanner.displayOrder
       )
       .forEach(b => b.displayOrder--);
-    
+
     return true;
   }
 
@@ -4706,8 +4700,8 @@ class HybridStorage extends Storage {
 
   getBannersByUserGroup(userGroup: string) {
     return this.banners
-      .filter(banner => 
-        banner.isActive && 
+      .filter(banner =>
+        banner.isActive &&
         (banner.targetUserGroup === 'all' || banner.targetUserGroup === userGroup)
       )
       .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
@@ -4719,10 +4713,10 @@ class HybridStorage extends Storage {
     if (!banner) {
       throw new Error('배너를 찾을 수 없습니다');
     }
-    
+
     banner.isActive = !banner.isActive;
     banner.updatedAt = new Date().toISOString();
-    
+
     return banner;
   }
 
@@ -4731,7 +4725,7 @@ class HybridStorage extends Storage {
     if (!banner) {
       throw new Error('배너를 찾을 수 없습니다');
     }
-    
+
     const position = targetPosition || banner.targetPosition;
     return this.reorderBannersInPosition(position, bannerId, newOrder);
   }
@@ -4739,13 +4733,13 @@ class HybridStorage extends Storage {
   private reorderBannersInPosition(position: string, bannerId: number, newOrder: number) {
     const positionBanners = this.banners.filter(b => b.targetPosition === position);
     const targetBanner = positionBanners.find(b => b.id === bannerId);
-    
+
     if (!targetBanner) {
       throw new Error('배너를 찾을 수 없습니다');
     }
-    
+
     const oldOrder = targetBanner.displayOrder;
-    
+
     // 순서 재정렬
     positionBanners.forEach(banner => {
       if (banner.id === bannerId) {
@@ -4763,7 +4757,7 @@ class HybridStorage extends Storage {
       }
       banner.updatedAt = new Date().toISOString();
     });
-    
+
     return targetBanner;
   }
 
@@ -4794,7 +4788,7 @@ class HybridStorage extends Storage {
       isActive: banner.isActive,
       clickCount: banner.clickCount || 0,
       viewCount: banner.viewCount || 0,
-      clickThroughRate: banner.viewCount > 0 ? 
+      clickThroughRate: banner.viewCount > 0 ?
         ((banner.clickCount || 0) / banner.viewCount * 100).toFixed(2) + '%' : '0%',
       createdAt: banner.createdAt,
       updatedAt: banner.updatedAt
@@ -4803,7 +4797,7 @@ class HybridStorage extends Storage {
 
   getBannersWithPagination(page: number = 1, limit: number = 10, filters: any = {}) {
     let filteredBanners = [...this.banners];
-    
+
     // 필터 적용
     if (filters.targetPosition) {
       filteredBanners = filteredBanners.filter(b => b.targetPosition === filters.targetPosition);
@@ -4814,27 +4808,27 @@ class HybridStorage extends Storage {
     if (filters.isActive !== undefined) {
       filteredBanners = filteredBanners.filter(b => b.isActive === filters.isActive);
     }
-    
+
     // 정렬
     const sortBy = filters.sortBy || 'displayOrder';
     const sortOrder = filters.sortOrder || 'asc';
-    
+
     filteredBanners.sort((a, b) => {
       const aValue = a[sortBy] || 0;
       const bValue = b[sortBy] || 0;
-      
+
       if (sortOrder === 'desc') {
         return bValue > aValue ? 1 : -1;
       }
       return aValue > bValue ? 1 : -1;
     });
-    
+
     // 페이지네이션
     const total = filteredBanners.length;
     const totalPages = Math.ceil(total / limit);
     const offset = (page - 1) * limit;
     const paginatedBanners = filteredBanners.slice(offset, offset + limit);
-    
+
     return {
       data: paginatedBanners,
       meta: {
@@ -4869,8 +4863,8 @@ class HybridStorage extends Storage {
 
   async getEventsByRegion(region: string): Promise<any[]> {
     // 지역별 이벤트 필터링 (location.address 기반)
-    return this.events.filter(event => 
-      event.location && event.location.address && 
+    return this.events.filter(event =>
+      event.location && event.location.address &&
       event.location.address.includes(region)
     );
   }

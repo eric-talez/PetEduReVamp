@@ -564,118 +564,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 훈련사 등록 API
-  app.post('/api/trainers/register', requireAuth('admin'), csrfProtection, async (req, res) => {
-    try {
-      const { name, email, phone, institute, certification, experience, specialties } = req.body;
-
-      // 필수 필드 검증
-      if (!name || !email || !institute || !certification) {
-        return res.status(400).json({ 
-          success: false, 
-          error: '이름, 이메일, 기관, 자격증은 필수 항목입니다.' 
-        });
-      }
-
-      // 이메일 중복 검증
-      const existingTrainer = storage.getUserByEmail(email);
-      if (existingTrainer) {
-        return res.status(400).json({ 
-          success: false, 
-          error: '이미 등록된 이메일입니다.' 
-        });
-      }
-
-      // 새 훈련사 데이터 준비
-      const trainerData = {
-        name,
-        email,
-        phone,
-        institute,
-        certification,
-        experience,
-        specialties: specialties.split(',').map((s: string) => s.trim()),
-        role: 'trainer',
-        password: 'temp123!', // 임시 비밀번호
-        username: email,
-        isVerified: true,
-        verified: true
-      };
-
-      // 훈련사 생성 (사용자로 등록)
-      const newTrainer = storage.createUser(trainerData);
-      
-      console.log('[Admin] 새 훈련사 등록됨:', { id: newTrainer.id, name: newTrainer.name, email: newTrainer.email });
-
-      res.json({ 
-        success: true, 
-        message: '훈련사가 성공적으로 등록되었습니다.',
-        trainer: {
-          id: newTrainer.id,
-          name: newTrainer.name,
-          email: newTrainer.email,
-          institute,
-          certification
-        }
-      });
-    } catch (error) {
-      console.error('Trainer Registration error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: '훈련사 등록 중 오류가 발생했습니다.' 
-      });
-    }
-  });
-
-  // 업체 등록 API
-  app.post('/api/admin/businesses', requireAuth('admin'), csrfProtection, async (req, res) => {
-    try {
-      const { name, type, address, lat, lng, phone, hours, description, businessNumber, services, amenities, priceRange } = req.body;
-
-      // 필수 필드 검증
-      if (!name || !type || !address || !phone || !businessNumber) {
-        return res.status(400).json({ 
-          success: false, 
-          error: '업체명, 업체 유형, 주소, 전화번호, 사업자번호는 필수 항목입니다.' 
-        });
-      }
-
-      // 새 업체 데이터 준비
-      const businessData = {
-        id: Date.now(), // 임시 ID 생성
-        name,
-        type,
-        address,
-        lat: lat || 37.5665,
-        lng: lng || 126.9780,
-        phone,
-        hours: hours || '09:00-18:00',
-        description: description || '',
-        businessNumber,
-        services: services || [],
-        amenities: amenities || [],
-        priceRange: priceRange || 'moderate',
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
-
-      // 업체 데이터 저장 (임시로 메모리에 저장)
-      console.log('[Admin] 새 업체 등록 신청:', businessData);
-
-      res.json({ 
-        success: true, 
-        message: '업체가 성공적으로 등록되었습니다.',
-        business: businessData
-      });
-    } catch (error) {
-      console.error('Business Registration error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: '업체 등록 중 오류가 발생했습니다.' 
-      });
-    }
-  });
-
   // 관리자 전용 사용자 추가 API
   app.post('/api/admin/users', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
@@ -1496,24 +1384,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 위치 검색 라우트 등록
 
 
-  // 실시간 인기 통계 API
+  // 실시간 인기 통계 API - 실제 데이터 기반
   app.get("/api/popular-stats", async (req, res) => {
     try {
+      // 실제 데이터에서 인기 항목 추출
+      const trainers = storage.getAllTrainers()
+        .sort((a, b) => (b.views || 0) - (a.views || 0))
+        .slice(0, 5)
+        .map(trainer => ({
+          id: trainer.id,
+          views: trainer.views || 0,
+          likes: trainer.likes || 0,
+          name: trainer.name,
+          category: trainer.specialties?.[0] || "기본훈련"
+        }));
+
+      const courses = storage.getAllCourses()
+        .sort((a, b) => (b.views || 0) - (a.views || 0))
+        .slice(0, 5)
+        .map(course => ({
+          id: course.id,
+          views: course.views || 0,
+          likes: course.likes || 0,
+          title: course.title,
+          category: course.category || "기본훈련"
+        }));
+
+      const events = storage.getAllEvents()
+        .sort((a, b) => (b.views || 0) - (a.views || 0))
+        .slice(0, 5)
+        .map(event => ({
+          id: event.id,
+          views: event.views || 0,
+          likes: event.likes || 0,
+          title: event.title,
+          category: event.category || "교육"
+        }));
+
+      const communityPosts = await storage.getCommunityPosts({ limit: 5 });
+      const community = communityPosts.posts
+        .sort((a, b) => (b.views || 0) - (a.views || 0))
+        .map(post => ({
+          id: post.id,
+          views: post.views || 0,
+          likes: post.likes || 0,
+          title: post.title,
+          category: post.tag || "일상"
+        }));
+
       const popularStats = {
-        trainers: [
-          { id: 6, views: 2156, likes: 134, name: "강동훈 훈련사", category: "국가자격증" }
-        ],
-        courses: [
-          { id: "curriculum-basic-obedience", views: 1923, likes: 98, title: "기초 복종훈련 완전정복", category: "기초훈련" }
-        ],
-        events: [
-          { id: 1, views: 1534, likes: 76, title: "펫 케어 워크샵", category: "교육" },
-          { id: 2, views: 1289, likes: 64, title: "반려견 사회화 프로그램", category: "사회화" }
-        ],
-        community: [
-          { id: 1, views: 987, likes: 145, title: "우리 강아지 산책 팁 공유", category: "일상" },
-          { id: 2, views: 823, likes: 98, title: "고양이 건강 관리법", category: "건강" }
-        ]
+        trainers,
+        courses,
+        events,
+        community
       };
 
       res.json(popularStats);
@@ -1538,6 +1461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 실제 데이터베이스에서 조회
       const users = storage.getAllUsers();
       const trainers = storage.getAllTrainers();
+      const allPets = storage.getAllPets();
 
       // 지난 7일간의 실제 등록 데이터 집계
       const userRegistrations = [];
@@ -1563,8 +1487,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return trainerDate === dateStr;
         }).length;
 
-        // 반려견 등록 수는 추가로 통계 가능
-        const dailyPets = Math.floor(Math.random() * 2); // 임시로 사용자와 연관된 수
+        // 해당 날짜의 반려견 등록 수 (실제 데이터)
+        const dailyPets = allPets.filter(pet => {
+          if (!pet.createdAt) return false;
+          const petDate = new Date(pet.createdAt).toISOString().split('T')[0];
+          return petDate === dateStr;
+        }).length;
 
         userRegistrations.push(dailyUsers);
         trainerCertifications.push(dailyTrainers);
@@ -1576,7 +1504,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         trainerCertifications,
         petRegistrations,
         totalUsers: users.length,
-        totalTrainers: trainers.length
+        totalTrainers: trainers.length,
+        totalPets: allPets.length
       });
 
       res.json({
