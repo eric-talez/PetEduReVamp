@@ -322,22 +322,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     }
   };
   
-  // 디버깅용 로그 (개발 완료 후 제거)
-  useEffect(() => {
-    console.log('TopBar rendered with auth state:', {
-      isAuthenticated,
-      userRole,
-      userName
-    });
-    
-    // 전역 상태 확인
-    if ((window as any).__peteduAuthState) {
-      console.log('TopBar global auth state:', (window as any).__peteduAuthState);
-    }
-  }, [isAuthenticated, userRole, userName]);
 
   const handleLogout = () => {
-    console.log("Logout button clicked - 강제 로그아웃 처리");
     
     // 모든 로컬 스토리지 인증 관련 데이터 제거
     localStorage.removeItem('petedu_auth');
@@ -462,8 +448,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       setLocation("/auth");
                     }
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape' && messagePopupOpen) {
+                      setMessagePopupOpen(false);
+                    }
+                  }}
                   className="relative"
                   aria-label="메시지"
+                  aria-expanded={messagePopupOpen}
+                  aria-controls="messages-popup"
+                  aria-haspopup="menu"
                 >
                   <MessageSquare className="h-5 w-5" />
                   {isAuthenticated && unreadMessagesCount > 0 && (
@@ -478,7 +472,17 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 
                 {/* Messages Popup */}
                 {messagePopupOpen && isAuthenticated && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                  <div 
+                    id="messages-popup"
+                    role="menu"
+                    className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setMessagePopupOpen(false);
+                        document.querySelector('[aria-controls="messages-popup"]')?.focus();
+                      }
+                    }}
+                  >
                     <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                       <div className="flex justify-between items-center">
                         <h3 className="text-sm font-semibold">메시지</h3>
@@ -564,8 +568,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       setMessagePopupOpen(false);
                       setCartPopupOpen(false);
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape' && notificationPopupOpen) {
+                        setNotificationPopupOpen(false);
+                      }
+                    }}
                     className="relative"
                     aria-label="알림"
+                    aria-expanded={notificationPopupOpen}
+                    aria-controls="notifications-popup"
+                    aria-haspopup="menu"
                   >
                     <Bell className="h-5 w-5" />
                     {unreadNotificationsCount > 0 && (
@@ -580,7 +592,17 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   
                   {/* Notifications Popup */}
                   {notificationPopupOpen && (
-                    <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div 
+                      id="notifications-popup"
+                      role="menu"
+                      className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setNotificationPopupOpen(false);
+                          document.querySelector('[aria-controls="notifications-popup"]')?.focus();
+                        }
+                      }}
+                    >
                       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                         <div className="flex justify-between items-center">
                           <h3 className="text-sm font-semibold">알림</h3>
@@ -670,12 +692,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       setCartPopupOpen(!cartPopupOpen);
                       setMessagePopupOpen(false);
                       setNotificationPopupOpen(false);
-                      // 마이크로 인터랙션을 위한 상태 변화
-                      if (!cartPopupOpen) {
-                        console.log("장바구니 아이콘 애니메이션 활성화");
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape' && cartPopupOpen) {
+                        setCartPopupOpen(false);
                       }
                     }}
                     aria-label="쇼핑몰 장바구니 보기"
+                    aria-expanded={cartPopupOpen}
+                    aria-controls="cart-popup"
+                    aria-haspopup="menu"
                     tabIndex={0}
                   >
                     <ShoppingCart className={`h-5 w-5 ${cartItemsCount > 0 ? 'text-primary' : ''}`} />
@@ -688,7 +714,17 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   
                   {/* Cart Popup */}
                   {cartPopupOpen && (
-                    <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div 
+                      id="cart-popup"
+                      role="menu"
+                      className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setCartPopupOpen(false);
+                          document.querySelector('[aria-controls="cart-popup"]')?.focus();
+                        }
+                      }}
+                    >
                       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                         <div className="flex justify-between items-center">
                           <h3 className="text-sm font-semibold">장바구니</h3>
@@ -786,7 +822,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="mt-2"
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                console.log("카트 팝업에서 쇼핑 버튼 클릭 - 외부 쇼핑몰로 이동");
                                 
                                 // 인증 정보를 URL 파라미터로 전달
                                 let shopUrl = 'https://store.funnytalez.com/';
@@ -808,7 +843,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                                   shopUrl += '?' + params.toString();
                                 }
                                 
-                                console.log("쇼핑몰 URL:", shopUrl);
                                 window.open(shopUrl, '_blank', 'noopener,noreferrer');
                               }}
                             >
@@ -829,7 +863,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="w-full"
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                console.log("카트 팝업에서 결제 버튼 클릭");
                                 // 결제 페이지로 직접 이동
                                 window.location.href = window.location.origin + "/shop/checkout";
                               }}
@@ -844,7 +877,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="w-full transition-all duration-200 hover:bg-primary hover:text-white group" 
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                console.log("카트 팝업에서 장바구니 버튼 클릭 - 외부 쇼핑몰로 이동");
                                 window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
                               }}
                             >
@@ -863,8 +895,17 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 {/* User menu */}
                 <div className="relative" ref={userMenuRef}>
                   <button 
-                    className="flex items-center space-x-2 focus:outline-none"
+                    className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1"
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape' && userMenuOpen) {
+                        setUserMenuOpen(false);
+                      }
+                    }}
+                    aria-label={`사용자 메뉴 ${userMenuOpen ? '닫기' : '열기'}`}
+                    aria-expanded={userMenuOpen}
+                    aria-controls="user-menu"
+                    aria-haspopup="menu"
                   >
                     <Avatar className="h-6 w-6">
                       {userRole && (
@@ -882,7 +923,17 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   </button>
 
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div 
+                      id="user-menu"
+                      role="menu"
+                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setUserMenuOpen(false);
+                          document.querySelector('[aria-controls="user-menu"]')?.focus();
+                        }
+                      }}
+                    >
                       <div className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
                         <div className="font-semibold">{userName}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -902,7 +953,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                         onClick={() => {
                           setUserMenuOpen(false);
-                          console.log('내 프로필 메뉴 클릭:', userRole);
                         }}
                       >
                         내 프로필
@@ -922,7 +972,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                         onClick={() => {
                           setUserMenuOpen(false);
-                          console.log('설정 메뉴 클릭:', userRole);
                         }}
                       >
                         설정

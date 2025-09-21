@@ -398,31 +398,23 @@ export default function Home() {
     const actualIsAuthenticated = isAuthenticated || globalAuth?.isAuthenticated;
     const actualUserRole = userRole || globalAuth?.userRole;
     
-    console.log('[Banner Debug] 인증 상태:', actualIsAuthenticated, '사용자 역할:', actualUserRole);
-    console.log('[Banner Debug] useAuth 상태:', { isAuthenticated, userRole });
-    console.log('[Banner Debug] 전역 상태:', globalAuth);
     
     // 인증된 훈련사인 경우 훈련사 전용 배너 표시
     if (actualIsAuthenticated && actualUserRole === 'trainer') {
-      console.log('[Banner Debug] 훈련사 배너 선택됨, 배너 수:', trainerBannerSlides.length);
       return trainerBannerSlides.map(convertTrainerBannerToSlide);
     }
     
     // 새로운 배너를 항상 첫 번째로 표시 (관리자 배너가 있어도 우선)
     const heroSlide = defaultBannerSlides[0];
-    console.log('[Banner Debug] 새 히어로 배너 추가:', heroSlide.title);
     
     if (adminBanners.length > 0) {
       const adminSlides = adminBanners.map(convertAdminBannerToSlide);
-      console.log('[Banner Debug] 관리자 배너와 함께 표시, 총 수:', 1 + adminSlides.length);
       return [heroSlide, ...adminSlides];
     }
     
-    console.log('[Banner Debug] 기본 배너만 표시, 배너 수:', defaultBannerSlides.length);
     return defaultBannerSlides;
   }, [isAuthenticated, userRole, adminBanners, trainerBannerSlides.length]);
   
-  console.log('[Banner Debug] 최종 배너 슬라이드 수:', bannerSlides.length, '첫 번째 배너:', bannerSlides[0]?.title);
 
   // 배너가 변경될 때 currentSlide 리셋
   useEffect(() => {
@@ -436,19 +428,17 @@ export default function Home() {
 
   // 배너 슬라이드 네비게이션 함수
   const nextSlide = () => {
-    console.log('Next slide clicked, current:', currentSlide);
     setCurrentSlide((prev) => {
       const next = (prev + 1) % bannerSlides.length;
-      console.log('Moving to slide:', next);
+
       return next;
     });
   };
 
   const prevSlide = () => {
-    console.log('Previous slide clicked, current:', currentSlide);
     setCurrentSlide((prev) => {
       const next = (prev - 1 + bannerSlides.length) % bannerSlides.length;
-      console.log('Moving to slide:', next);
+
       return next;
     });
   };
@@ -896,7 +886,6 @@ export default function Home() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Dot clicked, moving to slide:', index);
                     setCurrentSlide(index);
                   }}
                   aria-label={`${index + 1}번째 슬라이드로 이동`}

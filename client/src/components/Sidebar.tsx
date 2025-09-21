@@ -213,9 +213,11 @@ export function Sidebar({
   expanded: externalExpanded,
   onToggleExpand
 }: SidebarProps) {
-  console.log('Sidebar render - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
   const [location, setLocation] = useLocation();
-  const [internalExpanded, setInternalExpanded] = useState(true);
+  const [internalExpanded, setInternalExpanded] = useState(() => {
+    // 모바일에서는 기본적으로 collapsed 상태로 시작
+    return typeof window !== 'undefined' ? window.innerWidth >= 1024 : true;
+  });
 
   // 외부에서 제어되는 상태 또는 내부 상태 사용
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
@@ -224,8 +226,14 @@ export function Sidebar({
     const handleResize = () => {
       if (window.innerWidth < 1024) {
         if (onToggleExpand) {
-          // 외부 상태 사용
+          // 외부 상태 사용 시에는 외부에서 관리
         } else {
+          // 모바일에서는 collapsed 상태로 변경
+          setInternalExpanded(false);
+        }
+      } else {
+        if (!onToggleExpand) {
+          // 데스크톱에서는 expanded 상태로 복구
           setInternalExpanded(true);
         }
       }
@@ -254,8 +262,6 @@ export function Sidebar({
   });
 
   useEffect(() => {
-    console.log('Sidebar useEffect - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
-
     // 권한별 메뉴 표시 권한 확인
     const isInstituteAdmin = userRole === 'institute-admin';
     const isAdmin = userRole === 'admin';
@@ -267,8 +273,6 @@ export function Sidebar({
     const canAccessConsultation = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
     const canAccessCourses = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
     const canAccessMessaging = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
-
-    console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
 
     // 로그인 상태가 변경되면 메뉴 그룹 상태 업데이트
     setMenuGroups((prevGroups) => {
@@ -289,7 +293,6 @@ export function Sidebar({
 
       // localStorage에 메뉴 상태 저장 안함 (기본 닫힌 상태 유지)
 
-      console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
       return updatedMenuGroups;
     });
   }, [userRole, isAuthenticated]);
@@ -311,7 +314,6 @@ export function Sidebar({
       };
 
       // 메뉴 그룹 상태 변경 로그 (localStorage 저장 안함)
-      console.log(`✅ 메뉴 그룹 [${groupId}] 상태 변경:`, updated[groupId] ? '열림' : '닫힘');
 
       return updated;
     });
@@ -330,7 +332,6 @@ export function Sidebar({
       return;
     }
 
-    console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
 
     // 특정 페이지 접근 권한 및 라우팅 처리
     const publicPaths = [
@@ -345,7 +346,6 @@ export function Sidebar({
         !path.startsWith('/institutes/') && 
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
-      console.log('로그인 필요: ', path);
 
       // 로딩 표시를 위한 오버레이 요소 생성
       const overlay = document.createElement('div');
@@ -366,14 +366,12 @@ export function Sidebar({
             document.body.removeChild(overlay);
           }
         } catch (e) {
-          console.log('오버레이 제거 중 오류:', e);
         }
 
         // 페이지 이동 시도 (여러 방식으로 시도)
         try {
           setLocation('/auth');
         } catch (e) {
-          console.log('setLocation 실패, window.location 사용:', e);
           window.location.href = '/auth';
         }
       }, 1500);
@@ -384,7 +382,6 @@ export function Sidebar({
     if (isAuthenticated) {
       // 훈련사 전용 페이지
       if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin' && userRole !== 'institute-admin') {
-        console.log('훈련사 권한 필요');
 
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
@@ -414,7 +411,6 @@ export function Sidebar({
 
       // 기관 관리자 전용 페이지
       if ((path.startsWith('/institute-dashboard') || path.startsWith('/institute/')) && userRole !== 'institute-admin' && userRole !== 'admin') {
-        console.log('기관 관리자 권한 필요');
 
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
@@ -444,7 +440,6 @@ export function Sidebar({
 
       // 시스템 관리자 전용 페이지
       if (path.startsWith('/admin') && userRole !== 'admin') {
-        console.log('관리자 권한 필요');
 
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
@@ -489,7 +484,6 @@ export function Sidebar({
 
     // 쇼핑 페이지는 새 창에서 열기
     if (path === '/shop') {
-      console.log('쇼핑 페이지를 새 창에서 열기');
       window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
       // 모바일 화면에서만 사이드바 닫기
       if (onClose && window.innerWidth < 768) onClose();
@@ -498,7 +492,6 @@ export function Sidebar({
 
     // SPA 라우팅 함수
     const navigateToPage = (targetPath: string) => {
-      console.log(`페이지 이동: ${targetPath}`);
 
       // wouter를 사용한 SPA 라우팅
       setLocation(targetPath);
@@ -508,10 +501,8 @@ export function Sidebar({
     };
 
     if (path in specialRoutes) {
-      console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
       // /notifications를 /alerts로 리다이렉션
       if (path === '/notifications') {
-        console.log('알림 페이지로 리다이렉션: /alerts');
         navigateToPage('/alerts');
       } else {
         navigateToPage(path);
@@ -533,7 +524,6 @@ export function Sidebar({
 
   // 로고 URL 결정
   const getLogoUrl = (type: 'expanded' | 'collapsed') => {
-    console.log('[Sidebar] logoData:', logoData, 'type:', type);
     
     if (!logoData || typeof logoData !== 'object') {
       // 기본 로고 사용
@@ -544,14 +534,10 @@ export function Sidebar({
     
     if (type === 'expanded') {
       // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
-      const expandedLogo = logos.logoLight || logos.logoUrl || TalezLogoType;
-      console.log('[Sidebar] Expanded logo URL:', expandedLogo);
-      return expandedLogo;
+      return logos.logoLight || logos.logoUrl || TalezLogoType;
     } else {
       // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
-      const collapsedLogo = logos.logoSymbolLight || logos.compactLogoUrl || TalezSymbol;
-      console.log('[Sidebar] Collapsed logo URL:', collapsedLogo);
-      return collapsedLogo;
+      return logos.logoSymbolLight || logos.compactLogoUrl || TalezSymbol;
     }
   };
 
@@ -571,8 +557,6 @@ export function Sidebar({
 
   // 이 useEffect는 중복되므로 제거 (위에서 이미 처리됨)
 
-  console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
-  console.log('메뉴 그룹 상태:', menuGroups);
 
 
   return (
