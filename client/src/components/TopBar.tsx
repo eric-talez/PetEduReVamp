@@ -82,18 +82,14 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
-  // 전역 상태에서 인증 정보 직접 확인
+  // 통합된 인증 상태 관리
+  const auth = useAuth();
   const globalAuth = (window as any).__peteduAuthState;
   
-  // 로컬 상태와 전역 상태 둘 다 확인
-  const auth = useAuth();
-  // 전역 상태가 있으면 우선 사용
-  const authState = globalAuth || auth;
-  
-  // 상태 추출
-  const userName = authState?.userName || auth?.userName;
-  const userRole = authState?.userRole || auth?.userRole;
-  const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
+  // 안정적인 상태 추출 (fallback 체인)
+  const isAuthenticated = auth?.isAuthenticated ?? globalAuth?.isAuthenticated ?? false;
+  const userName = auth?.userName ?? globalAuth?.userName ?? null;
+  const userRole = auth?.userRole ?? globalAuth?.userRole ?? null;
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
   
@@ -950,38 +946,26 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               </>
             ) : (
               <div className="flex space-x-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  aria-label="로그인 페이지로 이동"
-                  onClick={() => {
-                    const startTime = performance.now();
-                    console.log("🔄 로그인 버튼 클릭 시작");
-                    // Use Link navigation for React routing instead of window.location
-                    window.history.pushState({}, '', '/auth');
-                    window.dispatchEvent(new PopStateEvent('popstate'));
-                    const endTime = performance.now();
-                    console.log(`⚡ 로그인 내비게이션 완료: ${(endTime - startTime).toFixed(2)}ms`);
-                  }}
-                >
-                  로그인
-                </Button>
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  aria-label="회원가입 페이지로 이동"
-                  onClick={() => {
-                    const startTime = performance.now();
-                    console.log("🔄 회원가입 버튼 클릭 시작");
-                    // Use Link navigation for React routing instead of window.location
-                    window.history.pushState({}, '', '/auth?tab=register');
-                    window.dispatchEvent(new PopStateEvent('popstate'));
-                    const endTime = performance.now();
-                    console.log(`⚡ 회원가입 내비게이션 완료: ${(endTime - startTime).toFixed(2)}ms`);
-                  }}
-                >
-                  회원가입
-                </Button>
+                <Link href="/auth">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    aria-label="로그인 페이지로 이동"
+                    className="transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    로그인
+                  </Button>
+                </Link>
+                <Link href="/auth?tab=register">
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    aria-label="회원가입 페이지로 이동"
+                    className="transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    회원가입
+                  </Button>
+                </Link>
               </div>
             )}
           </div>

@@ -114,28 +114,23 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
   const { expanded } = useContext(SidebarContext);
   const [, setLocation] = useLocation();
   
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // 기본 동작 방지하고 커스텀 라우팅 로직 사용
-    e.preventDefault();
-
+  const handleNavigation = useCallback(() => {
     if (onClick) {
       onClick(href);
     } else {
-      console.log("기본 네비게이션 시도:", href);
-      // wouter를 사용한 라우팅
       setLocation(href);
     }
+  }, [href, onClick, setLocation]);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    handleNavigation();
   };
 
-  // 키보드 이벤트 핸들러
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      if (onClick) {
-        onClick(href);
-      } else {
-        setLocation(href);
-      }
+      handleNavigation();
     }
   };
 
@@ -150,15 +145,20 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
             <a
               href={href}
               className={cn(
-                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
+                "sidebar-link flex items-center justify-center py-3 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out px-3 group",
+                "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900",
+                active 
+                  ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
+                  : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/10"
               )}
               onClick={handleClick}
               onKeyDown={handleKeyDown}
               tabIndex={0}
+              role="button"
               aria-label={typeof children === 'string' ? children : children?.toString()}
+              aria-current={active ? "page" : undefined}
             >
-              <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6">
+              <div className="transition-all duration-200 group-hover:scale-110 flex items-center justify-center w-6 h-6">
                 {icon}
               </div>
             </a>
@@ -176,12 +176,16 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2",
-        active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
+        "sidebar-link flex items-center py-3 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out px-3 group",
+        "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900",
+        active 
+          ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
+          : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/10"
       )}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={0}
+      role="button"
       aria-current={active ? "page" : undefined}
     >
       <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3">
