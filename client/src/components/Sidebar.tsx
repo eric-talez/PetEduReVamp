@@ -37,6 +37,7 @@ interface SidebarProps {
   open: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
+  onClose?: () => void;
   userRole: string | null;
   isAuthenticated: boolean;
 }
@@ -56,6 +57,7 @@ export function Sidebar({
   open, 
   expanded, 
   onToggleExpand,
+  onClose,
   userRole, 
   isAuthenticated 
 }: SidebarProps) {
@@ -168,12 +170,15 @@ export function Sidebar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Link href={item.href}>
-                <div className={cn(
-                  "flex items-center justify-center h-12 mx-2 rounded-lg cursor-pointer transition-all duration-200",
-                  active 
-                    ? "bg-gray-100 dark:bg-zinc-800 text-red-600" 
-                    : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
-                )}>
+                <div 
+                  className={cn(
+                    "flex items-center justify-center h-12 mx-2 rounded-lg cursor-pointer transition-all duration-200 min-h-[44px] min-w-[44px]",
+                    active 
+                      ? "bg-gray-100 dark:bg-zinc-800 text-red-600" 
+                      : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
+                  )}
+                  onClick={() => onClose?.()} // 모바일에서 메뉴 클릭 시 사이드바 자동 닫기
+                >
                   {item.icon}
                 </div>
               </Link>
@@ -189,12 +194,15 @@ export function Sidebar({
     // 확장된 상태 (아이콘 + 텍스트)
     return (
       <Link key={item.id} href={item.href}>
-        <div className={cn(
-          "flex items-center h-10 px-3 mx-3 rounded-lg cursor-pointer transition-all duration-200 group",
-          active 
-            ? "bg-gray-100 dark:bg-zinc-800 text-red-600 font-medium" 
-            : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
-        )}>
+        <div 
+          className={cn(
+            "flex items-center h-11 px-3 mx-3 rounded-lg cursor-pointer transition-all duration-200 group min-h-[44px]",
+            active 
+              ? "bg-gray-100 dark:bg-zinc-800 text-red-600 font-medium" 
+              : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
+          )}
+          onClick={() => onClose?.()} // 모바일에서 메뉴 클릭 시 사이드바 자동 닫기
+        >
           <div className="flex-shrink-0 mr-6">
             {item.icon}
           </div>

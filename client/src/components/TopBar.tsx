@@ -22,6 +22,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   
   // 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   
   // 팝업 메뉴 상태
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -77,14 +78,14 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             variant="ghost" 
             size="icon"
             onClick={onToggleSidebar}
-            className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full"
+            className="h-11 w-11 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full min-h-[44px] min-w-[44px]"
             aria-label="메뉴 토글"
           >
             <Menu className="h-6 w-6" />
           </Button>
           
           <Link href="/" className="flex items-center space-x-2">
-            <div className="text-xl font-bold text-red-600 dark:text-red-500">
+            <div className="text-xl lg:text-xl font-bold text-red-600 dark:text-red-500">
               TALEZ
             </div>
           </Link>
@@ -113,8 +114,19 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
           </div>
         </div>
         
-        {/* 오른쪽: 사용자 메뉴 */}
+        {/* 오른쪽: 모바일 검색 + 알림 + 사용자 메뉴 */}
         <div className="flex items-center space-x-2">
+          {/* 모바일 검색 버튼 - YouTube 스타일 */}
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+            className="h-10 w-10 lg:hidden hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full min-h-[44px] min-w-[44px]"
+            aria-label="검색"
+          >
+            <Search className="h-5 w-5" />
+          </Button>
+          
           {/* 알림 */}
           {auth.isAuthenticated && (
             <div className="relative" ref={notificationPopupRef}>
@@ -122,7 +134,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setNotificationPopupOpen(!notificationPopupOpen)}
-                className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full relative"
+                className="h-11 w-11 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full relative min-h-[44px] min-w-[44px]"
                 aria-label="알림"
               >
                 <Bell className="h-5 w-5" />
@@ -178,7 +190,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full"
+                className="h-11 w-11 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full min-h-[44px] min-w-[44px]"
                 aria-label="사용자 메뉴"
               >
                 <Avatar className="h-8 w-8">
@@ -244,6 +256,46 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
           )}
         </div>
       </div>
+      
+      {/* 모바일 검색 오버레이 - YouTube 스타일 */}
+      {mobileSearchOpen && (
+        <div className="absolute top-0 left-0 w-full h-14 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 z-50 lg:hidden">
+          <div className="h-full px-4 flex items-center">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setMobileSearchOpen(false)}
+              className="h-10 w-10 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full mr-3 min-h-[44px] min-w-[44px]"
+              aria-label="검색 닫기"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Button>
+            
+            <div className="flex-1 flex">
+              <input
+                type="text"
+                placeholder="검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="flex-1 px-4 py-2 text-base bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-l-full focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[44px]"
+                autoFocus
+              />
+              <Button
+                onClick={() => {
+                  handleSearch();
+                  setMobileSearchOpen(false);
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 border border-red-600 rounded-r-full min-h-[44px]"
+              >
+                <Search className="h-5 w-5 text-white" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
