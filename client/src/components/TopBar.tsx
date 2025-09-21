@@ -25,7 +25,7 @@ import {
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/lib/auth-compat";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
