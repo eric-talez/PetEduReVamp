@@ -461,8 +461,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 프로필 페이지 */}
                   <Route path="/profile">
                     {() => (
-                      <ProtectedRoute 
-                        component={() => (
+                        
                           <div className="container mx-auto p-6">
                             <h1 className="text-2xl font-bold mb-6">내 프로필</h1>
                             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -497,8 +496,6 @@ function AppLayout({ children }: { children: ReactNode }) {
                               </div>
                             </div>
                           </div>
-                        )}
-                      />
                     )}
                   </Route>
 
@@ -1105,6 +1102,24 @@ function AppLayout({ children }: { children: ReactNode }) {
             );
           }}
         </Route>
+                </Switch>
+              </ErrorBoundary>
+            </main>
+          </div>
+          
+          {/* AI 챗봇 */}
+          <SimpleChatBot />
+        </div>
+        
+        {/* Debug info - only shown in development mode */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="fixed bottom-4 right-4 p-2 bg-card border border-border text-card-foreground text-xs rounded z-50">
+            Debug: AppLayout rendered
+          </div>
+        )}
+    </ErrorBoundary>
+  );
+}
 
 /**
  * 로그인 필요 경로 보호 컴포넌트 - 임시로 주석 처리
@@ -1446,16 +1461,12 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/recommendations">
           {() => (
-            <ProtectedRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>}
-            />
+            <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>
           )}
         </Route>
         <Route path="/messages">
           {() => (
-            <ProtectedRoute 
-              component={MessagesPage}
-            />
+            <MessagesPage />
           )}
         </Route>
 
@@ -1463,9 +1474,7 @@ function AuthenticatedRoutes() {
         {/* 나의 학습 메뉴 서브 페이지들 */}
         <Route path="/my-trainers">
           {() => (
-            <ProtectedRoute 
-              component={() => <div className="container p-6"><h1 className="text-2xl font-bold mb-4">담당 훈련사</h1><p>현재 나의 반려견을 담당하고 있는 훈련사 목록과 연락 정보를 확인할 수 있습니다.</p></div>}
-            />
+            <div className="container p-6"><h1 className="text-2xl font-bold mb-4">담당 훈련사</h1><p>현재 나의 반려견을 담당하고 있는 훈련사 목록과 연락 정보를 확인할 수 있습니다.</p></div>
           )}
         </Route>
 
@@ -1672,9 +1681,7 @@ function AuthenticatedRoutes() {
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 </div>
               }>
-                <ProtectedRoute 
-                  component={() => <ProfilePage userType="user" />} 
-                />
+                <ProfilePage userType="user" />
               </Suspense>
             );
           }}
@@ -1704,9 +1711,7 @@ function AuthenticatedRoutes() {
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 </div>
               }>
-                <ProtectedRoute 
-                  component={() => <SettingsPage userRole="user" />} 
-                />
+                <SettingsPage userRole="user" />
               </Suspense>
             );
           }}
@@ -2437,7 +2442,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/" component={Home />
+        <Route path="/" component={Home} />
 
         {/* 404 페이지 */}
         <Route>
@@ -2450,24 +2455,8 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-                </Switch>
-              </ErrorBoundary>
-              
-              {/* AI 챗봇 */}
-              <SimpleChatBot />
-            </main>
-          </div>
-        </div>
-        
-        {/* Debug info - only shown in development mode */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="fixed bottom-4 right-4 p-2 bg-card border border-border text-card-foreground text-xs rounded z-50">
-            역할: {auth.userRole || '미로그인'} / 
-            인증: {auth.isAuthenticated ? 'true' : 'false'}
-          </div>
-        )}
-      </div>
-    </ErrorBoundary>
+      </Switch>
+    </AppLayout>
   );
 }
 
