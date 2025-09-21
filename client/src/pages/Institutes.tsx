@@ -9,7 +9,7 @@ export default function Institutes() {
     {
       id: 1,
       name: "퍼펙트 펫 아카데미",
-      image: "https://images.unsplash.com/photo-1555072956-7758afb20e8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       description: "최고의 반려견 교육 전문 기관. 다양한 교육 프로그램과 전문 훈련사가 여러분의 반려견을 기다립니다.",
       location: "서울 강남구",
       trainerCount: 12,
@@ -22,7 +22,7 @@ export default function Institutes() {
     {
       id: 2,
       name: "해피 도그 스쿨",
-      image: "https://images.unsplash.com/photo-1541599540903-216a46ca1dc0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       description: "즐거운 훈련으로 반려견과 견주의 행복한 동행을 지원합니다. 30년 전통의 신뢰할 수 있는 교육 기관입니다.",
       location: "서울 마포구",
       trainerCount: 8,
@@ -35,7 +35,7 @@ export default function Institutes() {
     {
       id: 3,
       name: "캐닌 에듀케이션 센터",
-      image: "https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
       description: "과학적 접근을 기반으로 한 반려견 교육 센터. 행동 분석을 통한 맞춤형 트레이닝 프로그램을 제공합니다.",
       location: "서울 송파구",
       trainerCount: 10,
@@ -48,7 +48,7 @@ export default function Institutes() {
     {
       id: 4,
       name: "펫 라이프 스쿨",
-      image: "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      image: "/attached_assets/image_1746582251297.png",
       description: "반려견의 전 생애주기를 고려한 교육 프로그램. 강아지부터 노령견까지 모든 연령대 맞춤 교육이 가능합니다.",
       location: "경기 분당구",
       trainerCount: 6,

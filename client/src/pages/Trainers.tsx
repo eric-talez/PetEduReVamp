@@ -113,7 +113,7 @@ export default function Trainers() {
       {/* Banner */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         <img 
-          src="https://images.unsplash.com/photo-1518155317743-a8ff43ea6a5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
+          src="/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png" 
           alt="훈련사 찾기"
           className="w-full h-full object-cover absolute"
         />

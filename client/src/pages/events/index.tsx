@@ -61,7 +61,7 @@ const MOCK_EVENTS: EventItem[] = [
     id: 1,
     title: "강아지 사회화 모임",
     description: "다양한 강아지들과 함께하는 사회화 모임입니다. 반려견의 사회성 향상을 위한 최고의 기회!",
-    image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
     date: "2025-05-15",
     time: "14:00 - 16:00",
     location: {
@@ -74,7 +74,7 @@ const MOCK_EVENTS: EventItem[] = [
     },
     organizer: {
       name: "김훈련",
-      avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+      avatar: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png"
     },
     category: "소셜",
     price: '무료',
@@ -85,7 +85,7 @@ const MOCK_EVENTS: EventItem[] = [
     id: 2,
     title: "반려견 건강 세미나",
     description: "반려견의 건강을 위한 영양과 운동에 대한 전문가 세미나입니다.",
-    image: "https://images.unsplash.com/photo-1597633425046-08f5110420b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
     date: "2025-05-20",
     time: "19:00 - 21:00",
     location: {
@@ -98,7 +98,7 @@ const MOCK_EVENTS: EventItem[] = [
     },
     organizer: {
       name: "박수의",
-      avatar: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+      avatar: "/attached_assets/image_1746582251297.png"
     },
     category: "교육",
     price: 15000,
@@ -109,7 +109,7 @@ const MOCK_EVENTS: EventItem[] = [
     id: 3,
     title: "반려동물 페스티벌",
     description: "다양한 반려동물 용품과 먹거리, 체험 부스가 준비된 대규모 페스티벌입니다.",
-    image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
     date: "2025-06-05",
     time: "10:00 - 18:00",
     location: {

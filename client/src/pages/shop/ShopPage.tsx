@@ -121,7 +121,7 @@ export default function ShopPage() {
       price: 29800,
       originalPrice: 38000,
       discountRate: 22,
-      image: 'https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3',
+      image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png',
       rating: 4.8,
       reviewCount: 128
     },
@@ -132,7 +132,7 @@ export default function ShopPage() {
       price: 25500,
       originalPrice: 30000,
       discountRate: 15,
-      image: 'https://images.unsplash.com/photo-1589924920114-de15293c7529?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3',
+      image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png',
       rating: 4.7,
       reviewCount: 96
     },
@@ -143,7 +143,7 @@ export default function ShopPage() {
       price: 75000,
       originalPrice: 75000,
       discountRate: 0,
-      image: 'https://images.unsplash.com/photo-1535294435445-d7249524ef2e?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3',
+      image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png',
       rating: 4.5,
       reviewCount: 75
     },
@@ -154,7 +154,7 @@ export default function ShopPage() {
       price: 48300,
       originalPrice: 69000,
       discountRate: 30,
-      image: 'https://images.unsplash.com/photo-1560743641-3914f2c45636?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3',
+      image: '/attached_assets/image_1746582251297.png',
       rating: 4.9,
       reviewCount: 154
     }

@@ -98,7 +98,7 @@ export default function Courses(props?: CoursesPageProps) {
       name: productName,
       price: Math.floor(Math.random() * 50000) + 5000,
       description: `${productName}에 대한 상세한 설명입니다. 반려견 훈련에 꼭 필요한 전문 용품으로 높은 품질을 자랑합니다.`,
-      image: `https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop`,
+      image: `/attached_assets/image_1746582251297.png`,
       category: "훈련용품",
       rating: 4.5,
       reviews: Math.floor(Math.random() * 200) + 10,
