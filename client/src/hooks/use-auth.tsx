@@ -66,23 +66,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ['/api/auth/me'],
     retry: false,
     staleTime: 5 * 60 * 1000, // 5분
-    initialData: getInitialUserState(), // 로컬 스토리지에서 초기 데이터 로드
-    onSuccess: (data) => {
-      if (data) {
-        // 인증 상태와 사용자 데이터 저장
-        setIsAuthenticated(true);
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userData', JSON.stringify(data));
-        console.log('[Auth] 상태 업데이트', { isAuthenticated: true, ...data });
-      }
-    },
-    onError: () => {
+    initialData: getInitialUserState() // 로컬 스토리지에서 초기 데이터 로드
+  });
+
+  // 사용자 데이터 변경 시 상태 업데이트 (TanStack Query v5 호환)
+  useEffect(() => {
+    if (user) {
+      // 인증 상태와 사용자 데이터 저장
+      setIsAuthenticated(true);
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userData', JSON.stringify(user));
+      console.log('[Auth] 상태 업데이트', { isAuthenticated: true, ...user });
+    } else if (error) {
       setIsAuthenticated(false);
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('userData');
       console.log('[Auth] 사용자 인증 실패');
     }
-  });
+  }, [user, error]);
   
   // 컴포넌트 마운트 시 로컬 스토리지 확인
   useEffect(() => {
