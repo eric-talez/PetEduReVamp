@@ -132,6 +132,12 @@ export const posts = pgTable("posts", {
   views: integer("views").default(0),
   likes: integer("likes").default(0),
   commentsCount: integer("comments_count").default(0),
+  // 영상 관련 필드 추가
+  postType: varchar("post_type", { length: 50 }).default("text"), // 'text', 'video', 'video_short', 'link'
+  videoUrl: text("video_url"), // 영상 파일 URL
+  videoThumbnail: text("video_thumbnail"), // 영상 썸네일 URL
+  videoDuration: integer("video_duration"), // 영상 길이 (초)
+  videoFileSize: integer("video_file_size"), // 파일 크기 (bytes)
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -1797,4 +1803,53 @@ export const selectCourseSchema = createSelectSchema(courses);
 // Additional course type definitions (avoiding duplicates)
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type UpdateCourse = z.infer<typeof updateCourseSchema>;
+
+// =============================================================================
+// 커뮤니티 게시글(Posts) 스키마 정의
+// =============================================================================
+
+// 게시글 기본 스키마
+export const insertPostSchema = createInsertSchema(posts, {
+  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
+  content: z.string().min(1, "내용은 필수입니다"),
+  category: z.string().max(100, "카테고리는 100자를 초과할 수 없습니다").optional(),
+  postType: z.enum(["text", "video", "video_short", "link"]).default("text"),
+  videoUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable(),
+  videoThumbnail: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable(),
+  videoDuration: z.number().int().min(1, "영상 길이는 1초 이상이어야 합니다").optional().nullable(),
+  videoFileSize: z.number().int().min(1, "파일 크기는 1byte 이상이어야 합니다").optional().nullable(),
+}).omit({
+  id: true,
+  views: true,
+  likes: true,
+  commentsCount: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 게시글 수정 스키마
+export const updatePostSchema = insertPostSchema.partial().omit({
+  authorId: true    // 작성자는 변경 불가
+});
+
+// 게시글 조회 스키마
+export const selectPostSchema = createSelectSchema(posts);
+
+// 댓글 스키마
+export const insertCommentSchema = createInsertSchema(comments, {
+  content: z.string().min(1, "댓글 내용은 필수입니다"),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const selectCommentSchema = createSelectSchema(comments);
+
+// 타입 정의
+export type Post = z.infer<typeof selectPostSchema>;
+export type InsertPost = z.infer<typeof insertPostSchema>;
+export type UpdatePost = z.infer<typeof updatePostSchema>;
+export type Comment = z.infer<typeof selectCommentSchema>;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
 
