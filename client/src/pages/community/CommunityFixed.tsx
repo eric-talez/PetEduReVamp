@@ -193,7 +193,7 @@ const PostCardSkeleton = () => (
 function CommunityPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, userRole, userName, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   
   // 이벤트/행사 크롤링 mutation
@@ -631,7 +631,7 @@ function CommunityPage() {
           </div>
 
           {/* 이벤트/행사 탭에서만 크롤링 버튼 표시 (관리자 전용) */}
-          {activeTab === 'events' && user && (user.role === 'admin' || user.role === 'institute-admin') && (
+          {activeTab === 'events' && isAuthenticated && (userRole === 'admin' || userRole === 'institute-admin') && (
             <Button 
               onClick={() => crawlEventsMutation.mutate()}
               disabled={crawlEventsMutation.isPending}
