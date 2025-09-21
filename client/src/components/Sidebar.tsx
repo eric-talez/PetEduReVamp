@@ -27,7 +27,10 @@ import {
   Monitor,
   UserCheck,
   Shield,
-  Wrench
+  Wrench,
+  Bell,
+  Folder,
+  History
 } from "lucide-react";
 
 interface SidebarProps {
@@ -60,31 +63,37 @@ export function Sidebar({
   
   // 메뉴 아이템 정의 (YouTube 스타일)
   const menuItems: MenuItem[] = [
-    // 메인 섹션
+    // 메인 섹션 - YouTube 홈 영역
     { id: 'home', label: '홈', icon: <Home className="w-6 h-6" />, href: '/' },
-    { id: 'explore', label: '탐색', icon: <Compass className="w-6 h-6" />, href: '/explore' },
     { id: 'courses', label: '강의', icon: <PlaySquare className="w-6 h-6" />, href: '/courses' },
-    { id: 'trainers', label: '훈련사', icon: <Users className="w-6 h-6" />, href: '/trainers' },
-    
-    // 구분선
-    { id: 'divider1', label: '', icon: null, href: '', divider: true },
-    
-    // 나의 학습 (로그인 시)
-    { id: 'my-learning', label: '나의 학습', icon: <BookOpen className="w-6 h-6" />, href: '/my-learning', roles: ['authenticated'] },
-    { id: 'history', label: '시청 기록', icon: <Clock className="w-6 h-6" />, href: '/history', roles: ['authenticated'] },
-    { id: 'liked', label: '좋아요', icon: <ThumbsUp className="w-6 h-6" />, href: '/liked', roles: ['authenticated'] },
-    { id: 'saved', label: '저장됨', icon: <Download className="w-6 h-6" />, href: '/saved', roles: ['authenticated'] },
-    
-    // 구분선
-    { id: 'divider2', label: '', icon: null, href: '', divider: true, roles: ['authenticated'] },
-    
-    // 펫 관련
-    { id: 'my-pets', label: '내 반려견', icon: <PawPrint className="w-6 h-6" />, href: '/my-pets', roles: ['pet-owner', 'trainer'] },
     { id: 'video-training', label: '영상 훈련', icon: <Video className="w-6 h-6" />, href: '/video-training' },
     { id: 'video-call', label: '화상 수업', icon: <Monitor className="w-6 h-6" />, href: '/video-call' },
     
     // 구분선
-    { id: 'divider3', label: '', icon: null, href: '', divider: true },
+    { id: 'divider1', label: '', icon: null, href: '', divider: true },
+    
+    // 구독 및 탐색
+    { id: 'subscriptions', label: '구독', icon: <Bell className="w-6 h-6" />, href: '/subscriptions', roles: ['authenticated'] },
+    { id: 'explore', label: '탐색', icon: <Compass className="w-6 h-6" />, href: '/explore' },
+    { id: 'trainers', label: '훈련사', icon: <Users className="w-6 h-6" />, href: '/trainers' },
+    
+    // 구분선
+    { id: 'divider2', label: '', icon: null, href: '', divider: true, roles: ['authenticated'] },
+    
+    // 라이브러리 (로그인 시)
+    { id: 'library', label: '라이브러리', icon: <Folder className="w-6 h-6" />, href: '/library', roles: ['authenticated'] },
+    { id: 'history', label: '시청 기록', icon: <History className="w-6 h-6" />, href: '/history', roles: ['authenticated'] },
+    { id: 'liked', label: '좋아요', icon: <ThumbsUp className="w-6 h-6" />, href: '/liked', roles: ['authenticated'] },
+    { id: 'saved', label: '저장됨', icon: <Download className="w-6 h-6" />, href: '/saved', roles: ['authenticated'] },
+    
+    // 구분선
+    { id: 'divider3', label: '', icon: null, href: '', divider: true, roles: ['authenticated'] },
+    
+    // 펫 관련 메뉴
+    { id: 'my-pets', label: '내 반려견', icon: <PawPrint className="w-6 h-6" />, href: '/my-pets', roles: ['pet-owner', 'trainer'] },
+    
+    // 구분선
+    { id: 'divider4', label: '', icon: null, href: '', divider: true },
     
     // 훈련사 도구
     { id: 'trainer-dashboard', label: '훈련사 대시보드', icon: <User className="w-6 h-6" />, href: '/trainer-dashboard', roles: ['trainer'] },
@@ -100,7 +109,7 @@ export function Sidebar({
     { id: 'system-settings', label: '시스템 설정', icon: <Wrench className="w-6 h-6" />, href: '/admin/settings', roles: ['admin'] },
     
     // 구분선
-    { id: 'divider4', label: '', icon: null, href: '', divider: true },
+    { id: 'divider5', label: '', icon: null, href: '', divider: true },
     
     // 하단 메뉴
     { id: 'settings', label: '설정', icon: <Settings className="w-6 h-6" />, href: '/settings', roles: ['authenticated'] },
@@ -225,14 +234,14 @@ export function Sidebar({
       {/* 스크롤 영역 */}
       <ScrollArea className="flex-1">
         <div className="py-2">
-          {/* 로그인되지 않은 사용자를 위한 안내 */}
+          {/* 로그인되지 않은 사용자를 위한 안내 - YouTube 스타일 */}
           {!isAuthenticated && expanded && (
             <div className="px-6 py-4 mb-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                더 많은 기능을 이용하려면 로그인하세요
+                로그인하여 더 많은 기능을 이용하세요.
               </p>
               <Link href="/auth">
-                <Button variant="outline" className="w-full text-sm">
+                <Button className="w-full text-sm bg-red-600 hover:bg-red-700 text-white">
                   로그인
                 </Button>
               </Link>
