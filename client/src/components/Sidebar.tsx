@@ -499,6 +499,7 @@ export function Sidebar({
             {!isAuthenticated ? (
               <>
                 <SidebarMenuGroup
+                  expanded={true}
                   title="메인 메뉴"
                   groupName="main"
                   isOpen={menuGroups.main}
@@ -555,6 +556,7 @@ export function Sidebar({
 
                 {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
                 <SidebarMenuGroup
+                  expanded={true}
                   title="쇼핑"
                   groupName="features"
                   isOpen={menuGroups.features}
@@ -587,16 +589,17 @@ export function Sidebar({
                 </div>
 
                 {/* Help Section 컴포넌트 통합 */}
-                <HelpSection handleItemClick={handleItemClick} />
+                <HelpSection expanded={true} handleItemClick={handleItemClick} />
 
                 {/* 독립적인 StatisticsSection 컴포넌트 사용 */}
-                <StatisticsSection />
+                <StatisticsSection expanded={true} />
               </>
             ) : (
               /* 로그인 상태 메뉴 */
               <>
                 {/* 메인 메뉴 */}
                 <SidebarMenuGroup
+                  expanded={true}
                   title="메인"
                   groupName="main"
                   isOpen={menuGroups.main}
@@ -618,7 +621,7 @@ export function Sidebar({
                 {/* 학습 메뉴 (견주) */}
                 {showPetOwnerMenu && (
                   <>
-                    <SidebarMenuGroup title="학습" groupName="learning" isOpen={menuGroups.learning} toggleGroup={toggleMenuGroup} icon={<BookOpen className="w-5 h-5 text-gray-500" />} />
+                    <SidebarMenuGroup expanded={true} title="학습" groupName="learning" isOpen={menuGroups.learning} toggleGroup={toggleMenuGroup} icon={<BookOpen className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.learning && (
                       <>
                         <AccessibleNavItem href="/my-courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-courses")} onClick={handleItemClick} show={true}>나의 학습</AccessibleNavItem>
@@ -636,7 +639,7 @@ export function Sidebar({
                 {/* 운영 관리 (훈련사/기관) */}
                 {(showTrainerMenu || showInstituteMenu) && (
                   <>
-                    <SidebarMenuGroup title="운영 관리" groupName="management" isOpen={menuGroups.management} toggleGroup={toggleMenuGroup} icon={<UserCog className="w-5 h-5 text-gray-500" />} />
+                    <SidebarMenuGroup expanded={true} title="운영 관리" groupName="management" isOpen={menuGroups.management} toggleGroup={toggleMenuGroup} icon={<UserCog className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.management && (
                       <>
 
@@ -661,7 +664,7 @@ export function Sidebar({
                 )}
 
                 {/* 도구 */}
-                <SidebarMenuGroup title="도구" groupName="tools" isOpen={menuGroups.tools} toggleGroup={toggleMenuGroup} icon={<Wrench className="w-5 h-5 text-gray-500" />} />
+                <SidebarMenuGroup expanded={true} title="도구" groupName="tools" isOpen={menuGroups.tools} toggleGroup={toggleMenuGroup} icon={<Wrench className="w-5 h-5 text-gray-500" />} />
                 {menuGroups.tools && (
                   <>
                     <AccessibleNavItem href="/video-training" icon={<Video className="w-5 h-5 mr-2" />} hoverIcon={<Presentation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-training")} onClick={handleItemClick} show={true}>영상 훈련</AccessibleNavItem>
@@ -676,7 +679,7 @@ export function Sidebar({
                 {/* 관리자 대시보드 */}
                 {showAdminMenu && (
                   <>
-                    <SidebarMenuGroup title="관리자 대시보드" groupName="adminDashboard" isOpen={menuGroups.adminDashboard} toggleGroup={toggleMenuGroup} icon={<Monitor className="w-5 h-5 text-primary" />} />
+                    <SidebarMenuGroup expanded={true} title="관리자 대시보드" groupName="adminDashboard" isOpen={menuGroups.adminDashboard} toggleGroup={toggleMenuGroup} icon={<Monitor className="w-5 h-5 text-primary" />} />
                     {menuGroups.adminDashboard && (
                       <>
                         <AccessibleNavItem href="/admin/dashboard" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/dashboard")} onClick={handleItemClick} show={true}>통합 대시보드</AccessibleNavItem>
@@ -692,7 +695,7 @@ export function Sidebar({
                 {/* 시스템 관리 (관리자) */}
                 {showAdminMenu && (
                   <>
-                    <SidebarMenuGroup title="시스템 관리" groupName="admin" isOpen={menuGroups.admin} toggleGroup={toggleMenuGroup} icon={<Settings className="w-5 h-5 text-gray-500" />} />
+                    <SidebarMenuGroup expanded={true} title="시스템 관리" groupName="admin" isOpen={menuGroups.admin} toggleGroup={toggleMenuGroup} icon={<Settings className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.admin && (
                       <>
                         <AccessibleNavItem href="/admin/curriculum" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/curriculum")} onClick={handleItemClick} show={true}>커리큘럼 관리</AccessibleNavItem>
@@ -722,8 +725,8 @@ export function Sidebar({
                 )}
 
                 {/* Help & Statistics */}
-                <HelpSection handleItemClick={handleItemClick} />
-                <StatisticsSection />
+                <HelpSection expanded={true} handleItemClick={handleItemClick} />
+                <StatisticsSection expanded={true} />
               </>
             )}
           </div>
