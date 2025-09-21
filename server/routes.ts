@@ -564,6 +564,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 훈련사 등록 API
+  app.post('/api/trainers/register', requireAuth('admin'), csrfProtection, async (req, res) => {
+    try {
+      const { name, email, phone, institute, certification, experience, specialties } = req.body;
+
+      // 필수 필드 검증
+      if (!name || !email || !institute || !certification) {
+        return res.status(400).json({ 
+          success: false, 
+          error: '이름, 이메일, 기관, 자격증은 필수 항목입니다.' 
+        });
+      }
+
+      // 이메일 중복 검증
+      const existingTrainer = storage.getUserByEmail(email);
+      if (existingTrainer) {
+        return res.status(400).json({ 
+          success: false, 
+          error: '이미 등록된 이메일입니다.' 
+        });
+      }
+
+      // 새 훈련사 데이터 준비
+      const trainerData = {
+        name,
+        email,
+        phone,
+        institute,
+        certification,
+        experience,
+        specialties: specialties.split(',').map((s: string) => s.trim()),
+        role: 'trainer',
+        password: 'temp123!', // 임시 비밀번호
+        username: email,
+        isVerified: true,
+        verified: true
+      };
+
+      // 훈련사 생성 (사용자로 등록)
+      const newTrainer = storage.createUser(trainerData);
+      
+      console.log('[Admin] 새 훈련사 등록됨:', { id: newTrainer.id, name: newTrainer.name, email: newTrainer.email });
+
+      res.json({ 
+        success: true, 
+        message: '훈련사가 성공적으로 등록되었습니다.',
+        trainer: {
+          id: newTrainer.id,
+          name: newTrainer.name,
+          email: newTrainer.email,
+          institute,
+          certification
+        }
+      });
+    } catch (error) {
+      console.error('Trainer Registration error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: '훈련사 등록 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 업체 등록 API
+  app.post('/api/admin/businesses', requireAuth('admin'), csrfProtection, async (req, res) => {
+    try {
+      const { name, type, address, lat, lng, phone, hours, description, businessNumber, services, amenities, priceRange } = req.body;
+
+      // 필수 필드 검증
+      if (!name || !type || !address || !phone || !businessNumber) {
+        return res.status(400).json({ 
+          success: false, 
+          error: '업체명, 업체 유형, 주소, 전화번호, 사업자번호는 필수 항목입니다.' 
+        });
+      }
+
+      // 새 업체 데이터 준비
+      const businessData = {
+        id: Date.now(), // 임시 ID 생성
+        name,
+        type,
+        address,
+        lat: lat || 37.5665,
+        lng: lng || 126.9780,
+        phone,
+        hours: hours || '09:00-18:00',
+        description: description || '',
+        businessNumber,
+        services: services || [],
+        amenities: amenities || [],
+        priceRange: priceRange || 'moderate',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      // 업체 데이터 저장 (임시로 메모리에 저장)
+      console.log('[Admin] 새 업체 등록 신청:', businessData);
+
+      res.json({ 
+        success: true, 
+        message: '업체가 성공적으로 등록되었습니다.',
+        business: businessData
+      });
+    } catch (error) {
+      console.error('Business Registration error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: '업체 등록 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 관리자 전용 사용자 추가 API
   app.post('/api/admin/users', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {

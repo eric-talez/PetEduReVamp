@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Filter, Plus, Eye, Edit, Trash2, GraduationCap, MapPin, Star } from "lucide-react";
 import { useState } from "react";
+import { getCSRFToken } from "@/lib/csrf";
 
 export default function AdminTrainers() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,24 +32,29 @@ export default function AdminTrainers() {
     }
     
     try {
+      // CSRF 토큰 가져오기
+      const csrfToken = await getCSRFToken();
+
       const response = await fetch('/api/trainers/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
         },
+        credentials: 'include',
         body: JSON.stringify(newTrainer),
       });
 
       const result = await response.json();
 
-      if (result.success) {
-        alert("훈련사가 성공적으로 등록되었습니다! 전문가 찾기 페이지에서 확인할 수 있습니다.");
-        // 성공 메시지는 이미 alert로 표시됨
+      if (response.ok && result.success) {
+        alert("훈련사가 성공적으로 등록되었습니다!");
       } else {
         throw new Error(result.error || '훈련사 등록에 실패했습니다.');
       }
-    } catch (error) {
-      alert("훈련사 등록 중 오류가 발생했습니다.");
+    } catch (error: any) {
+      console.error('훈련사 등록 오류:', error);
+      alert(error.message || "훈련사 등록 중 오류가 발생했습니다.");
     }
     
     // 폼 초기화

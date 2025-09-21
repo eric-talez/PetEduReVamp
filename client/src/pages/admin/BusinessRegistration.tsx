@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Upload, FileText, MapPin, Phone, Clock, Star, Plus, Trash2, Download } from 'lucide-react';
+import { getCSRFToken } from '@/lib/csrf';
 
 interface BusinessFormData {
   name: string;
@@ -167,36 +168,53 @@ export default function BusinessRegistration() {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('업체 등록 데이터:', formData);
+      // CSRF 토큰 가져오기
+      const csrfToken = await getCSRFToken();
 
-      toast({
-        title: "업체 등록 완료",
-        description: `${formData.name}이(가) 성공적으로 등록되었습니다.`
+      const response = await fetch('/api/admin/businesses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        credentials: 'include',
+        body: JSON.stringify(formData),
       });
 
-      // Reset form
-      setFormData({
-        name: '',
-        type: 'training-center',
-        address: '',
-        lat: 0,
-        lng: 0,
-        phone: '',
-        hours: '',
-        description: '',
-        businessNumber: '',
-        services: [],
-        amenities: [],
-        priceRange: '',
-        photos: []
-      });
-    } catch (error) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        console.log('업체 등록 성공:', result);
+
+        toast({
+          title: "업체 등록 완료",
+          description: `${formData.name}이(가) 성공적으로 등록되었습니다.`
+        });
+
+        // Reset form
+        setFormData({
+          name: '',
+          type: 'training-center',
+          address: '',
+          lat: 0,
+          lng: 0,
+          phone: '',
+          hours: '',
+          description: '',
+          businessNumber: '',
+          services: [],
+          amenities: [],
+          priceRange: '',
+          photos: []
+        });
+      } else {
+        throw new Error(result.error || '업체 등록에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('업체 등록 오류:', error);
       toast({
         title: "등록 실패",
-        description: "업체 등록 중 오류가 발생했습니다.",
+        description: error.message || "업체 등록 중 오류가 발생했습니다.",
         variant: "destructive"
       });
     } finally {
