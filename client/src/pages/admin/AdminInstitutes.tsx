@@ -767,7 +767,12 @@ export default function AdminInstitutes() {
             </div>
             {Array.isArray(institutes) && institutes.length > 0 ? (
               institutes.map((institute: any) => (
-                <div key={institute.id} className="grid grid-cols-9 gap-4 p-4 border-b last:border-b-0">
+                <div 
+                  key={institute.id} 
+                  className="grid grid-cols-9 gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer transition-colors" 
+                  onClick={() => handleViewInstitute(institute)}
+                  data-testid={`institute-row-${institute.id}`}
+                >
                   <div>
                     <div className="font-medium">{institute.name || '이름 없음'}</div>
                     <div className="text-sm text-muted-foreground">{institute.email || '-'}</div>
@@ -822,12 +827,13 @@ export default function AdminInstitutes() {
                       {institute.subscriptionStatus === 'active' ? '활성' : '대기'}
                     </Badge>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={() => handleViewInstitute(institute)}
                       className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
+                      data-testid={`button-view-${institute.id}`}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -836,6 +842,7 @@ export default function AdminInstitutes() {
                       size="sm"
                       onClick={() => handleEditInstitute(institute)}
                       className="hover:bg-green-50 hover:text-green-600 hover:border-green-300"
+                      data-testid={`button-edit-${institute.id}`}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -844,6 +851,7 @@ export default function AdminInstitutes() {
                       size="sm"
                       onClick={() => handleDeleteInstitute(institute)}
                       className="text-red-600 border-red-300 hover:bg-red-50"
+                      data-testid={`button-delete-${institute.id}`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -852,6 +860,7 @@ export default function AdminInstitutes() {
                       size="sm"
                       onClick={() => handleChangeSubscription(institute)}
                       className="hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+                      data-testid={`button-subscription-${institute.id}`}
                     >
                       <CreditCard className="h-4 w-4" />
                     </Button>
@@ -867,14 +876,80 @@ export default function AdminInstitutes() {
         </CardContent>
       </Card>
 
-      {/* 기관 상세보기 다이얼로그 */}
+      {/* 기관 등록 현황 다이얼로그 */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
-            <DialogTitle>기관 상세 정보</DialogTitle>
+            <DialogTitle>기관 등록 현황 및 상세 정보</DialogTitle>
+            <DialogDescription>
+              {selectedInstitute?.name}의 상세 정보와 등록 현황을 확인할 수 있습니다.
+            </DialogDescription>
           </DialogHeader>
           {selectedInstitute && (
             <div className="space-y-6">
+              {/* 등록 현황 요약 */}
+              <div className="grid grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {selectedInstitute.trainersCount || (selectedInstitute.trainerId ? 1 : 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">등록 훈련사</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {selectedInstitute.studentsCount || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">등록 교육생</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {selectedInstitute.subscriptionStatus === 'active' ? '활성' : '대기'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">구독 상태</div>
+                </div>
+              </div>
+
+              {/* 구독 플랜 및 사용량 현황 */}
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold mb-3">구독 플랜 및 사용량</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">구독 플랜:</span>
+                    <span className="ml-2 text-blue-600">
+                      {selectedInstitute.subscriptionPlanInfo || 
+                       selectedInstitute.subscriptionPlanName || 
+                       (selectedInstitute.subscriptionPlan === 'starter' ? '스타터 플랜' : 
+                        selectedInstitute.subscriptionPlan === 'standard' ? '스탠다드 플랜' : 
+                        selectedInstitute.subscriptionPlan === 'professional' ? '프로페셔널 플랜' : 
+                        selectedInstitute.subscriptionPlan === 'enterprise' ? '엔터프라이즈 플랜' : 
+                        selectedInstitute.subscriptionPlan || '미지정')}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">월 구독료:</span>
+                    <span className="ml-2 text-green-600">
+                      {selectedInstitute.subscriptionPlanPrice ? selectedInstitute.subscriptionPlanPrice.toLocaleString() : 
+                       (selectedInstitute.subscriptionPlan === 'starter' ? '150,000' : 
+                        selectedInstitute.subscriptionPlan === 'standard' ? '300,000' : 
+                        selectedInstitute.subscriptionPlan === 'professional' ? '500,000' : 
+                        selectedInstitute.subscriptionPlan === 'enterprise' ? '800,000' : '0')}원
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">화상 수업 사용량:</span>
+                    <span className="ml-2">
+                      {selectedInstitute.usedVideoHours || 0}h / {selectedInstitute.maxVideoHours === -1 ? '무제한' : `${selectedInstitute.maxVideoHours}h`}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">AI 분석 사용량:</span>
+                    <span className="ml-2">
+                      {selectedInstitute.currentAiUsage || 0}회 / {selectedInstitute.maxAiAnalysis === -1 ? '무제한' : `${selectedInstitute.maxAiAnalysis}회`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">기관명</Label>
