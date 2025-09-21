@@ -42,11 +42,23 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://your-domain.com']
     : ['http://localhost:3000', 'http://localhost:5000'],
   credentials: true
 }));
+
+// 운영 환경 보안 헤더
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    next();
+  });
+}
 
 // 업로드된 파일을 정적으로 제공
 app.use('/uploads', express.static('uploads'));
@@ -116,7 +128,7 @@ app.get('/favicon.svg', (req, res) => {
 // 첨부 파일 이미지 직접 제공
 app.get('/attached_assets/:filename', (req, res) => {
   const filename = req.params.filename;
-  
+
   try {
     // 적절한 Content-Type 설정
     if (filename.endsWith('.png')) {
@@ -126,7 +138,7 @@ app.get('/attached_assets/:filename', (req, res) => {
     } else if (filename.endsWith('.svg')) {
       res.setHeader('Content-Type', 'image/svg+xml');
     }
-    
+
     res.sendFile(filename, { root: 'attached_assets' });
   } catch (error) {
     console.error('첨부 파일 제공 오류:', error);
@@ -418,13 +430,13 @@ async function startServer() {
 
     // Register AI routes
     registerAIRoutes(app);
-    
+
     // AI Proxy Routes (개선된 AI 분석 시스템)
     registerAIProxyRoutes(app);
-    
+
     // Admin AI Routes (AI API 관리)
     registerAdminAIRoutes(app);
-    
+
     // Enhanced Analysis Routes (강화된 AI 분석)
     registerEnhancedAnalysisRoutes(app);
 
@@ -450,15 +462,35 @@ async function startServer() {
 
     // 404 핸들러 (모든 라우트 후에 적용)
     app.use(notFoundHandler);
-    
+
     // 글로벌 에러 핸들러 (맨 마지막에 적용)
     app.use(errorHandler);
 
     // Start the server
     server.listen(PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-      console.log(`📱 Local: http://localhost:${PORT}`);
-      console.log(`🌐 Network: http://0.0.0.0:${PORT}`);
+      // 운영 환경 모니터링 설정
+      if (process.env.NODE_ENV === 'production') {
+        // 에러 로깅 강화
+        app.use((err: any, req: any, res: any, next: any) => {
+          console.error('🚨 Production Error:', {
+            message: err.message,
+            stack: err.stack,
+            url: req.url,
+            method: req.method,
+            timestamp: new Date().toISOString()
+          });
+
+          res.status(500).json({
+            success: false,
+            message: '서비스 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+          });
+        });
+
+        console.log('🚀 Server running on port 5000 in PRODUCTION mode');
+        console.log('📊 Production monitoring active');
+      } else {
+        console.log('🚀 Server running on port 5000 in development mode');
+      }
     });
 
   } catch (error) {
