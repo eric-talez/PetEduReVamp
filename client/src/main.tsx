@@ -1,6 +1,5 @@
 import { createRoot } from "react-dom/client";
 import SimpleApp from "./SimpleApp";
-import { AuthProvider } from "./hooks/useAuth";
 import "./index.css";
 import { ThemeProvider } from "./context/theme-context";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -58,9 +57,7 @@ createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <TooltipProvider>
-        <AuthProvider>
-          <SimpleApp />
-        </AuthProvider>
+        <SimpleApp />
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
