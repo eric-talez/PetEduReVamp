@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { ObjectUploader } from '@/components/ui/ObjectUploader';
 
 // 게시글 카드 컴포넌트
 const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }) => {
@@ -273,6 +274,11 @@ function CommunityPage() {
     difficulty: "",
     duration: "",
     trainingType: "",
+    // 영상 관련 필드
+    videoUrl: "",
+    videoThumbnail: "",
+    videoDuration: 0,
+    videoFileSize: 0,
     // 설문 전용 필드
     surveyType: "",
     surveyOptions: "",
@@ -384,21 +390,28 @@ function CommunityPage() {
   // 게시글 작성 뮤테이션
   const createPostMutation = useMutation({
     mutationFn: async (postData: typeof newPost) => {
-      const response = await fetch('/api/community/posts', {
+      // 영상이 포함된 훈련팁 게시글인 경우 영상 API 사용
+      const isVideoPost = activeTab === 'training' && postData.videoUrl;
+      const apiUrl = isVideoPost ? '/api/community/posts/video' : '/api/community/posts';
+      
+      const requestBody = {
+        title: postData.title,
+        content: postData.content,
+        category: activeTab === 'training' ? '훈련팁' : postData.category,
+        ...(isVideoPost && {
+          videoUrl: postData.videoUrl,
+          videoThumbnail: postData.videoThumbnail,
+          videoDuration: postData.videoDuration,
+          videoFileSize: postData.videoFileSize
+        })
+      };
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: postData.title,
-          content: postData.content,
-          category: postData.category,
-          tags: postData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-          linkUrl: postData.linkUrl || null,
-          linkTitle: postData.linkTitle || null,
-          linkDescription: postData.linkDescription || null,
-          linkImage: postData.linkImage || null
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -434,7 +447,24 @@ function CommunityPage() {
         linkUrl: "",
         linkTitle: "",
         linkDescription: "",
-        linkImage: ""
+        linkImage: "",
+        // 훈련팁 전용 필드
+        difficulty: "",
+        duration: "",
+        trainingType: "",
+        // 영상 관련 필드
+        videoUrl: "",
+        videoThumbnail: "",
+        videoDuration: 0,
+        videoFileSize: 0,
+        // 설문 전용 필드
+        surveyType: "",
+        surveyOptions: "",
+        surveyEndDate: "",
+        // 정보공유 전용 필드
+        infoSource: "",
+        infoCategory: "",
+        infoReliability: ""
       });
       setShowLinkSection(false);
       setIsCreatePostOpen(false);
@@ -716,6 +746,39 @@ function CommunityPage() {
                           <SelectItem value="산책훈련">산책 훈련</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                    
+                    {/* 영상 업로드 섹션 */}
+                    <div className="col-span-4 space-y-3">
+                      <Label className="text-sm font-medium">훈련 영상 업로드 (선택사항)</Label>
+                      <div className="border rounded-lg p-4 bg-gray-50">
+                        <ObjectUploader
+                          onUploadComplete={(videoUrl, metadata) => {
+                            setNewPost(prev => ({
+                              ...prev,
+                              videoUrl,
+                              videoThumbnail: metadata.thumbnail || '',
+                              videoDuration: metadata.duration || 0,
+                              videoFileSize: metadata.fileSize || 0
+                            }));
+                          }}
+                          accept="video/*"
+                          maxSizeInMB={100}
+                          className="w-full"
+                        />
+                        {newPost.videoUrl && (
+                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <p className="text-sm text-green-800 font-medium">
+                              ✅ 영상이 성공적으로 업로드되었습니다!
+                            </p>
+                            {newPost.videoDuration > 0 && (
+                              <p className="text-xs text-green-600 mt-1">
+                                재생시간: {Math.floor(newPost.videoDuration / 60)}분 {newPost.videoDuration % 60}초
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}

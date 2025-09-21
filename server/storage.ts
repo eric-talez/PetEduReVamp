@@ -2978,6 +2978,79 @@ class Storage {
     return false;
   }
 
+  // 커뮤니티 전용 게시글 메서드들
+  createCommunityPost(postData: any): any {
+    const newPost = {
+      id: (this.posts?.length || 0) + 1,
+      ...postData,
+      likes: 0,
+      comments: 0,
+      views: 0,
+      hidden: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (!this.posts) {
+      this.posts = [];
+    }
+    this.posts.push(newPost);
+    console.log('[Storage] 커뮤니티 게시글 생성됨:', newPost.title);
+    return newPost;
+  }
+
+  getCommunityPosts(options: any = {}): any {
+    const { page = 1, limit = 12, category, sort = 'latest', searchQuery } = options;
+    
+    let filteredPosts = this.posts?.filter(post => {
+      // 숨김 처리된 게시글 제외
+      if (post.hidden) return false;
+      
+      // 카테고리 필터링
+      if (category && post.tag !== category) return false;
+      
+      // 검색어 필터링
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return post.title?.toLowerCase().includes(query) || 
+               post.content?.toLowerCase().includes(query);
+      }
+      
+      return true;
+    }) || [];
+
+    // 정렬
+    switch (sort) {
+      case 'popular':
+        filteredPosts.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        break;
+      case 'views':
+        filteredPosts.sort((a, b) => (b.views || 0) - (a.views || 0));
+        break;
+      case 'comments':
+        filteredPosts.sort((a, b) => (b.comments || 0) - (a.comments || 0));
+        break;
+      case 'latest':
+      default:
+        filteredPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+    }
+
+    // 페이지네이션
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
+
+    return {
+      posts: paginatedPosts,
+      totalCount: filteredPosts.length,
+      currentPage: page,
+      totalPages: Math.ceil(filteredPosts.length / limit),
+      hasNextPage: endIndex < filteredPosts.length,
+      hasPrevPage: page > 1
+    };
+  }
+
   deleteEvent(id: number): boolean {
     const index = this.events.findIndex(e => e.id === id);
     if (index !== -1) {
