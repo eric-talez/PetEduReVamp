@@ -2,7 +2,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import mainBannerImage from "@assets/main-banner-talez.png";
+// 기존 import 제거 - 이제 attached_assets 이미지들을 사용
 
 const banners = [
   {

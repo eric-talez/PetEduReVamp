@@ -291,8 +291,8 @@ export default function Courses(props?: CoursesPageProps) {
       {/* Banner */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
         <img 
-          src="https://images.unsplash.com/photo-1541599468348-e96984315921?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="강의 탐색"
+          src="/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png" 
+          alt="전문 훈련사와 함께하는 강의 탐색"
           className="w-full h-full object-cover absolute"
         />
 
