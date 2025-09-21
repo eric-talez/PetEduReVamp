@@ -1149,10 +1149,6 @@ export default function Home() {
           <RealTimePopularChart />
         </div>
 
-        {/* 테마 테스트 요소 */}
-        <div className="mb-4 p-4 bg-background border border-border rounded-lg">
-          <p className="text-foreground">테마 테스트: 배경색과 텍스트 색상이 테마에 따라 변경되어야 합니다.</p>
-        </div>
 
         {/* 서비스 소개 섹션 */}
         <div className="mb-12">
