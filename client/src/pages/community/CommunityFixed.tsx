@@ -1,1 +1,1049 @@
-export { default } from './CommunityRefactored';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link as RouterLink, useLocation } from 'wouter';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { LoadingErrorWrapper } from '@/components/ui/loading-error-wrapper';
+import { getStatusCodeFromError } from '@/lib/errorHelpers';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { AppLayout } from '@/layout/AppLayout';
+
+// 게시글 카드 컴포넌트
+const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }) => {
+  const formatDate = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: ko });
+    } catch {
+      return post.user?.time || '방금 전';
+    }
+  };
+
+  return (
+    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => onClick(post)}>
+      {/* 썸네일 이미지 영역 */}
+      {post.linkInfo?.image && (
+        <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
+          <img 
+            src={post.linkInfo.image} 
+            alt={post.linkInfo.title || post.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+      
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg line-clamp-2">{post.title}</CardTitle>
+          {post.tag && (
+            <Badge variant="secondary" className="ml-2 shrink-0">
+              {post.tag}
+            </Badge>
+          )}
+        </div>
+        <CardDescription className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-1">
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={post.author?.image} alt={post.author?.name} />
+              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+            </Avatar>
+            <span>{post.author?.name || '익명 사용자'}</span>
+          </div>
+          <span>•</span>
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>{formatDate(post.createdAt)}</span>
+          </div>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <p className="text-sm text-gray-600 line-clamp-3">{post.content}</p>
+        
+        {/* 링크 정보 미리보기 (썸네일이 없을 때만) */}
+        {post.linkInfo && !post.linkInfo.image && (
+          <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+            <div className="flex items-start gap-3">
+              <div className="flex-1">
+                <h4 className="font-medium text-sm line-clamp-1">{post.linkInfo.title}</h4>
+                <p className="text-xs text-gray-600 line-clamp-2 mt-1">{post.linkInfo.description}</p>
+                <p className="text-xs text-blue-600 mt-1 truncate">{post.linkInfo.url}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="pt-2 flex justify-between text-xs text-gray-500">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1">
+            <Heart className="h-3 w-3" />
+            <span>{post.likes || 0}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <MessageSquare className="h-3 w-3" />
+            <span>{Array.isArray(post.comments) ? post.comments.length : (post.comments || 0)}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Eye className="h-3 w-3" />
+            <span>{post.views || 0}</span>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+};
+
+
+// Get display name for tabs
+const getTabDisplayName = (tabValue: string) => {
+  const tabNames: Record<string, string> = {
+    latest: '최신',
+    popular: '인기',
+    training: '훈련팁',
+    survey: '설문',
+    info: '정보공유',
+    notices: '공지사항'
+  };
+  return tabNames[tabValue] || '전체';
+};
+
+// 메인 커뮤니티 페이지 컴포넌트
+function CommunityPage() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
+  
+  // URL 파라미터에서 검색 쿼리 추출
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSearchQuery = urlParams.get('q') || '';
+  
+  const [activeTab, setActiveTab] = useState('latest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [viewType, setViewType] = useState<'card' | 'list'>('card');
+  const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [comments, setComments] = useState<any[]>([]);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [newPost, setNewPost] = useState({
+    title: "",
+    content: "",
+    category: "일반",
+    tags: "",
+    linkUrl: "",
+    linkTitle: "",
+    linkDescription: "",
+    linkImage: ""
+  });
+  const [showLinkSection, setShowLinkSection] = useState(false);
+  const [isExtractingLink, setIsExtractingLink] = useState(false);
+
+  const itemsPerPage = 8;
+
+  // URL 파라미터 변경 감지
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const newSearchQuery = urlParams.get('q') || '';
+    if (newSearchQuery !== searchQuery) {
+      setSearchQuery(newSearchQuery);
+    }
+  }, [window.location.search]);
+
+  // 카테고리 목록
+  const categories = ['일반', '훈련팁', '건강', '행동교정', '사회화', '질문', '후기'];
+
+  // 게시글 목록 조회 (탭별 필터링)
+  const { data: postsData = [], isLoading, error } = useQuery({
+    queryKey: ['/api/community/posts', activeTab, searchQuery],
+    queryFn: async () => {
+      try {
+        let url = '/api/community/posts';
+        const params = new URLSearchParams();
+        
+        // 검색 쿼리 추가
+        if (searchQuery) {
+          params.append('q', searchQuery);
+        }
+        
+        // 탭별 카테고리 필터링
+        if (activeTab === 'training') {
+          params.append('category', '훈련팁');
+        } else if (activeTab === 'survey') {
+          params.append('category', '설문');
+        } else if (activeTab === 'info') {
+          params.append('category', '정보공유');
+        } else if (activeTab === 'notices') {
+          params.append('category', '공지사항');
+        } else if (activeTab === 'popular') {
+          params.append('sort', 'popular');
+        }
+        
+        if (params.toString()) {
+          url += '?' + params.toString();
+        }
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('게시글을 불러올 수 없습니다');
+        }
+        const data = await response.json();
+        console.log(`API에서 받은 게시글 데이터 (${activeTab}):`, data);
+        // API 응답의 posts 배열을 반환
+        return Array.isArray(data.posts) ? data.posts : [];
+      } catch (error) {
+        console.error('게시글 조회 오류:', error);
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const statusCode = getStatusCodeFromError(error);
+  
+  // 데이터 새로고침 함수
+  const refetchPosts = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/community/posts', activeTab, searchQuery] });
+  };
+
+  // 게시글 데이터 (API에서 이미 필터링됨)
+  const filteredPosts = useMemo(() => {
+    if (!postsData) return [];
+    // API에서 이미 검색 필터링이 적용되어 있으므로 그대로 반환
+    return postsData;
+  }, [postsData]);
+
+  // 페이지네이션
+  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
+  const paginatedPosts = filteredPosts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  
+  console.log('페이지네이션 정보:', {
+    totalPages,
+    currentPage,
+    itemsPerPage,
+    filteredPostsLength: filteredPosts.length,
+    paginatedPostsLength: paginatedPosts.length,
+    activeTab
+  });
+
+  // 페이지 변경 시 탭 변경도 페이지 리셋
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // 탭 변경 시 페이지 리셋
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
+
+  // 게시글 작성 뮤테이션
+  const createPostMutation = useMutation({
+    mutationFn: async (postData: typeof newPost) => {
+      const response = await fetch('/api/community/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: postData.title,
+          content: postData.content,
+          category: postData.category,
+          tags: postData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+          linkUrl: postData.linkUrl || null,
+          linkTitle: postData.linkTitle || null,
+          linkDescription: postData.linkDescription || null,
+          linkImage: postData.linkImage || null
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('게시글 작성에 실패했습니다.');
+      }
+
+      return response.json();
+    },
+    onSuccess: (newPostData) => {
+      console.log('새 게시글 데이터:', newPostData);
+      
+      // 즉시 캐시 업데이트 - 새 게시글을 기존 목록 앞에 추가
+      queryClient.setQueryData(['/api/community/posts', activeTab], (oldData: any) => {
+        console.log('기존 캐시 데이터:', oldData);
+        if (Array.isArray(oldData)) {
+          const updatedData = [newPostData, ...oldData];
+          console.log('업데이트된 캐시 데이터:', updatedData);
+          return updatedData;
+        }
+        return [newPostData];
+      });
+      
+      toast({
+        title: "게시글 작성 완료",
+        description: "새 게시글이 성공적으로 작성되었습니다.",
+      });
+
+      setNewPost({
+        title: "",
+        content: "",
+        category: "일반",
+        tags: "",
+        linkUrl: "",
+        linkTitle: "",
+        linkDescription: "",
+        linkImage: ""
+      });
+      setShowLinkSection(false);
+      setIsCreatePostOpen(false);
+      setCurrentPage(1);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "작성 실패",
+        description: error.message || "게시글 작성에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // 게시글 상세 보기
+  const handlePostClick = (post: any) => {
+    setSelectedPost(post);
+    setIsPostDetailOpen(true);
+  };
+
+  // 게시글 작성 핸들러
+  const handleSubmitPost = async () => {
+    if (!newPost.title.trim() || !newPost.content.trim()) {
+      toast({
+        title: "작성 오류",
+        description: "제목과 내용을 모두 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createPostMutation.mutate(newPost);
+  };
+
+  // 링크 URL 변경 핸들러
+  const handleLinkUrlChange = async (url: string) => {
+    setNewPost(prev => ({ ...prev, linkUrl: url }));
+    
+    if (url && url.startsWith('http')) {
+      setIsExtractingLink(true);
+      try {
+        const response = await fetch('/api/community/extract-link', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url }),
+        });
+
+        if (response.ok) {
+          const linkData = await response.json();
+          setNewPost(prev => ({
+            ...prev,
+            linkTitle: linkData.title || '',
+            linkDescription: linkData.description || '',
+            linkImage: linkData.image || ''
+          }));
+        }
+      } catch (error) {
+        console.error('링크 정보 추출 오류:', error);
+      } finally {
+        setIsExtractingLink(false);
+      }
+    }
+  };
+
+  // 댓글 작성 핸들러
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+
+    const comment = {
+      id: Date.now(),
+      content: newComment,
+      author: {
+        name: user?.username || '익명 사용자',
+        image: user?.image || null
+      },
+      createdAt: new Date().toISOString(),
+      replies: []
+    };
+
+    setComments(prev => [...prev, comment]);
+    setNewComment('');
+  };
+
+  // 답글 작성 핸들러
+  const handleAddReply = (commentId: number) => {
+    if (!replyText.trim()) return;
+
+    const reply = {
+      id: Date.now(),
+      content: replyText,
+      author: {
+        name: user?.username || '익명 사용자',
+        image: user?.image || null
+      },
+      createdAt: new Date().toISOString()
+    };
+
+    setComments(prev => prev.map(comment => 
+      comment.id === commentId 
+        ? { ...comment, replies: [...(comment.replies || []), reply] }
+        : comment
+    ));
+    setReplyText('');
+    setReplyingTo(null);
+  };
+
+  // 탭별 메시지 정의
+  const getEmptyMessage = (tabValue: string) => {
+    const messages = {
+      'training': {
+        title: '훈련팁이 없습니다',
+        description: '펫 훈련 관련 팁과 노하우를 공유해주세요!'
+      },
+      'survey': {
+        title: '설문조사가 없습니다',
+        description: '커뮤니티 설문조사에 참여해보세요!'
+      },
+      'info': {
+        title: '정보공유 게시글이 없습니다',
+        description: '유용한 정보를 공유해주세요!'
+      },
+      'notices': {
+        title: '공지사항이 없습니다',
+        description: '공지사항을 확인해주세요!'
+      },
+      'popular': {
+        title: '인기 게시글이 없습니다',
+        description: '좋아요가 많은 게시글이 여기에 표시됩니다.'
+      },
+      'latest': {
+        title: '게시글이 없습니다',
+        description: '첫 번째 게시글을 작성해보세요!'
+      }
+    };
+    return messages[tabValue as keyof typeof messages] || messages.latest;
+  };
+
+  return (
+    <AppLayout 
+      title="커뮤니티"
+      breadcrumbs={[
+        { label: '홈', href: '/' },
+        { label: '커뮤니티', current: true }
+      ]}
+      headerActions={
+        <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              글쓰기
+            </Button>
+          </DialogTrigger>
+        </Dialog>
+      }
+      contentClassName="max-w-6xl mx-auto py-0"
+    >
+      <div className="space-y-6">
+        <p className="text-gray-600 dark:text-gray-400">
+          반려동물 교육과 훈련 정보를 공유하는 공간입니다
+        </p>
+
+        {/* 게시글 작성 다이얼로그 - 나머지 다이얼로그 내용 */}
+        <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>새 게시글 작성</DialogTitle>
+                <DialogDescription>
+                  커뮤니티에 공유할 게시글을 작성해주세요.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="title" className="text-right">제목</Label>
+                  <Input
+                    id="title"
+                    value={newPost.title}
+                    onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="게시글 제목을 입력하세요"
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label htmlFor="content" className="text-right pt-2">내용</Label>
+                  <Textarea
+                    id="content"
+                    value={newPost.content}
+                    onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
+                    placeholder="게시글 내용을 입력하세요"
+                    className="col-span-3 min-h-[120px]"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="category" className="text-right">카테고리</Label>
+                  <Select value={newPost.category} onValueChange={(value) => setNewPost(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="카테고리를 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map(category => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="tags" className="text-right">태그</Label>
+                  <Input
+                    id="tags"
+                    value={newPost.tags}
+                    onChange={(e) => setNewPost(prev => ({ ...prev, tags: e.target.value }))}
+                    placeholder="태그를 쉼표로 구분해서 입력하세요"
+                    className="col-span-3"
+                  />
+                </div>
+
+                {/* 링크 추가 버튼 */}
+                {!showLinkSection && (
+                  <div className="flex justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowLinkSection(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Link className="h-4 w-4" />
+                      링크 추가
+                    </Button>
+                  </div>
+                )}
+
+                {/* 링크 정보 섹션 */}
+                {showLinkSection && (
+                  <div className="border rounded-lg p-4 bg-blue-50">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Link className="h-5 w-5 text-blue-600" />
+                        <h3 className="font-semibold text-blue-800">
+                          링크 정보 추가
+                        </h3>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowLinkSection(false)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <p className="text-blue-700 mb-4">
+                      URL을 입력하면 자동으로 링크 정보를 추출하여 게시글을 더 풍부하게 만들 수 있습니다.
+                    </p>
+                    
+                    <div className="space-y-4">
+                      {/* 링크 URL */}
+                      <div>
+                        <Label className="block text-sm font-medium mb-2">
+                          링크 URL
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={newPost.linkUrl}
+                            onChange={(e) => handleLinkUrlChange(e.target.value)}
+                            placeholder="https://example.com"
+                            className="flex-1"
+                          />
+                          {isExtractingLink && (
+                            <div className="flex items-center px-3">
+                              <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 링크 정보 미리보기 */}
+                      {(newPost.linkTitle || newPost.linkDescription || newPost.linkImage) && (
+                        <div className="border rounded-lg p-4 bg-white">
+                          <h4 className="font-medium mb-3">링크 미리보기</h4>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4 mb-3">
+                            <Label className="text-right">제목</Label>
+                            <Input
+                              value={newPost.linkTitle}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, linkTitle: e.target.value }))}
+                              placeholder="링크 제목"
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-start gap-4 mb-3">
+                            <Label className="text-right pt-2">설명</Label>
+                            <Textarea
+                              value={newPost.linkDescription}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, linkDescription: e.target.value }))}
+                              placeholder="링크 설명"
+                              className="col-span-3 min-h-[60px]"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">이미지 URL</Label>
+                            <div className="col-span-3 space-y-2">
+                              <Input
+                                value={newPost.linkImage}
+                                onChange={(e) => setNewPost(prev => ({ ...prev, linkImage: e.target.value }))}
+                                placeholder="이미지 URL"
+                              />
+                              {newPost.linkImage && (
+                                <div className="relative inline-block">
+                                  <img
+                                    src={newPost.linkImage}
+                                    alt="링크 썸네일"
+                                    className="w-20 h-20 object-cover rounded border"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setNewPost(prev => ({ ...prev, linkImage: '' }))}
+                                    className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreatePostOpen(false)}>
+                  취소
+                </Button>
+                <Button onClick={handleSubmitPost} disabled={createPostMutation.isPending}>
+                  {createPostMutation.isPending ? '작성 중...' : '게시'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+        {/* 검색 및 뷰 컨트롤 */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="게시글 제목, 내용, 작성자로 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={viewType === 'card' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewType('card')}
+          >
+            <Grid className="h-4 w-4 mr-2" />
+            카드형
+          </Button>
+          <Button
+            variant={viewType === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewType('list')}
+          >
+            <List className="h-4 w-4 mr-2" />
+            리스트
+          </Button>
+        </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="latest">최신 글</TabsTrigger>
+          <TabsTrigger value="popular">인기 글</TabsTrigger>
+          <TabsTrigger value="training">훈련팁</TabsTrigger>
+          <TabsTrigger value="survey">설문</TabsTrigger>
+          <TabsTrigger value="info">정보공유</TabsTrigger>
+          <TabsTrigger value="notices">공지사항</TabsTrigger>
+        </TabsList>
+
+        {/* 모든 탭에서 사용할 공통 콘텐츠 */}
+        {['latest', 'popular', 'training', 'survey', 'info', 'notices'].map(tabValue => (
+          <TabsContent key={tabValue} value={tabValue} className="mt-6">
+            <LoadingErrorWrapper
+              isLoading={isLoading}
+              isError={!!error}
+              isEmpty={!isLoading && !error && (!paginatedPosts || paginatedPosts.length === 0)}
+              error={error}
+              data={paginatedPosts}
+              loadingVariant="card"
+              loadingMessage={`${getTabDisplayName(tabValue)} 게시글을 불러오는 중...`}
+              errorMessage={typeof error === 'string' ? error : error?.message}
+              emptyMessage={`${getTabDisplayName(tabValue)} 게시글이 없습니다.`}
+              emptyTitle="게시글을 찾을 수 없습니다"
+              retry={refetchPosts}
+              statusCode={statusCode}
+              data-testid={`community-posts-${tabValue}`}
+            >
+              {paginatedPosts && paginatedPosts.length > 0 && (
+              <>
+                {viewType === 'card' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {paginatedPosts.map((post: any) => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        onClick={handlePostClick}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {paginatedPosts.map((post: any) => (
+                      <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            {/* 썸네일 이미지 (리스트뷰용) */}
+                            {post.linkInfo?.image && (
+                              <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                                <img 
+                                  src={post.linkInfo.image} 
+                                  alt={post.linkInfo.title || post.title}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {post.tag}
+                                </Badge>
+                                <span className="text-xs text-gray-500">
+                                  {post.author?.name || '익명 사용자'} • {(() => {
+                                    try {
+                                      return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
+                                    } catch {
+                                      return '방금 전';
+                                    }
+                                  })()}
+                                </span>
+                              </div>
+                              <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
+                              <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                              
+                              {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
+                              {post.linkInfo && !post.linkInfo.image && (
+                                <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
+                                  <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
+                                  <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center gap-4 text-xs text-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <Heart className="h-3 w-3" />
+                                  <span>{post.likes || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MessageSquare className="h-3 w-3" />
+                                  <span>{post.comments || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Eye className="h-3 w-3" />
+                                  <span>{post.views || 0}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* 작성자 아바타 (오른쪽 끝) */}
+                            <div className="flex-shrink-0">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={post.author?.image} alt={post.author?.name} />
+                                <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                              </Avatar>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-center">
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+              )}
+            </LoadingErrorWrapper>
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      {/* 게시글 상세 보기 다이얼로그 */}
+      <Dialog open={isPostDetailOpen} onOpenChange={setIsPostDetailOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+          {selectedPost && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl">{selectedPost.title}</DialogTitle>
+                <DialogDescription className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={selectedPost.author?.image} alt={selectedPost.author?.name} />
+                    <AvatarFallback>{selectedPost.author?.name?.[0] || 'U'}</AvatarFallback>
+                  </Avatar>
+                  <span>{selectedPost.author?.name || '익명 사용자'}</span>
+                  <span>•</span>
+                  <span>{(() => {
+                    try {
+                      return formatDistanceToNow(new Date(selectedPost.createdAt), { addSuffix: true, locale: ko });
+                    } catch {
+                      return '방금 전';
+                    }
+                  })()}</span>
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="py-4 space-y-4">
+                {/* 게시글 내용 */}
+                <div className="prose max-w-none">
+                  <p className="whitespace-pre-wrap">{selectedPost.content}</p>
+                </div>
+
+                {/* 링크 정보 */}
+                {selectedPost.linkInfo && (
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex items-start gap-4">
+                      {selectedPost.linkInfo.image && (
+                        <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                          <img 
+                            src={selectedPost.linkInfo.image} 
+                            alt={selectedPost.linkInfo.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-medium text-lg mb-2">{selectedPost.linkInfo.title}</h4>
+                        <p className="text-gray-600 text-sm mb-2">{selectedPost.linkInfo.description}</p>
+                        <a 
+                          href={selectedPost.linkInfo.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          링크 바로가기
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 반응 버튼 */}
+                <div className="flex items-center gap-4 py-2 border-t border-b">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    좋아요 {selectedPost.likes || 0}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    댓글 {selectedPost.comments || 0}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    조회 {selectedPost.views || 0}
+                  </Button>
+                </div>
+
+                {/* 댓글 섹션 */}
+                <div className="space-y-4">
+                  <h4 className="font-medium">댓글</h4>
+                  
+                  {/* 댓글 작성 */}
+                  <div className="flex gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.image} alt={user?.username} />
+                      <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-2">
+                      <Textarea
+                        placeholder="댓글을 작성하세요..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="min-h-[60px]"
+                      />
+                      <Button size="sm" onClick={handleAddComment}>
+                        댓글 작성
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* 댓글 목록 */}
+                  <div className="space-y-4">
+                    {comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={comment.author.image} alt={comment.author.name} />
+                          <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-sm">{comment.author.name}</span>
+                              <span className="text-xs text-gray-500">
+                                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
+                              </span>
+                            </div>
+                            <p className="text-sm">{comment.content}</p>
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setReplyingTo(comment.id)}
+                              className="text-xs"
+                            >
+                              답글
+                            </Button>
+                          </div>
+
+                          {/* 답글 작성 */}
+                          {replyingTo === comment.id && (
+                            <div className="mt-3 flex gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={user?.image} alt={user?.username} />
+                                <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 space-y-2">
+                                <Textarea
+                                  placeholder="답글을 작성하세요..."
+                                  value={replyText}
+                                  onChange={(e) => setReplyText(e.target.value)}
+                                  className="min-h-[50px] text-sm"
+                                />
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => handleAddReply(comment.id)}
+                                    className="text-xs"
+                                  >
+                                    답글 작성
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => setReplyingTo(null)}
+                                    className="text-xs"
+                                  >
+                                    취소
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 답글 목록 */}
+                          {comment.replies && comment.replies.length > 0 && (
+                            <div className="mt-3 ml-4 space-y-3">
+                              {comment.replies.map((reply: any) => (
+                                <div key={reply.id} className="flex gap-2">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarImage src={reply.author.image} alt={reply.author.name} />
+                                    <AvatarFallback>{reply.author.name[0]}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1">
+                                    <div className="bg-gray-100 rounded-lg p-2">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-medium text-xs">{reply.author.name}</span>
+                                        <span className="text-xs text-gray-500">
+                                          {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true, locale: ko })}
+                                        </span>
+                                      </div>
+                                      <p className="text-xs">{reply.content}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      </div>
+    </AppLayout>
+  );
+}
+
+export default CommunityPage;

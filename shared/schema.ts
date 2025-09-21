@@ -13,7 +13,6 @@ export const users = pgTable("users", {
   name: varchar("name", { length: 100 }),
   phone: varchar("phone", { length: 20 }),
   phoneNumber: varchar("phone_number", { length: 20 }), // 새로운 휴대폰 번호 필드
-  kakaoId: varchar("kakao_id", { length: 100 }), // 카카오톡 ID (알림장 전송용)
   birthDate: varchar("birth_date", { length: 10 }), // YYYY-MM-DD 형식
   age: integer("age"), // 연령
   gender: varchar("gender", { length: 10 }), // 성별 (male/female)
@@ -34,31 +33,6 @@ export const users = pgTable("users", {
   videoCallPreference: varchar("video_call_preference", { length: 50 }).default("zoom"), // zoom, teams, webex 등
 });
 
-// 설문 질문 스키마 (surveyData JSON 구조)
-export const surveyQuestionSchema = z.object({
-  id: z.number(),
-  question: z.string(),
-  type: z.enum(["single_choice", "multiple_choice", "text_answer"]),
-  options: z.array(z.string()).optional(),
-  required: z.boolean().default(true),
-});
-
-// 설문 응답 스키마
-export const surveyResponseSchema = z.object({
-  questionId: z.number(),
-  answer: z.union([
-    z.string(), // 텍스트 답변
-    z.array(z.string()), // 다중 선택 답변
-  ]),
-});
-
-// 설문 데이터 스키마
-export const surveyDataSchema = z.object({
-  questions: z.array(surveyQuestionSchema),
-  endDate: z.string().optional(),
-  anonymous: z.boolean().default(false),
-});
-
 // 강의 테이블
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
@@ -76,57 +50,6 @@ export const courses = pgTable("courses", {
   isActive: boolean("is_active").default(true),
   rating: decimal("rating", { precision: 3, scale: 2 }),
   enrollmentCount: integer("enrollment_count").default(0),
-  // 화상 강의 관련 필드 추가
-  courseType: varchar("course_type", { length: 50 }).default("regular"), // regular, video_lecture, hybrid
-  isLiveClass: boolean("is_live_class").default(false), // 실시간 화상 수업 여부
-  maxParticipants: integer("max_participants"), // 최대 참가자 수 (화상 강의용)
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// 화상 강의 세션 테이블 (줌 화상 수업)
-export const videoLectureSessions = pgTable("video_lecture_sessions", {
-  id: serial("id").primaryKey(),
-  courseId: integer("course_id").references(() => courses.id).notNull(),
-  instructorId: integer("instructor_id").references(() => users.id).notNull(),
-  title: varchar("title", { length: 200 }).notNull(),
-  description: text("description"),
-  scheduledStartTime: timestamp("scheduled_start_time").notNull(),
-  scheduledEndTime: timestamp("scheduled_end_time").notNull(),
-  actualStartTime: timestamp("actual_start_time"),
-  actualEndTime: timestamp("actual_end_time"),
-  maxParticipants: integer("max_participants").default(50),
-  currentParticipants: integer("current_participants").default(0),
-  // 줌 관련 정보
-  zoomMeetingId: varchar("zoom_meeting_id", { length: 100 }),
-  zoomJoinUrl: text("zoom_join_url"),
-  zoomStartUrl: text("zoom_start_url"),
-  zoomMeetingPassword: varchar("zoom_meeting_password", { length: 50 }),
-  // 세션 상태
-  status: varchar("status", { length: 50 }).default("scheduled"), // scheduled, live, completed, cancelled
-  recordingUrl: text("recording_url"), // 녹화본 URL (있는 경우)
-  isRecorded: boolean("is_recorded").default(false),
-  // 메타데이터
-  sessionNotes: text("session_notes"),
-  materials: text("materials").array().default([]), // 수업 자료 링크들
-  tags: text("tags").array().default([]), // 태그
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// 화상 강의 예약 테이블
-export const videoLectureBookings = pgTable("video_lecture_bookings", {
-  id: serial("id").primaryKey(),
-  sessionId: integer("session_id").references(() => videoLectureSessions.id).notNull(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  petId: integer("pet_id").references(() => pets.id), // 반려동물 관련 강의인 경우
-  bookingStatus: varchar("booking_status", { length: 50 }).default("confirmed"), // confirmed, cancelled, no_show
-  joinTime: timestamp("join_time"), // 실제 참가 시간
-  leaveTime: timestamp("leave_time"), // 실제 퇴장 시간
-  attendanceStatus: varchar("attendance_status", { length: 50 }).default("registered"), // registered, attended, absent
-  feedback: text("feedback"), // 수강 후기
-  rating: integer("rating"), // 1-5 평점
-  specialRequests: text("special_requests"), // 특별 요청사항
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -198,7 +121,7 @@ export const pets = pgTable("pets", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 커뮤니티 게시글 테이블 (설문 기능 포함)
+// 커뮤니티 게시글 테이블
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 200 }).notNull(),
@@ -209,17 +132,6 @@ export const posts = pgTable("posts", {
   views: integer("views").default(0),
   likes: integer("likes").default(0),
   commentsCount: integer("comments_count").default(0),
-  type: varchar("type", { length: 20 }).default("post"), // post, survey
-  // 링크 관련 필드
-  linkUrl: text("link_url"),
-  linkTitle: text("link_title"),
-  linkDescription: text("link_description"),
-  linkImage: text("link_image"),
-  // 설문 관련 필드
-  surveyData: jsonb("survey_data"), // 설문 질문, 옵션, 설정 등
-  surveyResponses: jsonb("survey_responses"), // 설문 응답 데이터
-  endDate: timestamp("end_date"), // 설문 마감일
-  anonymous: boolean("anonymous").default(false), // 익명 설문 여부
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -418,19 +330,17 @@ export const selectUserSchema = createSelectSchema(users);
 export const insertInstituteSchema = createInsertSchema(institutes);
 export const selectInstituteSchema = createSelectSchema(institutes);
 // Basic Pet Zod Schemas
-export const insertPetSchema = createInsertSchema(pets, {
-  // 선택적 검증 규칙 추가 가능
-}).omit({ 
+export const insertPetSchema = createInsertSchema(pets).omit({ 
   id: true, 
   createdAt: true, 
   updatedAt: true,
   assignedTrainerId: true, // 관리자만 설정 가능
   assignedTrainerName: true
-} as const);
+});
 
 export const updatePetSchema = insertPetSchema.partial().omit({ 
   ownerId: true // 소유자는 변경 불가
-} as const);
+});
 
 export const selectPetSchema = createSelectSchema(pets);
 
@@ -899,17 +809,9 @@ export type NewInstitute = z.infer<typeof insertInstituteSchema>;
 export type Pet = z.infer<typeof selectPetSchema>;
 export type NewPet = z.infer<typeof insertPetSchema>;
 
-// Posts 관련 스키마 (설문 기능 포함)
-export const insertPostSchema = createInsertSchema(posts).extend({
-  surveyData: surveyDataSchema.optional(),
-});
-
-export const selectPostSchema = createSelectSchema(posts);
-
 // Missing type exports for storage.ts compatibility
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type Post = typeof posts.$inferSelect;
-export type NewPost = z.infer<typeof insertPostSchema>;
 export type Reservation = typeof reservations.$inferSelect;
 
 export type Event = typeof events.$inferSelect;
@@ -1117,7 +1019,7 @@ export const curriculums = pgTable("curriculums", {
   materials: text("materials").array(),
   assessmentMethods: text("assessment_methods").array(),
   isPublic: boolean("is_public").default(false),
-  status: varchar("status", { length: 20 }).default("draft"), // draft, pending, published, rejected
+  status: varchar("status", { length: 20 }).default("draft"), // draft, pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -1131,7 +1033,7 @@ export const updateCurriculumSchema = insertCurriculumSchema.partial().omit({
   updatedAt: true, 
   creatorId: true, 
   instituteId: true  // Prevent ownership modification
-} as const);
+});
 
 // 훈련사 인증 신청 테이블
 export const trainerApplications = pgTable("trainer_applications", {
@@ -1604,7 +1506,7 @@ export type InsertAiUsageLimits = typeof aiUsageLimits.$inferInsert;
 export const insertNotificationSchema = createInsertSchema(notifications).omit({
   id: true,
   createdAt: true,
-} as const);
+});
 
 export const updateNotificationSchema = z.object({
   title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다").optional(),
@@ -1662,7 +1564,7 @@ export const insertTrainingJournalSchema = createInsertSchema(trainingJournals).
   readAt: true,
   isRead: true,
   status: true, // 기본값 사용
-} as const).extend({
+}).extend({
   trainerId: z.number().int().positive("올바른 훈련사 ID가 필요합니다"),
   petOwnerId: z.number().int().positive("올바른 견주 ID가 필요합니다"),
   petId: z.number().int().positive("올바른 반려동물 ID가 필요합니다"),
@@ -1748,7 +1650,7 @@ export const insertBannerSchema = createInsertSchema(banners).omit({
   viewCount: true, 
   createdAt: true, 
   updatedAt: true 
-} as const);
+});
 
 // 배너 수정 스키마
 export const updateBannerSchema = insertBannerSchema.partial().extend({
@@ -1827,7 +1729,7 @@ export const insertLogoSettingsSchema = createInsertSchema(logoSettings).omit({
   id: true,
   createdAt: true,
   updatedAt: true
-} as const);
+});
 
 // 로고 설정 업데이트 스키마 - 비즈니스 로직과 검증 포함
 export const updateLogoSettingsSchema = z.object({
@@ -1870,13 +1772,7 @@ export type LogoSettingsQuery = z.infer<typeof logoSettingsQuerySchema>;
 // =============================================================================
 
 // 강의 기본 스키마
-export const insertCourseSchema = createInsertSchema(courses).omit({
-  id: true,
-  rating: true,
-  enrollmentCount: true,
-  createdAt: true,
-  updatedAt: true
-} as const).extend({
+export const insertCourseSchema = createInsertSchema(courses, {
   title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
   description: z.string().max(5000, "설명은 5000자를 초과할 수 없습니다").optional().nullable(),
   content: z.string().max(10000, "내용은 10000자를 초과할 수 없습니다").optional().nullable(),
@@ -1886,13 +1782,19 @@ export const insertCourseSchema = createInsertSchema(courses).omit({
   category: z.string().max(100, "카테고리는 100자를 초과할 수 없습니다").optional().nullable(),
   imageUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable(),
   videoUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable()
+}).omit({
+  id: true,
+  rating: true,
+  enrollmentCount: true,
+  createdAt: true,
+  updatedAt: true
 });
 
 // 강의 수정 스키마 - 보안: instituteId, instructorId 보호
 export const updateCourseSchema = insertCourseSchema.partial().omit({
   instituteId: true,    // 소유권 필드 보호 - RBAC Critical
   instructorId: true    // 소유권 필드 보호 - RBAC Critical
-} as const);
+});
 
 // 강의 조회 스키마
 export const selectCourseSchema = createSelectSchema(courses);
@@ -1900,143 +1802,4 @@ export const selectCourseSchema = createSelectSchema(courses);
 // Additional course type definitions (avoiding duplicates)
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type UpdateCourse = z.infer<typeof updateCourseSchema>;
-
-// =============================================================================
-// 화상 강의 세션 (줌 화상 수업) 스키마 정의
-// =============================================================================
-
-// 화상 강의 세션 생성 스키마
-export const insertVideoLectureSessionSchema = createInsertSchema(videoLectureSessions).omit({
-  id: true,
-  actualStartTime: true,
-  actualEndTime: true,
-  currentParticipants: true,
-  zoomMeetingId: true,
-  zoomJoinUrl: true,
-  zoomStartUrl: true,
-  zoomMeetingPassword: true,
-  createdAt: true,
-  updatedAt: true
-} as const).extend({
-  courseId: z.number().int().positive("올바른 강의 ID가 필요합니다"),
-  instructorId: z.number().int().positive("올바른 강사 ID가 필요합니다"),
-  title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
-  description: z.string().max(1000, "설명은 1000자를 초과할 수 없습니다").optional().nullable(),
-  scheduledStartTime: z.string().datetime("올바른 날짜 시간 형식이 필요합니다"),
-  scheduledEndTime: z.string().datetime("올바른 날짜 시간 형식이 필요합니다"),
-  maxParticipants: z.number().int().min(1, "최소 1명 이상 참가 가능해야 합니다").max(500, "최대 500명까지 참가 가능합니다").default(50),
-  sessionNotes: z.string().max(2000, "세션 노트는 2000자를 초과할 수 없습니다").optional().nullable(),
-  materials: z.array(z.string().url("올바른 URL 형식이 아닙니다")).default([]),
-  tags: z.array(z.string().max(50, "태그는 50자를 초과할 수 없습니다")).default([])
-});
-
-// 화상 강의 세션 수정 스키마
-export const updateVideoLectureSessionSchema = insertVideoLectureSessionSchema.partial().omit({
-  courseId: true,
-  instructorId: true
-} as const).extend({
-  status: z.enum(["scheduled", "live", "completed", "cancelled"]).optional(),
-  recordingUrl: z.string().url("올바른 URL 형식이 아닙니다").optional().nullable()
-});
-
-// 화상 강의 세션 조회 스키마
-export const selectVideoLectureSessionSchema = createSelectSchema(videoLectureSessions);
-
-// 화상 강의 예약 생성 스키마
-export const insertVideoLectureBookingSchema = createInsertSchema(videoLectureBookings).omit({
-  id: true,
-  joinTime: true,
-  leaveTime: true,
-  createdAt: true,
-  updatedAt: true
-} as const).extend({
-  sessionId: z.number().int().positive("올바른 세션 ID가 필요합니다"),
-  userId: z.number().int().positive("올바른 사용자 ID가 필요합니다"),
-  petId: z.number().int().positive().optional().nullable(),
-  specialRequests: z.string().max(500, "특별 요청사항은 500자를 초과할 수 없습니다").optional().nullable()
-});
-
-// 화상 강의 예약 수정 스키마
-export const updateVideoLectureBookingSchema = z.object({
-  bookingStatus: z.enum(["confirmed", "cancelled", "no_show"]).optional(),
-  attendanceStatus: z.enum(["registered", "attended", "absent"]).optional(),
-  feedback: z.string().max(1000, "피드백은 1000자를 초과할 수 없습니다").optional().nullable(),
-  rating: z.number().int().min(1, "평점은 1~5 사이여야 합니다").max(5, "평점은 1~5 사이여야 합니다").optional().nullable()
-});
-
-// 화상 강의 예약 조회 스키마
-export const selectVideoLectureBookingSchema = createSelectSchema(videoLectureBookings);
-
-// 화상 강의 세션 쿼리 스키마
-export const videoLectureSessionQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(10),
-  courseId: z.coerce.number().int().positive().optional(),
-  instructorId: z.coerce.number().int().positive().optional(),
-  status: z.enum(["scheduled", "live", "completed", "cancelled"]).optional(),
-  fromDate: z.string().optional(), // YYYY-MM-DD 형식
-  toDate: z.string().optional(),   // YYYY-MM-DD 형식
-  sortBy: z.enum(["scheduledStartTime", "createdAt", "title", "status"]).default("scheduledStartTime"),
-  sortOrder: z.enum(["asc", "desc"]).default("asc"),
-});
-
-// 화상 강의 예약 쿼리 스키마
-export const videoLectureBookingQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(10),
-  sessionId: z.coerce.number().int().positive().optional(),
-  userId: z.coerce.number().int().positive().optional(),
-  bookingStatus: z.enum(["confirmed", "cancelled", "no_show"]).optional(),
-  attendanceStatus: z.enum(["registered", "attended", "absent"]).optional(),
-  sortBy: z.enum(["createdAt", "scheduledStartTime", "rating"]).default("createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
-});
-
-// 줌 미팅 생성 스키마
-export const createZoomMeetingSchema = z.object({
-  sessionId: z.number().int().positive("올바른 세션 ID가 필요합니다"),
-  topic: z.string().min(1, "주제는 필수입니다").max(200, "주제는 200자를 초과할 수 없습니다"),
-  startTime: z.string().datetime("올바른 날짜 시간 형식이 필요합니다"),
-  duration: z.number().int().min(15, "최소 15분 이상이어야 합니다").max(480, "최대 8시간까지 가능합니다"),
-  password: z.string().min(4, "비밀번호는 최소 4자 이상이어야 합니다").max(10, "비밀번호는 최대 10자까지 가능합니다").optional(),
-  waitingRoom: z.boolean().default(true),
-  joinBeforeHost: z.boolean().default(false),
-  muteUponEntry: z.boolean().default(true),
-  autoRecording: z.enum(["none", "local", "cloud"]).default("none")
-});
-
-// 화상 강의 타입 정의
-export type VideoLectureSession = typeof videoLectureSessions.$inferSelect;
-export type InsertVideoLectureSession = z.infer<typeof insertVideoLectureSessionSchema>;
-export type UpdateVideoLectureSession = z.infer<typeof updateVideoLectureSessionSchema>;
-export type VideoLectureSessionQuery = z.infer<typeof videoLectureSessionQuerySchema>;
-
-export type VideoLectureBooking = typeof videoLectureBookings.$inferSelect;
-export type InsertVideoLectureBooking = z.infer<typeof insertVideoLectureBookingSchema>;
-export type UpdateVideoLectureBooking = z.infer<typeof updateVideoLectureBookingSchema>;
-export type VideoLectureBookingQuery = z.infer<typeof videoLectureBookingQuerySchema>;
-
-export type CreateZoomMeeting = z.infer<typeof createZoomMeetingSchema>;
-
-// 확장된 강의 타입 (화상 강의 포함)
-export type CourseType = "regular" | "video_lecture" | "hybrid";
-
-// UserRole 타입 정의 (이미 정의되어 있지만 확실히 하기 위해)
-export type UserRole = "user" | "pet-owner" | "trainer" | "institute-admin" | "admin";
-
-// 카카오톡 메시지 전송 스키마
-export const sendKakaoMessageSchema = z.object({
-  studentId: z.coerce.number().int().positive("올바른 수강생 ID가 필요합니다"),
-  notebookData: z.object({
-    title: z.string().min(1, "제목은 필수입니다").max(200, "제목은 200자를 초과할 수 없습니다"),
-    content: z.string().min(1, "내용은 필수입니다").max(2000, "내용은 2000자를 초과할 수 없습니다"),
-    studentName: z.string().min(1, "수강생 이름은 필수입니다").max(100, "이름은 100자를 초과할 수 없습니다"),
-    petName: z.string().min(1, "반려동물 이름은 필수입니다").max(100, "이름은 100자를 초과할 수 없습니다"),
-    trainingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "올바른 날짜 형식이 필요합니다 (YYYY-MM-DD)"),
-    progressRating: z.number().int().min(1, "평점은 1점 이상이어야 합니다").max(5, "평점은 5점 이하여야 합니다"),
-    trainerName: z.string().min(1, "훈련사 이름은 필수입니다").max(100, "이름은 100자를 초과할 수 없습니다"),
-  })
-});
-
-export type SendKakaoMessage = z.infer<typeof sendKakaoMessageSchema>;
 

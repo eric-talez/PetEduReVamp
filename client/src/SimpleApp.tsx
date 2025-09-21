@@ -90,15 +90,14 @@ import ApiManagement from "./pages/admin/ApiManagement";
 import AIApiManagement from "./pages/admin/AIApiManagement";
 import AIOptimizationDashboard from "./pages/admin/AIOptimizationDashboard";
 import MenuVisibilityControl from "./pages/admin/MenuVisibilityControl";
-import CoursePurchase from "./pages/payment/CoursePurchase";
 import NavigationProgress from "./components/NavigationProgress";
 import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
 
 // 레이아웃 및 컴포넌트 임포트
+import { TopBar } from "@/components/TopBar";
+import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import Footer from "@/components/Footer";
-import { Sidebar } from "@/components/Sidebar";
-import { TopBar } from "@/components/TopBar";
 
 import { ThemeManager } from "@/components/ThemeManager";
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
@@ -174,10 +173,19 @@ function NavigationMessageListener({ children }: { children: ReactNode }) {
  * 응용 프로그램 레이아웃 컴포넌트
  */
 function AppLayout({ children }: { children: ReactNode }) {
-  const auth = useAuth();
+  // localStorage에서 사이드바 상태 불러오기
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(() => {
+    // localStorage에서 저장된 사이드바 확장 상태 가져오기
+    const savedState = localStorage.getItem('sidebarExpanded');
+    if (savedState !== null) {
+      return savedState === 'true';
+    }
+    // 기본값은 확장된 상태 (데스크톱에서)
+    return true;
+  });
+  const auth = useAuth();
 
   // 인증 상태가 변경될 때마다 윈도우 객체에 저장된 상태를 확인하고 동기화
   useEffect(() => {
@@ -197,18 +205,34 @@ function AppLayout({ children }: { children: ReactNode }) {
     }
   }, [auth.isAuthenticated, auth.userRole, auth.userName]);
 
-  // 화면 크기에 따라 모바일 여부 확인
+  // 사이드바 크기 토글 핸들러
+  const toggleSidebarSize = () => {
+    const newState = !sidebarExpanded;
+    setSidebarExpanded(newState);
+
+    // 사이드바 상태를 localStorage에 저장
+    try {
+      localStorage.setItem('sidebarExpanded', String(newState));
+      console.log('사이드바 확장 상태 저장:', newState);
+    } catch (e) {
+      console.error('사이드바 상태 저장 오류:', e);
+    }
+  };
+
+  // 화면 크기 변경 감지
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
+    function handleResize() {
+      setIsDesktop(window.innerWidth >= 1024);
+    }
+
+    // 초기 실행
+    handleResize();
+
+    // 이벤트 리스너 등록
+    window.addEventListener('resize', handleResize);
+
+    // 클린업
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // 키보드 접근성 설정 (전역 단축키)
@@ -219,12 +243,19 @@ function AppLayout({ children }: { children: ReactNode }) {
       altKey: true, 
       handler: () => window.location.href = '/' 
     },
+    // 사이드바 토글
+    { 
+      key: 'b', 
+      altKey: true, 
+      handler: () => isDesktop ? toggleSidebarSize() : setSidebarOpen(!sidebarOpen) 
+    },
     // 도움말 표시
     { 
       key: '/', 
       handler: () => {
         alert(`키보드 단축키:
 - Alt+H: 홈 페이지로 이동
+- Alt+B: 사이드바 토글
 - ESC: 모달 닫기
 - /: 도움말 표시`);
       } 
@@ -246,28 +277,53 @@ function AppLayout({ children }: { children: ReactNode }) {
         {/* 접근성 개선: 콘텐츠로 건너뛰기 링크 */}
         <SkipToContent contentId="main-content" />
 
-        {/* TopBar - 상단 헤더 */}
-        <TopBar
-          sidebarOpen={sidebarOpen}
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        />
-
         <div className="flex flex-grow">
-          {/* 사이드바 */}
-          {(!isMobile || sidebarOpen) && (
+          {/* 사이드바 - 항상 고정된 너비를 가짐 */}
+          <aside 
+            className={`
+              shrink-0 h-screen fixed left-0 top-0 z-20
+              transition-all duration-300
+              ${sidebarExpanded ? 'w-64' : 'w-[70px]'}
+              ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
+            `}
+            aria-label="사이드바 메뉴"
+          >
             <Sidebar 
-              open={!isMobile || sidebarOpen} 
-              expanded={sidebarExpanded}
-              onToggleExpand={() => setSidebarExpanded(!sidebarExpanded)}
-              userRole={auth.userRole}
+              open={sidebarOpen} 
+              onClose={() => setSidebarOpen(false)} 
+              userRole={auth.userRole} 
               isAuthenticated={auth.isAuthenticated}
+              expanded={sidebarExpanded}
+              onToggleExpand={toggleSidebarSize}
+            />
+            {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="fixed bottom-4 right-4 p-2 bg-card border border-border text-card-foreground text-xs rounded z-50">
+                역할: {auth.userRole || '미로그인'} / 
+                인증: {auth.isAuthenticated ? 'true' : 'false'}
+              </div>
+            )}
+          </aside>
+
+          {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
+          {sidebarOpen && !isDesktop && (
+            <div 
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-10" 
+              onClick={() => setSidebarOpen(false)}
+              aria-hidden="true"
             />
           )}
 
-          {/* 메인 컨텐츠 영역 */}
-          <div className={`flex-grow flex flex-col min-h-screen transition-all duration-300 ${
-            !isMobile ? (sidebarExpanded ? 'ml-64' : 'ml-[72px]') : 'ml-0'
-          } pt-16`}>
+          {/* 우측 컨텐츠 영역 (헤더 + 메인) */}
+          <div className={`
+            flex-grow flex flex-col min-h-screen transition-all duration-300 w-full
+            ${isDesktop ? (sidebarExpanded ? 'ml-64' : 'ml-[70px]') : 'ml-0'}
+          `}>
+            {/* 상단바 */}
+            <TopBar
+              sidebarOpen={sidebarOpen}
+              onToggleSidebar={isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)}
+            />
 
             {/* 메인 컨텐츠 영역 */}
             <main id="main-content" className="flex-grow" tabIndex={-1}>
@@ -284,6 +340,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/commissions" component={AdminCommissionPage} />
                   <Route path="/admin/commission-settings" component={AdminCommissionPage} />
+                  <Route path="/admin/settlements" component={AdminSettlementPage} />
                   <Route path="/admin/shop" component={AdminShop} />
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/messaging-settings" component={MessagingSettings} />
@@ -1092,16 +1149,6 @@ function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* 모바일에서 사이드바가 열릴 때 오버레이 */}
-        {isMobile && sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-10"
-            onClick={() => setSidebarOpen(false)}
-            aria-hidden="true"
-            role="presentation"
-          />
-        )}
-
         {/* AI 챗봇 */}
         <SimpleChatBot />
       </div>
@@ -1364,10 +1411,6 @@ function AuthenticatedRoutes() {
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id" component={EventDetailPage} />
-        
-        {/* 강의 결제 페이지 */}
-        <Route path="/payment/course/:courseId" component={CoursePurchase} />
-        
         <Route path="/my-courses" component={MyCourses} />
 
         <Route path="/my-pets" component={MyPets} />
@@ -2483,19 +2526,6 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        
-        {/* Zoom 테스트 페이지 */}
-        <Route path="/zoom-test">
-          {() => {
-            const ZoomTestPageLazy = lazy(() => import('./pages/zoom-test'));
-            return (
-              <Suspense fallback={<div className="flex items-center justify-center h-64">페이지 로딩 중...</div>}>
-                <ZoomTestPageLazy />
-              </Suspense>
-            );
-          }}
-        </Route>
-        
         <Route path="/" component={Home} />
 
         {/* 404 페이지 */}

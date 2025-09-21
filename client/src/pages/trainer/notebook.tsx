@@ -110,7 +110,6 @@ export default function TrainerNotebookPage() {
   const [isCreateJournalOpen, setIsCreateJournalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'basic' | 'activities' | 'media' | 'ai'>('basic');
-  const [isAIGenerating, setIsAIGenerating] = useState(false);
   const [notebookForm, setNotebookForm] = useState({
     title: '',
     content: '',
@@ -177,119 +176,8 @@ export default function TrainerNotebookPage() {
     }
   });
 
-  // AI 분석을 통한 알림장 자동 생성
-  const handleAIGenerate = async () => {
-    if (!notebookForm.studentId) {
-      toast({
-        title: "먼저 수강생을 선택해주세요",
-        variant: "destructive"
-      });
-      setActiveTab('basic');
-      return;
-    }
-
-    const selectedStudentData = students?.find(s => s.id.toString() === notebookForm.studentId);
-    if (!selectedStudentData) {
-      toast({
-        title: "수강생 정보를 찾을 수 없습니다",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsAIGenerating(true);
-    
-    try {
-      // 현재 입력된 모든 데이터 수집
-      const analysisData = {
-        // 기본 정보
-        student: {
-          name: selectedStudentData.name,
-          pet: {
-            name: selectedStudentData.pet.name,
-            breed: selectedStudentData.pet.breed,
-            age: selectedStudentData.pet.age
-          }
-        },
-        course: {
-          title: selectedStudentData.course.title,
-          currentSession: selectedStudentData.course.currentSession,
-          totalSessions: selectedStudentData.course.totalSessions
-        },
-        trainingDate: notebookForm.trainingDate,
-        trainingDuration: notebookForm.trainingDuration,
-        progressRating: notebookForm.progressRating,
-        
-        // 이미 입력된 내용이 있다면 포함
-        existingContent: {
-          title: notebookForm.title,
-          content: notebookForm.content,
-          behaviorNotes: notebookForm.behaviorNotes,
-          homeworkInstructions: notebookForm.homeworkInstructions,
-          nextGoals: notebookForm.nextGoals
-        },
-        
-        // 활동 데이터
-        activities: notebookForm.activities
-      };
-
-      console.log('🤖 AI 분석 요청 데이터:', analysisData);
-
-      const response = await fetch('/api/ai/analyze-notebook', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'generate_notebook',
-          data: analysisData
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('AI 분석 요청 실패');
-      }
-
-      const result = await response.json();
-      console.log('🤖 AI 분석 결과:', result);
-
-      if (result.success && result.generatedContent) {
-        const content = result.generatedContent;
-        
-        // AI가 생성한 내용을 폼에 자동 입력
-        setNotebookForm(prev => ({
-          ...prev,
-          title: content.title || prev.title || `${selectedStudentData.pet.name} 훈련 일지 - ${selectedStudentData.course.currentSession}회차`,
-          content: content.trainingContent || prev.content,
-          behaviorNotes: content.behaviorNotes || prev.behaviorNotes,
-          homeworkInstructions: content.homeworkInstructions || prev.homeworkInstructions,
-          nextGoals: content.nextGoals || prev.nextGoals
-        }));
-
-        // 기본 탭으로 이동하여 생성된 내용 확인
-        setActiveTab('basic');
-        
-        toast({
-          title: "AI 분석 완료!",
-          description: "알림장 내용이 자동으로 생성되었습니다. 내용을 확인하고 필요시 수정해주세요.",
-        });
-      } else {
-        throw new Error(result.error || 'AI 분석 결과를 받을 수 없습니다');
-      }
-    } catch (error) {
-      console.error('🤖 AI 분석 오류:', error);
-      toast({
-        title: "AI 분석 실패",
-        description: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsAIGenerating(false);
-    }
-  };
-
-  // 알림장 제출 핸들러 (카카오톡 전송 포함)
-  const handleSubmitNotebook = async () => {
+  // 알림장 제출 핸들러
+  const handleSubmitNotebook = () => {
     if (!notebookForm.title.trim()) {
       toast({
         title: "제목을 입력해주세요",
@@ -314,98 +202,7 @@ export default function TrainerNotebookPage() {
       return;
     }
 
-    const selectedStudentData = students?.find(s => s.id.toString() === notebookForm.studentId);
-    if (!selectedStudentData) {
-      toast({
-        title: "수강생 정보를 찾을 수 없습니다",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      // 1. 알림장 저장
-      await createNotebookMutation.mutateAsync(notebookForm);
-
-      // 2. 카카오톡 메시지 전송
-      console.log('📱 카카오톡 메시지 전송 시작...');
-      
-      const messageResponse = await apiRequest('/api/kakao/send-notebook', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          studentId: notebookForm.studentId,
-          notebookData: {
-            title: notebookForm.title,
-            content: notebookForm.content,
-            studentName: selectedStudentData.name,
-            petName: selectedStudentData.pet.name,
-            trainingDate: notebookForm.trainingDate,
-            progressRating: notebookForm.progressRating,
-            trainerName: "김민수" // TODO: req.session.user.name 사용하도록 서버에서 처리
-          }
-        })
-      });
-
-      const result = await messageResponse.json();
-      
-      if (messageResponse.ok && result.success) {
-        toast({
-          title: "알림장 전송 완료! 📱",
-          description: `${selectedStudentData.name}님에게 카카오톡 알림장이 전송되었습니다.`,
-        });
-      } else if (messageResponse.status === 503 && result.configurationRequired) {
-        toast({
-          title: "알림장 저장 완료",
-          description: "카카오톡 서비스가 설정되지 않았습니다. 알림장은 정상적으로 저장되었습니다.",
-          variant: "default"
-        });
-      } else if (result.needsPhoneNumber) {
-        toast({
-          title: "알림장 저장 완료",
-          description: "수강생의 전화번호가 등록되지 않아 카카오톡을 전송할 수 없습니다. 알림장은 정상적으로 저장되었습니다.",
-          variant: "default"
-        });
-      } else {
-        toast({
-          title: "알림장 저장 완료",
-          description: result.error || "카카오톡 전송에 실패했지만 알림장은 정상적으로 저장되었습니다.",
-          variant: "default"
-        });
-      }
-
-      // 3. 다이얼로그 닫기
-      setIsCreateJournalOpen(false);
-      
-      // 4. 폼 초기화
-      setNotebookForm({
-        title: '',
-        content: '',
-        studentId: '',
-        petId: '',
-        trainingDate: new Date().toISOString().split('T')[0],
-        trainingDuration: 60,
-        progressRating: 3,
-        behaviorNotes: '',
-        homeworkInstructions: '',
-        nextGoals: '',
-        activities: {
-          bathroom: { times: [], notes: '' },
-          walk: { times: [], durations: [], notes: '' },
-          play: { times: [], activities: [], notes: '' }
-        }
-      });
-
-    } catch (error) {
-      console.error('알림장 전송 오류:', error);
-      toast({
-        title: "전송 실패",
-        description: "알림장 전송 중 오류가 발생했습니다. 다시 시도해주세요.",
-        variant: "destructive"
-      });
-    }
+    createNotebookMutation.mutate(notebookForm);
   };
 
   // 알림장 목록 조회
@@ -1041,53 +838,18 @@ export default function TrainerNotebookPage() {
                 {/* AI Helper Tab */}
                 {activeTab === 'ai' && (
                   <div className="space-y-4">
-                    <div className="p-4 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                    <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
                       <div className="flex items-center mb-2">
                         <Brain className="h-5 w-5 text-blue-600 mr-2" />
-                        <h3 className="font-medium text-blue-900 dark:text-blue-100">AI 알림장 도우미</h3>
+                        <h3 className="font-medium text-blue-900">AI 알림장 도우미</h3>
                       </div>
-                      <p className="text-sm text-blue-700 dark:text-blue-200 mb-4">
+                      <p className="text-sm text-blue-700 mb-4">
                         AI가 입력된 정보를 바탕으로 알림장 내용을 자동으로 생성해드립니다.
-                        수강생 정보, 기본 정보, 활동 기록 등을 종합하여 전문적인 알림장을 작성합니다.
                       </p>
-                      
-                      {/* 현재 입력된 정보 요약 */}
-                      <div className="mb-4 p-3 bg-white dark:bg-gray-800 rounded-lg border">
-                        <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">입력된 정보:</h4>
-                        <div className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
-                          <div>• 수강생: {notebookForm.studentId ? students?.find(s => s.id.toString() === notebookForm.studentId)?.name || '선택됨' : '미선택'}</div>
-                          <div>• 훈련일: {notebookForm.trainingDate}</div>
-                          <div>• 훈련시간: {notebookForm.trainingDuration}분</div>
-                          <div>• 진도평가: {notebookForm.progressRating}/5점</div>
-                          {notebookForm.content && <div>• 기존 훈련 내용: 입력됨</div>}
-                          {notebookForm.behaviorNotes && <div>• 행동 관찰: 입력됨</div>}
-                        </div>
-                      </div>
-                      
-                      <Button 
-                        className="w-full" 
-                        variant="outline"
-                        onClick={handleAIGenerate}
-                        disabled={isAIGenerating || !notebookForm.studentId}
-                      >
-                        {isAIGenerating ? (
-                          <>
-                            <div className="animate-spin h-4 w-4 mr-2 border-2 border-current border-t-transparent rounded-full" />
-                            AI가 분석 중입니다...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            AI로 내용 생성하기
-                          </>
-                        )}
+                      <Button className="w-full" variant="outline">
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        AI로 내용 생성하기
                       </Button>
-                      
-                      {!notebookForm.studentId && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 text-center">
-                          * 먼저 기본 정보 탭에서 수강생을 선택해주세요
-                        </p>
-                      )}
                     </div>
                   </div>
                 )}

@@ -16,9 +16,7 @@ export function setupSocialAuth(app: Express) {
       new KakaoStrategy(
         {
           clientID: process.env.KAKAO_CLIENT_ID,
-          callbackURL: process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/kakao/callback`
-            : 'http://localhost:5000/api/auth/kakao/callback',
+          callbackURL: '/api/auth/kakao/callback',
         },
         async (accessToken, refreshToken, profile, done) => {
           try {
@@ -87,9 +85,7 @@ export function setupSocialAuth(app: Express) {
         {
           clientID: process.env.NAVER_CLIENT_ID,
           clientSecret: process.env.NAVER_CLIENT_SECRET,
-          callbackURL: process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/naver/callback`
-            : 'http://localhost:5000/api/auth/naver/callback',
+          callbackURL: '/api/auth/naver/callback',
         },
         async (accessToken, refreshToken, profile, done) => {
           try {

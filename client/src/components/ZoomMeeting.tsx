@@ -18,7 +18,6 @@ import {
   VolumeX
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { ZoomMtg } from '@zoom/meetingsdk';
 
 interface ZoomMeetingProps {
   meetingId: string;
@@ -65,22 +64,27 @@ export function ZoomMeeting({
       try {
         setIsLoading(true);
         
-        // Zoom SDK 초기화
-        ZoomMtg.setZoomJSLib('https://source.zoom.us/4.0.7/lib', '/av');
-        ZoomMtg.preLoadWasm();
-        ZoomMtg.prepareWebSDK();
-        ZoomMtg.i18n.load('ko-KO');
+        // 실제 구현에서는 ZoomMtg 객체를 로드하고 초기화하는 코드가 필요합니다.
+        // 예시 코드:
+        // import { ZoomMtg } from '@zoom/meetingsdk';
+        // ZoomMtg.setZoomJSLib('https://source.zoom.us/2.13.0/lib', '/av');
+        // ZoomMtg.preLoadWasm();
+        // ZoomMtg.prepareWebSDK();
         
-        console.log('[Zoom] SDK 로드 완료');
+        // 여기서는 SDK가 로드되었다고 가정하고 진행합니다.
+        console.log('Zoom SDK 로드 완료');
         
-        // SDK 로딩 완료 후 미팅 참여
+        // 실제 구현에서는 시그니처 생성이 필요합니다.
+        // 서버에서 JWT 토큰을 받아오는 로직이 필요합니다.
+        
+        // 로딩 시뮬레이션
         setTimeout(() => {
           setIsLoading(false);
           joinMeeting();
         }, 1500);
         
       } catch (err) {
-        console.error('[Zoom] SDK 로드 실패:', err);
+        console.error('Zoom SDK 로드 실패:', err);
         setError('Zoom 미팅 SDK를 로드하는 중 오류가 발생했습니다.');
         setIsLoading(false);
       }
@@ -91,12 +95,9 @@ export function ZoomMeeting({
     // 컴포넌트 언마운트 시 정리
     return () => {
       if (isJoined) {
-        try {
-          ZoomMtg.leaveMeeting({});
-          console.log('[Zoom] 미팅에서 나가기');
-        } catch (error) {
-          console.error('[Zoom] 미팅 나가기 실패:', error);
-        }
+        // 실제 구현에서는 미팅에서 나가는 로직이 필요합니다.
+        // ZoomMtg.leaveMeeting({});
+        console.log('Zoom 미팅에서 나가기');
       }
     };
   }, []);
@@ -104,154 +105,76 @@ export function ZoomMeeting({
   // 미팅 참여 함수
   const joinMeeting = async () => {
     try {
-      console.log('[Zoom] 미팅 참여 시작:', { meetingId, userName, isSpeaker });
+      // 실제 구현에서는 Zoom SDK를 사용하여 미팅에 참여하는 로직이 필요합니다.
+      // ZoomMtg.join({
+      //   meetingNumber: meetingId,
+      //   userName: userName,
+      //   password: password,
+      //   leaveUrl: window.location.origin,
+      //   success: () => {
+      //     console.log('미팅 참여 성공');
+      //     setIsJoined(true);
+      //   },
+      //   error: (err) => {
+      //     console.error('미팅 참여 실패:', err);
+      //     setError('미팅에 참여할 수 없습니다. 미팅 ID와 비밀번호를 확인해주세요.');
+      //   }
+      // });
       
-      // 서버에서 JWT 서명 가져오기
-      const signatureResponse = await fetch('/api/zoom/signature', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          meetingNumber: meetingId,
-          role: isSpeaker ? 1 : 0 // 1: 호스트/공동호스트, 0: 참가자
-        })
+      // 미팅 참여 시뮬레이션
+      console.log('미팅 참여 시뮬레이션:', {
+        meetingId,
+        userName,
+        password,
+        isSpeaker
       });
       
-      const signatureData = await signatureResponse.json();
-      
-      if (!signatureData.success) {
-        throw new Error(signatureData.error || '서명 생성 실패');
-      }
-      
-      // Zoom SDK 초기화
-      ZoomMtg.init({
-        leaveUrl: window.location.origin + '/courses',
-        isSupportAV: true,
-        isSupportChat: true,
-        isSupportQA: false,
-        isSupportCC: false,
-        isSupportPolling: false,
-        isSupportBreakout: false,
-        screenShare: isSpeaker,
-        videoDrag: true,
-        sharingMode: 'both',
-        videoHeader: true,
-        isLockBottom: true,
-        isSupportNonverbal: true,
-        isShowJoiningErrorDialog: true,
-        inviteUrlFormat: '',
-        loginWindow: {
-          width: '400',
-          height: '380'
-        },
-        meetingInfo: [
-          'topic',
-          'host',
-          'mn',
-          'pwd',
-          'telPwd',
-          'invite',
-          'participant',
-          'dc',
-          'enctype',
-          'report'
-        ],
-        success: () => {
-          console.log('[Zoom] SDK 초기화 성공');
-          
-          // 미팅 참여
-          ZoomMtg.join({
-            signature: signatureData.signature,
-            meetingNumber: meetingId,
-            userName: userName,
-            userEmail: '',
-            passWord: password || '',
-            success: (success) => {
-              console.log('[Zoom] 미팅 참여 성공:', success);
-              setIsJoined(true);
-              toast({
-                title: "화상 수업에 참여했습니다",
-                description: `미팅 ID: ${meetingId}`,
-              });
-            },
-            error: (error) => {
-              console.error('[Zoom] 미팅 참여 실패:', error);
-              setError('미팅에 참여할 수 없습니다. 미팅 ID와 비밀번호를 확인해주세요.');
-            }
-          });
-        },
-        error: (error) => {
-          console.error('[Zoom] SDK 초기화 실패:', error);
-          setError('Zoom SDK 초기화에 실패했습니다.');
-        }
-      });
+      setTimeout(() => {
+        setIsJoined(true);
+        toast({
+          title: "화상 수업에 참여했습니다",
+          description: `미팅 ID: ${meetingId}`,
+        });
+      }, 1000);
       
     } catch (err) {
-      console.error('[Zoom] 미팅 참여 오류:', err);
-      setError('미팅에 참여할 수 없습니다. 네트워크 연결을 확인해주세요.');
+      console.error('미팅 참여 실패:', err);
+      setError('미팅에 참여할 수 없습니다. 미팅 ID와 비밀번호를 확인해주세요.');
     }
   };
   
   // 마이크 토글
   const toggleMic = () => {
-    try {
-      if (isJoined) {
-        ZoomMtg.mute({
-          mute: micEnabled,
-          success: () => {
-            setMicEnabled(!micEnabled);
-            toast({
-              title: micEnabled ? "마이크가 꺼졌습니다" : "마이크가 켜졌습니다",
-              variant: "default",
-            });
-          },
-          error: (error) => {
-            console.error('[Zoom] 마이크 토글 실패:', error);
-          }
-        });
-      } else {
-        setMicEnabled(!micEnabled);
-        toast({
-          title: micEnabled ? "마이크가 꺼졌습니다" : "마이크가 켜졌습니다",
-          variant: "default",
-        });
-      }
-    } catch (error) {
-      console.error('[Zoom] 마이크 토글 오류:', error);
-      setMicEnabled(!micEnabled);
-    }
+    // 실제 구현에서는 Zoom SDK를 사용하여 마이크를 켜고 끄는 로직이 필요합니다.
+    // ZoomMtg.mute({
+    //   mute: micEnabled,
+    //   success: () => {
+    //     setMicEnabled(!micEnabled);
+    //   }
+    // });
+    
+    setMicEnabled(!micEnabled);
+    toast({
+      title: micEnabled ? "마이크가 꺼졌습니다" : "마이크가 켜졌습니다",
+      variant: "default",
+    });
   };
   
   // 비디오 토글
   const toggleVideo = () => {
-    try {
-      if (isJoined) {
-        ZoomMtg.stopVideo({
-          stop: videoEnabled,
-          success: () => {
-            setVideoEnabled(!videoEnabled);
-            toast({
-              title: videoEnabled ? "비디오가 꺼졌습니다" : "비디오가 켜졌습니다",
-              variant: "default",
-            });
-          },
-          error: (error) => {
-            console.error('[Zoom] 비디오 토글 실패:', error);
-          }
-        });
-      } else {
-        setVideoEnabled(!videoEnabled);
-        toast({
-          title: videoEnabled ? "비디오가 꺼졌습니다" : "비디오가 켜졌습니다",
-          variant: "default",
-        });
-      }
-    } catch (error) {
-      console.error('[Zoom] 비디오 토글 오류:', error);
-      setVideoEnabled(!videoEnabled);
-    }
+    // 실제 구현에서는 Zoom SDK를 사용하여 비디오를 켜고 끄는 로직이 필요합니다.
+    // ZoomMtg.stopVideo({
+    //   stop: videoEnabled,
+    //   success: () => {
+    //     setVideoEnabled(!videoEnabled);
+    //   }
+    // });
+    
+    setVideoEnabled(!videoEnabled);
+    toast({
+      title: videoEnabled ? "비디오가 꺼졌습니다" : "비디오가 켜졌습니다",
+      variant: "default",
+    });
   };
   
   // 화면 공유 토글
@@ -311,35 +234,21 @@ export function ZoomMeeting({
   
   // 미팅 종료
   const leaveMeeting = () => {
-    try {
-      if (isJoined) {
-        ZoomMtg.leaveMeeting({
-          success: () => {
-            console.log('[Zoom] 미팅 나가기 성공');
-            setIsJoined(false);
-            toast({
-              title: "화상 수업에서 나갔습니다",
-              description: "세션이 종료되었습니다.",
-              variant: "default",
-            });
-            onClose();
-          },
-          error: (error) => {
-            console.error('[Zoom] 미팅 나가기 실패:', error);
-            // 실패해도 UI 상태는 업데이트
-            setIsJoined(false);
-            onClose();
-          }
-        });
-      } else {
-        setIsJoined(false);
-        onClose();
-      }
-    } catch (error) {
-      console.error('[Zoom] 미팅 나가기 오류:', error);
-      setIsJoined(false);
-      onClose();
-    }
+    // 실제 구현에서는 Zoom SDK를 사용하여 미팅에서 나가는 로직이 필요합니다.
+    // ZoomMtg.leaveMeeting({
+    //   success: () => {
+    //     setIsJoined(false);
+    //     onClose();
+    //   }
+    // });
+    
+    setIsJoined(false);
+    toast({
+      title: "화상 수업에서 나갔습니다",
+      description: "세션이 종료되었습니다.",
+      variant: "default",
+    });
+    onClose();
   };
   
   // 참가자 목록 업데이트 시뮬레이션

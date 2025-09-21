@@ -4,8 +4,6 @@ import { db } from "./db";
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
 import { registerAdminRoutes } from "./routes/admin";
-import { kakaoMessaging } from "./services/kakaoMessaging";
-import { sendKakaoMessageSchema } from "../shared/schema";
 // import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
 import { productRoutes } from "./routes/products";
@@ -7321,12 +7319,12 @@ app.get('/api/search', async (req, res) => {
 
   // ===== Course Routes =====
 
-  // 발행된 강의 목록 조회 API (공개용) - 통합 버전 (커리큘럼 + 화상강의)
+  // 발행된 강의 목록 조회 API (공개용) - 통합 버전
   app.get("/api/courses", async (req, res) => {
     try {
       console.log('🔥 [API] 공개 강의 목록 조회 요청 (통합 버전)');
       
-      // 1. 실제 커리큘럼 데이터 조회
+      // 실제 커리큘럼 데이터 조회
       const allCurriculums = await storage.getAllCurriculums();
       console.log('🔥 [API] 전체 커리큘럼 수:', allCurriculums.length);
       
@@ -7372,60 +7370,12 @@ app.get('/api/search', async (req, res) => {
           thumbnailUrl: curriculum.thumbnailUrl,
           hasAnyVideo: totalVideos > 0,
           totalVideos,
-          modulesWithVideoCount,
-          productType: 'course' // 일반 강의 구분
+          modulesWithVideoCount
         };
       });
-
-      // 2. 화상 강의 데이터 조회
-      const videoLectures = await storage.getVideoLectures();
-      console.log('🔥 [API] 화상 강의 수:', videoLectures.length);
       
-      const videoLectureProducts = videoLectures.map((videoLecture: any) => {
-        // 화상 강의는 강의 형태로 변환
-        return {
-          id: `video_${videoLecture.id}`, // 화상 강의 ID 구분을 위해 prefix 추가
-          title: videoLecture.title,
-          description: videoLecture.description,
-          price: videoLecture.price || 0,
-          difficulty: videoLecture.difficulty || 'beginner',
-          category: videoLecture.category || '화상 강의',
-          duration: videoLecture.duration || 1, // 화상 강의는 보통 1회 세션
-          modules: [], // 화상 강의는 모듈이 없음
-          trainerName: videoLecture.trainerName || '전문 훈련사',
-          status: 'published', // 화상 강의는 기본적으로 발행 상태
-          enrollmentCount: videoLecture.enrollmentCount || 0,
-          averageRating: videoLecture.averageRating || 0,
-          createdAt: videoLecture.createdAt || new Date().toISOString(),
-          updatedAt: videoLecture.updatedAt || new Date().toISOString(),
-          // 화상 강의 고유 정보
-          thumbnailUrl: videoLecture.thumbnailUrl || 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop',
-          hasAnyVideo: false, // 실시간 화상이므로 녹화된 영상은 없음
-          totalVideos: 0,
-          modulesWithVideoCount: 0,
-          productType: 'video_lecture', // 화상 강의 구분
-          // 화상 강의 전용 필드
-          isLive: true,
-          maxParticipants: videoLecture.maxParticipants || 10,
-          currentParticipants: videoLecture.currentParticipants || 0,
-          nextSessionDate: videoLecture.nextSessionDate,
-          sessionDuration: videoLecture.sessionDuration || 60,
-          zoomRequired: true
-        };
-      });
-
-      // 3. 두 목록을 합치기
-      const allProducts = [...courses, ...videoLectureProducts];
-      
-      console.log('🔥 [API] 최종 상품 목록:', allProducts.length, '개 (일반강의:', courses.length, '개, 화상강의:', videoLectureProducts.length, '개)');
-      res.json({ 
-        courses: allProducts, 
-        total: allProducts.length,
-        breakdown: {
-          regularCourses: courses.length,
-          videoLectures: videoLectureProducts.length
-        }
-      });
+      console.log('🔥 [API] 최종 강의 목록:', courses.length, '개');
+      res.json({ courses, total: courses.length });
     } catch (error: any) {
       console.error('🔥 [API] 강의 목록 조회 실패:', error);
       res.status(500).json({ 
@@ -8451,7 +8401,7 @@ app.get('/api/search', async (req, res) => {
   // 강의 구매 및 상품 구매 결제 인텐트 생성
   app.post('/api/create-payment-intent', async (req, res) => {
     try {
-      const { courseId, itemId, itemType, paymentMethod } = req.body;
+      const { amount, courseId, courseTitle, itemId, itemName, itemType } = req.body;
       
       // Stripe 사용 가능 여부 확인
       const currentStripeKey = process.env.STRIPE_SECRET_KEY;
@@ -8464,36 +8414,20 @@ app.get('/api/search', async (req, res) => {
         });
       }
       
-      if (!courseId && !itemId) {
-        return res.status(400).json({ error: '구매 항목 ID가 필요합니다.' });
+      if (!amount || (!courseId && !itemId)) {
+        return res.status(400).json({ error: '결제 금액과 구매 항목 ID가 필요합니다.' });
       }
 
-      // 서버에서 실제 가격 조회 (보안)
-      let amount: number;
-      let itemName: string;
+      // 메타데이터 생성
       const metadata: any = {};
-      
-      if (courseId) {
-        // 강의 가격 조회
-        const courses = await storage.getAllCurriculums();
-        const course = courses.find(c => c.id.toString() === courseId);
-        
-        if (!course) {
-          return res.status(404).json({ error: '강의를 찾을 수 없습니다.' });
-        }
-        
-        amount = course.price;
-        itemName = course.title;
-        metadata.courseId = courseId;
-        metadata.courseTitle = course.title;
-        metadata.type = 'course';
-      } else if (itemId) {
-        // 상품 가격 조회 (향후 구현)
+      if (itemType === 'product') {
         metadata.productId = itemId;
+        metadata.productName = itemName || '상품 구매';
         metadata.type = 'product';
-        // 임시로 기본값 설정
-        amount = 10000;
-        itemName = '상품 구매';
+      } else {
+        metadata.courseId = courseId || itemId;
+        metadata.courseTitle = courseTitle || itemName || '강의 구매';
+        metadata.type = 'course';
       }
 
       // 실시간 Stripe 인스턴스 생성 (캐시 방지)
@@ -8509,7 +8443,7 @@ app.get('/api/search', async (req, res) => {
 
       // Stripe PaymentIntent 생성
       const paymentIntent = await currentStripe.paymentIntents.create({
-        amount: Math.round(amount! * 100), // 센트 단위로 변환 (서버 검증된 금액)
+        amount: Math.round(amount * 100), // 센트 단위로 변환
         currency: 'krw',
         metadata: metadata
       });
@@ -11265,239 +11199,6 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 카카오톡 알림장 전송 엔드포인트 (보안 강화)
-  app.post("/api/kakao/send-notebook", 
-    requireAuth('trainer'), 
-    csrfProtection, 
-    validateBody(sendKakaoMessageSchema), 
-    async (req, res) => {
-    try {
-      // Zod 스키마로 이미 검증된 데이터
-      const { studentId, notebookData } = req.body;
-      
-      console.log('📱 [Kakao] 알림장 전송 요청:', { studentId, title: notebookData.title });
-
-      // 1. 수강생 정보 조회 및 권한 확인
-      const currentTrainer = req.session.user!;
-      const allUsers = await storage.getAllUsers();
-      const student = allUsers.find(user => user.id.toString() === studentId.toString());
-      
-      if (!student) {
-        return res.status(404).json({
-          success: false,
-          error: '수강생 정보를 찾을 수 없습니다.'
-        });
-      }
-
-      // 2. 훈련사-수강생 권한 확인 (학생의 모든 반려동물 확인)
-      const allPets = await storage.getAllPets();
-      const studentPets = allPets.filter(pet => pet.ownerId === student.id);
-      
-      if (studentPets.length === 0) {
-        return res.status(403).json({
-          success: false,
-          error: '해당 수강생의 반려동물 정보를 찾을 수 없습니다.'
-        });
-      }
-
-      // 3. 담당 훈련사 확인 (훈련사가 담당하는 반려동물이 있는지 확인)
-      const assignedPet = studentPets.find(pet => pet.assignedTrainerId === currentTrainer.id);
-      
-      if (!assignedPet) {
-        console.warn('📱 [Kakao] 권한 없는 메시지 전송 시도:', {
-          trainerId: currentTrainer.id,
-          trainerName: currentTrainer.name,
-          targetStudentId: studentId,
-          studentPetIds: studentPets.map(p => p.id),
-          assignedTrainerIds: studentPets.map(p => p.assignedTrainerId)
-        });
-        
-        return res.status(403).json({
-          success: false,
-          error: '본인이 담당하는 수강생에게만 메시지를 전송할 수 있습니다.'
-        });
-      }
-
-      console.log('📱 [Kakao] 권한 확인 완료:', {
-        trainerId: currentTrainer.id,
-        trainerName: currentTrainer.name,
-        studentId: studentId,
-        authorizedPetName: assignedPet.name
-      });
-
-      console.log('📱 [Kakao] 수강생 정보:', { 
-        name: student.name, 
-        hasPhoneNumber: !!student.phoneNumber,
-        phoneNumber: student.phoneNumber?.substring(0, 3) + '***' // 로그에서 전화번호 마스킹
-      });
-
-      // 4. 전화번호 확인 및 유효성 검사
-      if (!student.phoneNumber) {
-        return res.json({
-          success: false,
-          error: '수강생의 전화번호가 등록되지 않았습니다.',
-          needsPhoneNumber: true
-        });
-      }
-
-      if (!kakaoMessaging.isValidPhoneNumber(student.phoneNumber)) {
-        return res.json({
-          success: false,
-          error: '등록된 전화번호 형식이 올바르지 않습니다.',
-          needsPhoneNumber: true
-        });
-      }
-
-      // 전화번호 정규화
-      const normalizedPhoneNumber = kakaoMessaging.normalizePhoneNumber(student.phoneNumber);
-
-      // 5. 카카오톡 알림톡 메시지 전송 (권한 확인 완료 후)
-      const messageResult = await kakaoMessaging.sendNotebookMessage(normalizedPhoneNumber, {
-        title: notebookData.title,
-        content: notebookData.content,
-        studentName: notebookData.studentName,
-        petName: notebookData.petName,
-        trainingDate: notebookData.trainingDate,
-        progressRating: notebookData.progressRating,
-        trainerName: notebookData.trainerName
-      });
-
-      if (messageResult.success) {
-        console.log('📱 [Kakao] 메시지 전송 성공:', messageResult.messageId);
-        
-        res.json({
-          success: true,
-          messageId: messageResult.messageId,
-          message: '카카오톡 메시지가 성공적으로 전송되었습니다.'
-        });
-      } else {
-        console.error('📱 [Kakao] 메시지 전송 실패:', messageResult.error);
-        
-        // API 키가 없는 경우 503, 기타는 400으로 구분
-        if (messageResult.error?.includes('Kakao API 키가 설정되지 않았습니다')) {
-          return res.status(503).json({
-            success: false,
-            error: messageResult.error,
-            configurationRequired: true
-          });
-        }
-        
-        res.json({
-          success: false,
-          error: messageResult.error,
-          fallback: true // 실패했지만 알림장은 저장됨을 의미
-        });
-      }
-
-    } catch (error) {
-      console.error('📱 [Kakao] 전송 엔드포인트 오류:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.',
-        fallback: true
-      });
-    }
-  });
-
-  // AI 알림장 분석 및 생성 엔드포인트
-  app.post("/api/ai/analyze-notebook", async (req, res) => {
-    try {
-      const { action, data } = req.body;
-      
-      console.log('🤖 [AI] 알림장 분석 요청:', { action, hasData: !!data });
-
-      if (action !== 'generate_notebook') {
-        return res.status(400).json({
-          success: false,
-          error: '지원하지 않는 작업입니다.'
-        });
-      }
-
-      if (!data) {
-        return res.status(400).json({
-          success: false,
-          error: '분석할 데이터가 필요합니다.'
-        });
-      }
-
-      // 요청 데이터 검증
-      const { student, course, trainingDate, trainingDuration, progressRating, existingContent } = data;
-      
-      if (!student || !course) {
-        return res.status(400).json({
-          success: false,
-          error: '수강생과 과정 정보가 필요합니다.'
-        });
-      }
-
-      if (!student.pet || !student.pet.name || !student.pet.breed) {
-        return res.status(400).json({
-          success: false,
-          error: '반려동물 정보가 필요합니다.'
-        });
-      }
-
-      // 기본값 설정
-      const safeTrainingDate = trainingDate || new Date().toISOString().split('T')[0];
-      const safeTrainingDuration = trainingDuration || 60;
-      const safeProgressRating = progressRating || 3;
-
-      // AI를 활용한 알림장 생성 (실제로는 OpenAI API를 호출해야 함)
-      const generatedContent = {
-        title: `${student.pet.name} 훈련 일지 - ${course.currentSession}회차 (${safeTrainingDate})`,
-        trainingContent: `오늘 ${course.currentSession}회차 수업에서는 ${student.pet.name}의 ${course.title} 훈련을 중점적으로 진행했습니다. 
-          ${safeProgressRating >= 4 ? 
-            `${student.pet.name}는 새로운 명령에 대한 반응이 매우 좋았으며, 집중력도 ${safeTrainingDuration}분 내내 잘 유지되었습니다. 훈련 진도가 예상보다 빠르게 진행되고 있어 매우 만족스럽습니다.` : 
-            `${student.pet.name}는 차분하게 훈련에 참여했으며, 조금 더 반복 연습이 필요하지만 꾸준히 발전하고 있습니다. 인내심을 가지고 지속적으로 훈련하면 좋은 결과를 얻을 수 있을 것 같습니다.`
-          }
-          ${student.pet.breed === '골든 리트리버' ? '골든 리트리버 특유의 온순하고 학습 의욕이 높은 성격이 잘 드러났습니다.' : 
-            student.pet.breed === '보더 콜리' ? '보더 콜리 특유의 똑똑함과 민첩성이 돋보였습니다.' : 
-            student.pet.breed === '시바견' ? '시바견 특유의 독립적인 성격을 고려하여 맞춤형 접근을 했습니다.' :
-            '견종 특성에 맞는 훈련 방법을 적용하여 좋은 결과를 얻었습니다.'
-          }`,
-        
-        behaviorNotes: `${student.pet.name}는 오늘 ${progressRating >= 4 ? '매우 적극적이고 집중력이 뛰어났습니다' : '차분한 편이지만 가끔 주의가 분산되는 모습을 보였습니다'}. 
-          ${student.pet.age <= 1 ? '어린 나이치고는 훈련에 대한 적응력이 좋았습니다.' : 
-            student.pet.age >= 5 ? '나이가 있음에도 불구하고 새로운 것을 배우려는 의지가 강했습니다.' : 
-            '적절한 연령대로 학습 능력이 우수했습니다.'
-          } 
-          다른 반려견들과의 사회성도 점차 개선되고 있어 긍정적입니다.`,
-        
-        homeworkInstructions: `이번 주 집에서는 오늘 배운 명령들을 매일 5-10분씩 복습해주세요. 
-          특히 기본 명령(앉기, 기다리기)을 먹이 시간 전에 실시하면 효과적입니다. 
-          간식은 작고 맛있는 것으로 준비해주시고, 성공할 때마다 즉시 칭찬과 함께 보상해주세요. 
-          실패해도 절대 혼내지 마시고, 차분하게 다시 시도해주시기 바랍니다. 
-          ${course.title.includes('산책') || course.title.includes('어질리티') ? 
-            '산책 시에는 리드줄을 당기지 않도록 꾸준히 연습해주세요.' : 
-            '집 안에서도 꾸준한 연습이 중요합니다.'
-          }`,
-        
-        nextGoals: `다음 ${course.currentSession + 1}회차에는 기존 명령의 정확도를 높이는 데 집중할 예정입니다. 
-          ${course.currentSession >= Math.floor(course.totalSessions * 0.7) ? 
-            '과정 후반부에 접어들었으니 실생활에서 활용할 수 있는 실용적인 훈련에 더 집중하겠습니다.' : 
-            '기초를 탄탄히 다져 다음 단계의 훈련을 준비하겠습니다.'
-          }
-          또한 보상 없이도 명령을 따를 수 있도록 점진적으로 연습할 계획입니다. 
-          ${student.pet.name}의 개별적인 특성을 고려하여 맞춤형 훈련을 진행하겠습니다.`
-      };
-
-      console.log('🤖 [AI] 알림장 생성 완료:', generatedContent.title);
-
-      res.json({
-        success: true,
-        generatedContent,
-        message: 'AI 분석이 성공적으로 완료되었습니다.'
-      });
-
-    } catch (error) {
-      console.error('🤖 [AI] 알림장 분석 오류:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
-      });
-    }
-  });
-
   app.post("/api/ai/generate-image", async (req, res) => {
     try {
       const { prompt } = req.body;
@@ -13207,241 +12908,6 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   );
 
-  /**
-   * POST /api/admin/curriculums/:id/submit-approval - 커리큘럼 승인 요청
-   * 
-   * 보안: requireAuth() + csrfProtection + 소유권 검증
-   */
-  app.post('/api/admin/curriculums/:id/submit-approval',
-    requireAuth('admin', 'institute', 'trainer'),
-    csrfProtection,
-    async (req, res) => {
-      try {
-        const curriculumId = req.params.id;
-        console.log('[Curriculum Approval] 커리큘럼 승인 요청:', curriculumId);
-        
-        // 커리큘럼 확인
-        const curriculum = await storage.getCurriculumById(curriculumId);
-        if (!curriculum) {
-          return res.error(
-            ApiErrorCode.RESOURCE_NOT_FOUND,
-            '승인 요청할 커리큘럼을 찾을 수 없습니다.'
-          );
-        }
-        
-        // 소유권 확인
-        if (req.user?.role !== 'admin' && curriculum.creatorId !== req.user?.id) {
-          return res.error(
-            ApiErrorCode.INSUFFICIENT_PERMISSIONS,
-            '이 커리큘럼에 대한 승인 요청 권한이 없습니다.'
-          );
-        }
-        
-        // 상태 확인
-        if (curriculum.status !== 'draft') {
-          return res.error(
-            ApiErrorCode.BAD_REQUEST,
-            '임시저장 상태의 커리큘럼만 승인 요청할 수 있습니다.'
-          );
-        }
-        
-        // 상태를 pending으로 변경
-        const updatedCurriculum = await storage.updateCurriculum(curriculumId, { 
-          status: 'pending',
-          submittedForApprovalAt: new Date().toISOString()
-        });
-        
-        if (!updatedCurriculum) {
-          return res.error(
-            ApiErrorCode.INTERNAL_SERVER_ERROR,
-            '승인 요청 처리에 실패했습니다.'
-          );
-        }
-        
-        console.log('[Curriculum Approval] 커리큘럼 승인 요청 성공:', curriculum.title);
-        
-        return res.success(
-          updatedCurriculum,
-          '커리큘럼 승인 요청이 성공적으로 제출되었습니다.'
-        );
-        
-      } catch (error) {
-        console.error('[Curriculum Approval] 승인 요청 오류:', error);
-        return res.error(
-          ApiErrorCode.INTERNAL_SERVER_ERROR,
-          '승인 요청 중 오류가 발생했습니다.',
-          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
-        );
-      }
-    }
-  );
-
-  /**
-   * POST /api/admin/curriculums/:id/approve - 커리큘럼 승인 (관리자 전용)
-   * 
-   * 보안: requireAuth('admin') + csrfProtection
-   */
-  app.post('/api/admin/curriculums/:id/approve',
-    requireAuth('admin'),
-    csrfProtection,
-    async (req, res) => {
-      try {
-        const curriculumId = req.params.id;
-        const { reviewComment } = req.body;
-        console.log('[Curriculum Approval] 커리큘럼 승인:', curriculumId);
-        
-        // 커리큘럼 확인
-        const curriculum = await storage.getCurriculumById(curriculumId);
-        if (!curriculum) {
-          return res.error(
-            ApiErrorCode.RESOURCE_NOT_FOUND,
-            '승인할 커리큘럼을 찾을 수 없습니다.'
-          );
-        }
-        
-        // 상태 확인
-        if (curriculum.status !== 'pending') {
-          return res.error(
-            ApiErrorCode.BAD_REQUEST,
-            '승인 대기 중인 커리큘럼만 승인할 수 있습니다.'
-          );
-        }
-        
-        // 상태를 published로 변경
-        const updatedCurriculum = await storage.updateCurriculum(curriculumId, { 
-          status: 'published',
-          approvedAt: new Date().toISOString(),
-          approvedBy: req.user?.id,
-          reviewComment: reviewComment || null,
-          isPublic: true
-        });
-        
-        if (!updatedCurriculum) {
-          return res.error(
-            ApiErrorCode.INTERNAL_SERVER_ERROR,
-            '커리큘럼 승인 처리에 실패했습니다.'
-          );
-        }
-        
-        console.log('[Curriculum Approval] 커리큘럼 승인 성공:', curriculum.title);
-        
-        return res.success(
-          updatedCurriculum,
-          '커리큘럼이 성공적으로 승인되었습니다.'
-        );
-        
-      } catch (error) {
-        console.error('[Curriculum Approval] 승인 오류:', error);
-        return res.error(
-          ApiErrorCode.INTERNAL_SERVER_ERROR,
-          '커리큘럼 승인 중 오류가 발생했습니다.',
-          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
-        );
-      }
-    }
-  );
-
-  /**
-   * POST /api/admin/curriculums/:id/reject - 커리큘럼 거절 (관리자 전용)
-   * 
-   * 보안: requireAuth('admin') + csrfProtection
-   */
-  app.post('/api/admin/curriculums/:id/reject',
-    requireAuth('admin'),
-    csrfProtection,
-    async (req, res) => {
-      try {
-        const curriculumId = req.params.id;
-        const { reviewComment } = req.body;
-        console.log('[Curriculum Approval] 커리큘럼 거절:', curriculumId);
-        
-        // 커리큘럼 확인
-        const curriculum = await storage.getCurriculumById(curriculumId);
-        if (!curriculum) {
-          return res.error(
-            ApiErrorCode.RESOURCE_NOT_FOUND,
-            '거절할 커리큘럼을 찾을 수 없습니다.'
-          );
-        }
-        
-        // 상태 확인
-        if (curriculum.status !== 'pending') {
-          return res.error(
-            ApiErrorCode.BAD_REQUEST,
-            '승인 대기 중인 커리큘럼만 거절할 수 있습니다.'
-          );
-        }
-        
-        // 상태를 rejected로 변경
-        const updatedCurriculum = await storage.updateCurriculum(curriculumId, { 
-          status: 'rejected',
-          rejectedAt: new Date().toISOString(),
-          rejectedBy: req.user?.id,
-          reviewComment: reviewComment || '승인 기준을 충족하지 않습니다.',
-          isPublic: false
-        });
-        
-        if (!updatedCurriculum) {
-          return res.error(
-            ApiErrorCode.INTERNAL_SERVER_ERROR,
-            '커리큘럼 거절 처리에 실패했습니다.'
-          );
-        }
-        
-        console.log('[Curriculum Approval] 커리큘럼 거절 성공:', curriculum.title);
-        
-        return res.success(
-          updatedCurriculum,
-          '커리큘럼이 거절되었습니다.'
-        );
-        
-      } catch (error) {
-        console.error('[Curriculum Approval] 거절 오류:', error);
-        return res.error(
-          ApiErrorCode.INTERNAL_SERVER_ERROR,
-          '커리큘럼 거절 중 오류가 발생했습니다.',
-          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
-        );
-      }
-    }
-  );
-
-  /**
-   * GET /api/admin/pending-curriculums - 승인 대기 중인 커리큘럼 목록 (관리자 전용)
-   * 
-   * 보안: requireAuth('admin')
-   */
-  app.get('/api/admin/pending-curriculums',
-    requireAuth('admin'),
-    async (req, res) => {
-      try {
-        console.log('[Curriculum Approval] 승인 대기 중인 커리큘럼 목록 조회');
-        
-        // 승인 대기 중인 커리큘럼 조회
-        const allCurriculums = await storage.getAllCurriculums();
-        const pendingCurriculums = allCurriculums
-          .filter(curriculum => curriculum.status === 'pending')
-          .sort((a, b) => new Date(a.submittedForApprovalAt || a.updatedAt).getTime() - 
-                         new Date(b.submittedForApprovalAt || b.updatedAt).getTime());
-        
-        console.log('[Curriculum Approval] 승인 대기 중인 커리큘럼 수:', pendingCurriculums.length);
-        
-        return res.success(
-          { curriculums: pendingCurriculums },
-          `승인 대기 중인 커리큘럼 ${pendingCurriculums.length}개를 조회했습니다.`
-        );
-        
-      } catch (error) {
-        console.error('[Curriculum Approval] 대기 목록 조회 오류:', error);
-        return res.error(
-          ApiErrorCode.INTERNAL_SERVER_ERROR,
-          '승인 대기 목록 조회 중 오류가 발생했습니다.',
-          process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
-        );
-      }
-    }
-  );
-
   // =============================================================================
   // 강의 CRUD API (표준화된 버전)
   // =============================================================================
@@ -13665,62 +13131,6 @@ export function registerTrainerCertificationRoutes(app: Express) {
   });
 
   // 모든 인증 API들은 setupAuth()에서 처리됩니다 (/api/auth/login, /api/auth/logout, /api/auth/me)
-
-  // Zoom Meeting SDK 인증 토큰 생성 API
-  app.post('/api/zoom/signature', async (req, res) => {
-    try {
-      const { meetingNumber, role } = req.body;
-      
-      if (!meetingNumber) {
-        return res.status(400).json({ error: 'Meeting number is required' });
-      }
-      
-      const ZOOM_SDK_KEY = process.env.ZOOM_SDK_KEY;
-      const ZOOM_SDK_SECRET = process.env.ZOOM_SDK_SECRET;
-      
-      if (!ZOOM_SDK_KEY || !ZOOM_SDK_SECRET) {
-        console.error('Zoom SDK credentials not configured');
-        return res.status(500).json({ error: 'Zoom SDK not configured' });
-      }
-      
-      // JWT 토큰 생성을 위한 라이브러리 import
-      const jwt = require('jsonwebtoken');
-      
-      const iat = Math.round(new Date().getTime() / 1000) - 30;
-      const exp = iat + 60 * 60 * 2; // 2시간 유효
-      
-      const oHeader = {
-        alg: 'HS256',
-        typ: 'JWT'
-      };
-      
-      const oPayload = {
-        iss: ZOOM_SDK_KEY,
-        exp: exp,
-        iat: iat,
-        aud: 'zoom',
-        appKey: ZOOM_SDK_KEY,
-        tokenExp: exp,
-        alg: 'HS256'
-      };
-      
-      const signature = jwt.sign(oPayload, ZOOM_SDK_SECRET, { header: oHeader });
-      
-      console.log('[Zoom] JWT 서명 생성 성공:', { meetingNumber, role });
-      
-      res.json({
-        success: true,
-        signature: signature
-      });
-      
-    } catch (error) {
-      console.error('[Zoom] JWT 서명 생성 실패:', error);
-      res.status(500).json({ 
-        success: false,
-        error: 'Failed to generate Zoom signature' 
-      });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;

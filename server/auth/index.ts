@@ -137,7 +137,7 @@ export function setupAuth(app: Express, sessionStore?: session.Store) {
   
   passport.deserializeUser(async (id: number, done) => {
     try {
-      const user = await storage.getUserById(id) as SelectUser | undefined;
+      const user = await storage.getUserById(id);
       if (!user) {
         return done(null, false);
       }

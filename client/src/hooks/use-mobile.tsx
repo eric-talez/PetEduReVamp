@@ -5,8 +5,7 @@ export function useMobile() {
 
   useEffect(() => {
     const checkMobile = () => {
-      // YouTube 스타일 브레이크포인트: 1024px (lg 브레이크포인트와 일치)
-      setIsMobile(window.innerWidth < 1024);
+      setIsMobile(window.innerWidth < 768);
     };
     
     // Check on initial load

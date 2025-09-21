@@ -1,309 +1,949 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
+import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { 
+import React, { useState, useEffect, createContext, useContext, useCallback } from "react";
+import { SpecialShopLink } from "./SpecialShopLink";
+import { HelpSection } from "./HelpSection";
+import { StatisticsSection } from "./StatisticsSection";
+import { AccessibleIconButton } from "./AccessibleIconButton";
+import { AccessibleMenuToggle } from "./AccessibleMenuToggle";
+import { AccessibleNavItem } from "./AccessibleNavItem";
+import { SidebarMenuGroup } from "./SidebarMenuGroup";
+import { ScrollReveal } from "@/components/ui/AnimatedContent";
+import { useQuery } from "@tanstack/react-query";
+import { BrandLogo } from "@/components/ui/BrandLogo";
+
+import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
+import {
   Home,
-  Search,
-  Compass,
-  PlaySquare,
-  Clock,
-  ThumbsUp,
-  Download,
-  Settings,
-  HelpCircle,
-  MessageSquare,
-  GraduationCap,
   Users,
-  Building,
-  User,
   BookOpen,
   Calendar,
-  PawPrint,
-  Video,
-  Award,
-  Monitor,
-  UserCheck,
-  Shield,
-  Wrench,
+  Settings,
+  User,
+  ShoppingCart,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
+  X,
   Bell,
-  Folder,
-  History
+  HelpCircle,
+  LogOut,
+  MapPin,
+  Navigation,
+  Award,
+  UserCheck,
+  Video,
+  MessageCircle,
+  Shield,
+  Building,
+  TrendingUp,
+  FileText,
+  BarChart3,
+  Package,
+  GraduationCap,
+  UserRoundCheck,
+  CalendarDays,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Sun,
+  UserPlus,
+  Moon,
+  ChevronDown,
+  ChevronUp,
+  Briefcase,
+  ClipboardList,
+  Star,
+  CreditCard,
+  Activity,
+  MessageSquare,
+  Heart as PawPrint,
+  Edit3 as Edit,
+  Square as CheckSquare,
+  UserCog,
+  Wrench,
+  Monitor as Presentation,
+  Monitor,
+  Play as VideoIcon,
+  Sparkles,
+  Bot,
+  ThumbsUp,
+  ShoppingBag,
+  DollarSign,
+  RefreshCw,
+  Key,
+  Percent,
+  Image as ImageIcon,
+  Search,
+  LogIn,
+  ChevronsLeft,
+  ChevronsRight,
+  Clock,
+  Coffee,
+  Mail,
+  Brain,
+  Zap
 } from "lucide-react";
+
+// 사이드바 컨텍스트 생성
+export interface SidebarContextType {
+  expanded: boolean;
+  toggleSidebar: () => void;
+}
+
+export const SidebarContext = createContext<SidebarContextType>({
+  expanded: true,
+  toggleSidebar: () => {}
+});
+
+// NavItem 컴포넌트 정의
+interface NavItemProps {
+  href: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  active?: boolean;
+  onClick?: (path: string) => void;
+  show: boolean; // 추가: 권한에 따른 메뉴 표시 여부
+}
+
+function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) {
+  const { expanded } = useContext(SidebarContext);
+  const [, setLocation] = useLocation();
+  
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 기본 동작 방지하고 커스텀 라우팅 로직 사용
+    e.preventDefault();
+
+    if (onClick) {
+      onClick(href);
+    } else {
+      console.log("기본 네비게이션 시도:", href);
+      // wouter를 사용한 라우팅
+      setLocation(href);
+    }
+  };
+
+  // 키보드 이벤트 핸들러
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (onClick) {
+        onClick(href);
+      } else {
+        setLocation(href);
+      }
+    }
+  };
+
+  if (!show) return null;
+
+  // 접힌 상태에서는 툴팁으로 표시
+  if (!expanded) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <a
+              href={href}
+              className={cn(
+                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
+              )}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              aria-label={typeof children === 'string' ? children : children?.toString()}
+              data-testid={`nav-item-${href.replace(/\//g, '-').replace(/^-/, 'root')}-collapsed`}
+            >
+              <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6">
+                {icon}
+              </div>
+            </a>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>{children}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  // 확장된 상태에서는 일반 메뉴 아이템으로 표시
+  return (
+    <a
+      href={href}
+      className={cn(
+        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2",
+        active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
+      )}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      aria-current={active ? "page" : undefined}
+      data-testid={`nav-item-${href.replace(/\//g, '-').replace(/^-/, 'root')}-expanded`}
+    >
+      <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3">
+        {icon}
+      </div>
+      <span className="transition-all duration-200 group-hover:translate-x-1">{children}</span>
+    </a>
+  );
+}
 
 interface SidebarProps {
   open: boolean;
-  expanded: boolean;
-  onToggleExpand: () => void;
-  onClose?: () => void;
+  onClose: () => void;
   userRole: string | null;
   isAuthenticated: boolean;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  href: string;
-  roles?: string[];
-  divider?: boolean;
-  external?: boolean;
-}
-
-// YouTube 스타일 Sidebar 컴포넌트
 export function Sidebar({ 
   open, 
-  expanded, 
-  onToggleExpand,
-  onClose,
+  onClose, 
   userRole, 
-  isAuthenticated 
+  isAuthenticated,
+  expanded: externalExpanded,
+  onToggleExpand
 }: SidebarProps) {
-  const [location] = useLocation();
-  
-  // 메뉴 아이템 정의 (YouTube 스타일)
-  const menuItems: MenuItem[] = [
-    // 메인 섹션 - YouTube 홈 영역
-    { id: 'home', label: '홈', icon: <Home className="w-6 h-6" />, href: '/' },
-    { id: 'courses', label: '강의', icon: <PlaySquare className="w-6 h-6" />, href: '/courses' },
-    { id: 'video-training', label: '영상 훈련', icon: <Video className="w-6 h-6" />, href: '/video-training' },
-    { id: 'video-call', label: '화상 수업', icon: <Monitor className="w-6 h-6" />, href: '/video-call' },
-    
-    // 구분선
-    { id: 'divider1', label: '', icon: null, href: '', divider: true },
-    
-    // 구독 및 탐색
-    { id: 'subscriptions', label: '구독', icon: <Bell className="w-6 h-6" />, href: '/subscriptions', roles: ['authenticated'] },
-    { id: 'explore', label: '탐색', icon: <Compass className="w-6 h-6" />, href: '/explore' },
-    { id: 'trainers', label: '훈련사', icon: <Users className="w-6 h-6" />, href: '/trainers' },
-    
-    // 구분선
-    { id: 'divider2', label: '', icon: null, href: '', divider: true, roles: ['authenticated'] },
-    
-    // 라이브러리 (로그인 시)
-    { id: 'library', label: '라이브러리', icon: <Folder className="w-6 h-6" />, href: '/library', roles: ['authenticated'] },
-    { id: 'history', label: '시청 기록', icon: <History className="w-6 h-6" />, href: '/history', roles: ['authenticated'] },
-    { id: 'liked', label: '좋아요', icon: <ThumbsUp className="w-6 h-6" />, href: '/liked', roles: ['authenticated'] },
-    { id: 'saved', label: '저장됨', icon: <Download className="w-6 h-6" />, href: '/saved', roles: ['authenticated'] },
-    
-    // 구분선
-    { id: 'divider3', label: '', icon: null, href: '', divider: true, roles: ['authenticated'] },
-    
-    // 펫 관련 메뉴
-    { id: 'my-pets', label: '내 반려견', icon: <PawPrint className="w-6 h-6" />, href: '/my-pets', roles: ['pet-owner', 'trainer'] },
-    
-    // 구분선
-    { id: 'divider4', label: '', icon: null, href: '', divider: true },
-    
-    // 훈련사 도구
-    { id: 'trainer-dashboard', label: '훈련사 대시보드', icon: <User className="w-6 h-6" />, href: '/trainer-dashboard', roles: ['trainer'] },
-    { id: 'certifications', label: '자격 관리', icon: <Award className="w-6 h-6" />, href: '/certifications', roles: ['trainer'] },
-    { id: 'schedule', label: '일정 관리', icon: <Calendar className="w-6 h-6" />, href: '/schedule', roles: ['trainer'] },
-    
-    // 기관 관리
-    { id: 'institute-dashboard', label: '기관 대시보드', icon: <Building className="w-6 h-6" />, href: '/institute-dashboard', roles: ['institute-admin'] },
-    { id: 'trainer-management', label: '훈련사 관리', icon: <UserCheck className="w-6 h-6" />, href: '/trainer-management', roles: ['institute-admin'] },
-    
-    // 시스템 관리
-    { id: 'admin-dashboard', label: '관리자 대시보드', icon: <Shield className="w-6 h-6" />, href: '/admin', roles: ['admin'] },
-    { id: 'system-settings', label: '시스템 설정', icon: <Wrench className="w-6 h-6" />, href: '/admin/settings', roles: ['admin'] },
-    
-    // 구분선
-    { id: 'divider5', label: '', icon: null, href: '', divider: true },
-    
-    // 하단 메뉴
-    { id: 'settings', label: '설정', icon: <Settings className="w-6 h-6" />, href: '/settings', roles: ['authenticated'] },
-    { id: 'help', label: '도움말', icon: <HelpCircle className="w-6 h-6" />, href: '/help' },
-    { id: 'feedback', label: '의견 보내기', icon: <MessageSquare className="w-6 h-6" />, href: '/feedback' },
-  ];
+  console.log('Sidebar render - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
+  const [location, setLocation] = useLocation();
+  const [internalExpanded, setInternalExpanded] = useState(true);
 
-  // 역할 기반 메뉴 필터링
-  const getVisibleItems = (): MenuItem[] => {
-    return menuItems.filter(item => {
-      // 구분선은 항상 포함
-      if (item.divider) return true;
-      
-      // 역할 제한이 없는 항목은 항상 표시
-      if (!item.roles) return true;
-      
-      // authenticated 역할 체크 - 로그인 사용자면 허용
-      if (item.roles.includes('authenticated')) {
-        return isAuthenticated;
+  // 외부에서 제어되는 상태 또는 내부 상태 사용
+  const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        if (onToggleExpand) {
+          // 외부 상태 사용
+        } else {
+          setInternalExpanded(true);
+        }
       }
-      
-      // 관리자는 모든 메뉴 접근 가능
-      if (userRole === 'admin') return true;
-      
-      // 특정 역할 체크
-      if (userRole && item.roles.includes(userRole)) return true;
-      
-      // 조건에 맞지 않으면 숨김
-      return false;
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, [onToggleExpand]);
+
+  // 모든 메뉴 그룹이 기본적으로 닫힌 상태로 시작
+  const [menuGroups, setMenuGroups] = useState(() => {
+    return {
+      main: false,        // 메인 메뉴
+      learning: false,    // 학습 메뉴
+      management: false,  // 운영 관리 메뉴
+      tools: false,       // 도구 메뉴
+      adminDashboard: false, // 관리자 대시보드
+      admin: false,       // 시스템 관리 메뉴
+      trainer: false,     // 훈련사 메뉴
+      institute: false,   // 기관 메뉴
+      myLearning: false,  // 나의 학습 메뉴
+      features: false     // 기능 메뉴
+    };
+  });
+
+  useEffect(() => {
+    console.log('Sidebar useEffect - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
+
+    // 권한별 메뉴 표시 권한 확인
+    const isInstituteAdmin = userRole === 'institute-admin';
+    const isAdmin = userRole === 'admin';
+    const isTrainer = userRole === 'trainer';
+    const isPetOwner = userRole === 'pet-owner';
+
+    // 권한별 서비스 접근 가능 여부
+    const canAccessNotebook = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
+    const canAccessConsultation = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
+    const canAccessCourses = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
+    const canAccessMessaging = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
+
+    console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
+
+    // 로그인 상태가 변경되면 메뉴 그룹 상태 업데이트
+    setMenuGroups((prevGroups) => {
+      // 권한에 따른 값 업데이트 - 모든 메뉴 그룹은 닫힌 상태 유지
+      const updatedMenuGroups = {
+        main: false,
+        learning: false,
+        management: false,
+        tools: false,
+        trainer: false,   // 권한이 있어도 기본 닫힌 상태
+        institute: false, // 권한이 있어도 기본 닫힌 상태
+        adminDashboard: isAdmin, // 관리자 대시보드는 기본적으로 열린 상태
+        admin: false,     // 시스템 관리는 기본 닫힌 상태
+        // 로그인 상태에 따라 메뉴 그룹 표시/숨김 처리
+        myLearning: false,
+        features: false
+      };
+
+      // localStorage에 메뉴 상태 저장 안함 (기본 닫힌 상태 유지)
+
+      console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
+      return updatedMenuGroups;
     });
+  }, [userRole, isAuthenticated]);
+
+  const toggleSidebar = () => {
+    if (onToggleExpand) {
+      onToggleExpand();
+    } else {
+      setInternalExpanded(!internalExpanded);
+    }
   };
 
-  const isActive = (href: string) => {
-    if (href === "/" && location === "/") return true;
-    if (href !== "/" && location.startsWith(href)) return true;
+  // 메뉴 그룹 토글 함수 - 개선된 에러 처리
+  const toggleMenuGroup = useCallback((groupId: string) => {
+    setMenuGroups((prev) => {
+      const updated = {
+        ...prev,
+        [groupId]: !prev[groupId as keyof typeof prev]
+      };
+
+      // 메뉴 그룹 상태 변경 로그 (localStorage 저장 안함)
+      console.log(`✅ 메뉴 그룹 [${groupId}] 상태 변경:`, updated[groupId] ? '열림' : '닫힘');
+
+      return updated;
+    });
+  }, []);
+
+  const isActive = (path: string) => {
+    if (path === "/" && location === "/") return true;
+    if (path !== "/" && location.startsWith(path)) return true;
     return false;
   };
 
-  // 메뉴 아이템 렌더링
-  const renderMenuItem = (item: MenuItem) => {
-    // 구분선
-    if (item.divider) {
-      return (
-        <div key={item.id} className="my-3">
-          <div className="border-t border-gray-200 dark:border-zinc-700" />
+  const handleItemClick = (path: string) => {
+    // path 값 검증
+    if (!path || typeof path !== 'string') {
+      console.warn('잘못된 경로:', path);
+      return;
+    }
+
+    console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
+
+    // 특정 페이지 접근 권한 및 라우팅 처리
+    const publicPaths = [
+      "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
+      "/institutes", "/institutes/register", "/events", "/events/calendar",
+      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop", "/locations",
+      "/consultation", "/location-finder", "/facilities"
+    ];
+
+    // 로그인 필요한 페이지 접근 시
+    if (!isAuthenticated && !publicPaths.includes(path) && 
+        !path.startsWith('/institutes/') && 
+        !path.startsWith('/events/') && 
+        !path.startsWith('/help/')) {
+      console.log('로그인 필요: ', path);
+
+      // 로딩 표시를 위한 오버레이 요소 생성
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+      overlay.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center">
+          <div class="animate-spin w-6 h-6 border-3 border-primary border-t-transparent rounded-full mb-3"></div>
+          <p class="mb-4 text-gray-900 dark:text-white">로그인이 필요한 서비스입니다</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">로그인 페이지로 이동합니다...</p>
         </div>
-      );
+      `;
+      document.body.appendChild(overlay);
+
+      // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
+      setTimeout(() => {
+        try {
+          if (document.body.contains(overlay)) {
+            document.body.removeChild(overlay);
+          }
+        } catch (e) {
+          console.log('오버레이 제거 중 오류:', e);
+        }
+
+        // 페이지 이동 시도 (여러 방식으로 시도)
+        try {
+          setLocation('/auth');
+        } catch (e) {
+          console.log('setLocation 실패, window.location 사용:', e);
+          window.location.href = '/auth';
+        }
+      }, 1500);
+      return;
     }
 
-    const active = isActive(item.href);
+    // 역할별 접근 제한
+    if (isAuthenticated) {
+      // 훈련사 전용 페이지
+      if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin' && userRole !== 'institute-admin') {
+        console.log('훈련사 권한 필요');
 
-    // 축소된 상태 (아이콘만)
-    if (!expanded) {
-      return (
-        <TooltipProvider key={item.id}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href={item.href}>
-                <div 
-                  className={cn(
-                    "flex items-center justify-center h-12 mx-2 rounded-lg cursor-pointer transition-all duration-200 min-h-[44px] min-w-[44px]",
-                    active 
-                      ? "bg-gray-100 dark:bg-zinc-800 text-red-600" 
-                      : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation(); // 이벤트 전파 방지
-                    onClose?.(); // 모바일에서 메뉴 클릭 시 사이드바 자동 닫기
-                  }}
-                >
-                  {item.icon}
-                </div>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{item.label}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-
-    // 확장된 상태 (아이콘 + 텍스트)
-    return (
-      <Link key={item.id} href={item.href}>
-        <div 
-          className={cn(
-            "flex items-center h-11 px-3 mx-3 rounded-lg cursor-pointer transition-all duration-200 group min-h-[44px] focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-            active 
-              ? "bg-gray-100 dark:bg-zinc-800 text-red-600 font-medium" 
-              : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200"
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose?.();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              e.stopPropagation();
-              onClose?.();
-            }
-          }}
-          tabIndex={0}
-          role="menuitem"
-          aria-current={active ? 'page' : undefined}
-        >
-          <div className="flex-shrink-0 mr-6">
-            {item.icon}
+        // 접근 제한 알림 표시
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+        overlay.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center">
+            <div class="text-amber-500 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+            <p class="text-lg font-medium mb-2 text-gray-900 dark:text-white">접근 권한이 없습니다</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">이 페이지는 훈련사 권한이 필요합니다.</p>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md">확인</button>
           </div>
-          <span className="text-sm">{item.label}</span>
-        </div>
-      </Link>
-    );
+        `;
+
+        document.body.appendChild(overlay);
+
+        // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
+        const button = overlay.querySelector('button');
+        if (button) {
+          button.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            window.location.href = '/';
+          });
+        }
+
+        return;
+      }
+
+      // 기관 관리자 전용 페이지
+      if ((path.startsWith('/institute-dashboard') || path.startsWith('/institute/')) && userRole !== 'institute-admin' && userRole !== 'admin') {
+        console.log('기관 관리자 권한 필요');
+
+        // 접근 제한 알림 표시
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+        overlay.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center">
+            <div class="text-amber-500 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+            <p class="text-lg font-medium mb-2 text-gray-900 dark:text-white">접근 권한이 없습니다</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">이 페이지는 기관 관리자 권한이 필요합니다.</p>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md">확인</button>
+          </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
+        const button = overlay.querySelector('button');
+        if (button) {
+          button.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            window.location.href = '/';
+          });
+        }
+
+        return;
+      }
+
+      // 시스템 관리자 전용 페이지
+      if (path.startsWith('/admin') && userRole !== 'admin') {
+        console.log('관리자 권한 필요');
+
+        // 접근 제한 알림 표시
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+        overlay.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <div class="text-amber-500 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+            <p class="text-lg font-medium mb-2">접근 권한이 없습니다</p>
+            <p class="text-sm text-gray-500 mb-4">이 페이지는 시스템 관리자 권한이 필요합니다.</p>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
+          </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
+        const button = overlay.querySelector('button');
+        if (button) {
+          button.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            window.location.href = '/';
+          });
+        }
+
+        return;
+      }
+    }
+
+    // 특수 페이지 처리
+    const specialRoutes: Record<string, string> = {
+      '/video-training': '영상 훈련',
+      '/video-call': '화상 수업',
+      '/ai-analysis': 'AI 분석',
+      '/my-pets': '반려견 관리',
+      '/notebook': '알림장',
+      '/calendar': '교육 일정',
+      '/education-schedule': '교육 일정',
+      '/alerts': '알림',
+      '/notifications': '알림'  // /notifications를 요청하면 /alerts로 처리
+      // '/shop' 항목은 제거 - 사이드바에서 직접 새 창으로 열기 처리
+    };
+
+    // 쇼핑 페이지는 새 창에서 열기
+    if (path === '/shop') {
+      console.log('쇼핑 페이지를 새 창에서 열기');
+      window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
+      // 모바일 화면에서만 사이드바 닫기
+      if (onClose && window.innerWidth < 768) onClose();
+      return;
+    }
+
+    // SPA 라우팅 함수
+    const navigateToPage = (targetPath: string) => {
+      console.log(`페이지 이동: ${targetPath}`);
+
+      // wouter를 사용한 SPA 라우팅
+      setLocation(targetPath);
+
+      // 모바일 화면에서만 사이드바 닫기
+      if (onClose && window.innerWidth < 768) onClose();
+    };
+
+    if (path in specialRoutes) {
+      console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
+      // /notifications를 /alerts로 리다이렉션
+      if (path === '/notifications') {
+        console.log('알림 페이지로 리다이렉션: /alerts');
+        navigateToPage('/alerts');
+      } else {
+        navigateToPage(path);
+      }
+      return;
+    }
+
+    // 일반 페이지 라우팅
+    navigateToPage(path);
   };
 
-  const visibleItems = getVisibleItems();
+  // 동적 로고 로딩
+  const { data: logoData } = useQuery({
+    queryKey: ['/api/admin/logos'],
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 30000 // 30초
+  });
+
+  // Note: Logo rendering now handled by BrandLogo component
+  // This function is kept for backward compatibility with dynamic logo loading
+  const getLogoUrl = (type: 'expanded' | 'collapsed') => {
+    console.log('[Sidebar] logoData:', logoData, 'type:', type);
+    
+    if (!logoData || typeof logoData !== 'object') {
+      // BrandLogo component will handle default logos
+      return null;
+    }
+    
+    const logos = logoData as any;
+    
+    if (type === 'expanded') {
+      // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
+      const expandedLogo = logos.logoLight || logos.logoUrl;
+      console.log('[Sidebar] Expanded logo URL:', expandedLogo);
+      return expandedLogo;
+    } else {
+      // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
+      const collapsedLogo = logos.logoSymbolLight || logos.compactLogoUrl;
+      console.log('[Sidebar] Collapsed logo URL:', collapsedLogo);
+      return collapsedLogo;
+    }
+  };
+
+  const contextValue = {
+    expanded,
+    toggleSidebar
+  };
+
+  // 사용자 권한에 따른 메뉴 표시 여부 결정 - 문자열 비교로 명확하게 처리
+  const showDashboardLink = userRole !== null;
+  const showTrainerMenu = userRole === 'trainer' || userRole === 'admin';
+  const showInstituteMenu = userRole === 'institute-admin' || userRole === 'admin';
+  const showAdminMenu = userRole === 'admin';
+  const showPetOwnerMenu = userRole === 'pet-owner' || userRole === 'admin';
+  const showBasicMenu = true; // 모든 사용자가 접근 가능한 메뉴
+  const isPetOwner = userRole === 'pet-owner';
+
+  // 이 useEffect는 중복되므로 제거 (위에서 이미 처리됨)
+
+  console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
+  console.log('메뉴 그룹 상태:', menuGroups);
+
 
   return (
-    <div className={cn(
-      "fixed left-0 top-16 h-[calc(100vh-64px)] bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 transition-all duration-200 z-40",
-      expanded ? "w-64" : "w-[72px]",
-      // 모바일에서는 open prop에 따라 표시/숨김
-      "lg:translate-x-0",
-      open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-    )}>
-      {/* 사이드바 토글 버튼 (데스크톱에서만 표시) */}
-      <div className="hidden lg:flex items-center justify-end p-2 border-b border-gray-200 dark:border-zinc-800">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={onToggleExpand}
-          className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-zinc-800"
-          aria-label={expanded ? "사이드바 축소" : "사이드바 확장"}
-        >
-          {expanded ? (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-            </svg>
-          )}
-        </Button>
-      </div>
-      {/* 스크롤 영역 */}
-      <ScrollArea 
-        className="flex-1 cursor-pointer" 
-        onClick={(e) => {
-          // 메뉴 아이템이나 버튼이 아닌 빈 공간을 클릭했을 때만 사이드바 토글
-          if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.scroll-area-content')) {
-            onClose?.();
-          }
-        }}
+    <SidebarContext.Provider value={contextValue}>
+      <div
+        className={cn(
+          "fixed left-0 bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md flex flex-col",
+          // 모바일: TopBar 아래에서 시작하고, 높이는 TopBar를 제외한 전체 화면
+          "top-16 h-[calc(100vh-4rem)] z-mobile-menu lg:top-0 lg:h-screen lg:z-sidebar",
+          expanded ? "w-64" : "w-[70px]"
+        )}
       >
-        <div 
-          className="py-2"
-          onClick={(e) => {
-            // 빈 공간 클릭 시 사이드바 토글
-            if (e.target === e.currentTarget) {
-              onClose?.();
-            }
-          }}
-        >
-          {/* 로그인되지 않은 사용자를 위한 안내 - YouTube 스타일 */}
-          {!isAuthenticated && expanded && (
-            <div 
-              className="px-6 py-4 mb-4"
-              onClick={(e) => e.stopPropagation()} // 이벤트 전파 방지
-            >
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                로그인하여 더 많은 기능을 이용하세요.
-              </p>
-              <Link href="/auth">
-                <Button 
-                  className="w-full text-sm bg-red-600 hover:bg-red-700 text-white"
-                  onClick={(e) => e.stopPropagation()} // 이벤트 전파 방지
-                >
-                  로그인
-                </Button>
-              </Link>
+        <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
+          {expanded ? (
+            <ScrollReveal direction="left" delay={100}>
+              <div className="flex items-center justify-center w-full h-full group">
+                <BrandLogo 
+                  variant="full"
+                  size="lg"
+                  clickable={true}
+                  customSrc={getLogoUrl('expanded')}
+                  fallbackToDefault={true}
+                  testId="sidebar-logo-expanded"
+                  altText="TALEZ 로고"
+                />
+              </div>
+            </ScrollReveal>
+          ) : (
+            <div className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
+              <BrandLogo 
+                variant="compact"
+                size="md"
+                clickable={true}
+                customSrc={getLogoUrl('collapsed')}
+                fallbackToDefault={true}
+                testId="sidebar-logo-collapsed"
+                altText="TALEZ"
+              />
             </div>
           )}
-
-          {/* 메뉴 아이템들 */}
-          {visibleItems.map(renderMenuItem)}
-          
-          {/* 하단 여백 */}
-          <div className="h-4" />
+          <button
+            onClick={toggleSidebar}
+            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md border border-transparent hover:border-gray-300 dark:hover:border-gray-600 hover:scale-110"
+            aria-label={expanded ? "사이드바 접기" : "사이드바 펼치기"}
+            aria-expanded={expanded}
+            title={expanded ? "사이드바 접기" : "사이드바 펼치기"}
+            data-testid="button-toggle-sidebar-expand"
+          >
+            {expanded ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
+          </button>
         </div>
-      </ScrollArea>
-    </div>
+
+        <ScrollArea className={cn("flex-1", expanded ? "px-3" : "px-2")}>
+          <div className="py-4 space-y-1 w-full min-h-min relative">
+            {/* 비로그인 상태 메뉴 */}
+            {!isAuthenticated ? (
+              <>
+                <SidebarMenuGroup
+                  expanded={expanded}
+                  title="메인 메뉴"
+                  groupName="main"
+                  isOpen={menuGroups.main}
+                  toggleGroup={toggleMenuGroup}
+                  icon={<Home className="w-5 h-5 text-gray-500" />}
+                />
+
+                {menuGroups.main && (
+                  <>
+                    <AccessibleNavItem 
+                      href="/" 
+                      icon={<Home className="w-5 h-5 mr-2" />}
+                      hoverIcon={<PawPrint className="w-5 h-5 mr-2 text-primary" />}
+                      active={isActive("/")} 
+                      onClick={handleItemClick} 
+                      show={true}
+                    >홈</AccessibleNavItem>
+                    <AccessibleNavItem 
+                      href="/courses" 
+                      icon={<GraduationCap className="w-5 h-5 mr-2" />}
+                      hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />}
+                      active={isActive("/courses")} 
+                      onClick={handleItemClick} 
+                      show={true}
+                    >강의 찾기</AccessibleNavItem>
+                    <AccessibleNavItem 
+                      href="/trainers" 
+                      icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
+                      hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />}
+                      active={isActive("/trainers")} 
+                      onClick={handleItemClick} 
+                      show={true}
+                    >전문가 찾기</AccessibleNavItem>
+                    <AccessibleNavItem 
+                      href="/location-finder" 
+                      icon={<MapPin className="w-5 h-5 mr-2" />}
+                      hoverIcon={<Navigation className="w-5 h-5 mr-2 text-primary" />}
+                      active={isActive("/location-finder")} 
+                      onClick={handleItemClick} 
+                      show={true}
+                    >위치 찾기</AccessibleNavItem>
+                    <AccessibleNavItem 
+                      href="/community" 
+                      icon={<MessageSquare className="w-5 h-5 mr-2" />}
+                      hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />}
+                      active={isActive("/community")} 
+                      onClick={handleItemClick} 
+                      show={true}
+                    >커뮤니티</AccessibleNavItem>
+                  </>
+                )}
+
+                {/* 특별 메뉴는 비로그인 상태에서 숨김 처리 */}
+
+                {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
+                <SidebarMenuGroup
+                  expanded={expanded}
+                  title="쇼핑"
+                  groupName="features"
+                  isOpen={menuGroups.features}
+                  toggleGroup={toggleMenuGroup}
+                  icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
+                />
+
+                {/* 쇼핑몰 메뉴 그룹 내용 */}
+                {menuGroups.features && (
+                  <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
+                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
+                  </div>
+                )}
+
+                {/* 비로그인 상태에서 특별 메뉴 내용도 숨김 처리 */}
+
+                {expanded ? (
+                  <div className="flex items-center mx-auto mt-4 px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-sm w-full">
+                    <div className="flex-1 pr-4">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">반려견 교육 시작하기</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">회원가입 후 맞춤형 교육을 경험하세요.</p>
+                    </div>
+                    <Link
+                      href="/auth"
+                      className="bg-primary hover:bg-primary/90 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors inline-block text-center"
+                      aria-label="로그인 페이지로 이동"
+                      data-testid="link-login-expanded"
+                    >
+                      로그인
+                    </Link>
+                  </div>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href="/auth"
+                          className="flex items-center justify-center py-2 px-2 mt-4 bg-primary hover:bg-primary/90 text-white rounded-lg mx-auto w-[48px]"
+                          aria-label="로그인"
+                          data-testid="link-login-collapsed"
+                        >
+                          <LogIn className="w-5 h-5" />
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>로그인</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
+                {/* Help Section 컴포넌트 통합 */}
+                {!expanded ? (
+                  <div className="mt-4 flex flex-col items-center space-y-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" 
+                            onClick={() => handleItemClick('/help/faq')}
+                          >
+                            <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>도움말 및 지원</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ) : (
+                  /* 확장된 상태에서는 기존 HelpSection 컴포넌트 사용 */
+                  <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                )}
+
+                {/* 독립적인 StatisticsSection 컴포넌트 사용 */}
+                <StatisticsSection expanded={expanded} />
+              </>
+            ) : (
+              /* 로그인 상태 메뉴 */
+              <>
+                {/* 메인 메뉴 */}
+                <SidebarMenuGroup
+                  expanded={expanded}
+                  title="메인"
+                  groupName="main"
+                  isOpen={menuGroups.main}
+                  toggleGroup={toggleMenuGroup}
+                  icon={<Home className="w-5 h-5 text-gray-500" />}
+                />
+
+                {menuGroups.main && (
+                  <>
+                    <AccessibleNavItem href="/" icon={<Home className="w-5 h-5 mr-2" />} hoverIcon={<PawPrint className="w-5 h-5 mr-2 text-primary" />} active={isActive("/")} onClick={handleItemClick} show={true}>홈</AccessibleNavItem>
+                    {showDashboardLink && <AccessibleNavItem href="/dashboard" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/dashboard")} onClick={handleItemClick} show={true}>대시보드</AccessibleNavItem>}
+                    <AccessibleNavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의 찾기</AccessibleNavItem>
+                    <AccessibleNavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>전문가 찾기</AccessibleNavItem>
+                    <AccessibleNavItem href="/location-finder" icon={<MapPin className="w-5 h-5 mr-2" />} hoverIcon={<Navigation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/location-finder")} onClick={handleItemClick} show={true}>위치 찾기</AccessibleNavItem>
+                    <AccessibleNavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</AccessibleNavItem>
+                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
+                  </>
+                )}
+
+                {/* 학습 메뉴 (견주) */}
+                {showPetOwnerMenu && (
+                  <>
+                    <SidebarMenuGroup expanded={expanded} title="학습" groupName="learning" isOpen={menuGroups.learning} toggleGroup={toggleMenuGroup} icon={<BookOpen className="w-5 h-5 text-gray-500" />} />
+                    {menuGroups.learning && (
+                      <>
+                        <AccessibleNavItem href="/my-courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-courses")} onClick={handleItemClick} show={true}>나의 학습</AccessibleNavItem>
+                        <AccessibleNavItem href="/my-pets" icon={<PawPrint className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-pets")} onClick={handleItemClick} show={true}>반려견 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/consultation" icon={<MessageCircle className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation")} onClick={handleItemClick} show={true}>내 상담 현황</AccessibleNavItem>
+                        <AccessibleNavItem href="/my-trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-trainers")} onClick={handleItemClick} show={true}>내 훈련사</AccessibleNavItem>
+                        <AccessibleNavItem href="/pet-care/health-record" icon={<Activity className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/pet-care/health-record")} onClick={handleItemClick} show={true}>건강 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/notebook" icon={<Edit className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/notebook")} onClick={handleItemClick} show={true}>알림장</AccessibleNavItem>
+                        <AccessibleNavItem href="/education-schedule" icon={<Calendar className="w-5 h-5 mr-2" />} hoverIcon={<CheckSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/education-schedule")} onClick={handleItemClick} show={true}>일정 관리</AccessibleNavItem>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* 운영 관리 (훈련사/기관) */}
+                {(showTrainerMenu || showInstituteMenu) && (
+                  <>
+                    <SidebarMenuGroup expanded={expanded} title="운영 관리" groupName="management" isOpen={menuGroups.management} toggleGroup={toggleMenuGroup} icon={<UserCog className="w-5 h-5 text-gray-500" />} />
+                    {menuGroups.management && (
+                      <>
+
+                    <AccessibleNavItem href="/trainer/courses" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/courses")} onClick={handleItemClick} show={true}>내 강좌</AccessibleNavItem>
+                    <AccessibleNavItem href="/trainer/notebook" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<Edit className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/notebook")} onClick={handleItemClick} show={true}>알림장 관리</AccessibleNavItem>
+                    <AccessibleNavItem href="/trainer/students" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/students")} onClick={handleItemClick} show={true}>학생 관리</AccessibleNavItem>
+
+                        {(showTrainerMenu || showInstituteMenu) && <AccessibleNavItem href="/trainer/earnings" icon={<DollarSign className="w-5 h-5 mr-2" />} active={isActive("/trainer/earnings")} onClick={handleItemClick} show={true}>수익 관리</AccessibleNavItem>}
+                        {showTrainerMenu && <AccessibleNavItem href="/trainer/my-points" icon={<Star className="w-5 h-5 mr-2" />} active={isActive("/trainer/my-points")} onClick={handleItemClick} show={true}>내 포인트</AccessibleNavItem>}
+                        {showTrainerMenu && <AccessibleNavItem href="/trainer/rest-management" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/trainer/rest-management")} onClick={handleItemClick} show={true}>휴식 관리</AccessibleNavItem>}
+                        {showTrainerMenu && <AccessibleNavItem href="/trainer/substitute-board" icon={<UserCheck className="w-5 h-5 mr-2" />} hoverIcon={<RefreshCw className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/substitute-board")} onClick={handleItemClick} show={true}>대체 훈련사 게시판</AccessibleNavItem>}
+                        {showTrainerMenu && <AccessibleNavItem href="/trainer/settings" icon={<Settings className="w-5 h-5 mr-2" />} active={isActive("/trainer/settings")} onClick={handleItemClick} show={true}>설정</AccessibleNavItem>}
+                        {showInstituteMenu && <AccessibleNavItem href="/institute/my-points" icon={<Star className="w-5 h-5 mr-2" />} active={isActive("/institute/my-points")} onClick={handleItemClick} show={true}>내 포인트</AccessibleNavItem>}
+                        {showInstituteMenu && <AccessibleNavItem href="/institute/trainers" icon={<UserCog className="w-5 h-5 mr-2" />} active={isActive("/institute/trainers")} onClick={handleItemClick} show={true}>훈련사 관리</AccessibleNavItem>}
+                        {showInstituteMenu && <AccessibleNavItem href="/institute/facility" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/institute/facility")} onClick={handleItemClick} show={true}>시설 관리</AccessibleNavItem>}
+                        {showInstituteMenu && <AccessibleNavItem href="/institute/rest-management" icon={<Calendar className="w-5 h-5 mr-2" />} hoverIcon={<Clock className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/rest-management")} onClick={handleItemClick} show={true}>휴식 관리</AccessibleNavItem>}
+                        {showInstituteMenu && <AccessibleNavItem href="/institute/substitute-management" icon={<UserCheck className="w-5 h-5 mr-2" />} hoverIcon={<RefreshCw className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/substitute-management")} onClick={handleItemClick} show={true}>대체 훈련사 관리</AccessibleNavItem>}
+                        {showInstituteMenu && <AccessibleNavItem href="/institute/notebook-monitor" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<Monitor className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/notebook-monitor")} onClick={handleItemClick} show={true}>알림장 모니터링</AccessibleNavItem>}
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* 도구 */}
+                <SidebarMenuGroup expanded={expanded} title="도구" groupName="tools" isOpen={menuGroups.tools} toggleGroup={toggleMenuGroup} icon={<Wrench className="w-5 h-5 text-gray-500" />} />
+                {menuGroups.tools && (
+                  <>
+                    <AccessibleNavItem href="/video-training" icon={<Video className="w-5 h-5 mr-2" />} hoverIcon={<Presentation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-training")} onClick={handleItemClick} show={true}>영상 훈련</AccessibleNavItem>
+                    <AccessibleNavItem href="/video-call" icon={<VideoIcon className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-call")} onClick={handleItemClick} show={true}>화상 수업</AccessibleNavItem>
+                    <AccessibleNavItem href="/ai-analysis" icon={<Brain className="w-5 h-5 mr-2" />} hoverIcon={<Sparkles className="w-5 h-5 mr-2 text-primary" />} active={isActive("/ai-analysis")} onClick={handleItemClick} show={true}>AI 분석</AccessibleNavItem>
+                    <AccessibleNavItem href="/messages" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<ThumbsUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/messages")} onClick={handleItemClick} show={true}>메시지</AccessibleNavItem>
+                    <AccessibleNavItem href="/alerts" icon={<Bell className="w-5 h-5 mr-2" />} hoverIcon={<Activity className="w-5 h-5 mr-2 text-primary" />} active={isActive("/alerts")} onClick={handleItemClick} show={true}>알림</AccessibleNavItem>
+                    <AccessibleNavItem href="/analytics" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/analytics")} onClick={handleItemClick} show={true}>분석 리포트</AccessibleNavItem>
+                  </>
+                )}
+
+                {/* 관리자 대시보드 */}
+                {showAdminMenu && (
+                  <>
+                    <SidebarMenuGroup expanded={expanded} title="관리자 대시보드" groupName="adminDashboard" isOpen={menuGroups.adminDashboard} toggleGroup={toggleMenuGroup} icon={<Monitor className="w-5 h-5 text-primary" />} />
+                    {menuGroups.adminDashboard && (
+                      <>
+                        <AccessibleNavItem href="/admin/dashboard" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/dashboard")} onClick={handleItemClick} show={true}>통합 대시보드</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/analytics" icon={<Activity className="w-5 h-5 mr-2" />} hoverIcon={<BarChart3 className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/analytics")} onClick={handleItemClick} show={true}>심층 분석</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/members-status" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/members-status")} onClick={handleItemClick} show={true}>회원 현황</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/substitute-overview" icon={<RefreshCw className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/substitute-overview")} onClick={handleItemClick} show={true}>대체 훈련사 현황</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/revenue" icon={<DollarSign className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/revenue")} onClick={handleItemClick} show={true}>수익 관리</AccessibleNavItem>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* 시스템 관리 (관리자) */}
+                {showAdminMenu && (
+                  <>
+                    <SidebarMenuGroup expanded={expanded} title="시스템 관리" groupName="admin" isOpen={menuGroups.admin} toggleGroup={toggleMenuGroup} icon={<Settings className="w-5 h-5 text-gray-500" />} />
+                    {menuGroups.admin && (
+                      <>
+                        <AccessibleNavItem href="/admin/curriculum" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/curriculum")} onClick={handleItemClick} show={true}>커리큘럼 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/registrations" icon={<UserPlus className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/registrations")} onClick={handleItemClick} show={true}>등록 신청 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/trainer-certification" icon={<Award className="w-5 h-5 mr-2" />} hoverIcon={<Shield className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/trainer-certification")} onClick={handleItemClick} show={true}>훈련사 인증 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/institutes" icon={<Building className="w-5 h-5 mr-2" />} hoverIcon={<UserCog className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/institutes")} onClick={handleItemClick} show={true}>기관 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/business-registration" icon={<Building className="w-5 h-5 mr-2" />} hoverIcon={<UserPlus className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/business-registration")} onClick={handleItemClick} show={true}>업체 등록</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/review-management" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<Star className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/review-management")} onClick={handleItemClick} show={true}>리뷰 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/info-correction-requests" icon={<Edit className="w-5 h-5 mr-2" />} hoverIcon={<FileText className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/info-correction-requests")} onClick={handleItemClick} show={true}>정보 수정 요청</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/contents" icon={<ImageIcon className="w-5 h-5 mr-2" />} hoverIcon={<Package className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/contents")} onClick={handleItemClick} show={true}>콘텐츠 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/community")} onClick={handleItemClick} show={true}>커뮤니티 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/content-crawler" icon={<Search className="w-5 h-5 mr-2" />} hoverIcon={<Bot className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/content-crawler")} onClick={handleItemClick} show={true}>콘텐츠 크롤링</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/content-moderation" icon={<Shield className="w-5 h-5 mr-2" />} hoverIcon={<CheckCircle className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/content-moderation")} onClick={handleItemClick} show={true}>콘텐츠 검열</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/commissions" icon={<Percent className="w-5 h-5 mr-2" />} hoverIcon={<DollarSign className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/commissions")} onClick={handleItemClick} show={true}>가격 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/points-management" icon={<Star className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/points-management")} onClick={handleItemClick} show={true}>포인트 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/payment-integration" icon={<CreditCard className="w-5 h-5 mr-2" />} hoverIcon={<DollarSign className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/payment-integration")} onClick={handleItemClick} show={true}>결제연동 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} hoverIcon={<Package className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/shop")} onClick={handleItemClick} show={true}>쇼핑몰 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/api-management" icon={<Key className="w-5 h-5 mr-2" />} hoverIcon={<Settings className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/api-management")} onClick={handleItemClick} show={true}>API 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/ai-api-management" icon={<Bot className="w-5 h-5 mr-2" />} hoverIcon={<Activity className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/ai-api-management")} onClick={handleItemClick} show={true}>AI API 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/ai-optimization" icon={<Brain className="w-5 h-5 mr-2" />} hoverIcon={<Zap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/ai-optimization")} onClick={handleItemClick} show={true}>AI 최적화</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/menu-visibility" icon={<Eye className="w-5 h-5 mr-2" />} hoverIcon={<EyeOff className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/menu-visibility")} onClick={handleItemClick} show={true}>메뉴 표시 제어</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/settings" icon={<Settings className="w-5 h-5 mr-2" />} hoverIcon={<Wrench className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/settings")} onClick={handleItemClick} show={true}>시스템 설정</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/messaging-settings" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<Mail className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/messaging-settings")} onClick={handleItemClick} show={true}>메시징 설정</AccessibleNavItem>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* Help & Statistics */}
+                {!expanded ? (
+                  <div className="mt-4 flex flex-col items-center space-y-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" onClick={() => handleItemClick('/help/faq')}>
+                            <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right"><p>도움말 및 지원</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ) : (
+                  <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                )}
+                <StatisticsSection expanded={expanded} />
+              </>
+            )}
+          </div>
+        </ScrollArea>
+
+        <div className={`p-4 ${expanded ? "" : "text-center"}`}>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {expanded ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <span>© 2025 Talez</span>
+                  <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
+                    {userRole || '비로그인'}
+                  </span>
+                </div>
+                <div className="mt-1">v1.2.0</div>
+              </>
+            ) : (
+              <span className="block py-1 px-2 rounded bg-gray-100 dark:bg-gray-800 text-center text-xs">
+                {userRole === 'admin' ? '관리자' : 
+                 userRole === 'trainer' ? '훈련사' : 
+                 userRole === 'institute-admin' ? '기관' :
+                 userRole === 'pet-owner' ? '견주' : '비로그인'}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </SidebarContext.Provider>
   );
 }
+
+// Add service inspection menu for admin role.

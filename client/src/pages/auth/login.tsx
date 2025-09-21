@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/ui/ThemeSwitcher";
 import { useAuth } from "../../SimpleApp";
-import { secureRequest } from "@/lib/csrf";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
@@ -73,12 +72,13 @@ export default function Login() {
     setPassword(testPassword);
     
     try {
-      // CSRF 보호된 로그인 요청
-      const response = await secureRequest('/api/auth/login', {
+      // 서버에 로그인 요청
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           username: testUsername,
           password: testPassword,
@@ -151,12 +151,13 @@ export default function Login() {
     }
     
     try {
-      // CSRF 보호된 로그인 요청
-      const response = await secureRequest('/api/auth/login', {
+      // 서버에 로그인 요청
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           username,
           password,

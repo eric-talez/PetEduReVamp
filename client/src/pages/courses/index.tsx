@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingErrorWrapper } from "@/components/ui/loading-error-wrapper";
 import { getStatusCodeFromError } from "@/lib/errorHelpers";
-import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2, Users } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AppLayout } from "@/layout/AppLayout";
 
 interface CoursesPageProps {
   mode?: 'view' | 'create' | 'edit';
@@ -36,14 +36,6 @@ interface Course {
   hasAnyVideo?: boolean;
   totalVideos?: number;
   modulesWithVideoCount?: number;
-  // 화상 강의 관련 필드들
-  productType?: 'course' | 'video_lecture';
-  isLive?: boolean;
-  maxParticipants?: number;
-  currentParticipants?: number;
-  nextSessionDate?: string;
-  sessionDuration?: number;
-  zoomRequired?: boolean;
 }
 
 export default function Courses(props?: CoursesPageProps) {
@@ -52,10 +44,6 @@ export default function Courses(props?: CoursesPageProps) {
   const [filter, setFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all"); // 유료/무료 필터
   const [categoryFilter, setCategoryFilter] = useState("all"); // 카테고리 필터
-  const [ratingFilter, setRatingFilter] = useState("all"); // 평점 필터
-  const [enrollmentFilter, setEnrollmentFilter] = useState("all"); // 수강생 수 필터
-  const [videoFilter, setVideoFilter] = useState("all"); // 영상 유무 필터
-  const [productTypeFilter, setProductTypeFilter] = useState("all"); // 상품 타입 필터
   const [searchTerm, setSearchTerm] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -186,90 +174,46 @@ export default function Courses(props?: CoursesPageProps) {
         const data = await response.json();
         console.log('🔥 커리큘럼 데이터:', data);
         
-        // API에서 받은 모든 강의/화상강의 데이터를 올바르게 매핑
-        const allCourses = (data.courses || [])
-          .filter((item: any) => item.status === 'published')
-          .map((item: any) => {
-            // 화상 강의인지 일반 강의인지 확인
-            const isVideoLecture = item.productType === 'video_lecture';
+        // 발행된 상태의 커리큘럼만 필터링하여 강의 형태로 변환
+        const publishedCourses = data.curriculums
+          .filter((curriculum: any) => curriculum.status === 'published')
+          .map((curriculum: any) => {
+            // 각 모듈의 영상 정보 포함하여 매핑
+            const modulesWithVideos = (curriculum.modules || []).map((module: any) => ({
+              ...module,
+              hasVideo: module.videos && module.videos.length > 0,
+              videoCount: module.videos ? module.videos.length : 0,
+              videos: module.videos || []
+            }));
             
-            if (isVideoLecture) {
-              // 화상 강의 매핑
-              return {
-                id: item.id,
-                title: item.title,
-                description: item.description,
-                price: item.price || 0,
-                difficulty: item.difficulty || 'beginner',
-                category: item.category || '화상 강의',
-                duration: item.duration || 1,
-                modules: item.modules || [],
-                trainerName: item.trainerName || '전문 훈련사',
-                status: item.status,
-                enrollmentCount: item.enrollmentCount || 0,
-                averageRating: item.averageRating || 0,
-                createdAt: item.createdAt || new Date().toISOString(),
-                updatedAt: item.updatedAt || new Date().toISOString(),
-                thumbnailUrl: item.thumbnailUrl,
-                // 화상 강의 고유 필드들
-                productType: item.productType,
-                isLive: item.isLive,
-                maxParticipants: item.maxParticipants,
-                currentParticipants: item.currentParticipants,
-                nextSessionDate: item.nextSessionDate,
-                sessionDuration: item.sessionDuration,
-                zoomRequired: item.zoomRequired,
-                // 일반 강의 필드들 (기본값)
-                hasAnyVideo: false,
-                totalVideos: 0,
-                modulesWithVideoCount: 0
-              };
-            } else {
-              // 일반 강의 매핑
-              const modulesWithVideos = (item.modules || []).map((module: any) => ({
-                ...module,
-                hasVideo: module.videos && module.videos.length > 0,
-                videoCount: module.videos ? module.videos.length : 0,
-                videos: module.videos || []
-              }));
-              
-              const totalVideos = modulesWithVideos.reduce((sum: number, module: any) => sum + module.videoCount, 0);
-              const modulesWithVideoCount = modulesWithVideos.filter((module: any) => module.hasVideo).length;
-              
-              return {
-                id: item.id,
-                title: item.title,
-                description: item.description,
-                price: item.price || 0,
-                difficulty: item.difficulty || 'beginner',
-                category: item.category || '기본 훈련',
-                duration: item.duration || 0,
-                modules: modulesWithVideos,
-                trainerName: item.trainerName || '전문 훈련사',
-                status: item.status,
-                enrollmentCount: item.enrollmentCount || 0,
-                averageRating: item.averageRating || 0,
-                createdAt: item.createdAt || new Date().toISOString(),
-                updatedAt: item.updatedAt || new Date().toISOString(),
-                thumbnailUrl: item.thumbnailUrl,
-                // 일반 강의 필드들
-                productType: item.productType || 'course',
-                hasAnyVideo: totalVideos > 0,
-                totalVideos,
-                modulesWithVideoCount,
-                // 화상 강의 필드들 (기본값)
-                isLive: false,
-                maxParticipants: 0,
-                currentParticipants: 0,
-                nextSessionDate: null,
-                sessionDuration: 0,
-                zoomRequired: false
-              };
-            }
+            // 전체 강의의 영상 통계
+            const totalVideos = modulesWithVideos.reduce((sum: number, module: any) => sum + module.videoCount, 0);
+            const modulesWithVideoCount = modulesWithVideos.filter((module: any) => module.hasVideo).length;
+            
+            return {
+              id: curriculum.id,
+              title: curriculum.title,
+              description: curriculum.description,
+              price: curriculum.price || 0,
+              difficulty: curriculum.difficulty || 'beginner',
+              category: curriculum.category || '기본 훈련',
+              duration: curriculum.duration || 0,
+              modules: modulesWithVideos,
+              trainerName: curriculum.trainerName || '전문 훈련사',
+              status: curriculum.status,
+              enrollmentCount: curriculum.enrollmentCount || 0,
+              averageRating: curriculum.averageRating || 0,
+              createdAt: curriculum.createdAt || new Date().toISOString(),
+              updatedAt: curriculum.updatedAt || new Date().toISOString(),
+              // 영상 관련 정보 추가
+              totalVideos,
+              modulesWithVideoCount,
+              hasAnyVideo: totalVideos > 0
+            };
           });
         
-        console.log('🔥 발행된 강의 목록:', allCourses);
-        setCourses(allCourses);
+        console.log('🔥 발행된 강의 목록:', publishedCourses);
+        setCourses(publishedCourses);
       } else {
         console.error('🔥 커리큘럼 API 응답 실패:', response.status);
         toast({
@@ -280,8 +224,6 @@ export default function Courses(props?: CoursesPageProps) {
       }
     } catch (error) {
       console.error('🔥 강의 데이터 로딩 실패:', error);
-      console.error('🔥 에러 스택:', error instanceof Error ? error.stack : '스택 없음');
-      console.error('🔥 에러 메시지:', error instanceof Error ? error.message : String(error));
       toast({
         title: "오류",
         description: "강의 목록을 불러오는데 실패했습니다.",
@@ -314,32 +256,10 @@ export default function Courses(props?: CoursesPageProps) {
     const matchesDifficultyFilter = filter === "all" ||
                                   (filter === "beginner" && course.difficulty === "beginner") ||
                                   (filter === "intermediate" && course.difficulty === "intermediate") ||
-                                  (filter === "advanced" && course.difficulty === "advanced");
+                                  (filter === "advanced" && course.difficulty === "advanced") ||
+                                  course.category === filter; // 기존 카테고리 필터 호환
     
-    // 평점 필터
-    const matchesRatingFilter = ratingFilter === "all" ||
-                              (ratingFilter === "4.5" && (course.averageRating || 0) >= 4.5) ||
-                              (ratingFilter === "4.0" && (course.averageRating || 0) >= 4.0) ||
-                              (ratingFilter === "3.5" && (course.averageRating || 0) >= 3.5);
-    
-    // 수강생 수 필터
-    const matchesEnrollmentFilter = enrollmentFilter === "all" ||
-                                   (enrollmentFilter === "20" && (course.enrollmentCount || 0) >= 20) ||
-                                   (enrollmentFilter === "10" && (course.enrollmentCount || 0) >= 10) ||
-                                   (enrollmentFilter === "5" && (course.enrollmentCount || 0) >= 5);
-    
-    // 영상 유무 필터
-    const matchesVideoFilter = videoFilter === "all" ||
-                              (videoFilter === "with_video" && course.hasAnyVideo) ||
-                              (videoFilter === "without_video" && !course.hasAnyVideo);
-    
-    // 상품 타입 필터
-    const matchesProductTypeFilter = productTypeFilter === "all" ||
-                                   (productTypeFilter === "course" && course.productType === "course") ||
-                                   (productTypeFilter === "video_lecture" && course.productType === "video_lecture");
-    
-    return matchesSearch && matchesPriceFilter && matchesCategoryFilter && matchesDifficultyFilter && 
-           matchesRatingFilter && matchesEnrollmentFilter && matchesVideoFilter && matchesProductTypeFilter;
+    return matchesSearch && matchesPriceFilter && matchesCategoryFilter && matchesDifficultyFilter;
   });
 
   // 페이지네이션을 위한 현재 페이지 강의 목록
@@ -350,7 +270,7 @@ export default function Courses(props?: CoursesPageProps) {
   // 검색/필터 변경 시 첫 페이지로 리셋
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filter, priceFilter, categoryFilter, ratingFilter, enrollmentFilter, videoFilter, productTypeFilter]);
+  }, [searchTerm, filter, priceFilter, categoryFilter]);
 
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
@@ -379,34 +299,32 @@ export default function Courses(props?: CoursesPageProps) {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="space-y-8">
-        {/* 페이지 헤더 */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
-              강의 찾기
-            </h1>
-            <p className="text-muted-foreground">
-              반려견 교육에 필요한 다양한 강의를 찾아보세요
-            </p>
+    <AppLayout 
+      title="강의"
+      breadcrumbs={[
+        { label: '홈', href: '/' },
+        { label: '강의', current: true }
+      ]}
+      headerActions={
+        <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1 shadow-sm border">
+          <div className="px-2">
+            <Search className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1 shadow-sm border">
-            <div className="px-2">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="원하는 강의를 검색하세요" 
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
-            />
-            <Button className="ml-2" onClick={handleSearch}>
-              검색
-            </Button>
-          </div>
+          <input 
+            type="text" 
+            placeholder="원하는 강의를 검색하세요" 
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+          />
+          <Button className="ml-2" onClick={handleSearch}>
+            검색
+          </Button>
         </div>
+      }
+      contentClassName="py-0"
+    >
+      <div className="space-y-8">
         {/* Banner */}
         <div className="relative rounded-xl overflow-hidden h-48 md:h-64 shadow-lg">
           <img 
@@ -442,145 +360,132 @@ export default function Courses(props?: CoursesPageProps) {
       >
         {/* 강화된 필터 시스템 */}
         <div className="mb-8 space-y-4">
-          {/* 필터 섹션 - Select 컴포넌트 사용 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-            {/* 가격 필터 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                <Package className="h-4 w-4 mr-1 text-green-500" />
-                가격
-              </label>
-              <Select value={priceFilter} onValueChange={setPriceFilter}>
-                <SelectTrigger data-testid="filter-price">
-                  <SelectValue placeholder="가격 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="free">무료</SelectItem>
-                  <SelectItem value="paid">유료</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* 가격 필터 (유료/무료) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center bg-green-100 dark:bg-green-900/30 rounded-lg p-1 mr-4">
+              <span className="text-sm font-medium text-green-700 dark:text-green-300 ml-2 mr-2">💰 가격:</span>
             </div>
+            
+            <Button
+              variant={priceFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setPriceFilter("all")}
+              className="text-xs"
+            >
+              전체 강의
+            </Button>
 
-            {/* 난이도 필터 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                <Filter className="h-4 w-4 mr-1 text-blue-500" />
-                난이도
-              </label>
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger data-testid="filter-difficulty">
-                  <SelectValue placeholder="난이도 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="beginner">초급</SelectItem>
-                  <SelectItem value="intermediate">중급</SelectItem>
-                  <SelectItem value="advanced">고급</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Button
+              variant={priceFilter === "free" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setPriceFilter("free")}
+              className="text-xs"
+            >
+              🆓 무료 강의
+            </Button>
 
-            {/* 카테고리 필터 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                <BookOpen className="h-4 w-4 mr-1 text-purple-500" />
-                카테고리
-              </label>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger data-testid="filter-category">
-                  <SelectValue placeholder="카테고리 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="기본 훈련">기본 훈련</SelectItem>
-                  <SelectItem value="행동 교정">행동 교정</SelectItem>
-                  <SelectItem value="사회화 훈련">사회화 훈련</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 평점 필터 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                평점
-              </label>
-              <Select value={ratingFilter} onValueChange={setRatingFilter}>
-                <SelectTrigger data-testid="filter-rating">
-                  <SelectValue placeholder="평점 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="4.5">4.5점 이상</SelectItem>
-                  <SelectItem value="4.0">4.0점 이상</SelectItem>
-                  <SelectItem value="3.5">3.5점 이상</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 수강생 수 필터 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                <Users className="h-4 w-4 mr-1 text-indigo-500" />
-                수강생 수
-              </label>
-              <Select value={enrollmentFilter} onValueChange={setEnrollmentFilter}>
-                <SelectTrigger data-testid="filter-enrollment">
-                  <SelectValue placeholder="수강생 수 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="20">20명 이상</SelectItem>
-                  <SelectItem value="10">10명 이상</SelectItem>
-                  <SelectItem value="5">5명 이상</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 영상 유무 필터 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                <Video className="h-4 w-4 mr-1 text-red-500" />
-                영상
-              </label>
-              <Select value={videoFilter} onValueChange={setVideoFilter}>
-                <SelectTrigger data-testid="filter-video">
-                  <SelectValue placeholder="영상 유무 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="with_video">영상 포함</SelectItem>
-                  <SelectItem value="without_video">영상 없음</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 상품 타입 필터 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                <Play className="h-4 w-4 mr-1 text-orange-500" />
-                수업 형태
-              </label>
-              <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
-                <SelectTrigger data-testid="filter-product-type">
-                  <SelectValue placeholder="수업 형태 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="course">일반 강의</SelectItem>
-                  <SelectItem value="video_lecture">화상 강의</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Button
+              variant={priceFilter === "paid" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setPriceFilter("paid")}
+              className="text-xs"
+            >
+              💳 유료 강의
+            </Button>
           </div>
 
+          {/* 난이도 필터 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center bg-blue-100 dark:bg-blue-900/30 rounded-lg p-1 mr-4">
+              <Filter className="h-4 w-4 text-blue-500 dark:text-blue-400 ml-2 mr-1" />
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300 mr-2">난이도:</span>
+            </div>
 
-          {/* 활성화된 필터 개수 표시 */}
-          <div className="ml-auto mt-4">
-            <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
-              {filteredCourses.length}개 강의 발견
-            </span>
+            <Button
+              variant={filter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter("all")}
+              className="text-xs"
+            >
+              전체
+            </Button>
+
+            <Button
+              variant={filter === "beginner" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter("beginner")}
+              className="text-xs"
+            >
+              🌱 초급
+            </Button>
+
+            <Button
+              variant={filter === "intermediate" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter("intermediate")}
+              className="text-xs"
+            >
+              🌿 중급
+            </Button>
+
+            <Button
+              variant={filter === "advanced" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter("advanced")}
+              className="text-xs"
+            >
+              🌳 고급
+            </Button>
+          </div>
+
+          {/* 카테고리 및 추가 필터 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center bg-purple-100 dark:bg-purple-900/30 rounded-lg p-1 mr-4">
+              <span className="text-sm font-medium text-purple-700 dark:text-purple-300 ml-2 mr-2">📚 카테고리:</span>
+            </div>
+
+            <Button
+              variant={categoryFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter("all")}
+              className="text-xs"
+            >
+              전체 분야
+            </Button>
+
+            <Button
+              variant={categoryFilter === "기본 훈련" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter("기본 훈련")}
+              className="text-xs"
+            >
+              🎯 기본 훈련
+            </Button>
+
+            <Button
+              variant={categoryFilter === "행동 교정" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter("행동 교정")}
+              className="text-xs"
+            >
+              🔧 행동 교정
+            </Button>
+
+            <Button
+              variant={categoryFilter === "사회화 훈련" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter("사회화 훈련")}
+              className="text-xs"
+            >
+              👥 사회화 훈련
+            </Button>
+
+            {/* 활성화된 필터 개수 표시 */}
+            <div className="ml-auto">
+              <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
+                {filteredCourses.length}개 강의 발견
+              </span>
+            </div>
           </div>
         </div>
 
@@ -588,34 +493,8 @@ export default function Courses(props?: CoursesPageProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {currentCourses.length > 0 ? (
           currentCourses.map((course) => (
-            <Card key={course.id} className={`overflow-hidden border hover:shadow-md transition-shadow ${
-              course.productType === 'video_lecture' 
-                ? 'border-orange-200 dark:border-orange-800 shadow-orange-50 dark:shadow-orange-900/20' 
-                : 'border-gray-100 dark:border-gray-700'
-            }`}>
+            <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
               <div className="relative h-40 overflow-hidden">
-                {/* 화상 강의 뱃지 */}
-                {course.productType === 'video_lecture' && (
-                  <div 
-                    className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md"
-                    data-testid="live-badge"
-                  >
-                    <Video className="h-3 w-3" />
-                    LIVE
-                  </div>
-                )}
-                {/* 다음 세션 일정 */}
-                {course.productType === 'video_lecture' && course.nextSessionDate && (
-                  <div 
-                    className="absolute top-2 right-2 z-10 bg-black/70 text-white px-2 py-1 rounded text-xs"
-                    data-testid="next-session-date"
-                  >
-                    {new Date(course.nextSessionDate).toLocaleDateString('ko-KR', { 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
-                  </div>
-                )}
                 {course.thumbnailUrl ? (
                   <img 
                     src={course.thumbnailUrl} 
@@ -689,40 +568,20 @@ export default function Courses(props?: CoursesPageProps) {
                 </div>
 
                 <div className="mt-3 text-xs text-gray-500">
-                  {course.productType === 'video_lecture' ? (
-                    // 화상 강의 정보
+                  <span>{Math.floor(course.duration / 60)}시간 {course.duration % 60}분</span>
+                  <span className="mx-2">•</span>
+                  <span>{course.modules.length}개 모듈</span>
+                  {course.hasAnyVideo && (
                     <>
-                      <span className="text-orange-600 font-medium" data-testid="session-duration">
-                        <Clock className="w-3 h-3 inline mr-1" />
-                        {course.sessionDuration || 60}분 세션
+                      <span className="mx-2">•</span>
+                      <span className="text-green-600 font-medium">
+                        <Video className="w-3 h-3 inline mr-1" />
+                        영상 {course.modulesWithVideoCount}/{course.modules.length}
                       </span>
-                      <span className="mx-2">•</span>
-                      <span className="text-blue-600 font-medium" data-testid="participants-count">
-                        <Users className="w-3 h-3 inline mr-1" />
-                        {course.currentParticipants || 0}/{course.maxParticipants || 10}명
-                      </span>
-                      <span className="mx-2">•</span>
-                      <span>{course.category}</span>
-                    </>
-                  ) : (
-                    // 일반 강의 정보
-                    <>
-                      <span>{Math.floor(course.duration / 60)}시간 {course.duration % 60}분</span>
-                      <span className="mx-2">•</span>
-                      <span>{course.modules.length}개 모듈</span>
-                      {course.hasAnyVideo && (
-                        <>
-                          <span className="mx-2">•</span>
-                          <span className="text-green-600 font-medium">
-                            <Video className="w-3 h-3 inline mr-1" />
-                            영상 {course.modulesWithVideoCount}/{course.modules.length}
-                          </span>
-                        </>
-                      )}
-                      <span className="mx-2">•</span>
-                      <span>{course.category}</span>
                     </>
                   )}
+                  <span className="mx-2">•</span>
+                  <span>{course.category}</span>
                 </div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
@@ -733,18 +592,14 @@ export default function Courses(props?: CoursesPageProps) {
                     className="flex-1 text-xs"
                     onClick={() => handlePreview(course.id)}
                   >
-                    {course.productType === 'video_lecture' ? '세션 정보' : '미리보기'}
+                    미리보기
                   </Button>
                   <Button 
                     size="sm"
-                    className={`flex-1 text-xs ${
-                      course.productType === 'video_lecture' 
-                        ? 'bg-orange-500 hover:bg-orange-600' 
-                        : ''
-                    }`}
+                    className="flex-1 text-xs"
                     onClick={() => handlePurchase(course.id)}
                   >
-                    {course.productType === 'video_lecture' ? '세션 예약' : '구매하기'}
+                    구매하기
                   </Button>
                 </div>
               </div>
@@ -1186,6 +1041,6 @@ export default function Courses(props?: CoursesPageProps) {
         </DialogContent>
       </Dialog>
       </div>
-    </div>
+    </AppLayout>
   );
 }
