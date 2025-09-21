@@ -142,6 +142,15 @@ export function AppLayout({
         onToggleSidebar={toggleSidebar}
       />
       
+      {/* 사이드바 */}
+      <Sidebar 
+        open={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)}
+        userRole={userRole}
+        isAuthenticated={isAuthenticated}
+        expanded={sidebarExpanded}
+        onToggleExpand={toggleSidebarSize}
+      />
       
       {/* 컨텐츠 영역 */}
       <div className={cn(

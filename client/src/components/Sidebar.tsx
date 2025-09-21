@@ -217,7 +217,10 @@ export function Sidebar({
   return (
     <div className={cn(
       "fixed left-0 top-16 h-[calc(100vh-64px)] bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 transition-all duration-200 z-40",
-      expanded ? "w-64" : "w-[72px]"
+      expanded ? "w-64" : "w-[72px]",
+      // 모바일에서는 open prop에 따라 표시/숨김
+      "lg:translate-x-0",
+      open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
     )}>
       {/* 사이드바 토글 버튼 (데스크톱에서만 표시) */}
       <div className="hidden lg:flex items-center justify-end p-2 border-b border-gray-200 dark:border-zinc-800">
