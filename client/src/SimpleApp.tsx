@@ -284,7 +284,6 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/commissions" component={AdminCommissionPage} />
                   <Route path="/admin/commission-settings" component={AdminCommissionPage} />
-                  <Route path="/admin/settlements" component={AdminSettlementPage} />
                   <Route path="/admin/shop" component={AdminShop} />
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/messaging-settings" component={MessagingSettings} />
