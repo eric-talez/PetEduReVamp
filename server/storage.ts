@@ -1308,6 +1308,10 @@ class Storage {
     return this.users?.find(user => user.email === email);
   }
 
+  getUserByUsername(username: string) {
+    return this.users?.find(user => user.username === username);
+  }
+
   createUser(userData: any) {
     const newUser = {
       id: (this.users?.length || 0) + 1,
