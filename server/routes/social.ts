@@ -1331,6 +1331,132 @@ export function setupSocialRoutes(app: Express) {
     }
   });
 
+  // 네이버 검색 API를 이용한 이벤트/행사 크롤링 API
+  app.post('/api/community/crawl-events', async (req, res) => {
+    try {
+      console.log('[이벤트 크롤링] 네이버 검색 API를 이용한 반려동물 이벤트/행사 크롤링 시작');
+      
+      const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+      const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
+      
+      if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
+        throw new Error('네이버 API 키가 설정되지 않았습니다.');
+      }
+
+      // 검색할 키워드들
+      const searchQueries = [
+        '반려동물 박람회',
+        '펫페어',
+        '강아지 대회',
+        '반려동물 축제',
+        '펫 이벤트',
+        '동물병원 무료검진',
+        '반려동물 입양',
+        '애견 아질리티'
+      ];
+
+      const eventPosts = [];
+
+      for (const query of searchQueries) {
+        try {
+          console.log(`[이벤트 크롤링] 검색 중: ${query}`);
+          
+          const response = await fetch(`https://openapi.naver.com/v1/search/news.json?query=${encodeURIComponent(query + ' 2024')}&display=5&sort=date`, {
+            method: 'GET',
+            headers: {
+              'X-Naver-Client-Id': NAVER_CLIENT_ID,
+              'X-Naver-Client-Secret': NAVER_CLIENT_SECRET,
+              'User-Agent': 'TALEZ-PetCommunity/1.0'
+            }
+          });
+
+          if (!response.ok) {
+            console.error(`[이벤트 크롤링] API 요청 실패 (${query}):`, response.status, response.statusText);
+            continue;
+          }
+
+          const data = await response.json();
+          console.log(`[이벤트 크롤링] ${query} 검색 결과: ${data.items?.length || 0}개`);
+
+          if (data.items && data.items.length > 0) {
+            for (const item of data.items) {
+              // HTML 태그 제거 함수
+              const stripHtml = (html: string) => {
+                return html.replace(/<[^>]*>/g, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+              };
+
+              const title = stripHtml(item.title);
+              const description = stripHtml(item.description);
+              
+              // 이벤트/행사 관련 게시글로 변환
+              const eventPost = {
+                id: nextPostId++,
+                title: title,
+                content: `🔍 네이버 검색을 통해 발견된 반려동물 관련 이벤트/행사 정보입니다.\n\n${description}\n\n자세한 내용은 원본 링크를 확인해주세요.\n\n📅 발행일: ${item.pubDate}\n📰 출처: ${stripHtml(item.bloggername || '네이버 뉴스')}\n\n⚠️ 이벤트 참가 전 최신 정보를 확인하시기 바랍니다.`,
+                tag: "이벤트/행사",
+                authorId: 1,
+                author: { id: 1, name: '네이버 검색봇' },
+                likes: 0,
+                comments: 0,
+                views: 0,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                hidden: false,
+                linkInfo: {
+                  url: item.link,
+                  title: title,
+                  description: description,
+                  image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&h=600&fit=crop"
+                },
+                eventInfo: {
+                  eventDate: new Date(),
+                  location: '상세 내용 확인 필요',
+                  organizer: stripHtml(item.bloggername || '정보 없음'),
+                  website: item.link,
+                  ticketPrice: '상세 내용 확인 필요',
+                  category: '기타'
+                }
+              };
+              
+              eventPosts.push(eventPost);
+            }
+          }
+          
+          // API 호출 제한을 위한 대기
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+        } catch (error) {
+          console.error(`[이벤트 크롤링] ${query} 검색 중 오류:`, error);
+          continue;
+        }
+      }
+
+      // 크롤링된 이벤트 게시글들을 커뮤니티에 추가
+      for (const eventPost of eventPosts) {
+        posts.push(eventPost);
+      }
+
+      console.log(`[이벤트 크롤링] 총 ${eventPosts.length}개의 이벤트/행사 정보가 커뮤니티에 등록되었습니다.`);
+      
+      res.json({
+        success: true,
+        message: `${eventPosts.length}개의 이벤트/행사 정보가 성공적으로 등록되었습니다.`,
+        events: eventPosts.length,
+        details: eventPosts.map(post => ({
+          title: post.title,
+          link: post.linkInfo?.url
+        }))
+      });
+    } catch (error) {
+      console.error('[이벤트 크롤링] 오류:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: '이벤트/행사 크롤링 중 오류가 발생했습니다.',
+        details: error instanceof Error ? error.message : '알 수 없는 오류'
+      });
+    }
+  });
+
   // 뉴스 크롤링 API
   app.post('/api/community/crawl-news', async (req, res) => {
     try {
