@@ -564,6 +564,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 관리자 전용 사용자 추가 API
+  app.post('/api/admin/users', requireAuth('admin'), async (req, res) => {
+    try {
+      const { name, email, role, password } = req.body;
+
+      // 필수 필드 검증
+      if (!name || !email || !password) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '이름, 이메일, 비밀번호는 필수 항목입니다.' 
+        });
+      }
+
+      // 이메일 중복 검증
+      const existingUser = storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '이미 존재하는 이메일입니다.' 
+        });
+      }
+
+      // 역할 유효성 검증
+      const validRoles = ['admin', 'trainer', 'institute-admin', 'user'];
+      if (role && !validRoles.includes(role)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '유효하지 않은 역할입니다.' 
+        });
+      }
+
+      // 새 사용자 데이터 준비
+      const newUserData = {
+        name,
+        email,
+        role: role || 'user',
+        password, // createUser 메서드에서 해싱 처리됨
+        username: email, // 이메일을 username으로 사용
+        isVerified: true,
+        verified: true
+      };
+
+      // 사용자 생성
+      const newUser = storage.createUser(newUserData);
+      
+      console.log('[Admin] 새 사용자 추가됨:', { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role });
+
+      res.json({ 
+        success: true, 
+        message: '사용자가 성공적으로 추가되었습니다.',
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          createdAt: newUser.createdAt
+        }
+      });
+    } catch (error) {
+      console.error('Admin User Creation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: '사용자 추가 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 구독 플랜 관련 API
   app.get('/api/subscription-plans', (req, res) => {
     try {
