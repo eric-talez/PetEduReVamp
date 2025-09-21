@@ -721,12 +721,12 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 9%;
 
-    /* 주 색상 - Figma 디자인 Primary #2BAA61 */
-    --primary: 142 61% 42%;  /* #2BAA61 */
+    /* 주 색상 - TALEZ 브랜드 에메랄드 그린 */
+    --primary: 160 84% 39%;  /* 에메랄드 그린 #059669 */
     --primary-foreground: 0 0% 100%;  /* 흰색으로 대비 향상 */
 
-    /* 보조 색상 - Figma 디자인 Secondary #FFA726 */
-    --secondary: 36 100% 58%;  /* #FFA726 */
+    /* 보조 색상 - TALEZ 보조 색상 따뜻한 오렌지 */
+    --secondary: 30 100% 60%;  /* 따뜻한 오렌지 #FF8C42 */
     --secondary-foreground: 0 0% 0%;  /* 검은색 텍스트 */
 
     /* 상태 색상 - Figma 디자인 기준 */
@@ -793,12 +793,12 @@
     --popover: 220 13% 12%;
     --popover-foreground: 0 0% 95%;
 
-    /* 다크 모드 브랜드 색상 - Figma Primary (밝게 조정) */
-    --primary: 142 61% 55%;       /* #2BAA61의 밝은 버전 */
+    /* 다크 모드 브랜드 색상 - TALEZ 에메랄드 (밝게 조정) */
+    --primary: 160 84% 50%;       /* 밝은 에메랄드 그린 */
     --primary-foreground: 220 13% 9%;  /* 어두운 텍스트 */
 
-    /* 다크 모드 보조 색상 - Figma Secondary (어둡게 조정) */
-    --secondary: 36 80% 35%;
+    /* 다크 모드 보조 색상 - TALEZ 오렌지 (조정) */
+    --secondary: 30 85% 45%;
     --secondary-foreground: 0 0% 95%;
 
     /* 다크 모드 상태 색상 - Figma 색상 밝게 조정 */

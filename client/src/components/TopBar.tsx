@@ -85,31 +85,31 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   // 통합된 인증 상태 관리
   const auth = useAuth();
   const globalAuth = (window as any).__peteduAuthState;
-  
+
   // 안정적인 상태 추출 (fallback 체인)
   const isAuthenticated = auth?.isAuthenticated ?? globalAuth?.isAuthenticated ?? false;
   const userName = auth?.userName ?? globalAuth?.userName ?? null;
   const userRole = auth?.userRole ?? globalAuth?.userRole ?? null;
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
-  
+
   // 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  
+
   // 팝업 메뉴 상태
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [messagePopupOpen, setMessagePopupOpen] = useState(false);
   const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
   const [cartPopupOpen, setCartPopupOpen] = useState(false);
-  
+
   // 참조 (외부 클릭 감지용)
   const userMenuRef = useClickAway<HTMLDivElement>(() => setUserMenuOpen(false));
   const messagePopupRef = useClickAway<HTMLDivElement>(() => setMessagePopupOpen(false));
   const notificationPopupRef = useClickAway<HTMLDivElement>(() => setNotificationPopupOpen(false));
   const cartPopupRef = useClickAway<HTMLDivElement>(() => setCartPopupOpen(false));
-  
+
   // 샘플 메시지 데이터
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -151,7 +151,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
       read: true
     }
   ]);
-  
+
   // 샘플 알림 데이터
   const [notifications, setNotifications] = useState<Notification[]>([
     {
@@ -191,7 +191,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
       link: "/events"
     }
   ]);
-  
+
   // 샘플 장바구니 데이터
   const [cartItems, setCartItems] = useState<CartItem[]>([
     {
@@ -210,16 +210,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
       discountRate: 10
     }
   ]);
-  
+
   // 읽지 않은 메시지 수
   const unreadMessagesCount = messages.filter(msg => !msg.read).length;
-  
+
   // 읽지 않은 알림 수
   const unreadNotificationsCount = notifications.filter(notif => !notif.read).length;
-  
+
   // 장바구니 아이템 총 수량
   const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
-  
+
   // 장바구니 총 금액
   const cartTotal = cartItems.reduce((total, item) => {
     const price = item.discountRate 
@@ -227,45 +227,45 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
       : item.price;
     return total + (price * item.quantity);
   }, 0);
-  
+
   // 메시지를 읽음으로 표시
   const markMessageAsRead = (id: string) => {
     setMessages(messages.map(msg => 
       msg.id === id ? { ...msg, read: true } : msg
     ));
   };
-  
+
   // 알림을 읽음으로 표시
   const markNotificationAsRead = (id: string) => {
     setNotifications(notifications.map(notif => 
       notif.id === id ? { ...notif, read: true } : notif
     ));
   };
-  
+
   // 모든 메시지를 읽음으로 표시
   const markAllMessagesAsRead = () => {
     setMessages(messages.map(msg => ({ ...msg, read: true })));
   };
-  
+
   // 모든 알림을 읽음으로 표시
   const markAllNotificationsAsRead = () => {
     setNotifications(notifications.map(notif => ({ ...notif, read: true })));
   };
-  
+
   // 장바구니에서 아이템 제거
   const removeFromCart = (id: number) => {
     setCartItems(cartItems.filter(item => item.id !== id));
   };
-  
+
   // 장바구니 아이템 수량 변경
   const updateCartItemQuantity = (id: number, quantity: number) => {
     if (quantity < 1) return;
-    
+
     setCartItems(cartItems.map(item => 
       item.id === id ? { ...item, quantity } : item
     ));
   };
-  
+
   // 검색 기능
   const { toast } = useToast();
 
@@ -273,7 +273,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const handleSearch = useCallback(
     debounce(async (query: string) => {
       if (!query.trim()) return;
-      
+
       setIsSearching(true);
       try {
         // Check if we're on the community page - if so, navigate to community with search
@@ -284,7 +284,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
           setIsSearching(false);
           return;
         }
-        
+
         // Navigate to search page with query for non-community pages
         setLocation(`/search?q=${encodeURIComponent(query)}`);
         setSearchQuery('');
@@ -313,7 +313,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     }
     handleSearch(searchQuery);
   };
-  
+
   // 엔터 키 처리
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -321,15 +321,15 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
       handleSearchSubmit();
     }
   };
-  
+
 
   const handleLogout = () => {
-    
+
     // 모든 로컬 스토리지 인증 관련 데이터 제거
     localStorage.removeItem('petedu_auth');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userData');
-    
+
     // 전역 상태 초기화
     if (window.__peteduAuthState) {
       window.__peteduAuthState = {
@@ -338,10 +338,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
         userName: null
       };
     }
-    
+
     // 로그아웃 이벤트 발생시켜 다른 컴포넌트에 알림
     window.dispatchEvent(new CustomEvent('logout'));
-    
+
     // 서버 로그아웃 API 호출 (비동기로 처리)
     fetch('/api/logout', {
       method: 'POST',
@@ -350,15 +350,14 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
       },
       credentials: 'include' // 쿠키 포함
     }).catch(err => console.error('서버 로그아웃 API 호출 실패:', err));
-    
+
     // 로그아웃 후 홈페이지로 이동
     window.location.href = "/";
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-sm z-40 transition-colors sticky top-0 w-full">
-      <div className="w-full mx-auto px-0">
-        <div className="flex justify-between items-center h-16 px-4">
+    <header className="sticky top-0 z-50 w-full border-b border-emerald-100/50 bg-gradient-to-r from-white via-emerald-50/30 to-white dark:from-gray-950 dark:via-emerald-950/20 dark:to-gray-950 backdrop-blur-lg supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-gray-950/80 shadow-sm">
+      <div className="container flex h-16 items-center px-4 sm:px-6 lg:px-8">
           {/* Mobile Menu Button */}
           <button
             type="button"
@@ -368,7 +367,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
           >
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
-          
+
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl ml-0">
             <div className="w-full relative">
@@ -400,7 +399,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   )}
                 </div>
               )}
-              
+
               {/* 검색 결과 드롭다운 */}
               {searchQuery.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50">
@@ -469,7 +468,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     </Badge>
                   )}
                 </Button>
-                
+
                 {/* Messages Popup */}
                 {messagePopupOpen && isAuthenticated && (
                   <div 
@@ -499,7 +498,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="max-h-80 overflow-y-auto py-1">
                       {messages.length > 0 ? (
                         messages.slice(0, 5).map((message) => (
@@ -539,7 +538,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="border-t border-gray-200 dark:border-gray-700 py-2 px-4">
                       <Button 
                         variant="link" 
@@ -556,7 +555,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   </div>
                 )}
               </div>
-              
+
               {/* Real-time Notification Bell */}
               {isAuthenticated && (
                 <div className="relative">
@@ -589,7 +588,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       </Badge>
                     )}
                   </Button>
-                  
+
                   {/* Notifications Popup */}
                   {notificationPopupOpen && (
                     <div 
@@ -619,7 +618,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="max-h-80 overflow-y-auto py-1">
                         {notifications.length > 0 ? (
                           notifications.slice(0, 5).map((notification) => (
@@ -658,7 +657,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="border-t border-gray-200 dark:border-gray-700 py-2 px-4">
                         <Button 
                           variant="link" 
@@ -676,7 +675,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   )}
                 </div>
               )}
-              
+
               <QuickThemeToggle />
             </div>
 
@@ -711,7 +710,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       </span>
                     )}
                   </Button>
-                  
+
                   {/* Cart Popup */}
                   {cartPopupOpen && (
                     <div 
@@ -733,7 +732,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="max-h-80 overflow-y-auto py-1">
                         {cartItems.length > 0 ? (
                           <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -822,17 +821,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="mt-2"
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                
                                 // 인증 정보를 URL 파라미터로 전달
                                 let shopUrl = 'https://store.funnytalez.com/';
-                                
+
                                 // 인증 상태 가져오기
                                 const authState = window.__peteduAuthState || {
                                   isAuthenticated: isAuthenticated,
                                   userRole: userRole,
                                   userName: userName
                                 };
-                                
+
                                 // 인증된 사용자인 경우에만 정보 전달
                                 if (authState.isAuthenticated && authState.userName) {
                                   const params = new URLSearchParams({
@@ -842,7 +840,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                                   });
                                   shopUrl += '?' + params.toString();
                                 }
-                                
+
                                 window.open(shopUrl, '_blank', 'noopener,noreferrer');
                               }}
                             >
@@ -851,7 +849,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           </div>
                         )}
                       </div>
-                      
+
                       {cartItems.length > 0 && (
                         <>
                           <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3">
@@ -1019,7 +1017,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             )}
           </div>
         </div>
-      </div>
     </header>
   );
 }

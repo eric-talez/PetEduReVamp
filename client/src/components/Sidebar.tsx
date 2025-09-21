@@ -113,7 +113,7 @@ interface NavItemProps {
 function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) {
   const { expanded } = useContext(SidebarContext);
   const [, setLocation] = useLocation();
-  
+
   const handleNavigation = useCallback(() => {
     if (onClick) {
       onClick(href);
@@ -524,14 +524,14 @@ export function Sidebar({
 
   // 로고 URL 결정
   const getLogoUrl = (type: 'expanded' | 'collapsed') => {
-    
+
     if (!logoData || typeof logoData !== 'object') {
       // 기본 로고 사용
       return type === 'expanded' ? TalezLogoType : TalezSymbol;
     }
-    
+
     const logos = logoData as any;
-    
+
     if (type === 'expanded') {
       // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
       return logos.logoLight || logos.logoUrl || TalezLogoType;
@@ -567,7 +567,7 @@ export function Sidebar({
           expanded ? "w-64" : "w-[70px]"
         )}
       >
-        <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
+        <div className="p-4 border-b border-emerald-100 dark:border-emerald-800/30 bg-gradient-to-r from-emerald-50 to-emerald-50/50 dark:from-emerald-950/30 dark:to-emerald-950/10 h-16 flex items-center justify-between px-3 transition-all duration-300">
           {expanded ? (
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex items-center justify-center w-full h-full group">
@@ -899,7 +899,7 @@ export function Sidebar({
           </div>
         </ScrollArea>
 
-        <div className={`p-4 ${expanded ? "" : "text-center"}`}>
+        <div className="p-4 border-b border-emerald-100 dark:border-emerald-800/30 bg-gradient-to-r from-emerald-50 to-emerald-50/50 dark:from-emerald-950/30 dark:to-emerald-950/10">
           <div className="text-xs text-gray-500 dark:text-gray-400">
             {expanded ? (
               <>
