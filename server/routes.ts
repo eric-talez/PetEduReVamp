@@ -13,6 +13,8 @@ import { registerUploadRoutes } from "./routes/upload";
 
 import { storage } from "./storage";
 import Stripe from "stripe";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { ObjectPermission } from "./objectAcl";
 import { eventRoutes } from "./routes/events";
 import { eventUpdater } from "./services/eventUpdater";
 import { 
@@ -73,6 +75,19 @@ import {
   // 로고 설정 관련 스키마
   logoSettings,
   insertLogoSettingsSchema,
+  // 커뮤니티 게시글 관련 스키마
+  posts,
+  comments,
+  insertPostSchema,
+  updatePostSchema,
+  selectPostSchema,
+  insertCommentSchema,
+  selectCommentSchema,
+  type Post,
+  type InsertPost,
+  type UpdatePost,
+  type Comment,
+  type InsertComment,
   updateLogoSettingsSchema,
   selectLogoSettingsSchema,
   logoSettingsQuerySchema,
@@ -11125,6 +11140,77 @@ app.get('/api/search', async (req, res) => {
     } catch (error) {
       console.error('예약 조회 오류:', error);
       res.status(500).json({ error: "예약 정보를 불러올 수 없습니다" });
+    }
+  });
+
+  // Object Storage 영상 업로드 관련 API
+  const objectStorageService = new ObjectStorageService();
+
+  // 영상 업로드 URL 생성 API
+  app.post("/api/videos/upload-url", requireAuth(), async (req, res) => {
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.success({ uploadURL }, "영상 업로드 URL이 생성되었습니다.");
+    } catch (error) {
+      console.error("영상 업로드 URL 생성 실패:", error);
+      res.error("영상 업로드 URL 생성에 실패했습니다.", 500);
+    }
+  });
+
+  // 영상이 포함된 게시글 생성 API
+  app.post("/api/community/posts/video", requireAuth(), async (req, res) => {
+    try {
+      const { title, content, category, videoUrl, videoThumbnail, videoDuration, videoFileSize } = req.body;
+      const authorId = req.session?.user?.id;
+
+      if (!authorId) {
+        return res.error("인증이 필요합니다.", 401);
+      }
+
+      // 영상 URL 정규화 및 ACL 정책 설정
+      let normalizedVideoUrl = null;
+      if (videoUrl) {
+        normalizedVideoUrl = await objectStorageService.trySetObjectEntityAclPolicy(videoUrl, {
+          owner: authorId.toString(),
+          visibility: "public", // 커뮤니티 영상은 공개
+          aclRules: []
+        });
+      }
+
+      // 게시글 데이터 생성
+      const postData = insertPostSchema.parse({
+        title,
+        content,
+        category: category || "훈련팁",
+        authorId,
+        postType: "video_short",
+        videoUrl: normalizedVideoUrl,
+        videoThumbnail,
+        videoDuration,
+        videoFileSize,
+      });
+
+      // 저장소에 게시글 저장
+      const newPost = await storage.createCommunityPost(postData);
+      
+      res.success(newPost, "영상 게시글이 성공적으로 생성되었습니다.");
+    } catch (error) {
+      console.error("영상 게시글 생성 실패:", error);
+      res.error("영상 게시글 생성에 실패했습니다.", 500);
+    }
+  });
+
+  // 영상 파일 서빙 API
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("영상 파일 서빙 실패:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.status(404).json({ error: "파일을 찾을 수 없습니다." });
+      }
+      return res.status(500).json({ error: "파일 서빙에 실패했습니다." });
     }
   });
 
