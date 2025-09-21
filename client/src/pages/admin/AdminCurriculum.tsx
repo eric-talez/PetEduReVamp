@@ -46,6 +46,7 @@ import {
   ExternalLink,
   RotateCcw
 } from 'lucide-react';
+import { getCSRFToken } from '@/lib/csrf';
 
 interface CurriculumData {
   id: string;
@@ -685,9 +686,16 @@ export default function AdminCurriculum() {
         ]
       };
 
+      // CSRF 토큰 가져오기
+      const csrfToken = await getCSRFToken();
+
       const response = await fetch('/api/admin/curriculums', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken 
+        },
+        credentials: 'include',
         body: JSON.stringify(curriculumData)
       });
 
@@ -708,10 +716,16 @@ export default function AdminCurriculum() {
         throw new Error(errorData.message || '서버 오류가 발생했습니다.');
       }
     } catch (error: any) {
-      console.error('커리큘럼 생성 오류:', error);
+      console.error('커리큘럼 생성 오류 상세:', {
+        error,
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        formData
+      });
       toast({
         title: "생성 실패",
-        description: error.message || "커리큘럼 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
+        description: error.message || `커리큘럼 생성 중 오류가 발생했습니다: ${error.toString()}`,
         variant: "destructive"
       });
     }
@@ -756,9 +770,16 @@ export default function AdminCurriculum() {
       
       console.log('[클라이언트] 서버로 전송할 데이터 - 모듈 개수:', curriculumData.modules?.length || 0);
 
+      // CSRF 토큰 가져오기
+      const csrfToken = await getCSRFToken();
+
       const response = await fetch('/api/admin/curriculums', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken 
+        },
+        credentials: 'include',
         body: JSON.stringify(curriculumData)
       });
 
@@ -777,10 +798,16 @@ export default function AdminCurriculum() {
         throw new Error(errorData.message || '서버 오류가 발생했습니다.');
       }
     } catch (error: any) {
-      console.error('커리큘럼 생성 오류:', error);
+      console.error('커리큘럼 생성 오류 상세:', {
+        error,
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        formData
+      });
       toast({
         title: "생성 실패",
-        description: error.message || "커리큘럼 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
+        description: error.message || `커리큘럼 생성 중 오류가 발생했습니다: ${error.toString()}`,
         variant: "destructive"
       });
     }
@@ -1154,9 +1181,16 @@ export default function AdminCurriculum() {
         }))
       };
 
+      // CSRF 토큰 가져오기
+      const csrfToken = await getCSRFToken();
+
       const response = await fetch('/api/admin/curriculums', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken 
+        },
+        credentials: 'include',
         body: JSON.stringify(curriculumData)
       });
 
@@ -1724,9 +1758,16 @@ export default function AdminCurriculum() {
         updatedAt: new Date()
       };
 
+      // CSRF 토큰 가져오기
+      const csrfToken = await getCSRFToken();
+
       const response = await fetch('/api/admin/curriculums', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken 
+        },
+        credentials: 'include',
         body: JSON.stringify(curriculumData)
       });
 
