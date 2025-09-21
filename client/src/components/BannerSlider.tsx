@@ -8,37 +8,37 @@ const banners = [
   {
     title: "전문 반려동물 교육 서비스",
     description: "TALEZ에서 반려동물과 함께하는 행복한 일상을 만들어보세요",
-    image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+    image: "/attached_assets/image_1746582251297.png",
     link: "/home"
   },
   {
     title: "전문 훈련사와 함께하는 맞춤형 교육",
-    description: "1:1 전문 상담으로 반려동물에게 최적화된 교육 프로그램을 제공합니다",
-    image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+    description: "국가자격 제1회 반려동물행동지도사와 함께 체계적인 교육을 받아보세요",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
     link: "/courses"
   },
   {
-    title: "검증된 전문 훈련사",
-    description: "자격증을 보유한 전문 훈련사들이 체계적인 교육을 제공합니다",
-    image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+    title: "왕짱 반려견스쿨 - 체계적인 훈련 프로그램",
+    description: "제1회 국가자격 반려동물행동지도사가 운영하는 전문 교육기관입니다",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
     link: "/trainers"
   },
   {
-    title: "편리한 온라인 화상 교육",
-    description: "집에서 편안하게 전문 훈련사와 실시간 교육을 받아보세요",
-    image: "https://images.unsplash.com/photo-1560807707-8cc77767d783?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+    title: "전국 지점 운영 - 가까운 곳에서 만나세요",
+    description: "공평점 반려견스쿨과 석적점 독트레이닝 센터에서 전문 교육을 제공합니다",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
     link: "/video-call"
   },
   {
     title: "AI 기반 행동 분석 서비스",
     description: "최신 AI 기술로 반려동물의 행동을 분석하고 맞춤형 케어 솔루션을 제공합니다",
-    image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+    image: "/attached_assets/image_1746582251297.png",
     link: "/ai-analysis"
   },
   {
     title: "반려동물 친화 시설 안내",
     description: "반려동물과 함께 방문할 수 있는 검증된 시설들을 소개합니다",
-    image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
     link: "/places"
   }
 ];
