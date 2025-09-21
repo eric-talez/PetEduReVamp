@@ -1,0 +1,241 @@
+import OpenAI from "openai";
+import { z } from "zod";
+
+// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// 커리큘럼 모듈 스키마
+const CurriculumModuleSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  duration: z.number(), // minutes
+  objectives: z.array(z.string()),
+  isFree: z.boolean().optional().default(false),
+  content: z.string().optional().default(''),
+});
+
+// AI 생성 커리큘럼 스키마
+const AICurriculumSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  category: z.string(),
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
+  duration: z.number(), // total duration in minutes
+  modules: z.array(CurriculumModuleSchema),
+  trainerName: z.string().optional().default(''),
+});
+
+// 가격 제안 스키마
+const PricingSuggestionSchema = z.object({
+  suggestedPrice: z.number(),
+  reasoning: z.string(),
+  confidence: z.number().min(0).max(1),
+  priceRange: z.object({
+    min: z.number(),
+    max: z.number()
+  })
+});
+
+export type AICurriculum = z.infer<typeof AICurriculumSchema>;
+export type PricingSuggestion = z.infer<typeof PricingSuggestionSchema>;
+
+/**
+ * AI를 사용하여 파일 내용을 분석하고 커리큘럼을 생성합니다.
+ */
+export async function analyzeCurriculumContent(
+  fileContent: string,
+  fileName: string,
+  additionalContext?: string
+): Promise<AICurriculum> {
+  try {
+    const prompt = `
+당신은 반려동물 훈련 커리큘럼 전문가입니다. 다음 파일 내용을 분석하여 체계적인 커리큘럼을 생성해주세요.
+
+파일명: ${fileName}
+${additionalContext ? `추가 컨텍스트: ${additionalContext}` : ''}
+
+파일 내용:
+${fileContent}
+
+다음 JSON 형식으로 커리큘럼을 생성해주세요:
+{
+  "title": "커리큘럼 제목",
+  "description": "커리큘럼 설명 (목표와 대상을 포함)",
+  "category": "카테고리 (기초훈련, 문제행동교정, 어질리티, 사회화, 전문가과정, 재활치료 중 하나)",
+  "difficulty": "난이도 (beginner, intermediate, advanced 중 하나)",
+  "duration": 전체_소요시간_분단위,
+  "modules": [
+    {
+      "title": "모듈 제목",
+      "description": "모듈 설명",
+      "duration": 모듈_소요시간_분단위,
+      "objectives": ["학습목표1", "학습목표2", "학습목표3"],
+      "isFree": false,
+      "content": "모듈 상세 내용"
+    }
+  ],
+  "trainerName": "강사명 (파일에서 추출 가능한 경우, 없으면 빈 문자열)"
+}
+
+주의사항:
+- 각 모듈은 15-120분 사이로 설정
+- 전체 커리큘럼은 최소 2개, 최대 12개 모듈로 구성
+- 난이도에 따라 적절한 모듈 수와 시간 조정
+- 실용적이고 체계적인 학습 순서로 모듈 배치
+- 한국어로 생성하되, 전문적이고 명확한 표현 사용
+`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-5",
+      messages: [
+        {
+          role: "system",
+          content: "당신은 반려동물 훈련 전문가이며, 체계적이고 실용적인 커리큘럼을 생성하는 것이 전문입니다. 항상 JSON 형식으로 정확하게 응답해주세요."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const aiResult = JSON.parse(response.choices[0].message.content || '{}');
+    
+    // Zod로 유효성 검증
+    const validatedCurriculum = AICurriculumSchema.parse(aiResult);
+    
+    console.log(`[AI 커리큘럼] ${fileName} 분석 완료:`, {
+      title: validatedCurriculum.title,
+      modules: validatedCurriculum.modules.length,
+      duration: validatedCurriculum.duration
+    });
+
+    return validatedCurriculum;
+  } catch (error) {
+    console.error('[AI 커리큘럼] 분석 실패:', error);
+    throw new Error(`AI 커리큘럼 분석에 실패했습니다: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * AI를 사용하여 커리큘럼의 적정 가격을 제안합니다.
+ */
+export async function suggestCurriculumPricing(
+  curriculum: AICurriculum,
+  marketContext?: string
+): Promise<PricingSuggestion> {
+  try {
+    const prompt = `
+당신은 반려동물 훈련 교육 시장의 가격 책정 전문가입니다. 다음 커리큘럼의 적정 가격을 제안해주세요.
+
+커리큘럼 정보:
+- 제목: ${curriculum.title}
+- 설명: ${curriculum.description}
+- 카테고리: ${curriculum.category}
+- 난이도: ${curriculum.difficulty}
+- 총 시간: ${curriculum.duration}분 (${Math.round(curriculum.duration / 60)}시간)
+- 모듈 수: ${curriculum.modules.length}개
+
+모듈별 상세:
+${curriculum.modules.map((module, index) => 
+  `${index + 1}. ${module.title} (${module.duration}분) - ${module.description}`
+).join('\n')}
+
+${marketContext ? `시장 컨텍스트: ${marketContext}` : ''}
+
+한국 반려동물 훈련 시장 기준으로 다음 JSON 형식으로 가격을 제안해주세요:
+{
+  "suggestedPrice": 권장가격_원단위,
+  "reasoning": "가격 책정 근거 (시간당 비용, 전문성, 시장 평균 등을 고려한 설명)",
+  "confidence": 0.0_to_1.0_신뢰도,
+  "priceRange": {
+    "min": 최소가격_원단위,
+    "max": 최대가격_원단위
+  }
+}
+
+가격 책정 기준:
+- 기초/입문: 시간당 15,000-25,000원
+- 중급: 시간당 20,000-35,000원  
+- 고급/전문: 시간당 30,000-50,000원
+- 개인 레슨 vs 그룹 레슨 고려
+- 전문성과 자격증 수준 반영
+- 최소 가격: 19,000원, 최대 가격: 500,000원
+`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-5",
+      messages: [
+        {
+          role: "system",
+          content: "당신은 반려동물 훈련 교육업계의 가격 책정 전문가입니다. 시장 상황을 잘 알고 있으며, 합리적이고 경쟁력 있는 가격을 제안합니다."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const aiResult = JSON.parse(response.choices[0].message.content || '{}');
+    
+    // Zod로 유효성 검증
+    const validatedPricing = PricingSuggestionSchema.parse(aiResult);
+    
+    console.log(`[AI 가격책정] ${curriculum.title} 분석 완료:`, {
+      price: validatedPricing.suggestedPrice,
+      confidence: validatedPricing.confidence
+    });
+
+    return validatedPricing;
+  } catch (error) {
+    console.error('[AI 가격책정] 분석 실패:', error);
+    
+    // 폴백 가격 계산
+    const fallbackPrice = calculateFallbackPrice(curriculum);
+    
+    return {
+      suggestedPrice: fallbackPrice,
+      reasoning: "AI 분석에 실패하여 기본 공식으로 계산된 가격입니다. (기본 시간당 20,000원 × 총 시간 × 난이도 배수)",
+      confidence: 0.6,
+      priceRange: {
+        min: Math.round(fallbackPrice * 0.8),
+        max: Math.round(fallbackPrice * 1.3)
+      }
+    };
+  }
+}
+
+/**
+ * 폴백 가격 계산 (AI 실패시 사용)
+ */
+function calculateFallbackPrice(curriculum: AICurriculum): number {
+  const baseRatePerHour = 20000; // 기본 시간당 20,000원
+  const totalHours = curriculum.duration / 60;
+  
+  // 난이도별 배수
+  const difficultyMultiplier = {
+    beginner: 0.9,
+    intermediate: 1.0,
+    advanced: 1.2
+  };
+  
+  let price = baseRatePerHour * totalHours * difficultyMultiplier[curriculum.difficulty];
+  
+  // 모듈 수에 따른 추가 보정
+  if (curriculum.modules.length > 6) {
+    price *= 1.05; // 5% 추가
+  }
+  if (curriculum.modules.length > 8) {
+    price *= 1.1; // 10% 추가
+  }
+  
+  // 최소/최대 가격 적용
+  price = Math.max(19000, Math.min(500000, Math.round(price / 1000) * 1000));
+  
+  return price;
+}
+
+export { CurriculumModuleSchema, AICurriculumSchema, PricingSuggestionSchema };
