@@ -14,20 +14,3 @@ declare module 'express-session' {
     };
   }
 }
-
-// Express Request에 user 속성 추가
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: number;
-        username: string;
-        email: string;
-        name: string;
-        role: UserRole;
-        instituteId?: number;
-        [key: string]: any;
-      };
-    }
-  }
-}

@@ -1,27 +1,25 @@
-import { User, Pet, Course, Curriculum, Notification, Institute, SubscriptionPlan, Product, Post, Reservation } from '@shared/schema';
-
 class Storage {
-  users: User[] = [];
-  pets: Pet[] = [];
-  courses: Course[] = [];
-  curriculums: Curriculum[] = [];
-  notifications: Notification[] = [];
-  registrations: Reservation[] = [];
-  institutes: Institute[] = [];
-  subscriptionPlans: SubscriptionPlan[] = [];
-  paymentRequests: any[] = []; // Keep as any for now
-  products: Product[] = [];
-  pricingRules: any[] = []; // Keep as any for now
-  trainingJournals: any[] = []; // Keep as any for now
-  posts: Post[] = [];
-  coursePurchases: any[] = []; // Keep as any for now
-  courseProgress: any[] = []; // Keep as any for now
-  progressSharing: any[] = []; // Keep as any for now
-  lessonSessions: any[] = []; // Keep as any for now
-  trainerActivityLogs: any[] = []; // Keep as any for now
+  users: any[] = [];
+  pets: any[] = [];
+  courses: any[] = [];
+  curriculums: any[] = [];
+  notifications: any[] = [];
+  registrations: any[] = [];
+  institutes: any[] = [];
+  subscriptionPlans: any[] = [];
+  paymentRequests: any[] = [];
+  products: any[] = [];
+  pricingRules: any[] = [];
+  trainingJournals: any[] = [];
+  posts: any[] = [];
+  coursePurchases: any[] = [];
+  courseProgress: any[] = [];
+  progressSharing: any[] = [];
+  lessonSessions: any[] = [];
+  trainerActivityLogs: any[] = [];
   pointSettings: any = {};
   logoSettings: any = {};
-  banners: any[] = []; // Keep as any for now
+  banners: any[] = [];
   // 대체 훈련사 시스템 데이터 저장소
   substituteClassPosts: any[] = [];
   substituteClassApplications: any[] = [];
@@ -4579,46 +4577,12 @@ class HybridStorage extends Storage {
       this.banners = [
         {
           id: 1,
-          title: "반려견과 함께하는 즐거운 학습",
-          content: "전문 훈련사와 함께 반려견의 행동을 이해하고 건강한 관계를 만들어보세요",
-          imageUrl: "@assets/stock_images/happy_dog_playing_wi_d25e51b9.jpg",
+          title: "Talez 펫 교육 플랫폼",
+          content: "전문 훈련사와 함께하는 AI 기반 맞춤형 반려동물 교육",
+          imageUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
           linkUrl: "/courses",
           targetPosition: "home-hero",
           displayOrder: 1,
-          targetUserGroup: "all",
-          startDate: null,
-          endDate: null,
-          clickCount: 0,
-          viewCount: 0,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: 2,
-          title: "AI 기반 맞춤형 반려동물 케어",
-          content: "최신 AI 기술로 반려동물의 행동을 분석하고 개인화된 훈련 솔루션을 제공합니다",
-          imageUrl: "@assets/stock_images/happy_dog_playing_wi_f559df2f.jpg",
-          linkUrl: "/ai-analysis",
-          targetPosition: "home-hero",
-          displayOrder: 2,
-          targetUserGroup: "all",
-          startDate: null,
-          endDate: null,
-          clickCount: 0,
-          viewCount: 0,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: 3,
-          title: "전국 훈련사 네트워크",
-          content: "믿을 수 있는 전문 훈련사들과 연결되어 반려동물의 성장을 함께 도와드립니다",
-          imageUrl: "@assets/stock_images/happy_dog_playing_wi_bb83b072.jpg",
-          linkUrl: "/trainers",
-          targetPosition: "home-hero",
-          displayOrder: 3,
           targetUserGroup: "all",
           startDate: null,
           endDate: null,
@@ -4634,9 +4598,6 @@ class HybridStorage extends Storage {
   }
 
   getActiveBanners() {
-    // 배너 초기화 먼저 수행
-    this.getAllBanners();
-    
     const now = new Date();
     return this.banners.filter(banner => {
       if (!banner.isActive) return false;
@@ -4836,9 +4797,6 @@ class HybridStorage extends Storage {
   }
 
   getBannersWithPagination(page: number = 1, limit: number = 10, filters: any = {}) {
-    // 배너 초기화 먼저 수행
-    this.getAllBanners();
-    
     let filteredBanners = [...this.banners];
     
     // 필터 적용
@@ -4915,180 +4873,6 @@ class HybridStorage extends Storage {
   async getEventsByCategory(category: string): Promise<any[]> {
     // 카테고리별 이벤트 필터링
     return this.events.filter(event => event.category === category);
-  }
-
-  // Missing storage methods - Added to fix TypeScript errors
-  
-  // Pet health methods
-  async getPetHealthRecords(petId: number): Promise<any[]> {
-    // Return health records for the specific pet
-    return this.trainingJournals
-      .filter(journal => journal.petId === petId && journal.healthNotes)
-      .map(journal => ({
-        id: journal.id,
-        petId: journal.petId,
-        date: journal.trainingDate,
-        type: 'training_health_note',
-        notes: journal.healthNotes,
-        trainerId: journal.trainerId,
-        createdAt: journal.createdAt
-      }));
-  }
-
-  async createHealthRecord(record: any): Promise<any> {
-    return { id: Date.now(), ...record, createdAt: new Date().toISOString() };
-  }
-
-  async getPetVaccinations(petId: number): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  async getPetMedications(petId: number): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  async getPetTrainingSessions(petId: number): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  async getPetProgress(petId: number): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  async getPetAchievements(petId: number): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  // Pet methods - Made async for API consistency
-  async getPetById(id: number): Promise<any> {
-    return this.pets.find(pet => pet.id === id) || undefined;
-  }
-
-  // Course/reservation methods
-  async getCoursesByUserId(userId: number): Promise<any[]> {
-    return this.courses.filter(course => course.instructorId === userId || course.ownerId === userId);
-  }
-
-  async getReservations(userId?: number): Promise<any[]> {
-    // Return reservations from registrations and courses
-    let reservations = this.registrations || [];
-    
-    if (userId) {
-      reservations = reservations.filter(reg => reg.userId === userId || reg.petOwnerId === userId);
-    }
-    
-    return reservations.map(reg => ({
-      id: reg.id,
-      userId: reg.userId || reg.petOwnerId,
-      courseId: reg.courseId,
-      status: reg.status || 'pending',
-      reservationDate: reg.createdAt,
-      scheduledDate: reg.scheduledDate || reg.startDate,
-      notes: reg.notes,
-      createdAt: reg.createdAt
-    }));
-  }
-
-  async getMessages(userId: number): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  async getVaccinations(petId: number): Promise<any[]> {
-    return this.getPetVaccinations(petId); // Delegate to existing method
-  }
-
-  async getCheckups(petId: number): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  // Trainer point methods
-  async getPointConfigs(): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  async updatePointConfig(id: number, data: any): Promise<any> {
-    return { id, ...data, updatedAt: new Date().toISOString() };
-  }
-
-  async addTrainerActivityLog(log: any): Promise<any> {
-    const newLog = { id: Date.now(), ...log, createdAt: new Date().toISOString() };
-    this.trainerActivityLogs.push(newLog);
-    return newLog;
-  }
-
-  async getTrainerPointsForPeriod(trainerId: number, startDate: string, endDate: string): Promise<any> {
-    return { trainerId, points: 0, period: { startDate, endDate } };
-  }
-
-  // Trainer program methods
-  async createTrainerProgram(program: any): Promise<any> {
-    return { id: Date.now(), ...program, createdAt: new Date().toISOString() };
-  }
-
-  async getTrainerProgram(id: number): Promise<any> {
-    return undefined; // Stub implementation
-  }
-
-  async getTrainerProgramEnrollmentsByUserId(userId: number): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  async createTrainerProgramEnrollment(enrollment: any): Promise<any> {
-    return { id: Date.now(), ...enrollment, createdAt: new Date().toISOString() };
-  }
-
-  async getTrainerCertificationByTrainerId(trainerId: number): Promise<any> {
-    return undefined; // Stub implementation
-  }
-
-  // Other methods
-  async getAllLocations(): Promise<any[]> {
-    return []; // Stub implementation
-  }
-
-  async getConsultationById(id: number): Promise<any> {
-    return undefined; // Stub implementation
-  }
-
-  async getTrainerByName(name: string): Promise<any> {
-    return this.trainers.find(trainer => trainer.name === name) || undefined;
-  }
-
-  async resetLogoSettings(): Promise<any> {
-    this.logoSettings = {};
-    return this.logoSettings;
-  }
-
-  async deleteLogo(logoType: string): Promise<void> {
-    // Stub implementation
-  }
-
-  // Training journal methods
-  async getTrainingJournalsByInstitute(instituteId: number): Promise<any[]> {
-    return this.trainingJournals.filter(journal => journal.instituteId === instituteId);
-  }
-
-  // Trainer programs method - missing critical method
-  async getTrainerPrograms(): Promise<any[]> {
-    // Return courses that are trainer programs
-    return this.courses
-      .filter(course => course.category === 'trainer-program' || course.level === 'trainer-certification')
-      .map(course => ({
-        id: course.id,
-        name: course.title,
-        duration: course.duration,
-        description: course.description,
-        price: course.price,
-        instructorId: course.instructorId,
-        instituteId: course.instituteId,
-        enrollmentCount: course.enrollmentCount || 0,
-        maxCapacity: course.maxCapacity || 20,
-        status: course.isActive ? 'active' : 'inactive',
-        startDate: course.startDate,
-        endDate: course.endDate,
-        createdAt: course.createdAt,
-        updatedAt: course.updatedAt
-      }));
   }
 }
 

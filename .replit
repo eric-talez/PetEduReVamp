@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["maven", "openjdk17", "unzip", "jq"]
+packages = ["maven", "openjdk17", "unzip"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -26,10 +26,6 @@ externalPort = 3002
 [[ports]]
 localPort = 41399
 externalPort = 3000
-
-[[ports]]
-localPort = 41495
-externalPort = 3003
 
 [workflows]
 runButton = "Project"
