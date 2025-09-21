@@ -581,7 +581,7 @@ export function Sidebar({
         </div>
 
         <ScrollArea className={cn("flex-1", expanded ? "px-3" : "px-2")}>
-          <div className="py-4 space-y-1 w-full min-h-min relative">
+          <div className="py-2 space-y-1 w-full min-h-min relative">
             {/* 비로그인 상태 메뉴 */}
             {!isAuthenticated ? (
               <>
