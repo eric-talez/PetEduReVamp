@@ -2533,15 +2533,15 @@ export default function AdminCurriculum() {
                             }
                           }
                         }}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className="block w-full text-base text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-base file:font-medium file:bg-blue-50 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         지원 형식: MP4, AVI, MOV (최대 500MB) - 여러 파일 선택 가능
                       </p>
                       {newVideo.videoFile && (
-                        <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
-                          <span className="font-medium">선택된 파일:</span> {newVideo.videoFile.name}
-                          <span className="text-gray-500 ml-2">
+                        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded text-sm">
+                          <span className="font-medium text-blue-800 dark:text-blue-200">선택된 파일:</span> <span className="text-blue-700 dark:text-blue-300">{newVideo.videoFile.name}</span>
+                          <span className="text-blue-600 dark:text-blue-400 ml-2">
                             ({(newVideo.videoFile.size / (1024 * 1024)).toFixed(1)}MB)
                           </span>
                         </div>
@@ -2550,7 +2550,7 @@ export default function AdminCurriculum() {
 
                     {videoUploadProgress > 0 && (
                       <div>
-                        <div className="flex justify-between text-sm mb-1">
+                        <div className="flex justify-between text-base text-gray-900 dark:text-gray-100 mb-1">
                           <span>업로드 진행률</span>
                           <span>{videoUploadProgress}%</span>
                         </div>
@@ -2667,7 +2667,7 @@ export default function AdminCurriculum() {
                             </Badge>
                           </div>
                           
-                          <div className="flex items-center gap-4 mb-3 text-sm text-gray-600 dark:text-gray-300">
+                          <div className="flex items-center gap-4 mb-3 text-base text-gray-700 dark:text-gray-300">
                             <div className="flex items-center gap-1">
                               <User className="w-4 h-4" />
                               <span>{curriculum.trainerName}</span>
@@ -2682,7 +2682,7 @@ export default function AdminCurriculum() {
                             </div>
                           </div>
 
-                          <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{curriculum.description}</p>
+                          <p className="text-gray-700 dark:text-gray-300 text-base mb-4">{curriculum.description}</p>
                           
                           {/* 영상 등록 현황 */}
                           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -2711,7 +2711,7 @@ export default function AdminCurriculum() {
                               <div className="text-lg font-bold text-indigo-700">
                                 ₩{(curriculum.totalRevenue || 0).toLocaleString()}
                               </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
                                 등록학생: {curriculum.enrollmentCount || 0}명
                               </div>
                             </div>
@@ -3963,18 +3963,18 @@ export default function AdminCurriculum() {
                   </div>
                   
                   {/* 미리보기 */}
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium mb-3">생성될 커리큘럼 미리보기</h4>
-                    <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">제목:</span> {formData.title}</div>
-                      <div><span className="font-medium">카테고리:</span> {formData.category}</div>
-                      <div><span className="font-medium">난이도:</span> {
+                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <h4 className="font-semibold text-base mb-4 text-gray-900 dark:text-gray-100">생성될 커리큘럼 미리보기</h4>
+                    <div className="space-y-3 text-base">
+                      <div className="text-gray-900 dark:text-gray-100"><span className="font-semibold text-gray-700 dark:text-gray-300">제목:</span> <span className="ml-2">{formData.title}</span></div>
+                      <div className="text-gray-900 dark:text-gray-100"><span className="font-semibold text-gray-700 dark:text-gray-300">카테고리:</span> <span className="ml-2">{formData.category}</span></div>
+                      <div className="text-gray-900 dark:text-gray-100"><span className="font-semibold text-gray-700 dark:text-gray-300">난이도:</span> <span className="ml-2">{
                         formData.difficulty === 'beginner' ? '초급' :
                         formData.difficulty === 'intermediate' ? '중급' : '고급'
-                      }</div>
-                      <div><span className="font-medium">시간:</span> {formData.duration}분 ({Math.floor(formData.duration / 60)}시간 {formData.duration % 60}분)</div>
-                      <div><span className="font-medium">가격:</span> ₩{formData.price.toLocaleString()}</div>
-                      <div><span className="font-medium">강사:</span> {formData.trainerName}</div>
+                      }</span></div>
+                      <div className="text-gray-900 dark:text-gray-100"><span className="font-semibold text-gray-700 dark:text-gray-300">시간:</span> <span className="ml-2">{formData.duration}분 ({Math.floor(formData.duration / 60)}시간 {formData.duration % 60}분)</span></div>
+                      <div className="text-gray-900 dark:text-gray-100"><span className="font-semibold text-gray-700 dark:text-gray-300">가격:</span> <span className="ml-2">₩{formData.price.toLocaleString()}</span></div>
+                      <div className="text-gray-900 dark:text-gray-100"><span className="font-semibold text-gray-700 dark:text-gray-300">강사:</span> <span className="ml-2">{formData.trainerName}</span></div>
                     </div>
                   </div>
                 </>
@@ -4776,7 +4776,7 @@ export default function AdminCurriculum() {
                       <span className="font-medium text-blue-600">파일 선택</span>
                       <span className="text-gray-500"> 또는 드래그 앤 드롭</span>
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       지원 형식: PDF, DOC, PPT, MP4, AVI, MOV, JPG, PNG (최대 100MB)
                     </p>
                   </label>
@@ -4799,7 +4799,7 @@ export default function AdminCurriculum() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{attachment.name}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             {attachment.size ? `${(attachment.size / 1024 / 1024).toFixed(1)}MB` : '크기 정보 없음'}
                           </p>
                         </div>
@@ -4935,8 +4935,8 @@ export default function AdminCurriculum() {
                       </div>
                     </div>
                     <div className="mt-3">
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-1">가격 산정 근거:</p>
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      <p className="text-base text-yellow-700 dark:text-yellow-300 mb-1">가격 산정 근거:</p>
+                      <p className="text-base text-yellow-800 dark:text-yellow-200">
                         {aiAnalysisResult.pricing.reasoning}
                       </p>
                     </div>
@@ -4951,10 +4951,10 @@ export default function AdminCurriculum() {
                   </h3>
                   <div className="space-y-4 max-h-60 overflow-y-auto">
                     {aiAnalysisResult.curriculum?.modules?.map((module, index) => (
-                      <div key={index} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                      <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-medium mb-1">모듈 제목</label>
+                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">모듈 제목</label>
                             <Input
                               value={module.title || ''}
                               onChange={(e) => {
@@ -4971,7 +4971,7 @@ export default function AdminCurriculum() {
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium mb-1">소요 시간 (분)</label>
+                            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">소요 시간 (분)</label>
                             <Input
                               type="number"
                               value={module.duration || 0}
@@ -4990,7 +4990,7 @@ export default function AdminCurriculum() {
                           </div>
                         </div>
                         <div className="mt-2">
-                          <label className="block text-xs font-medium mb-1">모듈 설명</label>
+                          <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">모듈 설명</label>
                           <Textarea
                             value={module.description || ''}
                             onChange={(e) => {
@@ -5027,12 +5027,12 @@ export default function AdminCurriculum() {
 
                 {/* 원본 파일 정보 */}
                 {aiAnalysisResult.sourceFile && (
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                    <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
                       <FileText className="w-4 h-4" />
                       원본 파일 정보
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-base text-gray-700 dark:text-gray-300">
                       <div>
                         <p className="text-gray-600 dark:text-gray-400">파일명</p>
                         <p className="font-medium">{aiAnalysisResult.sourceFile.name}</p>
