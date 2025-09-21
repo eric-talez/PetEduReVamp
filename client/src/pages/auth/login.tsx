@@ -72,11 +72,18 @@ export default function Login() {
     setPassword(testPassword);
     
     try {
+      // CSRF 토큰 먼저 가져오기
+      const csrfResponse = await fetch('/api/auth/csrf', {
+        credentials: 'include'
+      });
+      const csrfData = await csrfResponse.json();
+      
       // 서버에 로그인 요청
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfData.csrfToken,
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -151,11 +158,18 @@ export default function Login() {
     }
     
     try {
+      // CSRF 토큰 먼저 가져오기
+      const csrfResponse = await fetch('/api/auth/csrf', {
+        credentials: 'include'
+      });
+      const csrfData = await csrfResponse.json();
+      
       // 서버에 로그인 요청
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfData.csrfToken,
         },
         credentials: 'include',
         body: JSON.stringify({
