@@ -117,6 +117,9 @@ export default function Login() {
         });
         window.dispatchEvent(loginEvent);
 
+        // 인증 상태 강제 업데이트 - 글로벌 상태 동기화
+        auth.login(userData.user.role, userData.user.name, false);
+
         toast({
           title: "로그인 성공",
           description: `${userData.user.name}님, 환영합니다!`,
@@ -129,9 +132,8 @@ export default function Login() {
                              userData.user.role === 'institute-admin' ? '/institute/dashboard' : 
                              userData.user.role === 'admin' ? '/admin/dashboard' : '/dashboard';
         
-        setTimeout(() => {
-          setLocation(dashboardPath);
-        }, 1000);
+        // 상태 업데이트 후 즉시 리다이렉트
+        setLocation(dashboardPath);
       } else {
         throw new Error(userData.message || '로그인에 실패했습니다.');
       }
@@ -196,6 +198,9 @@ export default function Login() {
         });
         window.dispatchEvent(loginEvent);
 
+        // 인증 상태 강제 업데이트 - 글로벌 상태 동기화
+        auth.login(userData.user.role, userData.user.name, false);
+
         toast({
           title: "로그인 성공",
           description: `${userData.user.name}님, 환영합니다!`,
@@ -208,9 +213,8 @@ export default function Login() {
                              userData.user.role === 'institute-admin' ? '/institute/dashboard' : 
                              userData.user.role === 'admin' ? '/admin/dashboard' : '/dashboard';
         
-        setTimeout(() => {
-          setLocation(dashboardPath);
-        }, 1000);
+        // 상태 업데이트 후 즉시 리다이렉트
+        setLocation(dashboardPath);
       } else {
         throw new Error(userData.message || '로그인에 실패했습니다.');
       }
