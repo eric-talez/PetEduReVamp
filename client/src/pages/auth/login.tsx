@@ -72,11 +72,24 @@ export default function Login() {
     setPassword(testPassword);
     
     try {
-      // 서버에 로그인 요청
+      // CSRF 토큰 먼저 가져오기
+      const csrfResponse = await fetch('/api/csrf', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      if (!csrfResponse.ok) {
+        throw new Error('CSRF 토큰을 가져올 수 없습니다.');
+      }
+      
+      const csrfData = await csrfResponse.json();
+      
+      // 서버에 로그인 요청 (CSRF 토큰 포함)
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfData.csrfToken,
         },
         credentials: 'include',
         body: JSON.stringify({

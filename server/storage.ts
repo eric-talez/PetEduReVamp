@@ -206,7 +206,8 @@ class Storage {
     this.users = [
       { 
         id: 1, 
-        name: '관리자', 
+        name: '관리자',
+        username: 'admin',
         email: 'admin@talez.com', 
         role: 'admin', 
         password: 'admin123',
