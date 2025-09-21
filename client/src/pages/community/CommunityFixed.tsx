@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink, Users, UserCheck, MapPin, TrendingUp, BarChart3 } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink, Users, UserCheck, MapPin, TrendingUp, BarChart3, Download, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -195,6 +195,41 @@ function CommunityPage() {
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
+  
+  // 이벤트/행사 크롤링 mutation
+  const crawlEventsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/community/crawl-events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '크롤링에 실패했습니다.');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "크롤링 완료",
+        description: data.message || `${data.events}개의 이벤트/행사 정보가 수집되었습니다.`,
+      });
+      // 게시글 목록 새로고침
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "크롤링 실패",
+        description: error.message || '이벤트/행사 크롤링 중 오류가 발생했습니다.',
+        variant: "destructive",
+      });
+    }
+  });
   
   // URL 파라미터에서 검색 쿼리 추출
   const urlParams = new URLSearchParams(window.location.search);
@@ -580,6 +615,22 @@ function CommunityPage() {
             <h1 className="text-3xl font-bold text-gray-900">커뮤니티</h1>
             <p className="text-gray-600 mt-1">반려동물 교육과 훈련 정보를 공유하는 공간입니다</p>
           </div>
+
+          {/* 이벤트/행사 탭에서만 크롤링 버튼 표시 */}
+          {activeTab === 'events' && (
+            <Button 
+              onClick={() => crawlEventsMutation.mutate()}
+              disabled={crawlEventsMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white mr-2"
+            >
+              {crawlEventsMutation.isPending ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              {crawlEventsMutation.isPending ? '수집 중...' : '이벤트 수집'}
+            </Button>
+          )}
 
           {/* 게시글 작성 버튼 */}
           <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>

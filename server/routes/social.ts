@@ -1331,16 +1331,52 @@ export function setupSocialRoutes(app: Express) {
     }
   });
 
-  // 네이버 검색 API를 이용한 이벤트/행사 크롤링 API
+  // 네이버 검색 API를 이용한 이벤트/행사 크롤링 API (관리자 전용)
   app.post('/api/community/crawl-events', async (req, res) => {
     try {
+      // 세션 및 관리자 권한 확인
+      if (!req.session?.userId) {
+        return res.status(401).json({ 
+          success: false, 
+          error: '로그인이 필요합니다.' 
+        });
+      }
+
+      const user = storage.getAllUsers().find(u => u.id === req.session.userId);
+      if (!user || (user.role !== 'admin' && user.role !== 'institute-admin')) {
+        return res.status(403).json({ 
+          success: false, 
+          error: '관리자 권한이 필요합니다.' 
+        });
+      }
+
+      // 속도 제한 체크 (관리자 계정당 5분에 1회)
+      const RATE_LIMIT_MINUTES = 5;
+      const now = Date.now();
+      const lastCrawlKey = `crawl_events_${req.session.userId}`;
+      
+      // 메모리에 저장된 마지막 크롤링 시간 확인
+      if (!global.crawlLimits) global.crawlLimits = new Map();
+      const lastCrawlTime = global.crawlLimits.get(lastCrawlKey) || 0;
+      
+      if (now - lastCrawlTime < RATE_LIMIT_MINUTES * 60 * 1000) {
+        const remainingMinutes = Math.ceil((RATE_LIMIT_MINUTES * 60 * 1000 - (now - lastCrawlTime)) / (60 * 1000));
+        return res.status(429).json({ 
+          success: false, 
+          error: `크롤링은 ${RATE_LIMIT_MINUTES}분에 1회만 가능합니다. ${remainingMinutes}분 후 다시 시도해주세요.` 
+        });
+      }
+
       console.log('[이벤트 크롤링] 네이버 검색 API를 이용한 반려동물 이벤트/행사 크롤링 시작');
       
       const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
       const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
       
       if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
-        throw new Error('네이버 API 키가 설정되지 않았습니다.');
+        return res.status(500).json({ 
+          success: false, 
+          error: '서버 설정 오류가 발생했습니다.' 
+        });
       }
 
       // 검색할 키워드들
@@ -1436,16 +1472,16 @@ export function setupSocialRoutes(app: Express) {
         posts.push(eventPost);
       }
 
+      // 크롤링 시간 업데이트
+      global.crawlLimits.set(lastCrawlKey, now);
+
       console.log(`[이벤트 크롤링] 총 ${eventPosts.length}개의 이벤트/행사 정보가 커뮤니티에 등록되었습니다.`);
       
       res.json({
         success: true,
         message: `${eventPosts.length}개의 이벤트/행사 정보가 성공적으로 등록되었습니다.`,
         events: eventPosts.length,
-        details: eventPosts.map(post => ({
-          title: post.title,
-          link: post.linkInfo?.url
-        }))
+        createdCount: eventPosts.length
       });
     } catch (error) {
       console.error('[이벤트 크롤링] 오류:', error);
