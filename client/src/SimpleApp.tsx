@@ -302,7 +302,8 @@ function AppLayout({ children }: { children: ReactNode }) {
             id="main-content" 
             className={`
               flex-grow pt-16 transition-all duration-200
-              ${isDesktop ? (sidebarExpanded ? 'ml-60' : 'ml-[72px]') : 'ml-0'}
+              ${isDesktop ? (sidebarExpanded ? 'ml-60' : 'ml-16') : 'ml-0'}
+              max-w-full
             `}
             tabIndex={-1}
           >
