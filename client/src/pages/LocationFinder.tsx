@@ -96,7 +96,7 @@ export default function LocationFinder() {
       priceRange: '50,000원 - 150,000원',
       isPartner: true,
       description: '전문 반려견 훈련 및 행동 교정 전문 시설입니다.',
-      image: 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=400',
+      image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png',
       status: 'active',
       createdAt: '2024-01-15',
       updatedAt: '2024-06-20'
@@ -115,7 +115,7 @@ export default function LocationFinder() {
       priceRange: '25,000원 - 80,000원',
       isPartner: true,
       description: '전문 그루머가 제공하는 프리미엄 미용 서비스입니다.',
-      image: 'https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400',
+      image: '/attached_assets/image_1746582251297.png',
       status: 'active',
       createdAt: '2024-02-10',
       updatedAt: '2024-06-18'
@@ -311,7 +311,7 @@ export default function LocationFinder() {
       priceRange: '상담 후 결정',
       isPartner: true,
       description: result.description || '',
-      image: 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=400',
+      image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png',
       status: 'active' as const,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()

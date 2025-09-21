@@ -12,13 +12,13 @@ export default function MyCourses() {
   const ongoingCourses = [
     {
       id: 1,
-      image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       title: "반려견 기초 훈련 마스터하기",
       description: "앉아, 기다려, 엎드려 등 기본 명령어부터 산책 예절까지 체계적으로 배우는 초보 견주 필수 코스",
       badge: { text: "인기", variant: "accent" },
       progress: 65,
       trainer: { 
-        image: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100", 
+        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png", 
         name: "김훈련 트레이너" 
       },
       status: "진행 중",
@@ -26,13 +26,13 @@ export default function MyCourses() {
     },
     {
       id: 2,
-      image: "https://images.unsplash.com/photo-1583336663277-620dc1996580?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      image: "/attached_assets/image_1746582251297.png",
       title: "반려견 어질리티 입문",
       description: "다양한 장애물 코스를 통해 반려견의 민첩성과 집중력을 향상시키는 어질리티 훈련 기초 과정",
       badge: { text: "중급", variant: "blue" },
       progress: 30,
       trainer: { 
-        image: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100", 
+        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png", 
         name: "박민첩 트레이너" 
       },
       status: "진행 중",
@@ -40,7 +40,7 @@ export default function MyCourses() {
     },
     {
       id: 3,
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       title: "반려견 사회화 훈련",
       description: "다른 반려견, 사람, 환경에 올바르게 적응하는 방법을 배우는 필수 사회화 과정",
       badge: { text: "초급", variant: "green" },
