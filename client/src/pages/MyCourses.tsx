@@ -46,7 +46,7 @@ export default function MyCourses() {
       badge: { text: "초급", variant: "green" },
       progress: 45,
       trainer: { 
-        image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100", 
+        image: "/attached_assets/image_1746582251297.png", 
         name: "이사회 트레이너" 
       },
       status: "진행 중",
@@ -57,13 +57,13 @@ export default function MyCourses() {
   const completedCourses = [
     {
       id: 4,
-      image: "https://images.unsplash.com/photo-1560743641-3914f2c45636?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
       title: "퍼피 클래스: 생애 초기 교육",
       description: "강아지의 발달 단계에 맞춘 초기 교육으로 건강한 성장과 사회화의 기초를 다지는 과정",
       badge: { text: "완료", variant: "green" },
       progress: 100,
       trainer: { 
-        image: "https://images.unsplash.com/photo-1582553032985-9a8f8c2cfa1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100", 
+        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png", 
         name: "정퍼피 트레이너" 
       },
       status: "완료",
@@ -71,13 +71,13 @@ export default function MyCourses() {
     },
     {
       id: 5,
-      image: "https://images.unsplash.com/photo-1534361960057-19889db9621e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       title: "집안 예절 교육",
       description: "실내에서의 바람직한 행동 습관을 기르고 파괴적 행동을 교정하는 집중 교육 과정",
       badge: { text: "완료", variant: "green" },
       progress: 100,
       trainer: { 
-        image: "https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100", 
+        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png", 
         name: "최행동 트레이너" 
       },
       status: "완료",
@@ -88,12 +88,12 @@ export default function MyCourses() {
   const wishlistCourses = [
     {
       id: 6,
-      image: "https://images.unsplash.com/photo-1583512603806-077998240c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      image: "/attached_assets/image_1746582251297.png",
       title: "분리불안 극복하기",
       description: "혼자 있는 시간을 두려워하는 반려견을 위한 단계별 행동 교정 프로그램",
       badge: { text: "행동교정", variant: "red" },
       trainer: { 
-        image: "https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100", 
+        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png", 
         name: "최행동 트레이너" 
       },
       price: "180,000원",
@@ -101,12 +101,12 @@ export default function MyCourses() {
     },
     {
       id: 7,
-      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       title: "재미있는 트릭 훈련",
       description: "하이파이브부터 점프, 회전까지 반려견의 두뇌를 자극하는 다양한 트릭 교육",
       badge: { text: "인기", variant: "accent" },
       trainer: { 
-        image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100", 
+        image: "/attached_assets/image_1746582251297.png", 
         name: "박재미 트레이너" 
       },
       price: "130,000원",
