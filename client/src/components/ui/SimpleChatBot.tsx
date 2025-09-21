@@ -398,7 +398,7 @@ export function SimpleChatBot() {
         <Button
           onClick={() => setIsOpen(true)}
           onMouseDown={handleDragStart}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20 cursor-move"
+          className="w-14 h-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg transition-colors duration-200 cursor-move"
           style={{ 
             background: 'linear-gradient(135deg, #2BAA61 0%, #1e8b4f 100%)',
             boxShadow: '0 8px 32px rgba(43, 170, 97, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)',
@@ -422,7 +422,7 @@ export function SimpleChatBot() {
   return (
     <div 
       ref={chatbotRef}
-      className="fixed bg-white border border-gray-200 rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden"
+      className="fixed bg-white border border-gray-200 rounded-lg shadow-lg z-[60] flex flex-col overflow-hidden"
       style={{
         bottom: `${position.y}px`,
         right: `${position.x}px`,
@@ -432,11 +432,11 @@ export function SimpleChatBot() {
     >
       {/* 헤더 - 드래그 가능 */}
       <div 
-        className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white cursor-move"
+        className="flex items-center justify-between p-4 bg-primary text-white cursor-move"
         onMouseDown={handleDragStart}
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
             <Bot size={18} />
           </div>
           <div>
@@ -454,14 +454,14 @@ export function SimpleChatBot() {
             e.stopPropagation();
             setIsOpen(false);
           }}
-          className="text-white hover:bg-white/20 w-8 h-8 p-0 rounded-full"
+          className="text-white hover:bg-white/10 w-8 h-8 p-0 rounded-full"
         >
           <X size={16} />
         </Button>
       </div>
 
       {/* 메시지 영역 */}
-      <ScrollArea className="flex-1 p-4 bg-background/50">
+      <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.filter(m => m.role !== 'system').map(message => (
             <div
@@ -472,16 +472,16 @@ export function SimpleChatBot() {
               )}
             >
               {message.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-primary-foreground shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
                   <Bot size={16} />
                 </div>
               )}
               <div
                 className={cn(
-                  'rounded-2xl px-4 py-3 max-w-[75%] text-sm leading-relaxed shadow-sm',
+                  'rounded-lg px-4 py-3 max-w-[75%] text-sm leading-relaxed',
                   message.role === 'user' 
-                    ? 'bg-primary text-primary-foreground rounded-br-md' 
-                    : 'bg-card text-card-foreground border border-border rounded-bl-md'
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-gray-100 text-gray-900 border border-gray-200'
                 )}
               >
                 <div className="whitespace-pre-wrap">
@@ -489,7 +489,7 @@ export function SimpleChatBot() {
                 </div>
               </div>
               {message.role === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
                   <User size={16} />
                 </div>
               )}
@@ -498,9 +498,9 @@ export function SimpleChatBot() {
           {isLoading && (
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                <Bot size={18} />
+                <Bot size={16} />
               </div>
-              <div className="bg-muted rounded-lg rounded-tl-none px-4 py-2">
+              <div className="bg-gray-100 rounded-lg px-4 py-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
               </div>
             </div>
@@ -510,7 +510,7 @@ export function SimpleChatBot() {
       </ScrollArea>
 
       {/* 입력 영역 */}
-      <div className="p-4 bg-card border-t border-border">
+      <div className="p-4 border-t border-gray-200">
         <div className="flex gap-3 items-end">
           <div className="flex-1">
             <Textarea
@@ -519,7 +519,7 @@ export function SimpleChatBot() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="반려동물에 대해 궁금한 것을 물어보세요..."
-              className="resize-none min-h-[44px] max-h-[120px] border-gray-200 rounded-xl focus:border-primary focus:ring-primary/20 text-sm"
+              className="resize-none min-h-[44px] max-h-[120px] border-gray-200 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm"
               disabled={isLoading}
             />
           </div>
@@ -527,13 +527,13 @@ export function SimpleChatBot() {
             onClick={handleSendMessage}
             size="icon"
             disabled={!inputValue.trim() || isLoading}
-            className="w-11 h-11 rounded-xl bg-primary hover:bg-primary/90 shadow-sm"
+            className="w-11 h-11 rounded-lg bg-primary hover:bg-primary/90"
           >
             <Send size={18} />
           </Button>
         </div>
         <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
           {isAuthenticated 
             ? 'AI가 반려동물 케어에 대한 맞춤형 조언을 제공합니다' 
             : '로그인하면 개인화된 반려동물 관리 조언을 받을 수 있습니다'}
@@ -545,8 +545,7 @@ export function SimpleChatBot() {
         className="absolute bottom-0 right-0 w-4 h-4 cursor-nw-resize"
         onMouseDown={handleResizeStart}
       >
-        <div className="absolute bottom-1 right-1 w-3 h-3 border-r-2 border-b-2 border-gray-400"></div>
-        <div className="absolute bottom-0.5 right-0.5 w-2 h-2 border-r-2 border-b-2 border-gray-300"></div>
+        <div className="absolute bottom-1 right-1 w-3 h-3 border-r-2 border-b-2 border-gray-300"></div>
       </div>
     </div>
   );
