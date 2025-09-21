@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Search, Filter, UserPlus, Eye, Edit, Trash2, Shield } from "lucide-react";
 import { useState } from "react";
+import { getCSRFToken } from "@/lib/csrf";
 
 export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,11 +28,16 @@ export default function AdminUsers() {
     }
     
     try {
+      // CSRF 토큰 가져오기
+      const csrfToken = await getCSRFToken();
+
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
         },
+        credentials: 'include',
         body: JSON.stringify(newUser),
       });
 

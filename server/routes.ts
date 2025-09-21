@@ -565,7 +565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 전용 사용자 추가 API
-  app.post('/api/admin/users', requireAuth('admin'), async (req, res) => {
+  app.post('/api/admin/users', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { name, email, role, password } = req.body;
 
