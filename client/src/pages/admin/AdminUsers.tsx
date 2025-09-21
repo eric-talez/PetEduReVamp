@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Search, Filter, UserPlus, Eye, Edit, Trash2, Shield } from "lucide-react";
 import { useState } from "react";
 import { getCSRFToken } from "@/lib/csrf";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,17 +22,24 @@ export default function AdminUsers() {
     password: ""
   });
 
-  // 사용자 추가 함수
-  const handleAddUser = async () => {
-    if (!newUser.name || !newUser.email || !newUser.password) {
-      alert("모든 필드를 입력해주세요.");
-      return;
-    }
-    
-    try {
-      // CSRF 토큰 가져오기
-      const csrfToken = await getCSRFToken();
+  const queryClient = useQueryClient();
 
+  // 실제 사용자 데이터 가져오기
+  const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
+    queryKey: ['/api/admin/users'],
+    select: (data: any) => data?.data || []
+  });
+
+  // 통계 데이터 가져오기
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/admin/platform-stats'],
+    select: (data: any) => data || {}
+  });
+
+  // 사용자 추가 mutation
+  const addUserMutation = useMutation({
+    mutationFn: async (userData: typeof newUser) => {
+      const csrfToken = await getCSRFToken();
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: {
@@ -38,73 +47,56 @@ export default function AdminUsers() {
           'X-CSRF-Token': csrfToken,
         },
         credentials: 'include',
-        body: JSON.stringify(newUser),
+        body: JSON.stringify(userData),
       });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        alert("사용자가 성공적으로 추가되었습니다!");
-        
-        // 폼 초기화
-        setNewUser({
-          name: "",
-          email: "",
-          role: "user",
-          password: ""
-        });
-        setIsAddUserOpen(false);
-        
-        // 페이지 새로고침 또는 데이터 재로드
-        window.location.reload();
-      } else {
-        throw new Error(result.message || '사용자 추가에 실패했습니다.');
-      }
-    } catch (error: any) {
+      if (!response.ok) throw new Error('사용자 추가 실패');
+      return response.json();
+    },
+    onSuccess: () => {
+      // 데이터 새로고침
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/platform-stats'] });
+      alert('사용자가 성공적으로 추가되었습니다!');
+      setNewUser({ name: "", email: "", role: "user", password: "" });
+      setIsAddUserOpen(false);
+    },
+    onError: (error: any) => {
       console.error('사용자 추가 오류:', error);
-      alert(error.message || "사용자 추가 중 오류가 발생했습니다.");
+      alert(error.message || '사용자 추가 중 오류가 발생했습니다.');
     }
+  });
+
+  // 사용자 추가 함수
+  const handleAddUser = async () => {
+    if (!newUser.name || !newUser.email || !newUser.password) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+    addUserMutation.mutate(newUser);
   };
 
-  // 샘플 사용자 데이터
-  const users = [
-    {
-      id: 1,
-      name: "김관리자",
-      email: "admin@example.com",
-      role: "admin",
-      status: "active",
-      lastLogin: "2024-01-21 10:30",
-      createdAt: "2024-01-01"
-    },
-    {
-      id: 2,
-      name: "박훈련사",
-      email: "trainer@example.com", 
-      role: "trainer",
-      status: "active",
-      lastLogin: "2024-01-21 09:15",
-      createdAt: "2024-01-05"
-    },
-    {
-      id: 3,
-      name: "이기관장",
-      email: "institute@example.com",
-      role: "institute-admin",
-      status: "active",
-      lastLogin: "2024-01-20 16:45",
-      createdAt: "2024-01-10"
-    },
-    {
-      id: 4,
-      name: "최회원",
-      email: "user@example.com",
-      role: "user",
-      status: "inactive",
-      lastLogin: "2024-01-18 14:20",
-      createdAt: "2024-01-15"
-    }
-  ];
+  // 역할별 사용자 수 계산
+  const usersByRole = (users || []).reduce((acc: any, user: any) => {
+    acc[user.role] = (acc[user.role] || 0) + 1;
+    return acc;
+  }, {});
+
+  // 활성 사용자 수 계산 (최근 30일 내 로그인)
+  const activeUsers = (users || []).filter((user: any) => {
+    if (!user.lastLogin) return false;
+    const lastLogin = new Date(user.lastLogin);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return lastLogin > thirtyDaysAgo;
+  }).length;
+
+  // 검색 및 필터링된 사용자
+  const filteredUsers = (users || []).filter((user: any) => {
+    const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -213,8 +205,12 @@ export default function AdminUsers() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={handleAddUser}>
-                사용자 추가
+              <Button 
+                type="submit" 
+                onClick={handleAddUser}
+                disabled={addUserMutation.isPending}
+              >
+                {addUserMutation.isPending ? '추가 중...' : '사용자 추가'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -228,9 +224,13 @@ export default function AdminUsers() {
             <CardTitle className="text-sm font-medium">전체 사용자</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,847</div>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <div className="text-2xl font-bold">{users.length || 0}</div>
+            )}
             <p className="text-xs text-muted-foreground">
-              +18.2% 지난달 대비
+              실시간 업데이트
             </p>
           </CardContent>
         </Card>
@@ -239,9 +239,13 @@ export default function AdminUsers() {
             <CardTitle className="text-sm font-medium">활성 사용자</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,156</div>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <div className="text-2xl font-bold">{activeUsers}</div>
+            )}
             <p className="text-xs text-muted-foreground">
-              +12.5% 지난달 대비
+              최근 30일 내 접속
             </p>
           </CardContent>
         </Card>
@@ -250,9 +254,13 @@ export default function AdminUsers() {
             <CardTitle className="text-sm font-medium">훈련사</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">156</div>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <div className="text-2xl font-bold">{usersByRole['trainer'] || 0}</div>
+            )}
             <p className="text-xs text-muted-foreground">
-              +8.1% 지난달 대비
+              전문 훈련사
             </p>
           </CardContent>
         </Card>
@@ -261,9 +269,13 @@ export default function AdminUsers() {
             <CardTitle className="text-sm font-medium">기관관리자</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">45</div>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <div className="text-2xl font-bold">{usersByRole['institute-admin'] || 0}</div>
+            )}
             <p className="text-xs text-muted-foreground">
-              +3.2% 지난달 대비
+              기관 관리자
             </p>
           </CardContent>
         </Card>
@@ -314,45 +326,71 @@ export default function AdminUsers() {
               <div>가입일</div>
               <div>작업</div>
             </div>
-            {users.map((user) => (
-              <div key={user.id} className="grid grid-cols-7 gap-4 p-4 border-b last:border-b-0">
-                <div className="font-medium">{user.name}</div>
-                <div className="text-sm text-muted-foreground">{user.email}</div>
-                <div>{getRoleBadge(user.role)}</div>
-                <div>{getStatusBadge(user.status)}</div>
-                <div className="text-sm">{user.lastLogin}</div>
-                <div className="text-sm">{user.createdAt}</div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      console.log('사용자 상세보기:', user.name);
-                    }}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      console.log('사용자 편집:', user.name);
-                    }}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      console.log('사용자 삭제:', user.name);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+            {usersLoading ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="grid grid-cols-7 gap-4 p-4 border-b">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
                 </div>
+              ))
+            ) : usersError ? (
+              <div className="p-8 text-center text-red-500">
+                데이터를 불러오는 중 오류가 발생했습니다.
               </div>
-            ))}
+            ) : filteredUsers.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                {searchTerm || roleFilter !== 'all' ? '검색 결과가 없습니다.' : '등록된 사용자가 없습니다.'}
+              </div>
+            ) : (
+              filteredUsers.map((user: any) => (
+                <div key={user.id} className="grid grid-cols-7 gap-4 p-4 border-b last:border-b-0">
+                  <div className="font-medium">{user.name}</div>
+                  <div className="text-sm text-muted-foreground">{user.email}</div>
+                  <div>{getRoleBadge(user.role)}</div>
+                  <div>{getStatusBadge(user.isVerified ? 'active' : 'inactive')}</div>
+                  <div className="text-sm">{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('ko-KR') : '없음'}</div>
+                  <div className="text-sm">{new Date(user.createdAt).toLocaleDateString('ko-KR')}</div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        console.log('사용자 상세보기:', user.name);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        console.log('사용자 편집:', user.name);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        console.log('사용자 삭제:', user.name);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
