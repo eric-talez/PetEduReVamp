@@ -142,21 +142,6 @@ export function AppLayout({
         onToggleSidebar={toggleSidebar}
       />
       
-      {/* 사이드바 - 확장/축소 지원 */}
-      <div className={cn(
-        "fixed left-0 top-16 h-[calc(100vh-4rem)] z-20 transition-all duration-300",
-        sidebarExpanded ? "w-64" : "w-[70px]",
-        isMobile ? (sidebarOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"
-      )}>
-        <Sidebar 
-          open={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)}
-          userRole={userRole}
-          isAuthenticated={isAuthenticated}
-          expanded={sidebarExpanded}
-          onToggleExpand={toggleSidebarSize}
-        />
-      </div>
       
       {/* 컨텐츠 영역 */}
       <div className={cn(
