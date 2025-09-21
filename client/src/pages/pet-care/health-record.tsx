@@ -21,12 +21,6 @@ interface Pet {
   breed: string;
   age: number;
   ownerId: number;
-  weight?: number;
-  gender?: string;
-  health?: string;
-  temperament?: string;
-  allergies?: string;
-  description?: string;
 }
 
 interface Vaccination {
@@ -71,7 +65,7 @@ export default function HealthRecordPage() {
     enabled: true
   });
 
-  const pets = (petsData as any)?.pets || [];
+  const pets = petsData?.pets || [];
   const selectedPet = pets.find((pet: Pet) => pet.id === selectedPetId) || pets[0];
 
   // 예방접종 기록 조회
@@ -371,7 +365,7 @@ export default function HealthRecordPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {(vaccinationsData as any)?.vaccinations?.map((vaccination: Vaccination) => (
+                  {vaccinationsData?.vaccinations?.map((vaccination: Vaccination) => (
                     <div key={vaccination.id} className="p-4 border rounded-lg">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">{vaccination.vaccineName}</h3>
@@ -457,7 +451,7 @@ export default function HealthRecordPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {(checkupsData as any)?.checkups?.map((checkup: HealthCheckup) => (
+                  {checkupsData?.checkups?.map((checkup: HealthCheckup) => (
                     <div key={checkup.id} className="p-4 border rounded-lg">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">건강검진</h3>

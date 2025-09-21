@@ -1,5 +1,4 @@
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area, ResponsiveContainer } from 'recharts';
-import { ChartWrapper, CHART_COLORS, CHART_STYLES, formatChartData } from './ChartWrapper';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area } from 'recharts';
 
 // 샘플 데이터 (실제 API 데이터로 교체 예정)
 const userGrowthData = [
@@ -12,10 +11,10 @@ const userGrowthData = [
 ];
 
 const userTypeData = [
-  { name: '반려인', value: 78, color: CHART_COLORS.primary },
-  { name: '훈련사', value: 12, color: CHART_COLORS.secondary },
-  { name: '기관 관리자', value: 8, color: CHART_COLORS.tertiary },
-  { name: '기타', value: 2, color: CHART_COLORS.quaternary },
+  { name: '반려인', value: 78, color: '#3B82F6' },
+  { name: '훈련사', value: 12, color: '#10B981' },
+  { name: '기관 관리자', value: 8, color: '#8B5CF6' },
+  { name: '기타', value: 2, color: '#F59E0B' },
 ];
 
 const revenueData = [
@@ -52,21 +51,21 @@ interface ChartProps {
 
 export const UserGrowthChart = ({ height = 300 }: ChartProps) => {
   return (
-    <ChartWrapper title="사용자 증가 추이" description="월별 신규 사용자 증가 현황" height={height}>
+    <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={userGrowthData}>
-        <CartesianGrid {...CHART_STYLES.grid} />
-        <XAxis dataKey="month" {...CHART_STYLES.axis} />
-        <YAxis {...CHART_STYLES.axis} />
-        <Tooltip {...CHART_STYLES.tooltip} formatter={(value) => [formatChartData.number(Number(value)), '신규 사용자']} />
-        <Area type="monotone" dataKey="newUsers" stroke={CHART_COLORS.primary} fill={CHART_COLORS.primary} fillOpacity={0.6} />
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip />
+        <Area type="monotone" dataKey="newUsers" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
       </AreaChart>
-    </ChartWrapper>
+    </ResponsiveContainer>
   );
 };
 
 export const UserTypeChart = ({ height = 300 }: ChartProps) => {
   return (
-    <ChartWrapper title="사용자 유형 분포" description="역할별 사용자 분포 현황" height={height}>
+    <ResponsiveContainer width="100%" height={height}>
       <PieChart>
         <Pie
           data={userTypeData}
@@ -82,53 +81,53 @@ export const UserTypeChart = ({ height = 300 }: ChartProps) => {
             <Cell key={`cell-${index}`} fill={entry.color} />
           ))}
         </Pie>
-        <Tooltip {...CHART_STYLES.tooltip} formatter={(value) => [formatChartData.number(Number(value)), '사용자']} />
+        <Tooltip />
       </PieChart>
-    </ChartWrapper>
+    </ResponsiveContainer>
   );
 };
 
 export const RevenueChart = ({ height = 300 }: ChartProps) => {
   return (
-    <ChartWrapper title="월별 매출 현황" description="플랫폼 월별 총 매출 추이" height={height}>
+    <ResponsiveContainer width="100%" height={height}>
       <BarChart data={revenueData}>
-        <CartesianGrid {...CHART_STYLES.grid} />
-        <XAxis dataKey="month" {...CHART_STYLES.axis} />
-        <YAxis {...CHART_STYLES.axis} />
-        <Tooltip {...CHART_STYLES.tooltip} formatter={(value) => [formatChartData.currency(Number(value)), '매출']} />
-        <Bar dataKey="revenue" fill={CHART_COLORS.secondary} />
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip formatter={(value) => [`${(value as number).toLocaleString()}원`, '수익']} />
+        <Bar dataKey="revenue" fill="#10B981" />
       </BarChart>
-    </ChartWrapper>
+    </ResponsiveContainer>
   );
 };
 
 export const CourseEnrollmentChart = ({ height = 300 }: ChartProps) => {
   return (
-    <ChartWrapper title="강좌 등록 현황" description="월별 강좌 등록자 수 추이" height={height}>
+    <ResponsiveContainer width="100%" height={height}>
       <LineChart data={courseEnrollmentData}>
-        <CartesianGrid {...CHART_STYLES.grid} />
-        <XAxis dataKey="month" {...CHART_STYLES.axis} />
-        <YAxis {...CHART_STYLES.axis} />
-        <Tooltip {...CHART_STYLES.tooltip} formatter={(value) => [formatChartData.number(Number(value)), '등록자']} />
-        <Line type="monotone" dataKey="enrollments" stroke={CHART_COLORS.tertiary} strokeWidth={2} />
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip />
+        <Line type="monotone" dataKey="enrollments" stroke="#8B5CF6" strokeWidth={2} />
       </LineChart>
-    </ChartWrapper>
+    </ResponsiveContainer>
   );
 };
 
 export const SystemPerformanceChart = ({ height = 300 }: ChartProps) => {
   return (
-    <ChartWrapper title="시스템 성능 모니터링" description="CPU 및 메모리 사용률 모니터링" height={height}>
+    <ResponsiveContainer width="100%" height={height}>
       <LineChart data={systemPerformanceData}>
-        <CartesianGrid {...CHART_STYLES.grid} />
-        <XAxis dataKey="time" {...CHART_STYLES.axis} />
-        <YAxis {...CHART_STYLES.axis} />
-        <Tooltip {...CHART_STYLES.tooltip} formatter={(value) => [formatChartData.percentage(Number(value)), '']} />
-        <Legend {...CHART_STYLES.legend} />
-        <Line type="monotone" dataKey="cpu" stroke={CHART_COLORS.danger} strokeWidth={2} name="CPU %" />
-        <Line type="monotone" dataKey="memory" stroke={CHART_COLORS.warning} strokeWidth={2} name="Memory %" />
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="time" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="cpu" stroke="#EF4444" strokeWidth={2} name="CPU %" />
+        <Line type="monotone" dataKey="memory" stroke="#F59E0B" strokeWidth={2} name="Memory %" />
       </LineChart>
-    </ChartWrapper>
+    </ResponsiveContainer>
   );
 };
 

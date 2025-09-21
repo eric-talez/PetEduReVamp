@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNotifications } from '@/hooks/use-notifications';
+import { useNotification } from '@/components/notifications/NotificationProvider';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -43,7 +43,7 @@ export default function NotificationsPage() {
   const [filterType, setFilterType] = useState<string>('all');
   const [filterRead, setFilterRead] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const { unreadCount, sendTestNotification } = useNotifications();
+  const { unreadCount, sendTestNotification } = useNotification();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -144,7 +144,7 @@ export default function NotificationsPage() {
               <Bell className="h-6 w-6" />
               <CardTitle>알림장</CardTitle>
               {unreadCount > 0 && (
-                <Badge variant="danger">
+                <Badge variant="destructive">
                   {unreadCount}개 읽지 않음
                 </Badge>
               )}

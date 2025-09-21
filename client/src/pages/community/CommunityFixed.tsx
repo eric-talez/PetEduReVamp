@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { LoadingErrorWrapper } from '@/components/ui/loading-error-wrapper';
-import { getStatusCodeFromError } from '@/lib/errorHelpers';
 import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { 
@@ -114,19 +113,23 @@ const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }
   );
 };
 
-
-// Get display name for tabs
-const getTabDisplayName = (tabValue: string) => {
-  const tabNames: Record<string, string> = {
-    latest: '최신',
-    popular: '인기',
-    training: '훈련팁',
-    survey: '설문',
-    info: '정보공유',
-    notices: '공지사항'
-  };
-  return tabNames[tabValue] || '전체';
-};
+// 로딩 스켈레톤
+const PostCardSkeleton = () => (
+  <Card className="h-full">
+    <CardHeader className="pb-2">
+      <Skeleton className="h-6 w-3/4 mb-2" />
+      <Skeleton className="h-4 w-1/2" />
+    </CardHeader>
+    <CardContent className="pb-2">
+      <Skeleton className="h-4 w-full mb-2" />
+      <Skeleton className="h-4 w-full mb-2" />
+      <Skeleton className="h-4 w-2/3" />
+    </CardContent>
+    <CardFooter className="pt-2">
+      <Skeleton className="h-4 w-1/3" />
+    </CardFooter>
+  </Card>
+);
 
 // 메인 커뮤니티 페이지 컴포넌트
 function CommunityPage() {
@@ -222,13 +225,6 @@ function CommunityPage() {
     },
     staleTime: 5 * 60 * 1000,
   });
-
-  const statusCode = getStatusCodeFromError(error);
-  
-  // 데이터 새로고침 함수
-  const refetchPosts = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/community/posts', activeTab, searchQuery] });
-  };
 
   // 게시글 데이터 (API에서 이미 필터링됨)
   const filteredPosts = useMemo(() => {
@@ -715,22 +711,30 @@ function CommunityPage() {
         {/* 모든 탭에서 사용할 공통 콘텐츠 */}
         {['latest', 'popular', 'training', 'survey', 'info', 'notices'].map(tabValue => (
           <TabsContent key={tabValue} value={tabValue} className="mt-6">
-            <LoadingErrorWrapper
-              isLoading={isLoading}
-              isError={!!error}
-              isEmpty={!isLoading && !error && (!paginatedPosts || paginatedPosts.length === 0)}
-              error={error}
-              data={paginatedPosts}
-              loadingVariant="card"
-              loadingMessage={`${getTabDisplayName(tabValue)} 게시글을 불러오는 중...`}
-              errorMessage={typeof error === 'string' ? error : error?.message}
-              emptyMessage={`${getTabDisplayName(tabValue)} 게시글이 없습니다.`}
-              emptyTitle="게시글을 찾을 수 없습니다"
-              retry={refetchPosts}
-              statusCode={statusCode}
-              data-testid={`community-posts-${tabValue}`}
-            >
-              {paginatedPosts && paginatedPosts.length > 0 && (
+            {isLoading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <PostCardSkeleton key={i} />
+                ))}
+              </div>
+            )}
+
+            {error && (
+              <div className="text-center py-8">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
+                  <div className="text-red-600 font-medium mb-2">게시글을 불러올 수 없습니다</div>
+                  <div className="text-red-500 text-sm">{error?.message || '알 수 없는 오류가 발생했습니다'}</div>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                  >
+                    새로고침
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 && (
               <>
                 {viewType === 'card' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -835,8 +839,18 @@ function CommunityPage() {
                   </div>
                 )}
               </>
-              )}
-            </LoadingErrorWrapper>
+            )}
+
+            {!isLoading && !error && (!paginatedPosts || paginatedPosts.length === 0) && (
+              <div className="text-center py-12">
+                <p className="text-xl mb-2">{getEmptyMessage(tabValue).title}</p>
+                <p className="text-muted-foreground mb-4">{getEmptyMessage(tabValue).description}</p>
+                <Button onClick={() => setIsCreatePostOpen(true)}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  글쓰기
+                </Button>
+              </div>
+            )}
           </TabsContent>
         ))}
       </Tabs>

@@ -1,9 +1,6 @@
 /* Leaflet CSS for maps */
 @import 'leaflet/dist/leaflet.css';
 
-/* TALEZ Responsive Design Patterns */
-@import './styles/responsive-patterns.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

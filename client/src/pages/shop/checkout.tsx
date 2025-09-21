@@ -57,7 +57,6 @@ import {
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { LoadingErrorWrapper } from '@/components/ui/loading-error-wrapper';
 
 export default function Checkout() {
   const [, navigate] = useLocation();

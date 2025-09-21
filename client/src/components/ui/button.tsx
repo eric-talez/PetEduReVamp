@@ -22,10 +22,10 @@ const buttonVariants = cva(
         danger: "bg-red-600 text-white hover:bg-red-700 hover:shadow-md hover:scale-105 font-semibold border border-red-500/10 shadow-sm",
       },
       size: {
-        default: "btn-responsive touch-target",
-        sm: "btn-compact touch-target",
-        lg: "btn-large touch-target",
-        icon: "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 text-sm sm:text-base touch-target",
+        default: "h-11 px-5 py-2.5 text-base min-w-[2.75rem]",
+        sm: "h-9 px-3 py-2 text-sm min-w-[2.25rem]",
+        lg: "h-12 px-6 py-3 text-lg min-w-[3rem]",
+        icon: "h-11 w-11 text-base",
       },
     },
     defaultVariants: {
@@ -49,7 +49,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        data-testid={props['data-testid'] || `button-${variant || 'default'}`}
         {...props}
       />
     )

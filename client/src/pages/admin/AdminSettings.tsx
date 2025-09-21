@@ -348,7 +348,6 @@ export default function AdminSettings() {
         // 3단계: 실제 API 호출
         console.log('[AI-Fix Client] API 요청 시작');
         
-        let data: any;
         try {
           const response = await apiRequest('POST', '/api/ai-fix/check');
           console.log('[AI-Fix Client] Raw response:', response);
@@ -359,12 +358,14 @@ export default function AdminSettings() {
             throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
           }
           
-          data = await response.json();
+          const data = await response.json();
           console.log('[AI-Fix Client] API 응답 파싱 완료:', data);
           
           if (data.success === false && data.error) {
             throw new Error(data.message || data.error);
           }
+          
+          return data;
           
         } catch (apiError) {
           console.error('[AI-Fix Client] API 요청 중 오류:', apiError);

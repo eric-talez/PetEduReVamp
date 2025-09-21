@@ -7,10 +7,8 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { getStatusCodeFromError } from "@/lib/errorHelpers";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LoadingErrorWrapper } from "@/components/ui/loading-error-wrapper";
 import { 
   ArrowUpRight, 
   BarChart3, 
@@ -122,65 +120,15 @@ const AdminDashboard = () => {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
-  const [dashboardData, setDashboardData] = useState<any>(null);
   
-  // 대시보드 데이터 로딩
+  // 데이터 로딩 시뮬레이션
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // 실제 API 호출 대신 시뮬레이션
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const mockData = {
-          totalUsers: 2456,
-          monthlyRevenue: 32450000,
-          totalPets: 1822,
-          completedClasses: 356,
-          // 차트 데이터와 기타 대시보드 데이터
-          loaded: true
-        };
-        
-        setDashboardData(mockData);
-      } catch (err) {
-        console.error('대시보드 데이터 로딩 오류:', err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 800);
     
-    fetchDashboardData();
+    return () => clearTimeout(timer);
   }, []);
-
-  const statusCode = getStatusCodeFromError(error);
-  
-  // 데이터 새로고침 함수
-  const refetchDashboardData = () => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        await new Promise(resolve => setTimeout(resolve, 800));
-        const mockData = {
-          totalUsers: 2456,
-          monthlyRevenue: 32450000,
-          totalPets: 1822,
-          completedClasses: 356,
-          loaded: true
-        };
-        setDashboardData(mockData);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboardData();
-  };
   
   // 개요 탭 컨텐츠
   const renderOverviewTab = () => (
@@ -746,21 +694,11 @@ const AdminDashboard = () => {
         </div>
       </div>
       
-      <LoadingErrorWrapper
-        isLoading={loading}
-        isError={!!error}
-        isEmpty={!loading && !error && !dashboardData}
-        error={error}
-        data={dashboardData}
-        loadingVariant="dashboard"
-        loadingMessage="대시보드 데이터를 불러오는 중..."
-        errorMessage={typeof error === 'string' ? error : error?.message}
-        emptyMessage="대시보드 데이터가 없습니다."
-        emptyTitle="데이터를 찾을 수 없습니다"
-        retry={refetchDashboardData}
-        statusCode={statusCode}
-        data-testid="admin-dashboard-content"
-      >
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : (
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="overview" className="flex items-center">
@@ -789,7 +727,7 @@ const AdminDashboard = () => {
             {renderManagementTab()}
           </TabsContent>
         </Tabs>
-      </LoadingErrorWrapper>
+      )}
     </div>
   );
 };

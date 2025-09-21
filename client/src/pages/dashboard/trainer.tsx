@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useQuery } from '@tanstack/react-query';
 import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { LoadingErrorWrapper } from "@/components/ui/loading-error-wrapper";
 import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart3, ChevronLeft, ChevronRight } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface TrainerDashboardProps {
   onAction: (action: string, data?: any) => void;
@@ -69,21 +68,13 @@ const trainerDashboardBanners = [
 
 export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
   const { userName } = useAuth();
+  const [stats, setStats] = useState<TrainerStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // React Query로 훈련사 통계 조회
-  const { data: stats, isLoading, error } = useQuery({
-    queryKey: ['/api/dashboard/trainer/stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/dashboard/trainer/stats');
-      if (!response.ok) {
-        throw new Error('훈련사 통계를 불러올 수 없습니다');
-      }
-      const data = await response.json();
-      return data.data;
-    },
-    staleTime: 5 * 60 * 1000, // 5분간 캐시
-  });
+  useEffect(() => {
+    fetchTrainerStats();
+  }, []);
 
   // 배너 자동 슬라이드 효과
   useEffect(() => {
@@ -106,19 +97,34 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
     setCurrentSlide(index);
   };
 
-  // Extract status code from error if it's an ApiError
-  const getStatusCodeFromError = (error: any) => {
-    if (typeof error === 'object' && error !== null && 'statusCode' in error) {
-      return error.statusCode;
+  const fetchTrainerStats = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiRequest('GET', '/api/dashboard/trainer/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error('훈련사 통계 조회 실패:', error);
+      setStats({
+        activeCourses: 0,
+        totalStudents: 0,
+        monthlyRevenue: 0,
+        totalReservations: 0,
+        pendingReservations: 0,
+        completedReservations: 0,
+        rating: 0,
+        unreadMessages: 0,
+        unreadNotifications: 0,
+        recentActivity: {
+          newStudentsThisWeek: 0,
+          completedSessionsThisWeek: 0
+        }
+      });
+    } finally {
+      setIsLoading(false);
     }
-    return undefined;
-  };
-
-  const statusCode = getStatusCodeFromError(error);
-
-  // 데이터 새로고침 함수
-  const refetchStats = () => {
-    // React Query의 refetch는 자동으로 처리됨
   };
 
   const currentBanner = trainerDashboardBanners[currentSlide];
@@ -194,23 +200,8 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
         </div>
       </div>
       
-      <LoadingErrorWrapper
-        isLoading={isLoading}
-        isError={!!error}
-        isEmpty={!isLoading && !error && !stats}
-        error={error}
-        data={stats}
-        loadingVariant="dashboard"
-        loadingMessage="훈련사 통계 데이터를 불러오는 중..."
-        errorMessage={typeof error === 'string' ? error : error?.message}
-        emptyMessage="통계 데이터가 없습니다."
-        emptyTitle="데이터를 찾을 수 없습니다"
-        retry={refetchStats}
-        statusCode={statusCode}
-        data-testid="trainer-dashboard-stats"
-      >
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
@@ -219,7 +210,7 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">진행 중인 강의</h2>
               <p className="text-2xl font-semibold text-gray-800 dark:text-white">
-                {`${stats?.activeCourses || 0}개`}
+                {isLoading ? "..." : `${stats?.activeCourses || 0}개`}
               </p>
             </div>
           </div>
@@ -244,7 +235,7 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">수강생</h2>
               <p className="text-2xl font-semibold text-gray-800 dark:text-white">
-                {`${stats?.totalStudents || 0}명`}
+                {isLoading ? "..." : `${stats?.totalStudents || 0}명`}
               </p>
             </div>
           </div>
@@ -269,7 +260,7 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">월 수익</h2>
               <p className="text-2xl font-semibold text-gray-800 dark:text-white">
-                {`${(stats?.monthlyRevenue || 0).toLocaleString()}원`}
+                {isLoading ? "..." : `${(stats?.monthlyRevenue || 0).toLocaleString()}원`}
               </p>
             </div>
           </div>
@@ -489,7 +480,6 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
           </Card>
         </div>
       </div>
-      </LoadingErrorWrapper>
     </div>
   );
 }

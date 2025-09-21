@@ -10,7 +10,7 @@ const Breadcrumb = React.forwardRef<
   React.ComponentPropsWithoutRef<"nav"> & {
     separator?: React.ReactNode
   }
->(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" data-testid="breadcrumb-nav" {...props} />)
+>(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />)
 Breadcrumb.displayName = "Breadcrumb"
 
 const BreadcrumbList = React.forwardRef<
@@ -23,7 +23,6 @@ const BreadcrumbList = React.forwardRef<
       "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
       className
     )}
-    data-testid="breadcrumb-list"
     {...props}
   />
 ))
@@ -36,7 +35,6 @@ const BreadcrumbItem = React.forwardRef<
   <li
     ref={ref}
     className={cn("inline-flex items-center gap-1.5", className)}
-    data-testid="breadcrumb-item"
     {...props}
   />
 ))
@@ -56,7 +54,6 @@ const BreadcrumbLink = React.forwardRef<
       ref={ref}
       className={cn("transition-colors hover:text-foreground", className)}
       {...(asChild ? props : { ...props, href: href })}
-      data-testid={`breadcrumb-link-${href?.replace(/\//g, '-').replace(/^-/, 'root') || 'unknown'}`}
     />
   )
 })
@@ -72,7 +69,6 @@ const BreadcrumbPage = React.forwardRef<
     aria-disabled="true"
     aria-current="page"
     className={cn("font-normal text-foreground", className)}
-    data-testid="breadcrumb-page"
     {...props}
   />
 ))
@@ -87,7 +83,6 @@ const BreadcrumbSeparator = ({
     role="presentation"
     aria-hidden="true"
     className={cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className)}
-    data-testid="breadcrumb-separator"
     {...props}
   >
     {children ?? <ChevronRight />}
@@ -103,7 +98,6 @@ const BreadcrumbEllipsis = ({
     role="presentation"
     aria-hidden="true"
     className={cn("flex h-9 w-9 items-center justify-center", className)}
-    data-testid="breadcrumb-ellipsis"
     {...props}
   >
     <MoreHorizontal className="h-4 w-4" />
