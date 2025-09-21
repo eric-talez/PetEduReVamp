@@ -1,16 +1,3 @@
-/**
- * @deprecated This page has been deprecated in favor of the canonical shop
- * 
- * DEPRECATED: This shop-new page is being replaced by the comprehensive shop/index.tsx
- * which provides more advanced e-commerce features, better design, category management,
- * search functionality, and professional Naver Shopping-style interface.
- * 
- * Please use /shop instead for the complete shopping experience.
- * This file will be removed in a future version.
- * 
- * Migration: Replace references to shop-new with /shop
- */
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../context/cart-context';

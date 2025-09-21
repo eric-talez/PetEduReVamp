@@ -1,7 +1,7 @@
 import { QuickThemeToggle } from "@/components/ThemeSettings";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { NotificationBell } from "@/components/NotificationBell"; // Using canonical NotificationBell with use-notifications system
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { 
   Bell, 
   Menu, 

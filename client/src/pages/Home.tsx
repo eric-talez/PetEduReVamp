@@ -566,60 +566,59 @@ export default function Home() {
 
         {/* 메인 배너 슬라이더 */}
         <div className="mb-8">
-          {bannerSlides.length > 0 && bannerSlides[currentSlide] ? (
-            <div className="relative overflow-hidden rounded-xl min-h-[280px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
-              {/* 배경 이미지 */}
-              <div className="absolute inset-0 transition-all duration-500 ease-in-out">
-                <img 
-                  src={bannerSlides[currentSlide].image} 
-                  alt={bannerSlides[currentSlide].title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30"></div>
-              </div>
-              
-              {/* 배너 콘텐츠 */}
-              <div className="relative z-10 flex flex-col justify-center min-h-[280px] py-8 px-6 md:px-12">
-                <div className="max-w-4xl mx-auto w-full">
-                  <h1 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
-                    {bannerSlides[currentSlide].title}
-                  </h1>
-                  <p className="text-white/90 text-sm md:text-lg mb-4 leading-relaxed max-w-2xl">
-                    {bannerSlides[currentSlide].subtitle}
-                  </p>
-                  
-                  {/* 주요 기능 태그 */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {bannerSlides[currentSlide].features?.map((feature, idx) => (
-                      <span 
-                        key={idx} 
-                        className="inline-flex items-center text-sm bg-white/20 text-white px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20"
-                      >
-                        <span className="mr-1.5 text-yellow-300 text-lg">✓</span> {feature}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  {/* 액션 버튼 */}
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      size="default"
-                      className="bg-white text-primary font-semibold hover:bg-white/90 border border-white px-6 py-2.5 rounded-lg shadow-md"
-                      onClick={() => setLocation(bannerSlides[currentSlide].primaryAction?.path || '/')}
+          <div className="relative overflow-hidden rounded-xl min-h-[280px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+            {/* 배경 이미지 */}
+            <div className="absolute inset-0 transition-all duration-500 ease-in-out">
+              <img 
+                src={bannerSlides[currentSlide].image} 
+                alt={bannerSlides[currentSlide].title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30"></div>
+            </div>
+            
+            {/* 배너 콘텐츠 */}
+            <div className="relative z-10 flex flex-col justify-center min-h-[280px] py-8 px-6 md:px-12">
+              <div className="max-w-4xl mx-auto w-full">
+                <h1 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
+                  {bannerSlides[currentSlide].title}
+                </h1>
+                <p className="text-white/90 text-sm md:text-lg mb-4 leading-relaxed max-w-2xl">
+                  {bannerSlides[currentSlide].subtitle}
+                </p>
+                
+                {/* 주요 기능 태그 */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {bannerSlides[currentSlide].features.map((feature, idx) => (
+                    <span 
+                      key={idx} 
+                      className="inline-flex items-center text-sm bg-white/20 text-white px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20"
                     >
-                      {bannerSlides[currentSlide].primaryAction?.text || '자세히 보기'}
-                    </Button>
-                    <Button
-                      size="default"
-                      variant="outline"
-                      className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-6 py-2.5 rounded-lg backdrop-blur-sm font-semibold"
-                      onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction?.path || '/about')}
-                    >
-                      {bannerSlides[currentSlide].secondaryAction?.text || '더 알아보기'}
-                    </Button>
-                  </div>
+                      <span className="mr-1.5 text-yellow-300 text-lg">✓</span> {feature}
+                    </span>
+                  ))}
+                </div>
+                
+                {/* 액션 버튼 */}
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    size="default"
+                    className="bg-white text-primary font-semibold hover:bg-white/90 border border-white px-6 py-2.5 rounded-lg shadow-md"
+                    onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
+                  >
+                    {bannerSlides[currentSlide].primaryAction.text}
+                  </Button>
+                  <Button
+                    size="default"
+                    variant="outline"
+                    className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-6 py-2.5 rounded-lg backdrop-blur-sm font-semibold"
+                    onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
+                  >
+                    {bannerSlides[currentSlide].secondaryAction.text}
+                  </Button>
                 </div>
               </div>
+            </div>
 
             {/* 네비게이션 화살표 - 배너가 2개 이상일 때만 표시 */}
             {bannerSlides.length > 1 && (
@@ -671,40 +670,6 @@ export default function Home() {
               </>
             )}
           </div>
-          ) : (
-            <div className="relative overflow-hidden rounded-xl min-h-[280px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
-              {/* 배너가 없을 때 기본 콘텐츠 */}
-              <div className="relative z-10 flex flex-col justify-center min-h-[280px] py-8 px-6 md:px-12">
-                <div className="max-w-4xl mx-auto w-full text-center">
-                  <h1 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
-                    테일즈에 오신 것을 환영합니다
-                  </h1>
-                  <p className="text-white/90 text-sm md:text-lg mb-6 leading-relaxed max-w-2xl mx-auto">
-                    반려동물과 함께하는 특별한 여행을 시작하세요. 전문 훈련사와 함께 우리 아이의 행복한 성장을 도와드립니다.
-                  </p>
-                  
-                  {/* 액션 버튼 */}
-                  <div className="flex flex-wrap gap-3 justify-center">
-                    <Button
-                      size="default"
-                      className="bg-white text-primary font-semibold hover:bg-white/90 border border-white px-6 py-2.5 rounded-lg shadow-md"
-                      onClick={() => setLocation('/auth')}
-                    >
-                      시작하기
-                    </Button>
-                    <Button
-                      size="default"
-                      variant="outline"
-                      className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-6 py-2.5 rounded-lg backdrop-blur-sm font-semibold"
-                      onClick={() => setLocation('/about')}
-                    >
-                      더 알아보기
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* TALEZ 체험 서비스 섹션 */}

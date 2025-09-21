@@ -1,16 +1,3 @@
-/**
- * @deprecated This component has been deprecated in favor of the canonical Sidebar.tsx
- * 
- * DEPRECATED: This NewSidebar component is being replaced by the main Sidebar.tsx component
- * which provides better accessibility features, tooltip support, context management,
- * and more comprehensive functionality for commercial deployment.
- * 
- * Please use @/components/Sidebar instead.
- * This file will be removed in a future version.
- * 
- * Migration: Replace all imports of NewSidebar with Sidebar
- */
-
 import { Link, useLocation } from "wouter";
 import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";

@@ -1,16 +1,3 @@
-/**
- * @deprecated This component has been deprecated in favor of the canonical NotificationBell.tsx
- * 
- * DEPRECATED: This NotificationBell component is being replaced by the main NotificationBell.tsx
- * which uses the more feature-complete use-notifications system with better WebSocket handling,
- * comprehensive state management, and enhanced TypeScript interfaces.
- * 
- * Please use @/components/NotificationBell instead.
- * This file will be removed in a future version.
- * 
- * Migration: Replace imports from notifications/NotificationBell with NotificationBell
- */
-
 import { useState } from 'react';
 import { Bell, BellRing, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';

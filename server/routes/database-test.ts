@@ -24,8 +24,8 @@ router.get('/database-test', async (req, res) => {
       await db.execute(sql`SELECT 1 as test`);
       testResults.connectionTest = true;
       console.log('[Database Test] ✅ 데이터베이스 연결 성공');
-    } catch (error: any) {
-      testResults.errors.push(`Connection Error: ${error?.message || error}`);
+    } catch (error) {
+      testResults.errors.push(`Connection Error: ${error}`);
       console.error('[Database Test] ❌ 데이터베이스 연결 실패:', error);
     }
 
@@ -46,19 +46,19 @@ router.get('/database-test', async (req, res) => {
             count: result[0]?.count || 0
           };
           console.log(`[Database Test] ✅ ${table.name} 테이블: ${result[0]?.count || 0}개 레코드`);
-        } catch (error: any) {
+        } catch (error) {
           testResults.tables[table.name] = {
             exists: false,
-            error: error?.message || 'Unknown error'
+            error: error.message
           };
-          testResults.errors.push(`Table ${table.name} Error: ${error?.message || 'Unknown error'}`);
-          console.error(`[Database Test] ❌ ${table.name} 테이블 오류:`, error?.message || error);
+          testResults.errors.push(`Table ${table.name} Error: ${error.message}`);
+          console.error(`[Database Test] ❌ ${table.name} 테이블 오류:`, error.message);
         }
       }
 
-      testResults.schemaTest = Object.values(testResults.tables).some((t: any) => t.exists);
-    } catch (error: any) {
-      testResults.errors.push(`Schema Error: ${error?.message || error}`);
+      testResults.schemaTest = Object.values(testResults.tables).some(t => t.exists);
+    } catch (error) {
+      testResults.errors.push(`Schema Error: ${error}`);
       console.error('[Database Test] ❌ 스키마 테스트 실패:', error);
     }
 
@@ -106,8 +106,8 @@ router.get('/database-test', async (req, res) => {
       testResults.dataTest = true;
       console.log('[Database Test] ✅ 실제 데이터 조회 성공');
 
-    } catch (error: any) {
-      testResults.errors.push(`Data Query Error: ${error?.message || error}`);
+    } catch (error) {
+      testResults.errors.push(`Data Query Error: ${error}`);
       console.error('[Database Test] ❌ 데이터 조회 실패:', error);
     }
 
@@ -115,7 +115,7 @@ router.get('/database-test', async (req, res) => {
     const environmentInfo = {
       nodeEnv: process.env.NODE_ENV,
       hasDbUrl: !!process.env.DATABASE_URL,
-      dbConnection: process.env.DATABASE_URL ? 'postgres://****@****' : 'NOT_SET',
+      dbUrlPrefix: process.env.DATABASE_URL?.substring(0, 20) + '...',
       timestamp: new Date().toISOString()
     };
 
@@ -137,20 +137,20 @@ router.get('/database-test', async (req, res) => {
         schema: testResults.schemaTest ? '정상' : '실패',
         data: testResults.dataTest ? '정상' : '실패',
         totalTables: Object.keys(testResults.tables).length,
-        workingTables: Object.values(testResults.tables).filter((t: any) => t.exists).length,
+        workingTables: Object.values(testResults.tables).filter(t => t.exists).length,
         totalRecords: Object.values(testResults.tables)
-          .filter((t: any) => t.exists && typeof t.count === 'number')
-          .reduce((sum: number, t: any) => sum + (t.count || 0), 0)
+          .filter(t => t.exists && typeof t.count === 'number')
+          .reduce((sum, t) => sum + t.count, 0)
       }
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Database Test] ❌ 테스트 실행 중 심각한 오류:', error);
     res.status(500).json({
       success: false,
       message: '데이터베이스 테스트 실행 중 오류가 발생했습니다.',
-      error: error?.message || 'Unknown error',
-      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -206,7 +206,7 @@ router.get('/menu-visibility-db-test', async (req, res) => {
 
       console.log('[Menu Visibility DB Test] ✅ 데이터베이스 테이블 생성 및 데이터 삽입 성공');
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('[Menu Visibility DB Test] ❌ 데이터베이스 테이블 테스트 실패:', error);
       testMenuSettings.can_create = false;
     }
@@ -227,12 +227,12 @@ router.get('/menu-visibility-db-test', async (req, res) => {
       ]
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Menu Visibility DB Test] ❌ 메뉴 표시 설정 DB 테스트 오류:', error);
     res.status(500).json({
       success: false,
       message: '메뉴 표시 설정 데이터베이스 테스트 중 오류가 발생했습니다.',
-      error: error?.message || 'Unknown error'
+      error: error.message
     });
   }
 });

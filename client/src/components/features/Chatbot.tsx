@@ -1,17 +1,3 @@
-/**
- * @deprecated This component has been deprecated in favor of the canonical SimpleChatBot
- * 
- * DEPRECATED: This features/Chatbot component is being replaced by ui/SimpleChatBot.tsx
- * which provides modern UI components, better auth integration, and consistent styling
- * with the design system. While this component has comprehensive service responses,
- * these should be integrated into the canonical version.
- * 
- * Please use @/components/ui/SimpleChatBot instead.
- * This file will be removed in a future version.
- * 
- * Migration: Replace Chatbot imports with SimpleChatBot from @/components/ui/SimpleChatBot
- */
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './Chatbot.css';
 

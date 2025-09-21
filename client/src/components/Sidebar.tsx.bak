@@ -1,11 +1,3 @@
-/**
- * @deprecated This backup file has been deprecated
- * 
- * DEPRECATED: This is a backup version of Sidebar.tsx that is no longer needed.
- * The canonical version is now in Sidebar.tsx with enhanced accessibility features.
- * This file will be removed in a future version.
- */
-
 import { Link, useLocation, useRoute } from "wouter";
 import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";

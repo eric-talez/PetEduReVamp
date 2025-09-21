@@ -69,7 +69,10 @@
     @apply text-base leading-relaxed;
   }
   
-  /* 작은 텍스트 - definition moved to @layer components */
+  /* 작은 텍스트 */
+  .text-caption {
+    @apply text-sm text-muted-foreground leading-normal;
+  }
   
   /* 라벨 텍스트 */
   .text-label {
@@ -112,7 +115,39 @@
   }
 }
 
-/* Scrollbar styles moved to consolidated @layer base section */
+/* 전역 스크롤바 스타일링 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 다크모드 스크롤바 */
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
 
 /* 포커스 개선 */
 .focus-visible-enhanced:focus-visible {
@@ -121,7 +156,21 @@
   box-shadow: 0 0 0 4px hsla(var(--ring), 0.2);
 }
 
-/* 애니메이션 개선 - fade-in moved to @layer utilities */
+/* 애니메이션 개선 */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
@@ -174,6 +223,11 @@
 }
 
 /* 추가 UI 개선 */
+.focus-visible-enhanced:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+}
 
 .hover-lift {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -237,7 +291,17 @@
   border: none !important;
 }
 
-/* Additional Leaflet styling - consolidated */
+/* Leaflet map fixes */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+.leaflet-control-container {
+  z-index: 1000;
+}
+
 .leaflet-popup-content-wrapper {
   border-radius: 8px;
 }
@@ -413,9 +477,9 @@
     line-height: 1.5;
   }
 
-  /* 텍스트 스타일 - 캡션 - consolidated from base layer */
+  /* 텍스트 스타일 - 캡션 */
   .text-caption {
-    @apply text-xs font-medium text-muted-foreground leading-normal;
+    @apply text-xs font-medium;
     line-height: 1.4;
   }
 
@@ -471,19 +535,19 @@
 
 /* 애니메이션 및 전환 효과 */
 @layer utilities {
-  /* 페이드 인 애니메이션 - consolidated version */
+  /* 페이드 인 애니메이션 */
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.2s ease-in-out;
   }
 
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: scale(0.95);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1);
     }
   }
 
@@ -615,9 +679,6 @@
   }
 
   .dark {
-    /* 다크 모드 스키마 설정 */
-    color-scheme: dark;
-    
     /* 다크 모드 기본 배경 및 텍스트 색상 - 높은 대비 */
     --background: 220 13% 9%;     /* 더 어두운 배경 */
     --foreground: 0 0% 95%;       /* 더 밝은 텍스트 */
@@ -691,7 +752,10 @@
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'system-ui', 'Roboto', 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
   }
   
-  /* 다크모드 스타일 강화 - consolidated into main .dark definition above */
+  /* 다크모드 스타일 강화 */
+  .dark {
+    color-scheme: dark;
+  }
   
   /* 입력 필드 다크모드 스타일 */
   input, textarea, select {
@@ -713,37 +777,22 @@
     @apply bg-card text-card-foreground border-border;
   }
   
-  /* 스크롤바 스타일 - consolidated */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  /* 스크롤바 다크모드 스타일 */
+  .dark ::-webkit-scrollbar {
+    width: 8px;
   }
-
-  ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-    transition: background 0.2s;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.3);
-  }
-
+  
   .dark ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: hsl(var(--background));
   }
-
+  
   .dark ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: hsl(var(--border));
+    border-radius: 4px;
   }
-
+  
   .dark ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: hsl(var(--accent));
   }
 }
 
@@ -761,28 +810,58 @@
 
 /* 테마 전환 최적화 */
 .theme-toggle-button {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: transform, opacity;
+  transform: translateZ(0); /* 하드웨어 가속 활성화 */
+  backface-visibility: hidden; /* 더 부드러운 애니메이션 */
+  will-change: transform, opacity; /* 브라우저에게 최적화 힌트 제공 */
 }
 
+/* 테마 전환 시 부드러운 애니메이션 */
 .theme-toggle-icon {
   @apply transition-all duration-150 ease-out;
 }
 
-/* 이미지 필터 제어 - 제한적이고 비파괴적 접근 */
-.light-mode img,
-.light-mode svg {
-  filter: none;
-  backdrop-filter: none;
-  -webkit-filter: none;
-  mix-blend-mode: normal;
+/* 이미지 필터링 방지 - 라이트 모드에서 이미지가 변경되지 않도록 보장 */
+html:not(.dark) img, 
+html:not(.dark) svg,
+body:not(.dark) img,
+body:not(.dark) svg,
+[data-theme="light"] img,
+[data-theme="light"] svg {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-filter: none !important;
+  mix-blend-mode: normal !important;
+  opacity: 1 !important;
 }
 
-/* 다크 모드에서 선택적 이미지 필터 */
+/* 모든 이미지에서 라이트 모드 필터링 방지 */
+*, *::before, *::after {
+  --tw-brightness: brightness(1) !important;
+  --tw-contrast: contrast(1) !important;
+  --tw-grayscale: grayscale(0) !important;
+  --tw-hue-rotate: hue-rotate(0deg) !important;
+  --tw-invert: invert(0) !important;
+  --tw-saturate: saturate(1) !important;
+  --tw-sepia: sepia(0) !important;
+}
+
+html:not(.dark) * {
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-opacity) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow) !important;
+}
+
+/* 특정 클래스가 있는 경우에만 라이트 모드 필터 무시 */
+.light-mode img,
+.light-mode svg {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
+/* 다크 모드에서만 필요한 경우 이미지 필터 적용 */
 .dark img[data-invert="true"], 
 .dark svg[data-invert="true"] {
-  filter: invert(1) hue-rotate(180deg);
+  filter: invert(1) hue-rotate(180deg) !important;
 }
 
 /* 메시징 타이핑 애니메이션 */
