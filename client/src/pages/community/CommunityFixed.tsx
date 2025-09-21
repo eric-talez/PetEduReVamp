@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink, Users, UserCheck, MapPin, TrendingUp, BarChart3, Download, RefreshCw } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink, Users, UserCheck, MapPin, TrendingUp, BarChart3, Download, RefreshCw, Play, PlayCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth-compat';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,8 +39,46 @@ const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }
 
   return (
     <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => onClick(post)}>
-      {/* 썸네일 이미지 영역 */}
-      {post.linkInfo?.image && (
+      {/* 영상 썸네일 영역 */}
+      {post.videoUrl && (
+        <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-black">
+          {post.videoThumbnail ? (
+            <img 
+              src={post.videoThumbnail} 
+              alt="영상 썸네일" 
+              className="w-full h-full object-cover" 
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center">
+              <PlayCircle className="h-16 w-16 text-white opacity-80" />
+            </div>
+          )}
+          {/* 재생 버튼 오버레이 */}
+          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+            <div className="bg-white bg-opacity-90 rounded-full p-3">
+              <Play className="h-8 w-8 text-gray-900 ml-1" />
+            </div>
+          </div>
+          {/* 영상 시간 표시 */}
+          {post.videoDuration > 0 && (
+            <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+              {Math.floor(post.videoDuration / 60)}:{String(post.videoDuration % 60).padStart(2, '0')}
+            </div>
+          )}
+          {/* 영상 배지 */}
+          <div className="absolute top-2 left-2">
+            <Badge variant="secondary" className="bg-red-600 text-white">
+              영상
+            </Badge>
+          </div>
+        </div>
+      )}
+      
+      {/* 일반 링크 썸네일 영역 */}
+      {!post.videoUrl && post.linkInfo?.image && (
         <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
           <img 
             src={post.linkInfo.image} 
@@ -1334,8 +1372,37 @@ function CommunityPage() {
                   <p className="whitespace-pre-wrap">{selectedPost.content}</p>
                 </div>
 
+                {/* 영상 재생 영역 */}
+                {selectedPost.videoUrl && (
+                  <div className="mt-4">
+                    <div className="bg-black rounded-lg overflow-hidden">
+                      <video 
+                        controls 
+                        className="w-full h-auto max-h-96"
+                        preload="metadata"
+                        poster={selectedPost.videoThumbnail}
+                      >
+                        <source src={selectedPost.videoUrl} type="video/mp4" />
+                        <source src={selectedPost.videoUrl} type="video/webm" />
+                        <source src={selectedPost.videoUrl} type="video/ogg" />
+                        브라우저가 비디오 재생을 지원하지 않습니다.
+                      </video>
+                    </div>
+                    {selectedPost.videoDuration > 0 && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        재생시간: {Math.floor(selectedPost.videoDuration / 60)}분 {selectedPost.videoDuration % 60}초
+                        {selectedPost.videoFileSize > 0 && (
+                          <span className="ml-4">
+                            파일크기: {(selectedPost.videoFileSize / 1024 / 1024).toFixed(1)}MB
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* 링크 정보 */}
-                {selectedPost.linkInfo && (
+                {!selectedPost.videoUrl && selectedPost.linkInfo && (
                   <div className="border rounded-lg p-4 bg-gray-50">
                     <div className="flex items-start gap-4">
                       {selectedPost.linkInfo.image && (
