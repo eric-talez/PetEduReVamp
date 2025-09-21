@@ -115,7 +115,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     {
       id: "msg1",
       sender: "김트레이너",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      avatar: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       content: "안녕하세요, 다음 훈련 일정 관련해서 문의드립니다.",
       timestamp: "2024-02-15T14:30:00",
       read: false
@@ -123,7 +123,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     {
       id: "msg2",
       sender: "바우멍 훈련소",
-      avatar: "https://images.unsplash.com/photo-1579310962131-aa21f240d986?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      avatar: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       content: "3월 특별 그룹 클래스 신청이 시작되었습니다!",
       timestamp: "2024-02-14T09:15:00",
       read: false
@@ -131,7 +131,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     {
       id: "msg3",
       sender: "박훈련사",
-      avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      avatar: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
       content: "몽이의 훈련 영상을 첨부했습니다. 확인 부탁드립니다.",
       timestamp: "2024-02-13T16:45:00",
       read: false
@@ -197,14 +197,14 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     {
       id: 1,
       name: "프리미엄 반려견 훈련용 클리커",
-      image: "https://images.unsplash.com/photo-1598875384021-4a23470c7997?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      image: "/attached_assets/image_1746582251297.png",
       price: 15000,
       quantity: 1
     },
     {
       id: 4,
       name: "유기농 강아지 간식 모음",
-      image: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       price: 28000,
       quantity: 1,
       discountRate: 10

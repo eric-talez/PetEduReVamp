@@ -85,7 +85,7 @@ const sampleProducts: Product[] = [
     name: '반려동물 GPS 추적기',
     description: '실시간 위치 추적과 활동 모니터링이 가능한 스마트 GPS 장치입니다.',
     price: 65000,
-    image: 'https://images.unsplash.com/photo-1537123547273-e59f4f437f1b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
+    image: '/attached_assets/image_1746582251297.png',
     category: '안전',
     rating: 4.6,
     reviewCount: 78,

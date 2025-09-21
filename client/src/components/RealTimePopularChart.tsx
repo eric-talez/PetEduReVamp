@@ -221,7 +221,7 @@ export function RealTimePopularChart() {
         price: 150000,
         rating: 4.8,
         students: 1200,
-        thumbnail: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
+        thumbnail: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png"
       },
       '2': {
         id: 2,
@@ -232,7 +232,7 @@ export function RealTimePopularChart() {
         price: 120000,
         rating: 4.7,
         students: 890,
-        thumbnail: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
+        thumbnail: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png"
       }
     };
 
@@ -258,7 +258,7 @@ export function RealTimePopularChart() {
         requirements: ["3개월 이상의 건강한 반려견", "기본 예방접종 완료", "보험 가입 필수"],
         contact: "010-1234-5678",
         email: "agility@petassociation.kr",
-        thumbnail: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
+        thumbnail: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png"
       },
       '2': {
         id: 2,
