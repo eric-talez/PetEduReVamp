@@ -17,7 +17,8 @@ import {
   createSuccessResponse,
   UnauthorizedApiError,
   ValidationApiError,
-  HTTP_STATUS
+  HTTP_STATUS,
+  extendResponse
 } from '../middleware/api-standards';
 
 // JWT 설정
@@ -142,6 +143,9 @@ export function setupAuth(app: Express, sessionStore?: session.Store) {
  */
 function setupAuthRoutes(app: Express) {
   const router = Router();
+  
+  // API 표준화 미들웨어 적용
+  router.use(extendResponse);
   
   // CSRF 토큰 조회 엔드포인트
   router.get('/csrf', getCSRFToken);
