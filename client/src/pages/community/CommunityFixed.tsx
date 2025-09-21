@@ -755,13 +755,72 @@ function CommunityPage() {
                     </div>
                   </>
                 )}
+                {/* 이벤트/행사 탭 전용 필드들 */}
+                {activeTab === 'events' && (
+                  <>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="eventDate" className="text-right">행사 일정</Label>
+                      <Input
+                        id="eventDate"
+                        type="date"
+                        value={newPost.eventDate || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, eventDate: e.target.value }))}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="eventLocation" className="text-right">행사 장소</Label>
+                      <Input
+                        id="eventLocation"
+                        value={newPost.eventLocation || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, eventLocation: e.target.value }))}
+                        placeholder="예: 서울시 강남구 삼성동 코엑스"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="organizer" className="text-right">주최기관</Label>
+                      <Input
+                        id="organizer"
+                        value={newPost.organizer || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, organizer: e.target.value }))}
+                        placeholder="예: 서울시청, 한국펫협회"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="ticketPrice" className="text-right">참가비</Label>
+                      <Input
+                        id="ticketPrice"
+                        value={newPost.ticketPrice || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, ticketPrice: e.target.value }))}
+                        placeholder="예: 무료, 10,000원, 성인 15,000원"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="eventWebsite" className="text-right">홈페이지</Label>
+                      <Input
+                        id="eventWebsite"
+                        value={newPost.eventWebsite || ''}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, eventWebsite: e.target.value }))}
+                        placeholder="예: https://event.example.com"
+                        className="col-span-3"
+                      />
+                    </div>
+                  </>
+                )}
+
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label htmlFor="content" className="text-right pt-2">내용</Label>
                   <Textarea
                     id="content"
                     value={newPost.content}
                     onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
-                    placeholder="게시글 내용을 입력하세요"
+                    placeholder={activeTab === 'events' ? 
+                      "이벤트/행사의 상세 내용을 입력하세요. (프로그램, 참가 방법, 주의사항 등)" : 
+                      "게시글 내용을 입력하세요"
+                    }
                     className="col-span-3 min-h-[120px]"
                   />
                 </div>
