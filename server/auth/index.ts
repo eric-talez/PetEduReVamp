@@ -196,18 +196,30 @@ function setupAuthRoutes(app: Express) {
           );
         }
         
-        console.log('로그인 성공:', user.username);
-        return res.success({
-          user: {
-            id: user.id,
-            username: user.username,
-            name: user.name,
-            email: user.email,
-            role: user.role
-          },
-          token,
-          expiresIn: JWT_EXPIRES_IN
-        }, '로그인에 성공했습니다.');
+        // 세션 명시적 저장
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('세션 저장 오류:', saveErr);
+            return res.error(
+              ApiErrorCode.INTERNAL_SERVER_ERROR,
+              '세션 저장 중 오류가 발생했습니다'
+            );
+          }
+          
+          console.log('로그인 성공:', user.username);
+          console.log('세션 저장 완료 - SessionID:', req.sessionID);
+          return res.success({
+            user: {
+              id: user.id,
+              username: user.username,
+              name: user.name,
+              email: user.email,
+              role: user.role
+            },
+            token,
+            expiresIn: JWT_EXPIRES_IN
+          }, '로그인에 성공했습니다.');
+        });
       });
     })(req, res, next);
   });
