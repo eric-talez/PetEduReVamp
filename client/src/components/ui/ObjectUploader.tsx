@@ -110,9 +110,8 @@ export function ObjectUploader({
       setUploadState({ status: 'uploading', progress: 0 });
 
       // 1. 업로드 URL 요청
-      const uploadUrlResponse = await apiRequest('/api/videos/upload-url', {
-        method: 'POST'
-      });
+      const response = await apiRequest('POST', '/api/videos/upload-url');
+      const uploadUrlResponse = await response.json();
 
       if (!uploadUrlResponse.success) {
         throw new Error(uploadUrlResponse.message || '업로드 URL 생성 실패');
