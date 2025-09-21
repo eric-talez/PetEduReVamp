@@ -105,6 +105,9 @@ export default function Login() {
 
       const userData = await response.json();
       console.log('로그인 응답 데이터:', userData);
+      console.log('조건 체크 - userData.success:', userData.success);
+      console.log('조건 체크 - userData.data:', userData.data);
+      console.log('조건 체크 - userData.data?.user:', userData.data?.user);
       
       if (userData.success && userData.data?.user) {
         const user = userData.data.user;
@@ -192,6 +195,9 @@ export default function Login() {
 
       const userData = await response.json();
       console.log('로그인 응답 데이터:', userData);
+      console.log('조건 체크 - userData.success:', userData.success);
+      console.log('조건 체크 - userData.data:', userData.data);
+      console.log('조건 체크 - userData.data?.user:', userData.data?.user);
       
       if (userData.success && userData.data?.user) {
         const user = userData.data.user;
