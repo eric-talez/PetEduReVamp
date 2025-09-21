@@ -97,6 +97,8 @@ import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loadi
 // 레이아웃 및 컴포넌트 임포트
 import { Toaster } from "@/components/ui/toaster";
 import Footer from "@/components/Footer";
+import { Sidebar } from "@/components/Sidebar";
+import { TopBar } from "@/components/TopBar";
 
 import { ThemeManager } from "@/components/ThemeManager";
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
@@ -173,6 +175,8 @@ function NavigationMessageListener({ children }: { children: ReactNode }) {
  */
 function AppLayout({ children }: { children: ReactNode }) {
   const auth = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // 인증 상태가 변경될 때마다 윈도우 객체에 저장된 상태를 확인하고 동기화
   useEffect(() => {
@@ -191,6 +195,20 @@ function AppLayout({ children }: { children: ReactNode }) {
       }
     }
   }, [auth.isAuthenticated, auth.userRole, auth.userName]);
+
+  // 화면 크기에 따라 모바일 여부 확인
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   // 키보드 접근성 설정 (전역 단축키)
   useKeyboardAccessibility([
@@ -227,9 +245,29 @@ function AppLayout({ children }: { children: ReactNode }) {
         {/* 접근성 개선: 콘텐츠로 건너뛰기 링크 */}
         <SkipToContent contentId="main-content" />
 
+        {/* TopBar - 상단 헤더 */}
+        <TopBar
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
+
         <div className="flex flex-grow">
-          {/* 메인 컨텐츠 영역 - 사이드바는 개별 페이지의 AppLayout에서 처리 */}
-          <div className="flex-grow flex flex-col min-h-screen transition-all duration-300 w-full">
+          {/* 사이드바 */}
+          <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] z-20 transition-all duration-300 ${
+            isMobile ? (sidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'
+          } w-64`}>
+            <Sidebar 
+              open={!isMobile || sidebarOpen} 
+              onClose={() => setSidebarOpen(false)}
+              userRole={auth.userRole}
+              isAuthenticated={auth.isAuthenticated}
+            />
+          </div>
+
+          {/* 메인 컨텐츠 영역 */}
+          <div className={`flex-grow flex flex-col min-h-screen transition-all duration-300 ${
+            !isMobile ? 'ml-64' : 'ml-0'
+          } pt-16`}>
 
             {/* 메인 컨텐츠 영역 */}
             <main id="main-content" className="flex-grow" tabIndex={-1}>
@@ -1054,6 +1092,16 @@ function AppLayout({ children }: { children: ReactNode }) {
             <Footer />
           </div>
         </div>
+
+        {/* 모바일에서 사이드바가 열릴 때 오버레이 */}
+        {isMobile && sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-10"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+            role="presentation"
+          />
+        )}
 
         {/* AI 챗봇 */}
         <SimpleChatBot />
