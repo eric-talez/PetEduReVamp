@@ -176,6 +176,7 @@ function NavigationMessageListener({ children }: { children: ReactNode }) {
 function AppLayout({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
   // 인증 상태가 변경될 때마다 윈도우 객체에 저장된 상태를 확인하고 동기화
@@ -253,20 +254,19 @@ function AppLayout({ children }: { children: ReactNode }) {
 
         <div className="flex flex-grow">
           {/* 사이드바 */}
-          <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] z-20 transition-all duration-300 ${
-            isMobile ? (sidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'
-          } w-64`}>
+          {(!isMobile || sidebarOpen) && (
             <Sidebar 
               open={!isMobile || sidebarOpen} 
-              onClose={() => setSidebarOpen(false)}
+              expanded={sidebarExpanded}
+              onToggleExpand={() => setSidebarExpanded(!sidebarExpanded)}
               userRole={auth.userRole}
               isAuthenticated={auth.isAuthenticated}
             />
-          </div>
+          )}
 
           {/* 메인 컨텐츠 영역 */}
           <div className={`flex-grow flex flex-col min-h-screen transition-all duration-300 ${
-            !isMobile ? 'ml-64' : 'ml-0'
+            !isMobile ? (sidebarExpanded ? 'ml-64' : 'ml-[72px]') : 'ml-0'
           } pt-16`}>
 
             {/* 메인 컨텐츠 영역 */}
