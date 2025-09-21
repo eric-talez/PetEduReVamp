@@ -104,33 +104,39 @@ export default function Login() {
       }
 
       const userData = await response.json();
+      console.log('로그인 응답 데이터:', userData);
       
-      if (userData.success) {
+      if (userData.success && userData.data?.user) {
+        const user = userData.data.user;
+        console.log('로그인 성공 - 사용자 데이터:', user);
+        
         // 로그인 성공 시 인증 이벤트 발행
         const loginEvent = new CustomEvent('login', {
           detail: {
-            role: userData.user.role,
-            name: userData.user.name,
-            userRole: userData.user.role,
-            userName: userData.user.name
+            role: user.role,
+            name: user.name,
+            userRole: user.role,
+            userName: user.name
           }
         });
         window.dispatchEvent(loginEvent);
 
         // 인증 상태 강제 업데이트 - 글로벌 상태 동기화
-        auth.login(userData.user.role, userData.user.name, false);
+        console.log('글로벌 인증 상태 업데이트 시작:', user.role, user.name);
+        auth.login(user.role, user.name, false);
+        console.log('글로벌 인증 상태 업데이트 완료');
 
         toast({
           title: "로그인 성공",
-          description: `${userData.user.name}님, 환영합니다!`,
+          description: `${user.name}님, 환영합니다!`,
           variant: "default",
         });
 
         // 역할에 따른 대시보드로 이동
-        const dashboardPath = userData.user.role === 'pet-owner' ? '/dashboard' : 
-                             userData.user.role === 'trainer' ? '/trainer/dashboard' : 
-                             userData.user.role === 'institute-admin' ? '/institute/dashboard' : 
-                             userData.user.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+        const dashboardPath = user.role === 'pet-owner' ? '/dashboard' : 
+                             user.role === 'trainer' ? '/trainer/dashboard' : 
+                             user.role === 'institute-admin' ? '/institute/dashboard' : 
+                             user.role === 'admin' ? '/admin/dashboard' : '/dashboard';
         
         // 상태 업데이트 후 즉시 리다이렉트
         setLocation(dashboardPath);
@@ -185,33 +191,39 @@ export default function Login() {
       }
 
       const userData = await response.json();
+      console.log('로그인 응답 데이터:', userData);
       
-      if (userData.success) {
+      if (userData.success && userData.data?.user) {
+        const user = userData.data.user;
+        console.log('로그인 성공 - 사용자 데이터:', user);
+        
         // 로그인 성공 시 인증 이벤트 발행
         const loginEvent = new CustomEvent('login', {
           detail: {
-            role: userData.user.role,
-            name: userData.user.name,
-            userRole: userData.user.role,
-            userName: userData.user.name
+            role: user.role,
+            name: user.name,
+            userRole: user.role,
+            userName: user.name
           }
         });
         window.dispatchEvent(loginEvent);
 
         // 인증 상태 강제 업데이트 - 글로벌 상태 동기화
-        auth.login(userData.user.role, userData.user.name, false);
+        console.log('글로벌 인증 상태 업데이트 시작:', user.role, user.name);
+        auth.login(user.role, user.name, false);
+        console.log('글로벌 인증 상태 업데이트 완료');
 
         toast({
           title: "로그인 성공",
-          description: `${userData.user.name}님, 환영합니다!`,
+          description: `${user.name}님, 환영합니다!`,
           variant: "default",
         });
 
         // 역할에 따른 대시보드로 이동
-        const dashboardPath = userData.user.role === 'pet-owner' ? '/dashboard' : 
-                             userData.user.role === 'trainer' ? '/trainer/dashboard' : 
-                             userData.user.role === 'institute-admin' ? '/institute/dashboard' : 
-                             userData.user.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+        const dashboardPath = user.role === 'pet-owner' ? '/dashboard' : 
+                             user.role === 'trainer' ? '/trainer/dashboard' : 
+                             user.role === 'institute-admin' ? '/institute/dashboard' : 
+                             user.role === 'admin' ? '/admin/dashboard' : '/dashboard';
         
         // 상태 업데이트 후 즉시 리다이렉트
         setLocation(dashboardPath);
