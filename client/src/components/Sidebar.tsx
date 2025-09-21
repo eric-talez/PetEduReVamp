@@ -25,6 +25,8 @@ import {
   Settings,
   User,
   ShoppingCart,
+  ChevronLeft,
+  ChevronRight,
   Menu,
   X,
   Bell,
@@ -78,6 +80,8 @@ import {
   Image as ImageIcon,
   Search,
   LogIn,
+  ChevronsLeft,
+  ChevronsRight,
   Clock,
   Coffee,
   Mail,
@@ -85,8 +89,16 @@ import {
   Zap
 } from "lucide-react";
 
-// 사이드바 컨텍스트 생성 (단순화)
-export const SidebarContext = createContext({});
+// 사이드바 컨텍스트 생성
+export interface SidebarContextType {
+  expanded: boolean;
+  toggleSidebar: () => void;
+}
+
+export const SidebarContext = createContext<SidebarContextType>({
+  expanded: true,
+  toggleSidebar: () => {}
+});
 
 // NavItem 컴포넌트 정의
 interface NavItemProps {
@@ -99,6 +111,7 @@ interface NavItemProps {
 }
 
 function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) {
+  const { expanded } = useContext(SidebarContext);
   const [, setLocation] = useLocation();
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -128,7 +141,38 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
 
   if (!show) return null;
 
-  // 항상 확장된 상태로 표시
+  // 접힌 상태에서는 툴팁으로 표시
+  if (!expanded) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <a
+              href={href}
+              className={cn(
+                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
+              )}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              aria-label={typeof children === 'string' ? children : children?.toString()}
+              data-testid={`nav-item-${href.replace(/\//g, '-').replace(/^-/, 'root')}-collapsed`}
+            >
+              <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6">
+                {icon}
+              </div>
+            </a>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>{children}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  // 확장된 상태에서는 일반 메뉴 아이템으로 표시
   return (
     <a
       href={href}
@@ -140,7 +184,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
       onKeyDown={handleKeyDown}
       tabIndex={0}
       aria-current={active ? "page" : undefined}
-      data-testid={`nav-item-${href.replace(/\//g, '-').replace(/^-/, 'root')}`}
+      data-testid={`nav-item-${href.replace(/\//g, '-').replace(/^-/, 'root')}-expanded`}
     >
       <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3">
         {icon}
@@ -155,21 +199,44 @@ interface SidebarProps {
   onClose: () => void;
   userRole: string | null;
   isAuthenticated: boolean;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 export function Sidebar({ 
   open, 
   onClose, 
   userRole, 
-  isAuthenticated
+  isAuthenticated,
+  expanded: externalExpanded,
+  onToggleExpand
 }: SidebarProps) {
   // 개발 모드에서만 렌더링 정보 로깅
   if (isDev) {
     console.log('Sidebar render - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
   }
   const [location, setLocation] = useLocation();
-  // 사이드바는 항상 확장된 상태로 유지
-  const expanded = true;
+  const [internalExpanded, setInternalExpanded] = useState(true);
+
+  // 외부에서 제어되는 상태 또는 내부 상태 사용
+  const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        if (onToggleExpand) {
+          // 외부 상태 사용
+        } else {
+          setInternalExpanded(true);
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, [onToggleExpand]);
 
   // 모든 메뉴 그룹이 기본적으로 닫힌 상태로 시작
   const [menuGroups, setMenuGroups] = useState(() => {
@@ -228,6 +295,13 @@ export function Sidebar({
     });
   }, [userRole, isAuthenticated]);
 
+  const toggleSidebar = () => {
+    if (onToggleExpand) {
+      onToggleExpand();
+    } else {
+      setInternalExpanded(!internalExpanded);
+    }
+  };
 
   // 메뉴 그룹 토글 함수 - 개선된 에러 처리
   const toggleMenuGroup = useCallback((groupId: string) => {
@@ -459,7 +533,10 @@ export function Sidebar({
   });
 
 
-  const contextValue = {};
+  const contextValue = {
+    expanded,
+    toggleSidebar
+  };
 
   // 사용자 권한에 따른 메뉴 표시 여부 결정 - 문자열 비교로 명확하게 처리
   const showDashboardLink = userRole !== null;
@@ -485,21 +562,31 @@ export function Sidebar({
         className={cn(
           "fixed left-0 bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md flex flex-col",
           // 모바일: TopBar 아래에서 시작하고, 높이는 TopBar를 제외한 전체 화면
-          "top-16 h-[calc(100vh-4rem)] z-mobile-menu lg:top-0 lg:h-screen lg:z-sidebar w-64"
+          "top-16 h-[calc(100vh-4rem)] z-mobile-menu lg:top-0 lg:h-screen lg:z-sidebar",
+          expanded ? "w-64" : "w-[70px]"
         )}
       >
         {/* 사이드바 헤더 영역 - TopBar와의 중복을 방지하기 위해 로고 제거 */}
-        <div className="h-16 flex items-center justify-center border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
-          {/* 사이드바 헤더 - 접기 버튼 제거됨 */}
+        <div className="h-16 flex items-center justify-end border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
+          <button
+            onClick={toggleSidebar}
+            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md border border-transparent hover:border-gray-300 dark:hover:border-gray-600 hover:scale-110"
+            aria-label={expanded ? "사이드바 접기" : "사이드바 펼치기"}
+            aria-expanded={expanded}
+            title={expanded ? "사이드바 접기" : "사이드바 펼치기"}
+            data-testid="button-toggle-sidebar-expand"
+          >
+            {expanded ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
+          </button>
         </div>
 
-        <ScrollArea className="flex-1 px-3">
+        <ScrollArea className={cn("flex-1", expanded ? "px-3" : "px-2")}>
           <div className="py-4 space-y-1 w-full min-h-min relative">
             {/* 비로그인 상태 메뉴 */}
             {!isAuthenticated ? (
               <>
                 <SidebarMenuGroup
-                  expanded={true}
+                  expanded={expanded}
                   title="메인 메뉴"
                   groupName="main"
                   isOpen={menuGroups.main}
@@ -556,7 +643,7 @@ export function Sidebar({
 
                 {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
                 <SidebarMenuGroup
-                  expanded={true}
+                  expanded={expanded}
                   title="쇼핑"
                   groupName="features"
                   isOpen={menuGroups.features}
@@ -566,40 +653,81 @@ export function Sidebar({
 
                 {/* 쇼핑몰 메뉴 그룹 내용 */}
                 {menuGroups.features && (
-                  <div className="mt-1 pl-2">
-                    <SpecialShopLink>쇼핑몰</SpecialShopLink>
+                  <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
+                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
                   </div>
                 )}
 
                 {/* 비로그인 상태에서 특별 메뉴 내용도 숨김 처리 */}
 
-                <div className="flex items-center mx-auto mt-4 px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-sm w-full">
-                  <div className="flex-1 pr-4">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">반려견 교육 시작하기</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">회원가입 후 맞춤형 교육을 경험하세요.</p>
+                {expanded ? (
+                  <div className="flex items-center mx-auto mt-4 px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-sm w-full">
+                    <div className="flex-1 pr-4">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">반려견 교육 시작하기</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">회원가입 후 맞춤형 교육을 경험하세요.</p>
+                    </div>
+                    <Link
+                      href="/auth"
+                      className="bg-primary hover:bg-primary/90 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors inline-block text-center"
+                      aria-label="로그인 페이지로 이동"
+                      data-testid="link-login-expanded"
+                    >
+                      로그인
+                    </Link>
                   </div>
-                  <Link
-                    href="/auth"
-                    className="bg-primary hover:bg-primary/90 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors inline-block text-center"
-                    aria-label="로그인 페이지로 이동"
-                    data-testid="link-login"
-                  >
-                    로그인
-                  </Link>
-                </div>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href="/auth"
+                          className="flex items-center justify-center py-2 px-2 mt-4 bg-primary hover:bg-primary/90 text-white rounded-lg mx-auto w-[48px]"
+                          aria-label="로그인"
+                          data-testid="link-login-collapsed"
+                        >
+                          <LogIn className="w-5 h-5" />
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>로그인</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
 
                 {/* Help Section 컴포넌트 통합 */}
-                <HelpSection expanded={true} handleItemClick={handleItemClick} />
+                {!expanded ? (
+                  <div className="mt-4 flex flex-col items-center space-y-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" 
+                            onClick={() => handleItemClick('/help/faq')}
+                          >
+                            <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>도움말 및 지원</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ) : (
+                  /* 확장된 상태에서는 기존 HelpSection 컴포넌트 사용 */
+                  <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                )}
 
                 {/* 독립적인 StatisticsSection 컴포넌트 사용 */}
-                <StatisticsSection expanded={true} />
+                <StatisticsSection expanded={expanded} />
               </>
             ) : (
               /* 로그인 상태 메뉴 */
               <>
                 {/* 메인 메뉴 */}
                 <SidebarMenuGroup
-                  expanded={true}
+                  expanded={expanded}
                   title="메인"
                   groupName="main"
                   isOpen={menuGroups.main}
@@ -621,7 +749,7 @@ export function Sidebar({
                 {/* 학습 메뉴 (견주) */}
                 {showPetOwnerMenu && (
                   <>
-                    <SidebarMenuGroup expanded={true} title="학습" groupName="learning" isOpen={menuGroups.learning} toggleGroup={toggleMenuGroup} icon={<BookOpen className="w-5 h-5 text-gray-500" />} />
+                    <SidebarMenuGroup expanded={expanded} title="학습" groupName="learning" isOpen={menuGroups.learning} toggleGroup={toggleMenuGroup} icon={<BookOpen className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.learning && (
                       <>
                         <AccessibleNavItem href="/my-courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-courses")} onClick={handleItemClick} show={true}>나의 학습</AccessibleNavItem>
@@ -639,7 +767,7 @@ export function Sidebar({
                 {/* 운영 관리 (훈련사/기관) */}
                 {(showTrainerMenu || showInstituteMenu) && (
                   <>
-                    <SidebarMenuGroup expanded={true} title="운영 관리" groupName="management" isOpen={menuGroups.management} toggleGroup={toggleMenuGroup} icon={<UserCog className="w-5 h-5 text-gray-500" />} />
+                    <SidebarMenuGroup expanded={expanded} title="운영 관리" groupName="management" isOpen={menuGroups.management} toggleGroup={toggleMenuGroup} icon={<UserCog className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.management && (
                       <>
 
@@ -664,7 +792,7 @@ export function Sidebar({
                 )}
 
                 {/* 도구 */}
-                <SidebarMenuGroup expanded={true} title="도구" groupName="tools" isOpen={menuGroups.tools} toggleGroup={toggleMenuGroup} icon={<Wrench className="w-5 h-5 text-gray-500" />} />
+                <SidebarMenuGroup expanded={expanded} title="도구" groupName="tools" isOpen={menuGroups.tools} toggleGroup={toggleMenuGroup} icon={<Wrench className="w-5 h-5 text-gray-500" />} />
                 {menuGroups.tools && (
                   <>
                     <AccessibleNavItem href="/video-training" icon={<Video className="w-5 h-5 mr-2" />} hoverIcon={<Presentation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-training")} onClick={handleItemClick} show={true}>영상 훈련</AccessibleNavItem>
@@ -679,7 +807,7 @@ export function Sidebar({
                 {/* 관리자 대시보드 */}
                 {showAdminMenu && (
                   <>
-                    <SidebarMenuGroup expanded={true} title="관리자 대시보드" groupName="adminDashboard" isOpen={menuGroups.adminDashboard} toggleGroup={toggleMenuGroup} icon={<Monitor className="w-5 h-5 text-primary" />} />
+                    <SidebarMenuGroup expanded={expanded} title="관리자 대시보드" groupName="adminDashboard" isOpen={menuGroups.adminDashboard} toggleGroup={toggleMenuGroup} icon={<Monitor className="w-5 h-5 text-primary" />} />
                     {menuGroups.adminDashboard && (
                       <>
                         <AccessibleNavItem href="/admin/dashboard" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/dashboard")} onClick={handleItemClick} show={true}>통합 대시보드</AccessibleNavItem>
@@ -695,7 +823,7 @@ export function Sidebar({
                 {/* 시스템 관리 (관리자) */}
                 {showAdminMenu && (
                   <>
-                    <SidebarMenuGroup expanded={true} title="시스템 관리" groupName="admin" isOpen={menuGroups.admin} toggleGroup={toggleMenuGroup} icon={<Settings className="w-5 h-5 text-gray-500" />} />
+                    <SidebarMenuGroup expanded={expanded} title="시스템 관리" groupName="admin" isOpen={menuGroups.admin} toggleGroup={toggleMenuGroup} icon={<Settings className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.admin && (
                       <>
                         <AccessibleNavItem href="/admin/curriculum" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/curriculum")} onClick={handleItemClick} show={true}>커리큘럼 관리</AccessibleNavItem>
@@ -725,22 +853,48 @@ export function Sidebar({
                 )}
 
                 {/* Help & Statistics */}
-                <HelpSection expanded={true} handleItemClick={handleItemClick} />
-                <StatisticsSection expanded={true} />
+                {!expanded ? (
+                  <div className="mt-4 flex flex-col items-center space-y-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" onClick={() => handleItemClick('/help/faq')}>
+                            <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right"><p>도움말 및 지원</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ) : (
+                  <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                )}
+                <StatisticsSection expanded={expanded} />
               </>
             )}
           </div>
         </ScrollArea>
 
-        <div className="p-4">
+        <div className={`p-4 ${expanded ? "" : "text-center"}`}>
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            <div className="flex items-center justify-between">
-              <span>© 2025 Talez</span>
-              <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
-                {userRole || '비로그인'}
+            {expanded ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <span>© 2025 Talez</span>
+                  <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
+                    {userRole || '비로그인'}
+                  </span>
+                </div>
+                <div className="mt-1">v1.2.0</div>
+              </>
+            ) : (
+              <span className="block py-1 px-2 rounded bg-gray-100 dark:bg-gray-800 text-center text-xs">
+                {userRole === 'admin' ? '관리자' : 
+                 userRole === 'trainer' ? '훈련사' : 
+                 userRole === 'institute-admin' ? '기관' :
+                 userRole === 'pet-owner' ? '견주' : '비로그인'}
               </span>
-            </div>
-            <div className="mt-1">v1.2.0</div>
+            )}
           </div>
         </div>
       </div>
