@@ -3,8 +3,6 @@ import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from '@tanstack/react-query';
-import { EmptyBannerState, getEmptyBannerVariant } from './ui/empty-banner-state';
-import { useAuth } from '@/hooks/useAuth';
 
 // 배너 타입 정의
 interface Banner {
@@ -19,10 +17,9 @@ interface Banner {
 export function BannerSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const slideLiveRegionId = "banner-live-region";
-  const { userRole, isAuthenticated } = useAuth();
 
   // 데이터베이스에서 활성 배너 조회
-  const { data: banners = [], isLoading, error } = useQuery({
+  const { data: banners = [], isLoading } = useQuery({
     queryKey: ['/api/banners/active'],
     queryFn: async () => {
       const response = await fetch('/api/banners/active');
@@ -43,17 +40,9 @@ export function BannerSlider() {
     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
   };
 
-  // 빈 상태 처리: 로딩, 에러, 또는 배너 없음
-  if (isLoading || error || banners.length === 0) {
-    const variant = getEmptyBannerVariant(userRole, isAuthenticated, isLoading, !!error);
-    return (
-      <EmptyBannerState 
-        variant={variant}
-        context="slider"
-        height="h-[400px]"
-        data-testid="banner-slider-empty-state"
-      />
-    );
+  // 로딩 중이거나 배너가 없으면 표시하지 않음
+  if (isLoading || banners.length === 0) {
+    return null;
   }
 
   return (

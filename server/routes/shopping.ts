@@ -1,19 +1,16 @@
 import type { Express } from "express";
-import { storage } from "../storage";
-import { db } from "../db";
-import { eq, and, or, like, gte, lte, desc, count } from "drizzle-orm";
-import { products, cartItems, shopCategories } from "../../shared/schema";
+import { IStorage } from "../storage";
 
-export function registerShoppingRoutes(app: Express, storageInstance: any = storage) {
+export function registerShoppingRoutes(app: Express, storage: IStorage) {
   console.log('[ShoppingRoutes] 쇼핑 라우트 등록 시작');
   
   // 상품 목록 조회
   app.get("/api/shop/products", async (req, res) => {
     try {
       console.log('[ShoppingRoutes] 상품 목록 조회 요청');
-      const productList = await storageInstance.getAllProducts();
-      console.log(`[ShoppingRoutes] 상품 ${productList?.length || 0}개 조회됨`);
-      res.json({ success: true, products: productList || [] });
+      const products = await storage.getAllProducts();
+      console.log(`[ShoppingRoutes] 상품 ${products?.length || 0}개 조회됨`);
+      res.json({ success: true, products: products || [] });
     } catch (error) {
       console.error('Error fetching products:', error);
       res.status(500).json({ error: '상품 목록을 불러올 수 없습니다' });
@@ -345,7 +342,7 @@ export function registerShoppingRoutes(app: Express, storageInstance: any = stor
       }
 
       // 이미 위시리스트에 있는지 확인
-      const { wishlistItems } = await import('../../shared/schema');
+      const { wishlistItems } = await import('@shared/schema');
       const existingItem = await db
         .select()
         .from(wishlistItems)
@@ -386,7 +383,7 @@ export function registerShoppingRoutes(app: Express, storageInstance: any = stor
       const userId = req.user!.id;
       const { productId } = req.body;
 
-      const { wishlistItems } = await import('../../shared/schema');
+      const { wishlistItems } = await import('@shared/schema');
       const deletedItem = await db
         .delete(wishlistItems)
         .where(and(
@@ -642,7 +639,7 @@ export function registerShoppingRoutes(app: Express, storageInstance: any = stor
       const { referralCode, productId } = req.body;
 
       // 추천인 코드 검증 로직
-      const { referralCodes } = await import('../../shared/schema');
+      const { referralCodes } = await import('@shared/schema');
       const referral = await db
         .select()
         .from(referralCodes)

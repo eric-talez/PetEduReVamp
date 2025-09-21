@@ -2,7 +2,6 @@ import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import bannerImage4 from "@/assets/main-banner-talez.png";
 import { Avatar } from "@/components/ui/avatar";
 import { 
   Users, BookOpen, Building, UserRoundCheck, BarChart3, 
@@ -24,14 +23,14 @@ export default function InstituteAdminDashboard({ onAction }: InstituteAdminDash
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 shadow-lg">
+      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         <img 
-          src={bannerImage4}
+          src="https://images.unsplash.com/photo-1531761535209-180857b9f904?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400"
           alt="교육 기관 관리"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover absolute mix-blend-overlay"
         />
         
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
         
         <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
           <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">

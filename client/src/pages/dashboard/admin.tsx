@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import bannerImage from "@/assets/main-banner-talez.png";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Users, Shield, Bell, CheckSquare, Settings, 
@@ -211,20 +210,20 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 shadow-lg">
+      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         <img 
-          src={bannerImage}
+          src="https://images.unsplash.com/photo-1551651653-c5186a1fbba2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="관리자 대시보드"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover absolute mix-blend-overlay"
         />
         
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
         
         <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
-          <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl drop-shadow-lg">
+          <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">
             시스템 관리자 대시보드
           </h1>
-          <p className="text-white text-sm md:text-lg max-w-xl mb-6 drop-shadow-md">
+          <p className="text-white text-sm md:text-lg max-w-xl mb-6">
             Talez의 모든 활동을 모니터링하고 관리하여 최상의 서비스 품질을 유지하세요.
           </p>
           <div>

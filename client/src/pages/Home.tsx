@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
-import { EmptyBannerState, getEmptyBannerVariant } from '@/components/ui/empty-banner-state';
 import { TrendingSection } from '@/components/TrendingSection';
 import { MiniChart } from '@/components/ui/mini-chart';
 import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
@@ -567,14 +566,7 @@ export default function Home() {
 
         {/* 메인 배너 슬라이더 */}
         <div className="mb-8">
-          {bannersLoading ? (
-            <EmptyBannerState 
-              variant="loading"
-              context="home"
-              height="min-h-[280px]"
-              data-testid="home-banner-loading"
-            />
-          ) : bannerSlides.length > 0 && bannerSlides[currentSlide] ? (
+          {bannerSlides.length > 0 && bannerSlides[currentSlide] ? (
             <div className="relative overflow-hidden rounded-xl min-h-[280px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
               {/* 배경 이미지 */}
               <div className="absolute inset-0 transition-all duration-500 ease-in-out">
@@ -680,12 +672,38 @@ export default function Home() {
             )}
           </div>
           ) : (
-            <EmptyBannerState 
-              variant={getEmptyBannerVariant(userRole, isAuthenticated)}
-              context="home"
-              height="min-h-[280px]"
-              data-testid="home-banner-empty"
-            />
+            <div className="relative overflow-hidden rounded-xl min-h-[280px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+              {/* 배너가 없을 때 기본 콘텐츠 */}
+              <div className="relative z-10 flex flex-col justify-center min-h-[280px] py-8 px-6 md:px-12">
+                <div className="max-w-4xl mx-auto w-full text-center">
+                  <h1 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
+                    테일즈에 오신 것을 환영합니다
+                  </h1>
+                  <p className="text-white/90 text-sm md:text-lg mb-6 leading-relaxed max-w-2xl mx-auto">
+                    반려동물과 함께하는 특별한 여행을 시작하세요. 전문 훈련사와 함께 우리 아이의 행복한 성장을 도와드립니다.
+                  </p>
+                  
+                  {/* 액션 버튼 */}
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    <Button
+                      size="default"
+                      className="bg-white text-primary font-semibold hover:bg-white/90 border border-white px-6 py-2.5 rounded-lg shadow-md"
+                      onClick={() => setLocation('/auth')}
+                    >
+                      시작하기
+                    </Button>
+                    <Button
+                      size="default"
+                      variant="outline"
+                      className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-6 py-2.5 rounded-lg backdrop-blur-sm font-semibold"
+                      onClick={() => setLocation('/about')}
+                    >
+                      더 알아보기
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 

@@ -116,7 +116,7 @@ export default function CurriculumManager() {
       toast({
         title: "입력 오류",
         description: "강의 제목과 설명을 입력해주세요.",
-        variant: "destructive"
+        variant: "danger"
       });
       return;
     }
@@ -143,7 +143,7 @@ export default function CurriculumManager() {
       toast({
         title: "오류",
         description: "강의 생성에 실패했습니다.",
-        variant: "destructive"
+        variant: "danger"
       });
     }
   };
@@ -153,7 +153,7 @@ export default function CurriculumManager() {
       toast({
         title: "입력 오류",
         description: "모듈 제목을 입력해주세요.",
-        variant: "destructive"
+        variant: "danger"
       });
       return;
     }
@@ -195,7 +195,7 @@ export default function CurriculumManager() {
       toast({
         title: "오류",
         description: "모듈 생성에 실패했습니다.",
-        variant: "destructive"
+        variant: "danger"
       });
     }
   };
@@ -205,7 +205,7 @@ export default function CurriculumManager() {
       toast({
         title: "입력 오류",
         description: "모든 필드를 입력하고 비디오 파일을 선택해주세요.",
-        variant: "destructive"
+        variant: "danger"
       });
       return;
     }
@@ -241,18 +241,18 @@ export default function CurriculumManager() {
       toast({
         title: "오류",
         description: "비디오 업로드에 실패했습니다.",
-        variant: "destructive"
+        variant: "danger"
       });
     } finally {
       setIsUploadingVideo(false);
     }
   };
 
-  const getDifficultyColor = (difficulty: string): "default" | "destructive" | "success" | "warning" | "secondary" | "outline" => {
+  const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'beginner': return 'success';
       case 'intermediate': return 'warning';
-      case 'advanced': return 'destructive';
+      case 'advanced': return 'danger';
       default: return 'secondary';
     }
   };

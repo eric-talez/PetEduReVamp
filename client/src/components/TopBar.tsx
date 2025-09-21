@@ -29,7 +29,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { BrandLogo } from "@/components/ui/BrandLogo";
 
 // Debounce utility function
 const debounce = (func: Function, wait: number) => {
@@ -375,40 +374,19 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-sm z-header transition-colors sticky top-0 w-full">
+    <header className="bg-white dark:bg-gray-900 shadow-sm z-40 transition-colors sticky top-0 w-full">
       <div className="w-full mx-auto px-0">
         <div className="flex justify-between items-center h-16 px-4">
-          {/* Left Section: Mobile Menu + Logo */}
-          <div className="flex items-center space-x-3">
-            {/* Mobile Menu Button */}
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
-              aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
-              data-testid="button-toggle-sidebar"
-            >
-              <Menu className="h-5 w-5" aria-hidden="true" />
-            </button>
-
-            {/* TALEZ Logo - Standardized Brand Component */}
-            <BrandLogo 
-              variant="compact" 
-              size="md" 
-              clickable 
-              showText 
-              className="hidden sm:flex"
-              testId="topbar-logo"
-            />
-            {/* Mobile-only logo (no text) */}
-            <BrandLogo 
-              variant="compact" 
-              size="md" 
-              clickable 
-              className="sm:hidden"
-              testId="topbar-logo-mobile"
-            />
-          </div>
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+            aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
+            data-testid="button-toggle-sidebar"
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          </button>
           
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl ml-0">
