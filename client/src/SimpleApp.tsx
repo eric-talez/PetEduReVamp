@@ -11,6 +11,7 @@ import { useKeyboardAccessibility } from '@/hooks/use-keyboard-accessibility';
 import { startCacheCleanup } from './utils/performance-optimizer';
 
 // 페이지 컴포넌트 임포트
+import Intro from "./pages/Intro";
 import Home from "./pages/Home";
 import Dashboard from "@/pages/dashboard/index";
 import Courses from "@/pages/courses/index";
@@ -329,8 +330,18 @@ function AppLayout({ children }: { children: ReactNode }) {
             <main id="main-content" className="flex-grow" tabIndex={-1}>
               <ErrorBoundary>
                 <Switch>
+                  {/* 인트로 페이지 - 첫 방문 시 표시 */}
+                  <Route path="/">{() => {
+                    const hasVisited = localStorage.getItem('talez_visited');
+                    if (!hasVisited) {
+                      return <Intro />;
+                    } else {
+                      return <Home />;
+                    }
+                  }}</Route>
+                  
                   {/* 홈 페이지 */}
-                  <Route path="/" component={Home} />
+                  <Route path="/home" component={Home} />
 
                   {/* 관리자 메뉴 */}
                   <Route path="/admin/dashboard" component={AdminHome} />
