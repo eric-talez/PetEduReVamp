@@ -29,9 +29,24 @@ export default function AdminTrainers() {
   useEffect(() => {
     const fetchInstitutes = async () => {
       try {
+        console.log('기관 목록 API 호출 시작');
         const response = await fetch('/api/institutes');
+        console.log('API 응답 상태:', response.status, response.ok);
+        
         const data = await response.json();
-        setInstitutes(data || []);
+        console.log('API 응답 데이터:', data);
+        console.log('데이터 타입:', typeof data, 'isArray:', Array.isArray(data));
+        
+        // 응답이 배열인지 확인하고 설정
+        if (Array.isArray(data)) {
+          setInstitutes(data);
+        } else if (data && Array.isArray(data.institutes)) {
+          // 만약 data.institutes 형태라면
+          setInstitutes(data.institutes);
+        } else {
+          console.warn('예상하지 못한 API 응답 구조:', data);
+          setInstitutes([]);
+        }
       } catch (error) {
         console.error('기관 목록 가져오기 실패:', error);
         setInstitutes([]);
@@ -227,11 +242,16 @@ export default function AdminTrainers() {
                     <SelectValue placeholder="소속 기관을 선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    {institutes.map((institute: any) => (
+                    {Array.isArray(institutes) && institutes.map((institute: any) => (
                       <SelectItem key={institute.id} value={institute.name}>
                         {institute.name}
                       </SelectItem>
                     ))}
+                    {(!Array.isArray(institutes) || institutes.length === 0) && (
+                      <SelectItem value="" disabled>
+                        등록된 기관이 없습니다
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

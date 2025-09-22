@@ -1,0 +1,39 @@
+Error: institutes.map is not a function
+Stack:
+TypeError: institutes.map is not a function
+    at AdminTrainers (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/pages/admin/AdminTrainers.tsx:354:197)
+    at renderWithHooks (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:11548:26)
+    at updateFunctionComponent (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:14582:28)
+    at beginWork (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:15924:22)
+    at beginWork$1 (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:19753:22)
+    at performUnitOfWork (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:19198:20)
+    at workLoopSync (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:19137:13)
+    at renderRootSync (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:19116:15)
+    at recoverFromConcurrentError (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:18736:28)
+    at performConcurrentWorkOnRoot (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=76d6ed6a:18684:30)
+Component Stack:
+
+    at AdminTrainers (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/pages/admin/AdminTrainers.tsx:31:39)
+    at Route (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=76d6ed6a:338:16)
+    at Switch (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=76d6ed6a:394:17)
+    at ErrorBoundary (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at main
+    at div
+    at div
+    at div
+    at ErrorBoundary (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at AppLayout (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?v=D5JAlgNroNLH-JSIJPykp:156:22)
+    at AuthenticatedRoutes (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?v=D5JAlgNroNLH-JSIJPykp:2348:24)
+    at KeyboardShortcutsManager (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?v=D5JAlgNroNLH-JSIJPykp:4899:37)
+    at NotificationProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/use-notifications.tsx:23:40)
+    at NotificationsProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/NotificationsProvider.tsx:21:41)
+    at AchievementsProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/useAchievements.tsx:120:40)
+    at UserPreferencesProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/use-user-preferences.tsx:28:43)
+    at ThemeManager (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ThemeManager.tsx:24:32)
+    at ThemeProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/context/theme-context.tsx:33:3)
+    at SimpleApp (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?v=D5JAlgNroNLH-JSIJPykp:4914:16)
+    at AuthProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/useAuth.tsx?v=D5JAlgNroNLH-JSIJPykp:42:32)
+    at Provider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=76d6ed6a:38:15)
+    at TooltipProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=76d6ed6a:67:5)
+    at ThemeProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/context/theme-context.tsx?v=D5JAlgNroNLH-JSIJPykp:33:3)
+    at QueryClientProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=76d6ed6a:2875:3)
