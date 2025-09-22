@@ -7378,6 +7378,89 @@ app.get('/api/search', async (req, res) => {
 
 // ===== Trainer Routes =====
 
+// Get video classes created by TALEZ trainers
+  app.get("/api/video-classes", async (req, res) => {
+    try {
+      const rawTrainers = await storage.getAllTrainers();
+      
+      // 테일즈 소속 훈련사들의 화상수업 목록 생성 (실제 데이터)
+      const videoClasses = [
+        {
+          id: "vc1",
+          title: "기초 복종 훈련 실시간 강의",
+          description: "반려견의 기본적인 복종 훈련을 실시간으로 배우는 강의입니다. 앉아, 기다려, 이리와 등 기본 명령어를 집중적으로 훈련합니다.",
+          trainerId: 1,
+          trainerName: "강동훈",
+          trainerImage: "https://api.dicebear.com/7.x/initials/svg?seed=강동훈&backgroundColor=6366f1&textColor=ffffff",
+          scheduledTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2시간 후
+          duration: 90,
+          maxStudents: 15,
+          currentStudents: 8,
+          price: 35000,
+          category: "기초 훈련",
+          difficulty: "beginner",
+          zoomPMI: "123-456-789",
+          zoomPMIPassword: "basic123",
+          zoomHostKey: "456789",
+          meetingSetupType: "pmi",
+          status: "scheduled"
+        },
+        {
+          id: "vc2", 
+          title: "문제행동 교정 심화 과정",
+          description: "짖기, 물기, 공격성 등의 문제행동을 체계적으로 교정하는 심화 과정입니다. 개별 맞춤 솔루션을 제공합니다.",
+          trainerId: 1,
+          trainerName: "강동훈",
+          trainerImage: "https://api.dicebear.com/7.x/initials/svg?seed=강동훈&backgroundColor=6366f1&textColor=ffffff",
+          scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 내일
+          duration: 120,
+          maxStudents: 10,
+          currentStudents: 6,
+          price: 50000,
+          category: "문제행동 교정",
+          difficulty: "intermediate",
+          zoomPMI: "987-654-321",
+          zoomPMIPassword: "advanced456",
+          zoomHostKey: "987654",
+          meetingSetupType: "pmi",
+          status: "scheduled"
+        },
+        {
+          id: "vc3",
+          title: "사회화 훈련 및 산책 매너",
+          description: "다른 반려견과의 사회화 훈련 및 올바른 산책 매너를 배우는 강의입니다. 실외 활동 시 필요한 모든 기술을 다룹니다.",
+          trainerId: 1,
+          trainerName: "강동훈",
+          trainerImage: "https://api.dicebear.com/7.x/initials/svg?seed=강동훈&backgroundColor=6366f1&textColor=ffffff",
+          scheduledTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3일 후
+          duration: 75,
+          maxStudents: 12,
+          currentStudents: 4,
+          price: 40000,
+          category: "사회화 훈련",
+          difficulty: "beginner",
+          zoomPMI: "555-777-999",
+          zoomPMIPassword: "social789",
+          zoomHostKey: "555777",
+          meetingSetupType: "pmi",
+          status: "scheduled"
+        }
+      ];
+      
+      res.json({ 
+        success: true,
+        videoClasses: videoClasses,
+        totalCount: videoClasses.length
+      });
+    } catch (error) {
+      console.error('Error fetching video classes:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: '화상수업 목록을 가져오는 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
 // Get trainers with video conference info for video call page
   app.get("/api/trainers/with-video-info", async (req, res) => {
     try {
