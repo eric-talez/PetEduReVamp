@@ -52,7 +52,11 @@ export default function TrainerSettings() {
     certification: 'TALEZ 인증 전문 훈련사',
     profileImage: null as File | null,
     zoomLink: '',
-    videoCallPreference: 'zoom'
+    zoomPMI: '',
+    zoomPMIPassword: '',
+    zoomHostKey: '',
+    videoCallPreference: 'zoom',
+    meetingSetupType: 'pmi' as 'link' | 'pmi' // PMI 방식 또는 링크 방식
   });
 
   // 알림 설정 상태
@@ -135,7 +139,11 @@ export default function TrainerSettings() {
           experience: profile.experience,
           certification: profile.certification,
           zoomLink: profile.zoomLink,
-          videoCallPreference: profile.videoCallPreference
+          zoomPMI: profile.zoomPMI,
+          zoomPMIPassword: profile.zoomPMIPassword,
+          zoomHostKey: profile.zoomHostKey,
+          videoCallPreference: profile.videoCallPreference,
+          meetingSetupType: profile.meetingSetupType
         })
       });
 
@@ -409,17 +417,88 @@ export default function TrainerSettings() {
                 </div>
 
                 <div>
-                  <Label htmlFor="zoomLink">개인 화상회의 링크</Label>
-                  <div className="space-y-2">
-                    <Input
-                      id="zoomLink"
-                      placeholder="https://zoom.us/j/1234567890?pwd=..."
-                      value={profile.zoomLink}
-                      onChange={(e) => setProfile(prev => ({ ...prev, zoomLink: e.target.value }))}
-                    />
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      수강생들이 화상수업에 참여할 때 사용할 개인 {profile.videoCallPreference === 'zoom' ? 'Zoom' : profile.videoCallPreference === 'teams' ? 'Teams' : profile.videoCallPreference === 'meet' ? 'Google Meet' : 'Webex'} 링크를 입력하세요.
-                    </p>
+                  <Label>화상회의 설정 방식</Label>
+                  <div className="space-y-3 mt-2">
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setProfile(prev => ({ ...prev, meetingSetupType: 'pmi' }))}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          profile.meetingSetupType === 'pmi' 
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">개인 회의 번호 (추천)</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          회의 ID와 비밀번호로 관리
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProfile(prev => ({ ...prev, meetingSetupType: 'link' }))}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          profile.meetingSetupType === 'link' 
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">전체 링크</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          완성된 링크 URL로 관리
+                        </div>
+                      </button>
+                    </div>
+
+                    {profile.meetingSetupType === 'pmi' ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor="zoomPMI">개인 회의 번호 (PMI)</Label>
+                            <Input
+                              id="zoomPMI"
+                              placeholder="123 456 7890"
+                              value={profile.zoomPMI}
+                              onChange={(e) => setProfile(prev => ({ ...prev, zoomPMI: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="zoomPMIPassword">회의 비밀번호</Label>
+                            <Input
+                              id="zoomPMIPassword"
+                              placeholder="비밀번호 입력"
+                              value={profile.zoomPMIPassword}
+                              onChange={(e) => setProfile(prev => ({ ...prev, zoomPMIPassword: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="zoomHostKey">호스트 키 (선택사항)</Label>
+                          <Input
+                            id="zoomHostKey"
+                            placeholder="123456"
+                            value={profile.zoomHostKey}
+                            onChange={(e) => setProfile(prev => ({ ...prev, zoomHostKey: e.target.value }))}
+                          />
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                            호스트 권한이 필요한 경우에만 입력하세요
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <Label htmlFor="zoomLink">개인 화상회의 링크</Label>
+                        <Input
+                          id="zoomLink"
+                          placeholder="https://zoom.us/j/1234567890?pwd=..."
+                          value={profile.zoomLink}
+                          onChange={(e) => setProfile(prev => ({ ...prev, zoomLink: e.target.value }))}
+                        />
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          수강생들이 화상수업에 참여할 때 사용할 개인 {profile.videoCallPreference === 'zoom' ? 'Zoom' : profile.videoCallPreference === 'teams' ? 'Teams' : profile.videoCallPreference === 'meet' ? 'Google Meet' : 'Webex'} 링크를 입력하세요.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -429,12 +508,22 @@ export default function TrainerSettings() {
                       <Monitor className="w-4 h-4" />
                       Zoom 설정 가이드
                     </h4>
-                    <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                      <li>• Zoom 앱에서 "개인 회의실" → "초대 링크 복사"</li>
-                      <li>• 링크 예시: https://zoom.us/j/1234567890?pwd=abcd1234</li>
-                      <li>• 대기실 설정을 비활성화하면 수강생이 바로 입장 가능합니다</li>
-                      <li>• 회의 ID와 비밀번호가 포함된 전체 링크를 입력하세요</li>
-                    </ul>
+                    {profile.meetingSetupType === 'pmi' ? (
+                      <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                        <li>• Zoom 앱 → 설정 → 개인 → 개인 회의실에서 PMI 확인</li>
+                        <li>• PMI 예시: 123 456 7890 (10-11자리 숫자)</li>
+                        <li>• 비밀번호: 개인 회의실 → 보안에서 설정</li>
+                        <li>• 호스트 키: 개인 → 보안 → 호스트 키 (미팅 제어용)</li>
+                        <li>• 💡 대기실 비활성화 권장: 수강생이 즉시 입장 가능</li>
+                      </ul>
+                    ) : (
+                      <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                        <li>• Zoom 앱에서 "개인 회의실" → "초대 링크 복사"</li>
+                        <li>• 링크 예시: https://zoom.us/j/1234567890?pwd=abcd1234</li>
+                        <li>• 대기실 설정을 비활성화하면 수강생이 바로 입장 가능합니다</li>
+                        <li>• 회의 ID와 비밀번호가 포함된 전체 링크를 입력하세요</li>
+                      </ul>
+                    )}
                   </div>
                 )}
 
@@ -455,17 +544,20 @@ export default function TrainerSettings() {
                 <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-                      <Link className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <Video className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <h4 className="font-medium">화상수업 링크 상태</h4>
+                      <h4 className="font-medium">화상수업 설정 상태</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {profile.zoomLink ? '링크가 설정되었습니다' : '링크를 설정해주세요'}
+                        {profile.meetingSetupType === 'pmi' 
+                          ? (profile.zoomPMI && profile.zoomPMIPassword ? 'PMI가 설정되었습니다' : 'PMI를 설정해주세요')
+                          : (profile.zoomLink ? '링크가 설정되었습니다' : '링크를 설정해주세요')
+                        }
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {profile.zoomLink ? (
+                    {(profile.meetingSetupType === 'pmi' ? (profile.zoomPMI && profile.zoomPMIPassword) : profile.zoomLink) ? (
                       <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         설정됨

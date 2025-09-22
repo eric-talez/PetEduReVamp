@@ -29,7 +29,10 @@ export const users = pgTable("users", {
   points: integer("points").default(0),
   fullName: varchar("full_name", { length: 200 }),
   // 훈련사 화상수업 관련 필드
-  zoomLink: text("zoom_link"), // 개인 Zoom 링크
+  zoomLink: text("zoom_link"), // 개인 Zoom 링크 (기존)
+  zoomPMI: varchar("zoom_pmi", { length: 20 }), // 개인 회의 번호 (Personal Meeting ID)
+  zoomPMIPassword: varchar("zoom_pmi_password", { length: 50 }), // PMI 비밀번호
+  zoomHostKey: varchar("zoom_host_key", { length: 20 }), // 호스트 키 (선택사항)
   videoCallPreference: varchar("video_call_preference", { length: 50 }).default("zoom"), // zoom, teams, webex 등
 });
 
