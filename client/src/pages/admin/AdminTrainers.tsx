@@ -7,13 +7,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Filter, Plus, Eye, Edit, Trash2, GraduationCap, MapPin, Star } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getCSRFToken } from "@/lib/csrf";
 
 export default function AdminTrainers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddTrainerOpen, setIsAddTrainerOpen] = useState(false);
+  const [institutes, setInstitutes] = useState([]);
   const [newTrainer, setNewTrainer] = useState({
     name: "",
     email: "",
@@ -23,6 +24,22 @@ export default function AdminTrainers() {
     experience: "",
     specialties: ""
   });
+
+  // 기관 목록 가져오기
+  useEffect(() => {
+    const fetchInstitutes = async () => {
+      try {
+        const response = await fetch('/api/institutes');
+        const data = await response.json();
+        setInstitutes(data || []);
+      } catch (error) {
+        console.error('기관 목록 가져오기 실패:', error);
+        setInstitutes([]);
+      }
+    };
+
+    fetchInstitutes();
+  }, []);
 
   // 훈련사 추가 함수
   const handleAddTrainer = async () => {
@@ -202,13 +219,21 @@ export default function AdminTrainers() {
                 <Label htmlFor="trainer-institute" className="text-right">
                   소속 기관 *
                 </Label>
-                <Input
-                  id="trainer-institute"
+                <Select
                   value={newTrainer.institute}
-                  onChange={(e) => setNewTrainer({ ...newTrainer, institute: e.target.value })}
-                  className="col-span-3"
-                  placeholder="서울반려견아카데미"
-                />
+                  onValueChange={(value) => setNewTrainer({ ...newTrainer, institute: value })}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="소속 기관을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {institutes.map((institute: any) => (
+                      <SelectItem key={institute.id} value={institute.name}>
+                        {institute.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="trainer-certification" className="text-right">
