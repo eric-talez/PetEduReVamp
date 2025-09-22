@@ -40,6 +40,9 @@ export default function AdminTrainers() {
         // 응답이 배열인지 확인하고 설정
         if (Array.isArray(data)) {
           setInstitutes(data);
+        } else if (data && data.success && Array.isArray(data.data)) {
+          // API 응답이 {success: true, data: [...]} 형태인 경우
+          setInstitutes(data.data);
         } else if (data && Array.isArray(data.institutes)) {
           // 만약 data.institutes 형태라면
           setInstitutes(data.institutes);
@@ -248,7 +251,7 @@ export default function AdminTrainers() {
                       </SelectItem>
                     ))}
                     {(!Array.isArray(institutes) || institutes.length === 0) && (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="no-institutes" disabled>
                         등록된 기관이 없습니다
                       </SelectItem>
                     )}
