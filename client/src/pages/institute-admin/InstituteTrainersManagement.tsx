@@ -119,10 +119,20 @@ export default function InstituteTrainersManagement() {
     const loadTrainers = async () => {
       setIsLoading(true);
       try {
-        // 실제 API 구현 시 이 부분을 API 호출로 대체
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 현재 기관의 소속 훈련사 조회
+        const instituteId = 1; // 실제로는 로그인된 기관 관리자의 기관 ID
+        const response = await fetch(`/api/institutes/${instituteId}/trainers`);
         
-        // 임시 데이터
+        if (!response.ok) {
+          throw new Error('훈련사 목록을 불러올 수 없습니다.');
+        }
+        
+        const trainersData = await response.json();
+        setTrainers(trainersData);
+        
+        console.log('소속 훈련사 목록 로드:', trainersData);
+        
+        // 기존 임시 데이터는 백업용으로 유지
         const mockTrainers: Trainer[] = [
           {
             id: 1,

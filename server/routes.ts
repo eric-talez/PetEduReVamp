@@ -11090,6 +11090,10 @@ app.get('/api/search', async (req, res) => {
 
   // Auth check endpoint은 setupAuth()에서 처리됩니다
 
+  // 훈련사-기관 매칭 라우트 등록
+  const { registerTrainerInstituteMatchingRoutes } = require('./routes/trainer-institute-matching');
+  registerTrainerInstituteMatchingRoutes(app, storage);
+
   // TALEZ 인증 훈련사 API - 주석 처리됨 (중복 엔드포인트 방지)
   /*
   app.get("/api/trainers", async (req, res) => {

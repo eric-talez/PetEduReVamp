@@ -44,13 +44,12 @@ export function registerInstituteRoutes(app: Express, storage: any) {
       const trainers = await storage.getAllTrainers();
       console.log('[InstituteTrainers] 전체 훈련사 개수:', trainers.length);
       
-      // 기관별 훈련사 필터링 (현재는 왕짱스쿨 기관 ID: 1에 강동훈 훈련사만 있음)
+      // 기관별 훈련사 필터링 - 실제 데이터 기반으로 동작
       const instituteTrainers = trainers.filter(t => {
-        // 일단 기관 ID가 1이면 강동훈 훈련사 반환
-        if (instituteId === 1) {
-          return t.id === 2; // 강동훈 훈련사 ID
-        }
-        return t.instituteId === instituteId;
+        // 훈련사의 instituteId 또는 소속 기관 정보로 필터링
+        return t.instituteId === instituteId || 
+               (t.institute && t.institute.toLowerCase() === '왕짱스쿨' && instituteId === 1) ||
+               (t.affiliatedInstitutes && t.affiliatedInstitutes.includes(instituteId));
       });
 
       console.log('[InstituteTrainers] 기관별 필터링된 훈련사 개수:', instituteTrainers.length);
