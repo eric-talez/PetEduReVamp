@@ -2,10 +2,17 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Intro() {
   const [, setLocation] = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // 등록된 기관들의 정보 가져오기
+  const { data: institutes = [] } = useQuery({
+    queryKey: ['/api/institutes'],
+    staleTime: 300000, // 5분간 캐시
+  });
 
   useEffect(() => {
     // 매초 시간 업데이트
@@ -33,19 +40,57 @@ export default function Intro() {
     return `${year}년 ${month}월 ${day}일 ${hours}시${minutes}분${seconds}초`;
   };
 
+  // 기관 로고들을 위한 기본 이미지들 (fallback 및 mix)
+  const defaultLogos = [
+    '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png',
+    '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png',
+    '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png',
+    '/attached_assets/image_1746582251297.png'
+  ];
+
+  // 등록된 기관들의 로고를 조합하여 배경 생성
+  const getAllLogos = () => {
+    // institutes가 배열인지 확인하고 안전하게 처리
+    const instituteArray = Array.isArray(institutes) ? institutes : [];
+    
+    const instituteLogos = instituteArray
+      .filter(institute => institute && (institute.image || institute.logo))
+      .map(institute => institute.image || institute.logo);
+    
+    // 등록된 기관 로고가 있으면 사용하고, 없으면 기본 로고들 사용
+    const allLogos = instituteLogos.length > 0 ? [...instituteLogos, ...defaultLogos] : defaultLogos;
+    return allLogos.slice(0, 12); // 최대 12개까지만 사용
+  };
+
+  const logos = getAllLogos();
+
   return (
     <div className="min-h-screen bg-[#141414] relative overflow-hidden">
-      {/* 배경 이미지 (TALEZ 관련 이미지로 대체 가능) */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png')`
-        }}
-      />
+      {/* 기관 로고들을 배경으로 배치 */}
+      <div className="absolute inset-0">
+        {logos.map((logo, index) => (
+          <div
+            key={index}
+            className="absolute opacity-10 transition-opacity duration-1000"
+            style={{
+              left: `${(index % 4) * 25}%`,
+              top: `${Math.floor(index / 4) * 33}%`,
+              width: '200px',
+              height: '200px',
+              backgroundImage: `url(${logo})`,
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              transform: `rotate(${(index % 3 - 1) * 15}deg) scale(${0.8 + (index % 3) * 0.2})`,
+              animationDelay: `${index * 0.5}s`
+            }}
+          />
+        ))}
+      </div>
       
       {/* 넷플릭스 스타일 그라데이션 오버레이 */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/50"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/70"></div>
 
       {/* 헤더 (넷플릭스 스타일) */}
       <header className="relative z-20 flex items-center justify-between p-6 md:p-8">
