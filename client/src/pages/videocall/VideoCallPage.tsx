@@ -76,6 +76,7 @@ export default function VideoCallPage() {
   }>>([]);
 
   useEffect(() => {
+    console.log('🎥 VideoCallPage useEffect - 인증 상태:', { isLoading, isAuthenticated });
     if (!isLoading && !isAuthenticated) {
       toast({
         title: "로그인 필요",
@@ -84,6 +85,7 @@ export default function VideoCallPage() {
       });
       setLocation('/auth/login');
     } else if (isAuthenticated) {
+      console.log('🎥 인증 완료, 데이터 가져오기 시작');
       // 미팅 목록 가져오기
       fetchMeetings();
       // 화상수업 목록 가져오기
@@ -110,15 +112,21 @@ export default function VideoCallPage() {
   };
 
   const fetchVideoClasses = async () => {
+    console.log('🎥 fetchVideoClasses 함수 호출됨');
     try {
       const response = await apiRequest('GET', '/api/video-classes');
+      console.log('🎥 API 응답 상태:', response.status);
       const data = await response.json();
+      console.log('🎥 API 응답 데이터:', data);
       
       if (data && data.videoClasses) {
+        console.log('🎥 화상수업 데이터 설정:', data.videoClasses.length, '개');
         setVideoClasses(data.videoClasses);
+      } else {
+        console.log('🎥 화상수업 데이터 없음');
       }
     } catch (error) {
-      console.error('Error fetching video classes:', error);
+      console.error('🎥 Error fetching video classes:', error);
       toast({
         title: '화상수업 목록 가져오기 실패',
         description: '화상수업 목록을 가져오는 중 오류가 발생했습니다.',
@@ -392,7 +400,14 @@ export default function VideoCallPage() {
               <CardDescription>테일즈 소속 훈련사가 진행하는 화상수업에 참여하세요.</CardDescription>
             </CardHeader>
             <CardContent>
-              {videoClasses.length > 0 ? (
+              {/* 디버깅 정보 */}
+              <div className="mb-4 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded text-xs">
+                <strong>디버깅 정보:</strong> 화상수업 {videoClasses.length}개 로드됨
+              </div>
+              
+              {(() => {
+                console.log('🎥 화상수업 렌더링 상태 확인:', videoClasses.length, '개 수업');
+                return videoClasses.length > 0 ? (
                 <div className="space-y-4">
                   {videoClasses.map((videoClass) => (
                     <Card key={videoClass.id} className="overflow-hidden">
@@ -533,13 +548,15 @@ ${videoClass.title}
                     </Card>
                   ))}
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Video className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">예정된 화상수업이 없습니다</h3>
-                  <p className="text-muted-foreground mb-4">테일즈 소속 훈련사가 진행하는 화상수업을 준비 중입니다.</p>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center py-8">
+                    <Video className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">예정된 화상수업이 없습니다</h3>
+                    <p className="text-muted-foreground mb-4">테일즈 소속 훈련사가 진행하는 화상수업을 준비 중입니다.</p>
+                    <p className="text-xs text-muted-foreground">데이터 로딩 상태: {videoClasses.length}개 수업</p>
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         </TabsContent>
