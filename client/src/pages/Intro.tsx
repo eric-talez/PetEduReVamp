@@ -94,8 +94,12 @@ export default function Intro() {
 
       {/* 헤더 (넷플릭스 스타일) */}
       <header className="relative z-20 flex items-center justify-between p-6 md:p-8">
-        <div className="text-[#E50914] text-2xl md:text-3xl font-black">
-          TALEZ
+        <div className="flex items-center">
+          <img 
+            src="/attached_assets/Talez_좌우조합_1758549929019.png" 
+            alt="TALEZ 로고" 
+            className="h-8 md:h-10 w-auto object-contain"
+          />
         </div>
         <div className="text-white text-sm">
           {formatTime(currentTime)}
@@ -105,10 +109,14 @@ export default function Intro() {
       {/* 히어로 콘텐츠 (왼쪽 정렬 - 넷플릭스 스타일) */}
       <div className="relative z-10 flex items-center min-h-[80vh] px-6 md:px-16 lg:px-20">
         <div className="max-w-2xl space-y-6">
-          {/* 메인 타이틀 */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-tight">
-            TALEZ
-          </h1>
+          {/* 메인 로고 */}
+          <div className="flex justify-start">
+            <img 
+              src="/attached_assets/Talez_좌우조합_1758549929019.png" 
+              alt="TALEZ 로고" 
+              className="h-20 md:h-28 lg:h-32 w-auto object-contain"
+            />
+          </div>
           
           {/* 서브타이틀 */}
           <h2 className="text-xl md:text-2xl lg:text-3xl text-white font-light leading-relaxed">
