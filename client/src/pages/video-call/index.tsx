@@ -38,8 +38,10 @@ interface Meeting {
 }
 
 export default function VideoCallPage() {
+  console.log('🎥 VideoCallPage 컴포넌트 렌더링 시작');
   const [, setLocation] = useLocation();
   const { isAuthenticated, isLoading, userName } = useAuth();
+  console.log('🎥 VideoCallPage 인증 상태:', { isAuthenticated, isLoading, userName });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('scheduled');
@@ -75,7 +77,15 @@ export default function VideoCallPage() {
     status: string;
   }>>([]);
 
+  console.log('🎥 VideoCallPage 상태:', { 
+    videoClasses: videoClasses.length, 
+    meetings: meetings.length,
+    isAuthenticated, 
+    isLoading 
+  });
+
   useEffect(() => {
+    console.log('🎥 VideoCallPage useEffect 실행');
     if (!isLoading && !isAuthenticated) {
       toast({
         title: "로그인 필요",
