@@ -4591,18 +4591,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 훈련사 프로필 업데이트 API (Zoom 링크 포함)
+  // 훈련사 프로필 업데이트 API (PMI 정보 포함)
   app.put("/api/trainer/profile", async (req, res) => {
     try {
-      const { zoomLink, videoCallPreference, ...profileData } = req.body;
+      const { 
+        zoomLink, 
+        zoomPMI, 
+        zoomPMIPassword, 
+        zoomHostKey, 
+        videoCallPreference, 
+        meetingSetupType,
+        ...profileData 
+      } = req.body;
       
-      console.log('훈련사 프로필 업데이트 요청:', { zoomLink, videoCallPreference });
+      console.log('훈련사 프로필 업데이트 요청:', { 
+        zoomLink, 
+        zoomPMI, 
+        videoCallPreference, 
+        meetingSetupType 
+      });
       
       // 실제 구현에서는 데이터베이스에 업데이트하고 인증된 사용자 확인
       const updatedProfile = {
         ...profileData,
         zoomLink,
+        zoomPMI,
+        zoomPMIPassword,
+        zoomHostKey,
         videoCallPreference: videoCallPreference || 'zoom',
+        meetingSetupType: meetingSetupType || 'pmi',
         updatedAt: new Date().toISOString()
       };
       
@@ -4634,7 +4651,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         experience: '10년',
         certification: 'TALEZ 인증 전문 훈련사',
         zoomLink: '',
-        videoCallPreference: 'zoom'
+        zoomPMI: '',
+        zoomPMIPassword: '',
+        zoomHostKey: '',
+        videoCallPreference: 'zoom',
+        meetingSetupType: 'pmi'
       };
       
       res.json({
@@ -7356,6 +7377,40 @@ app.get('/api/search', async (req, res) => {
   });
 
 // ===== Trainer Routes =====
+
+// Get trainers with video conference info for video call page
+  app.get("/api/trainers/with-video-info", async (req, res) => {
+    try {
+      const rawTrainers = await storage.getAllTrainers();
+      
+      // 화상수업 정보를 포함한 훈련사 목록 반환
+      const trainersWithVideoInfo = rawTrainers.map(trainer => ({
+        id: trainer.id,
+        name: trainer.name,
+        email: trainer.email,
+        zoomPMI: trainer.zoomPMI,
+        zoomPMIPassword: trainer.zoomPMIPassword,
+        zoomHostKey: trainer.zoomHostKey,
+        zoomLink: trainer.zoomLink,
+        meetingSetupType: trainer.meetingSetupType || 'pmi',
+        videoCallPreference: trainer.videoCallPreference || 'zoom'
+      })).filter(trainer => 
+        // 비디오 정보가 설정된 훈련사만 반환
+        (trainer.zoomPMI && trainer.zoomPMIPassword) || trainer.zoomLink
+      );
+      
+      res.json({ 
+        success: true,
+        trainers: trainersWithVideoInfo 
+      });
+    } catch (error) {
+      console.error('Error fetching trainers with video info:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: '훈련사 화상수업 정보를 가져오는 중 오류가 발생했습니다.' 
+      });
+    }
+  });
 
 // Get all trainers with filtering
   app.get("/api/trainers", async (req, res) => {

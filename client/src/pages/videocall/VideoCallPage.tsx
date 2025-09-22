@@ -54,6 +54,17 @@ export default function VideoCallPage() {
     agenda: ''
   });
   const [meetingId, setMeetingId] = useState('');
+  const [trainers, setTrainers] = useState<Array<{
+    id: string;
+    name: string;
+    email: string;
+    zoomPMI?: string;
+    zoomPMIPassword?: string;
+    zoomHostKey?: string;
+    zoomLink?: string;
+    meetingSetupType?: 'pmi' | 'link';
+    videoCallPreference?: string;
+  }>>([]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -66,6 +77,8 @@ export default function VideoCallPage() {
     } else if (isAuthenticated) {
       // 미팅 목록 가져오기
       fetchMeetings();
+      // 훈련사 목록 가져오기
+      fetchTrainers();
     }
   }, [isLoading, isAuthenticated, setLocation, toast]);
 
@@ -84,6 +97,19 @@ export default function VideoCallPage() {
         description: '미팅 목록을 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해주세요.',
         variant: 'destructive'
       });
+    }
+  };
+
+  const fetchTrainers = async () => {
+    try {
+      const response = await apiRequest('GET', '/api/trainers/with-video-info');
+      const data = await response.json();
+      
+      if (data && data.trainers) {
+        setTrainers(data.trainers);
+      }
+    } catch (error) {
+      console.error('Error fetching trainers:', error);
     }
   };
 
@@ -259,8 +285,9 @@ export default function VideoCallPage() {
         className="w-full"
         aria-label="화상 미팅 관리 탭"
       >
-        <TabsList className="w-full grid grid-cols-3" aria-label="화상 미팅 관리 옵션">
+        <TabsList className="w-full grid grid-cols-4" aria-label="화상 미팅 관리 옵션">
           <TabsTrigger value="scheduled" aria-controls="scheduled-tab-content">예정된 미팅</TabsTrigger>
+          <TabsTrigger value="trainers" aria-controls="trainers-tab-content">훈련사 수업</TabsTrigger>
           <TabsTrigger value="create" aria-controls="create-tab-content">미팅 생성</TabsTrigger>
           <TabsTrigger value="join" aria-controls="join-tab-content">미팅 참여</TabsTrigger>
         </TabsList>
@@ -338,6 +365,173 @@ export default function VideoCallPage() {
                   >
                     <Plus className="w-4 h-4 mr-2" /> 미팅 생성
                   </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="trainers" id="trainers-tab-content" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>훈련사와의 화상 수업</CardTitle>
+              <CardDescription>등록된 훈련사들의 화상수업 정보를 확인하고 참여하세요.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trainers.length > 0 ? (
+                <div className="space-y-4">
+                  {trainers.map((trainer) => (
+                    <Card key={trainer.id} className="overflow-hidden">
+                      <CardHeader className="bg-muted/50">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="flex items-center gap-2">
+                              <Users className="w-5 h-5" />
+                              {trainer.name} 훈련사
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                              {trainer.email}
+                            </CardDescription>
+                          </div>
+                          {(trainer.meetingSetupType === 'pmi' && trainer.zoomPMI && trainer.zoomPMIPassword) || 
+                           (trainer.meetingSetupType === 'link' && trainer.zoomLink) ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => {
+                                if (trainer.meetingSetupType === 'pmi') {
+                                  // PMI 방식으로 참여
+                                  const pmiUrl = `https://zoom.us/j/${trainer.zoomPMI?.replace(/\s/g, '')}?pwd=${trainer.zoomPMIPassword}`;
+                                  window.open(pmiUrl, '_blank');
+                                } else {
+                                  // 링크 방식으로 참여
+                                  window.open(trainer.zoomLink, '_blank');
+                                }
+                                toast({
+                                  title: "화상수업 참여",
+                                  description: `${trainer.name} 훈련사와의 화상수업에 참여합니다.`,
+                                });
+                              }}
+                              aria-label={`${trainer.name} 훈련사 화상수업 참여하기`}
+                            >
+                              <Video className="w-4 h-4 mr-2" /> 수업 참여
+                            </Button>
+                          ) : (
+                            <Button variant="outline" size="sm" disabled>
+                              <Video className="w-4 h-4 mr-2" /> 설정 대기중
+                            </Button>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-4 pb-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="font-medium text-muted-foreground mb-2">화상회의 플랫폼:</p>
+                            <p className="flex items-center gap-2">
+                              <Monitor className="w-4 h-4" />
+                              {trainer.videoCallPreference === 'zoom' ? 'Zoom' : 
+                               trainer.videoCallPreference === 'teams' ? 'Microsoft Teams' :
+                               trainer.videoCallPreference === 'meet' ? 'Google Meet' : 
+                               trainer.videoCallPreference || 'Zoom'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-muted-foreground mb-2">설정 방식:</p>
+                            <p>{trainer.meetingSetupType === 'pmi' ? '개인 회의 번호 (PMI)' : '링크 방식'}</p>
+                          </div>
+                        </div>
+
+                        {trainer.meetingSetupType === 'pmi' && trainer.zoomPMI && (
+                          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">개인 회의 번호 정보</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-blue-700 dark:text-blue-300 font-medium">회의 번호:</p>
+                                <p className="font-mono text-blue-900 dark:text-blue-100">{trainer.zoomPMI}</p>
+                              </div>
+                              {trainer.zoomPMIPassword && (
+                                <div>
+                                  <p className="text-blue-700 dark:text-blue-300 font-medium">비밀번호:</p>
+                                  <p className="font-mono text-blue-900 dark:text-blue-100">{trainer.zoomPMIPassword}</p>
+                                </div>
+                              )}
+                            </div>
+                            {trainer.zoomHostKey && (
+                              <div className="mt-2">
+                                <p className="text-blue-700 dark:text-blue-300 font-medium text-xs">호스트 키: {trainer.zoomHostKey}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {trainer.meetingSetupType === 'link' && trainer.zoomLink && (
+                          <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                            <h4 className="font-medium text-green-900 dark:text-green-200 mb-2">화상회의 링크</h4>
+                            <p className="text-sm text-green-700 dark:text-green-300 font-mono break-all">
+                              {trainer.zoomLink.substring(0, 50)}...
+                            </p>
+                          </div>
+                        )}
+                      </CardContent>
+                      <CardFooter className="flex justify-end gap-2 border-t bg-muted/30 py-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            let meetingInfo = '';
+                            if (trainer.meetingSetupType === 'pmi' && trainer.zoomPMI) {
+                              meetingInfo = `
+${trainer.name} 훈련사 화상수업 정보
+회의 번호: ${trainer.zoomPMI}
+비밀번호: ${trainer.zoomPMIPassword || '없음'}
+플랫폼: ${trainer.videoCallPreference || 'Zoom'}
+참여 방법: Zoom 앱에서 "미팅 참여" → 회의 번호 입력
+                              `.trim();
+                            } else if (trainer.zoomLink) {
+                              meetingInfo = `
+${trainer.name} 훈련사 화상수업 정보
+참여 링크: ${trainer.zoomLink}
+플랫폼: ${trainer.videoCallPreference || 'Zoom'}
+                              `.trim();
+                            }
+                            
+                            navigator.clipboard.writeText(meetingInfo)
+                              .then(() => {
+                                toast({
+                                  title: '복사 완료',
+                                  description: '화상수업 정보가 클립보드에 복사되었습니다.',
+                                });
+                              })
+                              .catch(() => {
+                                toast({
+                                  title: '복사 실패',
+                                  description: '정보 복사 중 오류가 발생했습니다.',
+                                  variant: 'destructive'
+                                });
+                              });
+                          }}
+                          aria-label={`${trainer.name} 훈련사 화상수업 정보 복사하기`}
+                          disabled={!trainer.zoomPMI && !trainer.zoomLink}
+                        >
+                          <Copy className="w-4 h-4 mr-1" /> 정보 복사
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          aria-label={`${trainer.name} 훈련사 화상수업 정보 공유하기`}
+                          disabled={!trainer.zoomPMI && !trainer.zoomLink}
+                        >
+                          <Share2 className="w-4 h-4 mr-1" /> 공유
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">등록된 훈련사가 없습니다</h3>
+                  <p className="text-muted-foreground mb-4">화상수업을 제공하는 훈련사를 찾고 있습니다.</p>
                 </div>
               )}
             </CardContent>
