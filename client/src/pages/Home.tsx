@@ -155,7 +155,7 @@ export default function Home() {
       title: "세계적인 단계별 훈련 커리큘럼",
       subtitle: "TALEZ에서 체계적이고 과학적인 반려동물 교육을 경험하세요",
       features: ["전문 교육", "단계별 커리큘럼", "맞춤 훈련", "안전한 환경"],
-      image: "/attached_assets/image_1746582251297.png",
+      image: "/attached_assets/stock_images/professional_dog_tra_ee0b010b.jpg",
       primaryAction: { text: "자세히 보기", path: "/home" },
       secondaryAction: { text: "더 알아보기", path: "/about" }
     },
@@ -164,7 +164,7 @@ export default function Home() {
       title: "국가자격 전문 훈련사와 함께하는 교육",
       subtitle: "제1회 반려동물행동지도사 자격을 보유한 전문가가 직접 교육합니다",
       features: ["국가자격증", "전문 상담", "체계적 교육", "1:1 맞춤"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
+      image: "/attached_assets/stock_images/certified_dog_traine_a553a840.jpg",
       primaryAction: { text: "무료 체험하기", path: "/experience" },
       secondaryAction: { text: "서비스 안내", path: "/about" }
     },
@@ -173,7 +173,7 @@ export default function Home() {
       title: "왕짱 반려견스쿨 - 전문 교육기관",
       subtitle: "체계적인 반려견 행동 교육과 사회화 프로그램을 제공합니다",
       features: ["전문 기관", "행동 교육", "사회화 훈련", "수제간식"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
+      image: "/attached_assets/stock_images/modern_pet_training__7ccd29e2.jpg",
       primaryAction: { text: "장소 찾기", path: "/locations" },
       secondaryAction: { text: "지도 보기", path: "/map" }
     },
@@ -182,7 +182,7 @@ export default function Home() {
       title: "전국 지점 운영 - 편리한 접근성",
       subtitle: "공평점과 석적점에서 전문적인 반려견 교육 서비스를 만나보세요",
       features: ["전국 지점", "편리한 위치", "전문 시설", "개별 맞춤"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
+      image: "/attached_assets/stock_images/modern_pet_training__82d46879.jpg",
       primaryAction: { text: "화상 교육", path: "/video-training" },
       secondaryAction: { text: "훈련사 보기", path: "/trainers" }
     },
@@ -191,7 +191,7 @@ export default function Home() {
       title: "반려견 건강 관리 & 기록",
       subtitle: "반려견의 건강 상태를 체계적으로 관리하고 기록해보세요",
       features: ["건강 기록", "예방접종 알림", "병원 예약", "전문 상담"],
-      image: "/attached_assets/image_1746582251297.png",
+      image: "/attached_assets/stock_images/happy_healthy_dog_ge_4c9ac208.jpg",
       primaryAction: { text: "건강 관리", path: "/health" },
       secondaryAction: { text: "기록 시작", path: "/health-record" }
     },
@@ -200,7 +200,7 @@ export default function Home() {
       title: "반려견 교육 용품 쇼핑몰",
       subtitle: "교육에 필요한 다양한 용품들을 한 곳에서 만나보세요",
       features: ["훈련사 추천", "교육 연계 할인", "빠른 배송"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
+      image: "/attached_assets/stock_images/professional_dog_tra_64c29073.jpg",
       primaryAction: { text: "쇼핑하기", path: "/shop" },
       secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
     },
@@ -209,7 +209,7 @@ export default function Home() {
       title: "반려인 커뮤니티",
       subtitle: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
       features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
-      image: "/attached_assets/image_1746582251297.png",
+      image: "/attached_assets/stock_images/certified_dog_traine_77d3de76.jpg",
       primaryAction: { text: "커뮤니티", path: "/community" },
       secondaryAction: { text: "게시글 작성", path: "/community/create" }
     },
@@ -218,7 +218,7 @@ export default function Home() {
       title: "기관 및 훈련소 등록",
       subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 Talez와 함께하세요",
       features: ["기관 등록", "코스 관리", "수익 창출"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
+      image: "/attached_assets/stock_images/happy_healthy_dog_ge_afc0c66b.jpg",
       primaryAction: { text: "기관 등록", path: "/institutes/register" },
       secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
