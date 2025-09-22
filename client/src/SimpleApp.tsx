@@ -330,17 +330,8 @@ function AppLayout({ children }: { children: ReactNode }) {
             <main id="main-content" className="flex-grow" tabIndex={-1}>
               <ErrorBoundary>
                 <Switch>
-                  {/* 인트로 페이지 - 첫 방문 시 표시 */}
-                  <Route path="/">{() => {
-                    const hasVisited = localStorage.getItem('talez_visited');
-                    if (!hasVisited) {
-                      return <Intro />;
-                    } else {
-                      return <Home />;
-                    }
-                  }}</Route>
-                  
                   {/* 홈 페이지 */}
+                  <Route path="/" component={Home} />
                   <Route path="/home" component={Home} />
 
                   {/* 관리자 메뉴 */}
@@ -2583,10 +2574,19 @@ function SimpleApp() {
   // 디버깅: 현재 인증 상태 출력
   console.log('SimpleApp render - Auth state:', auth);
 
-  // 로딩 상태는 더 이상 체크하지 않음 - 이미 useAuth에서 처리됨
-  // if (auth.isLoading) {
-  //   return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  // }
+  // 인트로 페이지 체크 - 로그인 여부와 관계없이 최초 방문 시 인트로 표시
+  const hasVisited = localStorage.getItem('talez_visited');
+  
+  // 인트로 페이지가 필요한 경우 레이아웃 없이 인트로만 렌더링
+  if (!hasVisited) {
+    return (
+      <ThemeProvider defaultTheme="light" storageKey="petedu-theme">
+        <ThemeManager>
+          <Intro />
+        </ThemeManager>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider defaultTheme="light" storageKey="petedu-theme">

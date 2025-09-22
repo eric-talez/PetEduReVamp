@@ -19,7 +19,7 @@ export default function Intro() {
   const handleStart = () => {
     // localStorage에 방문 기록 저장
     localStorage.setItem('talez_visited', 'true');
-    setLocation('/home');
+    setLocation('/');
   };
 
   const formatTime = (date: Date) => {
