@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction, QueryClientConfig } from "@tanstack/react-query";
+import { getCSRFToken } from "./csrf";
 
 // 오류 코드와 메시지 매핑
 interface ApiError extends Error {
@@ -45,6 +46,16 @@ export const apiRequest = async (method: string, url: string, data?: any) => {
     },
     credentials: 'include',
   };
+
+  // POST, PUT, PATCH, DELETE 요청에는 CSRF 토큰 추가
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
+    try {
+      const csrfToken = await getCSRFToken();
+      (config.headers as any)['X-CSRF-Token'] = csrfToken;
+    } catch (error) {
+      console.warn('[apiRequest] CSRF 토큰 가져오기 실패:', error);
+    }
+  }
 
   if (data && method.toUpperCase() !== 'GET') {
     config.body = JSON.stringify(data);

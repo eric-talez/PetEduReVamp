@@ -301,6 +301,19 @@ function setupAuthRoutes(app: Express) {
     }
   });
   
+  // CSRF 토큰 조회 API
+  router.get('/csrf', (req, res) => {
+    try {
+      getCSRFToken(req, res);
+    } catch (error) {
+      console.error('CSRF 토큰 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: 'CSRF 토큰 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+  
   // 소셜 로그인 라우트는 setupSocialAuth에서 설정됨
   
   // 라우터를 /api/auth 경로에 마운트
