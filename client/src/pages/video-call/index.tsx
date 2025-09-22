@@ -38,10 +38,8 @@ interface Meeting {
 }
 
 export default function VideoCallPage() {
-  console.log('🎥 VideoCallPage 컴포넌트 렌더링 시작');
   const [, setLocation] = useLocation();
   const { isAuthenticated, isLoading, userName } = useAuth();
-  console.log('🎥 VideoCallPage 인증 상태:', { isAuthenticated, isLoading, userName });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('scheduled');
@@ -77,15 +75,7 @@ export default function VideoCallPage() {
     status: string;
   }>>([]);
 
-  console.log('🎥 VideoCallPage 상태:', { 
-    videoClasses: videoClasses.length, 
-    meetings: meetings.length,
-    isAuthenticated, 
-    isLoading 
-  });
-
   useEffect(() => {
-    console.log('🎥 VideoCallPage useEffect 실행');
     if (!isLoading && !isAuthenticated) {
       toast({
         title: "로그인 필요",
@@ -120,45 +110,33 @@ export default function VideoCallPage() {
   };
 
   const fetchVideoClasses = async () => {
-    console.log('🎥 fetchVideoClasses 시작');
     try {
-      console.log('🎥 API 요청 시작: /api/video-classes');
-      
-      // apiRequest 대신 직접 fetch 사용하여 문제 해결 시도
       const response = await fetch('/api/video-classes', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        credentials: 'include' // 세션 쿠키 포함
+        credentials: 'include'
       });
-      
-      console.log('🎥 API 응답 상태:', response.status, response.statusText);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('🎥 API 응답 데이터:', data);
       
       if (data && data.videoClasses) {
-        console.log('🎥 화상수업 데이터 설정:', data.videoClasses.length, '개');
         setVideoClasses(data.videoClasses);
-      } else {
-        console.log('🎥 응답에 videoClasses가 없음:', data);
       }
     } catch (error) {
-      console.error('🎥 fetchVideoClasses 오류:', error);
-      console.error('🎥 오류 스택:', error instanceof Error ? error.stack : 'No stack');
+      console.error('Error fetching video classes:', error);
       toast({
         title: '화상수업 목록 가져오기 실패',
         description: '화상수업 목록을 가져오는 중 오류가 발생했습니다.',
         variant: 'destructive'
       });
     }
-    console.log('🎥 fetchVideoClasses 완료');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

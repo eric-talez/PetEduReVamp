@@ -7380,10 +7380,8 @@ app.get('/api/search', async (req, res) => {
 
 // Get video classes created by TALEZ trainers
   app.get("/api/video-classes", async (req, res) => {
-    console.log('🎥 [Server] /api/video-classes 요청 받음');
     try {
       const rawTrainers = await storage.getAllTrainers();
-      console.log('🎥 [Server] 훈련사 데이터 가져옴:', rawTrainers.length, '명');
       
       // 테일즈 소속 훈련사들의 화상수업 목록 생성 (실제 데이터)
       const videoClasses = [
@@ -7449,19 +7447,89 @@ app.get('/api/search', async (req, res) => {
         }
       ];
       
-      console.log('🎥 [Server] 응답 데이터 준비 완료:', videoClasses.length, '개 수업');
-      const response = { 
+      res.json({ 
         success: true,
         videoClasses: videoClasses,
         totalCount: videoClasses.length
-      };
-      console.log('🎥 [Server] 응답 전송:', response);
-      res.json(response);
+      });
     } catch (error) {
       console.error('Error fetching video classes:', error);
       res.status(500).json({ 
         success: false, 
         error: '화상수업 목록을 가져오는 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+// Create new meeting (simplified version)
+  app.post("/api/videocall/create-meeting", async (req, res) => {
+    try {
+      const { topic, start_time, duration, agenda } = req.body;
+      
+      if (!topic || !start_time || !duration) {
+        return res.status(400).json({
+          success: false,
+          error: '미팅 제목, 시작 시간, 진행 시간은 필수입니다.'
+        });
+      }
+
+      // 간단한 미팅 ID 생성 (실제로는 Zoom API 사용)
+      const meetingId = `${Math.floor(Math.random() * 900000000) + 100000000}`;
+      const password = `pwd${Math.floor(Math.random() * 10000)}`;
+      
+      const meeting = {
+        id: meetingId,
+        topic,
+        start_time,
+        duration: parseInt(duration),
+        join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
+        password,
+        host_key: `host${Math.floor(Math.random() * 100000)}`,
+        agenda: agenda || '',
+        created_at: new Date().toISOString()
+      };
+
+
+      res.json({
+        success: true,
+        meeting,
+        message: '미팅이 성공적으로 생성되었습니다.'
+      });
+    } catch (error) {
+      console.error('Error creating meeting:', error);
+      res.status(500).json({
+        success: false,
+        error: '미팅 생성 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+// Get user's meetings
+  app.get("/api/videocall/my-meetings", async (req, res) => {
+    try {
+      // 임시 미팅 목록 (실제로는 데이터베이스에서 가져옴)
+      const meetings = [
+        {
+          id: "123456789",
+          topic: "테일즈 팀 회의",
+          start_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1시간 후
+          duration: 60,
+          join_url: "https://zoom.us/j/123456789?pwd=demo123",
+          password: "demo123",
+          host_key: "host123"
+        }
+      ];
+
+
+      res.json({
+        success: true,
+        meetings
+      });
+    } catch (error) {
+      console.error('Error fetching user meetings:', error);
+      res.status(500).json({
+        success: false,
+        error: '미팅 목록을 가져오는 중 오류가 발생했습니다.'
       });
     }
   });
