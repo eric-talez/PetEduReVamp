@@ -110,21 +110,45 @@ export default function VideoCallPage() {
   };
 
   const fetchVideoClasses = async () => {
+    console.log('🎥 fetchVideoClasses 시작');
     try {
-      const response = await apiRequest('GET', '/api/video-classes');
+      console.log('🎥 API 요청 시작: /api/video-classes');
+      
+      // apiRequest 대신 직접 fetch 사용하여 문제 해결 시도
+      const response = await fetch('/api/video-classes', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' // 세션 쿠키 포함
+      });
+      
+      console.log('🎥 API 응답 상태:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('🎥 API 응답 데이터:', data);
       
       if (data && data.videoClasses) {
+        console.log('🎥 화상수업 데이터 설정:', data.videoClasses.length, '개');
         setVideoClasses(data.videoClasses);
+      } else {
+        console.log('🎥 응답에 videoClasses가 없음:', data);
       }
     } catch (error) {
-      console.error('Error fetching video classes:', error);
+      console.error('🎥 fetchVideoClasses 오류:', error);
+      console.error('🎥 오류 스택:', error instanceof Error ? error.stack : 'No stack');
       toast({
         title: '화상수업 목록 가져오기 실패',
         description: '화상수업 목록을 가져오는 중 오류가 발생했습니다.',
         variant: 'destructive'
       });
     }
+    console.log('🎥 fetchVideoClasses 완료');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

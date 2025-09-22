@@ -7380,8 +7380,10 @@ app.get('/api/search', async (req, res) => {
 
 // Get video classes created by TALEZ trainers
   app.get("/api/video-classes", async (req, res) => {
+    console.log('🎥 [Server] /api/video-classes 요청 받음');
     try {
       const rawTrainers = await storage.getAllTrainers();
+      console.log('🎥 [Server] 훈련사 데이터 가져옴:', rawTrainers.length, '명');
       
       // 테일즈 소속 훈련사들의 화상수업 목록 생성 (실제 데이터)
       const videoClasses = [
@@ -7447,11 +7449,14 @@ app.get('/api/search', async (req, res) => {
         }
       ];
       
-      res.json({ 
+      console.log('🎥 [Server] 응답 데이터 준비 완료:', videoClasses.length, '개 수업');
+      const response = { 
         success: true,
         videoClasses: videoClasses,
         totalCount: videoClasses.length
-      });
+      };
+      console.log('🎥 [Server] 응답 전송:', response);
+      res.json(response);
     } catch (error) {
       console.error('Error fetching video classes:', error);
       res.status(500).json({ 
