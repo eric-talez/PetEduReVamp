@@ -15,6 +15,8 @@ export default function AdminTrainers() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddTrainerOpen, setIsAddTrainerOpen] = useState(false);
   const [institutes, setInstitutes] = useState([]);
+  const [trainers, setTrainers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [newTrainer, setNewTrainer] = useState({
     name: "",
     email: "",
@@ -25,38 +27,47 @@ export default function AdminTrainers() {
     specialties: ""
   });
 
-  // 기관 목록 가져오기
+  // 데이터 가져오기
   useEffect(() => {
-    const fetchInstitutes = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        console.log('기관 목록 API 호출 시작');
-        const response = await fetch('/api/institutes');
-        console.log('API 응답 상태:', response.status, response.ok);
+        // 기관 목록과 훈련사 목록을 동시에 가져오기
+        const [institutesResponse, trainersResponse] = await Promise.all([
+          fetch('/api/institutes'),
+          fetch('/api/trainers')
+        ]);
         
-        const data = await response.json();
-        console.log('API 응답 데이터:', data);
-        console.log('데이터 타입:', typeof data, 'isArray:', Array.isArray(data));
-        
-        // 응답이 배열인지 확인하고 설정
-        if (Array.isArray(data)) {
-          setInstitutes(data);
-        } else if (data && data.success && Array.isArray(data.data)) {
-          // API 응답이 {success: true, data: [...]} 형태인 경우
-          setInstitutes(data.data);
-        } else if (data && Array.isArray(data.institutes)) {
-          // 만약 data.institutes 형태라면
-          setInstitutes(data.institutes);
+        // 기관 데이터 처리
+        const institutesData = await institutesResponse.json();
+        if (Array.isArray(institutesData)) {
+          setInstitutes(institutesData);
+        } else if (institutesData && institutesData.success && Array.isArray(institutesData.data)) {
+          setInstitutes(institutesData.data);
         } else {
-          console.warn('예상하지 못한 API 응답 구조:', data);
           setInstitutes([]);
         }
+
+        // 훈련사 데이터 처리
+        const trainersData = await trainersResponse.json();
+        if (Array.isArray(trainersData)) {
+          setTrainers(trainersData);
+        } else if (trainersData && trainersData.success && Array.isArray(trainersData.data)) {
+          setTrainers(trainersData.data);
+        } else {
+          setTrainers([]);
+        }
+
       } catch (error) {
-        console.error('기관 목록 가져오기 실패:', error);
+        console.error('데이터 가져오기 실패:', error);
         setInstitutes([]);
+        setTrainers([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchInstitutes();
+    fetchData();
   }, []);
 
   // 훈련사 추가 함수
@@ -84,6 +95,14 @@ export default function AdminTrainers() {
 
       if (response.ok && result.success) {
         alert("훈련사가 성공적으로 등록되었습니다!");
+        // 훈련사 목록 새로고침
+        const trainersResponse = await fetch('/api/trainers');
+        const trainersData = await trainersResponse.json();
+        if (Array.isArray(trainersData)) {
+          setTrainers(trainersData);
+        } else if (trainersData && trainersData.success && Array.isArray(trainersData.data)) {
+          setTrainers(trainersData.data);
+        }
       } else {
         throw new Error(result.error || '훈련사 등록에 실패했습니다.');
       }
@@ -105,51 +124,14 @@ export default function AdminTrainers() {
     setIsAddTrainerOpen(false);
   };
 
-  // 샘플 훈련사 데이터
-  const trainers = [
-    {
-      id: 1,
-      name: "김훈련사",
-      email: "kim.trainer@example.com",
-      phone: "010-1234-5678",
-      institute: "서울반려견아카데미",
-      certification: "국제반려견훈련사 1급",
-      experience: "5년",
-      specialties: ["기본 순종", "문제행동 교정", "어질리티"],
-      rating: 4.8,
-      studentsCount: 45,
-      status: "active",
-      joinDate: "2020-03-15"
-    },
-    {
-      id: 2,
-      name: "이전문가",
-      email: "lee.expert@example.com",
-      phone: "010-9876-5432",
-      institute: "부산펫트레이닝센터",
-      certification: "KKF 공인 훈련사",
-      experience: "8년",
-      specialties: ["공격성 교정", "분리불안", "사회화"],
-      rating: 4.9,
-      studentsCount: 62,
-      status: "active",
-      joinDate: "2018-07-22"
-    },
-    {
-      id: 3,
-      name: "박마스터",
-      email: "park.master@example.com",
-      phone: "010-5555-1234",
-      institute: "대구동물교육원",
-      certification: "동물행동학 전문가",
-      experience: "10년",
-      specialties: ["고급 훈련", "치료견 훈련", "컨설팅"],
-      rating: 4.7,
-      studentsCount: 38,
-      status: "inactive",
-      joinDate: "2016-01-10"
-    }
-  ];
+  // 필터링된 훈련사 목록
+  const filteredTrainers = trainers.filter((trainer) => {
+    const matchesSearch = trainer.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         trainer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         trainer.institute?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || trainer.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -406,31 +388,52 @@ export default function AdminTrainers() {
               <div>상태</div>
               <div>작업</div>
             </div>
-            {trainers.map((trainer) => (
+            {isLoading ? (
+              <div className="p-8 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="mt-2">훈련사 목록을 불러오는 중...</p>
+              </div>
+            ) : filteredTrainers.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-gray-500">등록된 훈련사가 없습니다.</p>
+                <Button 
+                  className="mt-4" 
+                  onClick={() => setIsAddTrainerOpen(true)}
+                >
+                  첫 번째 훈련사 등록하기
+                </Button>
+              </div>
+            ) : filteredTrainers.map((trainer) => (
               <div key={trainer.id} className="grid grid-cols-8 gap-4 p-4 border-b last:border-b-0">
                 <div>
-                  <div className="font-medium">{trainer.name}</div>
-                  <div className="text-sm text-muted-foreground">{trainer.email}</div>
-                  <div className="text-sm text-muted-foreground">{trainer.phone}</div>
+                  <div className="font-medium">{trainer.name || '이름 없음'}</div>
+                  <div className="text-sm text-muted-foreground">{trainer.email || '-'}</div>
+                  <div className="text-sm text-muted-foreground">{trainer.phone || '-'}</div>
                 </div>
-                <div className="text-sm">{trainer.institute}</div>
+                <div className="text-sm">{trainer.institute || '-'}</div>
                 <div>
-                  <div className="text-sm font-medium">{trainer.certification}</div>
-                  <div className="text-xs text-muted-foreground">경력 {trainer.experience}</div>
+                  <div className="text-sm font-medium">{trainer.certification || '자격증 정보 없음'}</div>
+                  <div className="text-xs text-muted-foreground">경력 {trainer.experience || '정보 없음'}</div>
                 </div>
-                <div className="text-center font-medium">{trainer.experience}</div>
+                <div className="text-center font-medium">{trainer.experience || '-'}</div>
                 <div className="text-xs">
-                  {trainer.specialties.slice(0, 2).map((specialty, index) => (
-                    <Badge key={index} variant="secondary" className="mr-1 mb-1 text-xs">
-                      {specialty}
-                    </Badge>
-                  ))}
-                  {trainer.specialties.length > 2 && (
-                    <span className="text-muted-foreground">+{trainer.specialties.length - 2}</span>
+                  {trainer.specialties && Array.isArray(trainer.specialties) && trainer.specialties.length > 0 ? (
+                    <>
+                      {trainer.specialties.slice(0, 2).map((specialty, index) => (
+                        <Badge key={index} variant="secondary" className="mr-1 mb-1 text-xs">
+                          {specialty}
+                        </Badge>
+                      ))}
+                      {trainer.specialties.length > 2 && (
+                        <span className="text-muted-foreground">+{trainer.specialties.length - 2}</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">전문분야 미설정</span>
                   )}
                 </div>
-                <div>{getRatingStars(trainer.rating)}</div>
-                <div>{getStatusBadge(trainer.status)}</div>
+                <div>{getRatingStars(trainer.rating || 0)}</div>
+                <div>{getStatusBadge(trainer.status || 'active')}</div>
                 <div className="flex gap-2">
                   <Button 
                     variant="ghost" 
