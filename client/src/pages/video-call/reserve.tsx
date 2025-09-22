@@ -44,8 +44,26 @@ export default function VideoCallReserve() {
     petBreed: '',
     concerns: '',
     contactPhone: '',
-    contactEmail: ''
+    contactEmail: '',
+    sessionType: 'individual', // individual, group
+    groupSize: 1,
+    courseId: null as number | null
   });
+
+  // URL 파라미터에서 강의 정보 가져오기
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('courseId');
+    const sessionType = urlParams.get('type') || 'individual';
+    
+    if (courseId) {
+      setFormData(prev => ({
+        ...prev,
+        courseId: parseInt(courseId),
+        sessionType: sessionType as 'individual' | 'group'
+      }));
+    }
+  }, [location.search]);
 
   // 훈련사 정보
   const trainerInfo = {
@@ -290,9 +308,42 @@ export default function VideoCallReserve() {
                   </div>
                 </div>
 
+                {/* 세션 유형 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">세션 유형</label>
+                  <select
+                    className="w-full p-2 border border-input rounded-md"
+                    value={formData.sessionType}
+                    onChange={(e) => handleInputChange('sessionType', e.target.value)}
+                    required
+                  >
+                    <option value="individual">1:1 개별 상담</option>
+                    <option value="group">단체 화상 수업</option>
+                  </select>
+                </div>
+
+                {/* 단체 수업 인원 (단체 선택 시만 표시) */}
+                {formData.sessionType === 'group' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">참여 인원</label>
+                    <select
+                      className="w-full p-2 border border-input rounded-md"
+                      value={formData.groupSize}
+                      onChange={(e) => handleInputChange('groupSize', e.target.value)}
+                      required
+                    >
+                      {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(size => (
+                        <option key={size} value={size}>{size}명</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 {/* 상담 유형 */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">상담 유형</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {formData.sessionType === 'group' ? '수업 내용' : '상담 유형'}
+                  </label>
                   <select
                     className="w-full p-2 border border-input rounded-md"
                     value={formData.consultationType}

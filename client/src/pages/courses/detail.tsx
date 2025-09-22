@@ -93,6 +93,12 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
     }
   };
 
+  // 화상 수업 예약 핸들러
+  const handleVideoClassReservation = (courseId: number) => {
+    console.log('화상 수업 예약 클릭:', courseId);
+    window.location.href = `/video-call/reserve?courseId=${courseId}`;
+  };
+
   // Mock data based on the popular chart data
   const getCourseData = (id: string) => {
     const courses = {
@@ -160,7 +166,7 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
         ]
       }
     };
-    
+
     return courses[id as keyof typeof courses] || courses['1'];
   };
 
@@ -180,15 +186,15 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="flex flex-wrap gap-2 mb-3">
                 <Badge variant="secondary">{course.category}</Badge>
                 <Badge variant="outline">{course.level}</Badge>
               </div>
-              
+
               <h1 className="text-3xl font-bold mb-3">{course.title}</h1>
               <p className="text-muted-foreground mb-4">{course.description}</p>
-              
+
               <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -222,7 +228,7 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
               >
                 수강 신청하기
               </Button>
-              
+
               <div className="flex gap-2">
                 <Button 
                   variant="outline"
@@ -239,6 +245,15 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
                   장바구니
                 </Button>
               </div>
+
+              <Button 
+                variant="secondary" 
+                className="w-full"
+                onClick={() => handleVideoClassReservation(course.id)}
+              >
+                화상 수업 예약하기
+              </Button>
+
               <Button 
                 variant="outline" 
                 className="w-full"
@@ -246,20 +261,6 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
               >
                 장바구니에 추가
               </Button>
-              
-              <div className="pt-4 border-t">
-                <h4 className="font-semibold mb-3">강사 정보</h4>
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={course.instructorAvatar} alt={course.instructor} />
-                    <AvatarFallback>{course.instructor.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{course.instructor}</p>
-                    <p className="text-sm text-muted-foreground">전문 훈련사</p>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -323,7 +324,7 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-semibold mb-3">강의 설명</h3>
                   <p className="text-muted-foreground leading-relaxed">
