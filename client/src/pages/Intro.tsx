@@ -143,6 +143,7 @@ export default function Intro() {
             
             <Button 
               variant="outline"
+              onClick={handleStart}
               className="bg-gray-600/70 text-white border-gray-500 hover:bg-gray-500/70 px-8 py-3 text-lg font-semibold rounded-md flex items-center gap-2 transition-all duration-200"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
