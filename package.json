@@ -16,7 +16,7 @@
     "@aws-sdk/client-ses": "^3.890.0",
     "@aws-sdk/client-sns": "^3.890.0",
     "@google-cloud/storage": "^7.17.1",
-    "@google/genai": "^1.7.0",
+    "@google/genai": "^1.20.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",

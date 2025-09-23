@@ -24,6 +24,10 @@ localPort = 33855
 externalPort = 3002
 
 [[ports]]
+localPort = 34385
+externalPort = 4200
+
+[[ports]]
 localPort = 41399
 externalPort = 3000
 
@@ -90,4 +94,4 @@ syntax = "typescript"
 start = ["typescript-language-server", "--stdio"]
 
 [agent]
-integrations = ["javascript_stripe:1.0.0", "perplexity_v0:1.0.0", "javascript_object_storage:1.0.0", "javascript_openai:1.0.0"]
+integrations = ["javascript_stripe:1.0.0", "perplexity_v0:1.0.0", "javascript_object_storage:1.0.0", "javascript_openai:1.0.0", "javascript_gemini:1.0.0"]

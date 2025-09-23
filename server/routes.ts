@@ -12,12 +12,14 @@ import { simpleProductRoutes } from "./routes/simple-products";
 import { registerUploadRoutes } from "./routes/upload";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 
 import { storage } from "./storage";
 
 // AI 모델 초기화
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 // =============================================================================
 // AI 분석 Helper 함수들
@@ -91,7 +93,9 @@ const ALLOWED_MODELS = [
   "gpt-4o",
   "gpt-4o-mini", 
   "claude-3-5-sonnet-20241022",
-  "claude-3-5-haiku-20241022"
+  "claude-3-5-haiku-20241022",
+  "gemini-2.5-flash",
+  "gemini-2.5-pro"
 ];
 
 // AI 분석 수행 (ChatGPT 또는 Claude 선택 가능)
@@ -154,6 +158,58 @@ async function performAiAnalysis(prompt: string, model: string = "gpt-4o"): Prom
       tokensUsed = {
         input: response.usage.input_tokens,
         output: response.usage.output_tokens
+      };
+
+    } else if (model.startsWith('gemini')) {
+      // Gemini 모델 사용
+      const response = await gemini.models.generateContent({
+        model: model,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "object",
+            properties: {
+              summary: { type: "string" },
+              behavior: { type: "string" },
+              health: { type: "string" },
+              nutrition: { type: "string" },
+              activity: { type: "string" },
+              redFlags: { type: "array", items: { type: "string" } },
+              nextSteps: { type: "array", items: { type: "string" } }
+            },
+            required: ["summary", "redFlags", "nextSteps"]
+          }
+        },
+        contents: prompt
+      });
+
+      const responseText = response.text;
+      if (!responseText) {
+        throw new Error("Gemini API에서 빈 응답을 받았습니다.");
+      }
+
+      try {
+        result = JSON.parse(responseText);
+        if (!result.summary || !result.redFlags || !result.nextSteps) {
+          throw new Error("Gemini 응답 형식이 올바르지 않습니다.");
+        }
+      } catch (parseError) {
+        console.warn('Gemini JSON 파싱 실패:', parseError);
+        result = {
+          summary: responseText.substring(0, 500) + "...",
+          behavior: "Gemini 분석 결과를 참고해주세요.",
+          health: "전문 수의사와 상담을 권장합니다.",
+          nutrition: "균형잡힌 식단을 유지해주세요.",
+          activity: "적절한 운동량을 유지해주세요.",
+          redFlags: ["JSON 파싱 실패로 인한 수동 검토 필요"],
+          nextSteps: ["전문가 상담", "지속적인 관찰"]
+        };
+      }
+
+      tokensUsed = {
+        input: 0, // Gemini doesn't provide token usage in the free tier
+        output: 0
       };
 
     } else {

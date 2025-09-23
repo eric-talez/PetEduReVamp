@@ -301,6 +301,8 @@ export default function AiAnalysisPage() {
                     <SelectItem value="gpt-4o-mini">ChatGPT 4o Mini</SelectItem>
                     <SelectItem value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</SelectItem>
                     <SelectItem value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</SelectItem>
+                    <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (무료)</SelectItem>
+                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -469,7 +471,10 @@ export default function AiAnalysisPage() {
                   최신 분석 결과
                 </CardTitle>
                 <CardDescription>
-                  방금 완료된 AI 분석 결과입니다 ({selectedModel.startsWith('claude') ? 'Claude' : 'ChatGPT'} {selectedModel})
+                  방금 완료된 AI 분석 결과입니다 ({
+                    selectedModel.startsWith('claude') ? 'Claude' : 
+                    selectedModel.startsWith('gemini') ? 'Gemini' : 'ChatGPT'
+                  } {selectedModel})
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -596,7 +601,10 @@ export default function AiAnalysisPage() {
                       <h4 className="font-medium">분석 #{analysis.id}</h4>
                       <p className="text-sm text-muted-foreground">
                         {format(new Date(analysis.createdAt), 'M월 d일 HH:mm', { locale: ko })} | 
-                        모델: {analysis.model.startsWith('claude') ? 'Claude' : 'ChatGPT'} ({analysis.model})
+                        모델: {
+                          analysis.model.startsWith('claude') ? 'Claude' : 
+                          analysis.model.startsWith('gemini') ? 'Gemini' : 'ChatGPT'
+                        } ({analysis.model})
                       </p>
                     </div>
                     <Badge variant="outline">{analysis.timeRange}</Badge>
