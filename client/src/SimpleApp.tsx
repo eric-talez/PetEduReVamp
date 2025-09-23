@@ -42,6 +42,7 @@ import AnalyticsPage from "./pages/analytics";
 import EducationSchedulePage from "./pages/education-schedule";
 import SubscriptionsPage from "./pages/subscriptions";
 import SearchPage from "./pages/search";
+import AiAnalysisPage from "./pages/ai-analysis";
 import TalezExperiencePage from "./pages/TalezExperience";
 import CurriculumManager from "./pages/courses/CurriculumManager";
 import AdminCurriculum from "./pages/admin/AdminCurriculum";
