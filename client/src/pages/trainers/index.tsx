@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle, Loader2 } from "lucide-react";
+import TrainerBannerImage from '@assets/image_1758608276752.png';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -333,26 +334,35 @@ export default function Trainers() {
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      {/* 전문가 찾기 홍보 배너 */}
+      <section className="trainer-banner bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
         <img 
-          src="https://images.unsplash.com/photo-1518155317743-a8ff43ea6a5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="훈련사 찾기"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
+          src={TrainerBannerImage} 
+          alt="테일즈 인증 훈련사 찾기 - TRAINING 인증 훈련사 찾기" 
+          className="w-full h-auto max-h-[300px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          onClick={() => {
+            // 검색 입력창으로 포커스
+            const searchInput = document.querySelector('input[placeholder*="훈련사"]') as HTMLInputElement;
+            if (searchInput) {
+              searchInput.focus();
+            }
+          }}
+          data-testid="trainer-banner"
         />
+      </section>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
-
-        <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+      {/* 검색 섹션 */}
+      <div className="mb-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold text-center mb-4">
             전문 반려견 훈련사를 만나보세요
           </h1>
-          <p className="text-white text-sm md:text-base max-w-xl mb-4">
+          <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
             경험이 풍부한 훈련사들이 당신과 반려견의 행복한 생활을 도와드립니다.
           </p>
-
+          
           {/* Search Bar */}
-          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center p-2">
             <div className="px-2">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
