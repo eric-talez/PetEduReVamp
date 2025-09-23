@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp, serial, decimal, jsonb, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, boolean, timestamp, serial, decimal, jsonb, varchar, date } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
@@ -122,6 +122,45 @@ export const pets = pgTable("pets", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 반려동물 알림장 상태 값들을 위한 enum 정의
+export const poopStatusEnum = z.enum(["normal", "soft", "diarrhea", "constipated", "bloody", "unknown"]);
+export const mealStatusEnum = z.enum(["normal", "low", "skipped", "vomited", "overeaten", "unknown"]);
+export const walkStatusEnum = z.enum(["normal", "short", "long", "hyper", "limp", "unknown"]);
+export const moodEnum = z.enum(["happy", "sad", "anxious", "calm", "energetic", "tired", "unknown"]);
+
+// 반려동물 알림장 테이블
+export const careLogs = pgTable("care_logs", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  date: date("date").notNull(), // YYYY-MM-DD 형식
+  note: text("note"), // 일반 텍스트 메모
+  poopStatus: varchar("poop_status", { length: 20 }), // normal, soft, diarrhea, constipated, bloody, unknown
+  mealStatus: varchar("meal_status", { length: 20 }), // normal, low, skipped, vomited, overeaten, unknown  
+  walkStatus: varchar("walk_status", { length: 20 }), // normal, short, long, hyper, limp, unknown
+  mood: varchar("mood", { length: 20 }), // happy, sad, anxious, calm, energetic, tired, unknown
+  energyLevel: integer("energy_level"), // 1-5 범위
+  media: jsonb("media"), // [{id, url, type, width, height, caption}, ...]
+  tags: jsonb("tags"), // 추가 태그들
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// AI 분석 결과 테이블  
+export const aiAnalyses = pgTable("ai_analyses", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  inputLogIds: jsonb("input_log_ids").notNull(), // 분석에 사용된 care_log IDs 배열
+  selectedSignals: jsonb("selected_signals").notNull(), // {text: true, poop: false, meal: true, walk: true, media: false}
+  timeRange: text("time_range"), // "2024-01-01 to 2024-01-07" 형식
+  model: varchar("model", { length: 50 }).default("gpt-4o-mini"), // 사용된 AI 모델
+  resultJson: jsonb("result_json").notNull(), // 구조화된 분석 결과
+  tokensIn: integer("tokens_in"), // 입력 토큰 수
+  tokensOut: integer("tokens_out"), // 출력 토큰 수
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // 커뮤니티 게시글 테이블
@@ -1855,4 +1894,83 @@ export type InsertPost = z.infer<typeof insertPostSchema>;
 export type UpdatePost = z.infer<typeof updatePostSchema>;
 export type Comment = z.infer<typeof selectCommentSchema>;
 export type InsertComment = z.infer<typeof insertCommentSchema>;
+
+// =============================================================================
+// 반려동물 알림장(Care Logs) 스키마 정의
+// =============================================================================
+
+// 알림장 생성 스키마
+export const insertCareLogSchema = createInsertSchema(careLogs, {
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "날짜는 YYYY-MM-DD 형식이어야 합니다"),
+  note: z.string().max(5000, "메모는 5000자를 초과할 수 없습니다").optional().nullable(),
+  poopStatus: poopStatusEnum.optional().nullable(),
+  mealStatus: mealStatusEnum.optional().nullable(),
+  walkStatus: walkStatusEnum.optional().nullable(),
+  mood: moodEnum.optional().nullable(),
+  energyLevel: z.number().int().min(1, "에너지 레벨은 1 이상이어야 합니다").max(5, "에너지 레벨은 5 이하여야 합니다").optional().nullable(),
+  media: z.array(z.object({
+    id: z.string(),
+    url: z.string().url("올바른 URL 형식이어야 합니다"),
+    type: z.enum(["image", "video"]),
+    width: z.number().optional(),
+    height: z.number().optional(),
+    caption: z.string().optional()
+  })).optional().nullable(),
+  tags: z.array(z.string()).optional().nullable()
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 알림장 수정 스키마
+export const updateCareLogSchema = insertCareLogSchema.partial().omit({
+  petId: true,  // 반려동물은 변경 불가
+  userId: true  // 작성자는 변경 불가
+});
+
+// 알림장 조회 스키마
+export const selectCareLogSchema = createSelectSchema(careLogs);
+
+// =============================================================================
+// AI 분석(AI Analyses) 스키마 정의
+// =============================================================================
+
+// AI 분석 요청 스키마
+export const insertAiAnalysisSchema = createInsertSchema(aiAnalyses, {
+  inputLogIds: z.array(z.number().int()).min(1, "최소 1개의 알림장을 선택해야 합니다"),
+  selectedSignals: z.object({
+    text: z.boolean().default(true),
+    poop: z.boolean().default(false),
+    meal: z.boolean().default(false),
+    walk: z.boolean().default(false),
+    media: z.boolean().default(false)
+  }),
+  timeRange: z.string().optional().nullable(),
+  model: z.string().max(50, "모델명은 50자를 초과할 수 없습니다").default("gpt-4o-mini"),
+  resultJson: z.object({
+    summary: z.string(),
+    behavior: z.string().optional(),
+    health: z.string().optional(),
+    nutrition: z.string().optional(),
+    activity: z.string().optional(),
+    redFlags: z.array(z.string()).default([]),
+    nextSteps: z.array(z.string()).default([])
+  }),
+  tokensIn: z.number().int().min(0, "입력 토큰 수는 0 이상이어야 합니다").optional().nullable(),
+  tokensOut: z.number().int().min(0, "출력 토큰 수는 0 이상이어야 합니다").optional().nullable()
+}).omit({
+  id: true,
+  createdAt: true
+});
+
+// AI 분석 조회 스키마
+export const selectAiAnalysisSchema = createSelectSchema(aiAnalyses);
+
+// 타입 정의
+export type CareLog = z.infer<typeof selectCareLogSchema>;
+export type InsertCareLog = z.infer<typeof insertCareLogSchema>;
+export type UpdateCareLog = z.infer<typeof updateCareLogSchema>;
+export type AiAnalysis = z.infer<typeof selectAiAnalysisSchema>;
+export type InsertAiAnalysis = z.infer<typeof insertAiAnalysisSchema>;
 
