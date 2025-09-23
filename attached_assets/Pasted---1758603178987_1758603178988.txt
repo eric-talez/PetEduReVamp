@@ -1,0 +1,168 @@
+리플릿에서 한국의 간편로그인과 결제 서비스를 연동하는 방법을 찾아보겠습니다.리플릿에서 네이버/카카오 간편로그인과 결제 서비스를 연동하는 방법을 단계별로 안내해드리겠습니다.
+
+## **🔑 1. 네이버/카카오 간편로그인 연동**
+
+### **A. 사전 준비 (애플리케이션 등록)**
+
+**네이버 개발자 센터**
+- https://developers.naver.com/main/ 접속 후 애플리케이션 등록
+- 사용 API에서 "네이버 로그인" 선택, 제공 정보 설정
+- Callback URL 설정 (예: localhost:3000/login)
+
+**카카오 개발자 센터**
+- https://developers.kakao.com/ 접속 후 애플리케이션 등록
+- 플랫폼 설정에서 Redirect URI 등록
+- 동의항목 설정에서 필요한 정보 선택
+
+### **B. Replit Agent를 활용한 구현**
+
+Replit Agent에게 다음과 같이 요청하세요:
+
+```
+"네이버와 카카오 간편로그인이 있는 React 웹사이트를 만들어줘. 
+- 네이버 로그인 클라이언트 ID: [발급받은 ID]
+- 카카오 로그인 REST API 키: [발급받은 키]
+- 로그인 성공 후 사용자 정보를 표시하는 기능도 포함해줘"
+```
+
+### **C. 수동 구현 방법**
+
+**1) HTML에 SDK 추가**
+```html
+<!-- 네이버 로그인 SDK -->
+<script src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.0.js"></script>
+
+<!-- 카카오 로그인 SDK -->
+<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+```
+
+**2) 환경 변수 설정**
+Replit의 Secrets 도구를 사용해 환경 변수 안전 설정:
+- `NAVER_CLIENT_ID`
+- `NAVER_CLIENT_SECRET` 
+- `KAKAO_REST_API_KEY`
+- `KAKAO_REDIRECT_URI`
+
+**3) 기본 로그인 플로우**
+프론트엔드에서 인가코드를 받아 백엔드로 전송하는 방식:
+
+```javascript
+// 네이버 로그인 URL 생성
+const naverLoginUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${NAVER_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=STATE_STRING`;
+
+// 카카오 로그인 URL 생성  
+const kakaoLoginUrl = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}`;
+```
+
+## **💳 2. 결제 서비스 연동**
+
+### **A. 토스페이먼츠 연동**
+
+**1) 토스페이먼츠 가입 및 API 키 발급**
+- https://www.tosspayments.com/ 에서 회원가입
+- 개발자용 테스트 상점에서 API 키 확인
+- 결제위젯 연동 키로 시작
+
+**2) Replit Agent 활용**
+토스페이먼츠에서 PG업계 최초로 MCP를 제공하여 AI 기반 코딩 도구 활용 시 연동 정확도 향상
+
+```
+"토스페이먼츠 결제 시스템이 있는 쇼핑몰을 만들어줘.
+- 토스페이먼츠 클라이언트 키: test_gck_xxxxxxxxx
+- 결제위젯을 사용해서 카드결제가 가능하도록 해줘
+- 결제 성공/실패 페이지도 포함해줘"
+```
+
+**3) 기본 결제 연동 코드**
+```javascript
+// 토스페이먼츠 SDK 초기화
+const tossPayments = TossPayments(clientKey);
+
+// 결제 요청
+const payment = tossPayments.payment({
+  amount: 15000,
+  orderId: 'unique_order_id',
+  orderName: '상품명',
+  customerName: '구매자명',
+  successUrl: 'http://localhost:3000/success',
+  failUrl: 'http://localhost:3000/fail',
+});
+```
+
+### **B. 아임포트(포트원) 연동**
+
+**1) 포트원 가입 및 설정**
+- 포트원에서 토스페이먼츠 신모듈 연동 지원
+
+**2) 기본 연동 코드**
+```javascript
+// 아임포트 SDK 로드
+<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
+// 결제 요청
+IMP.init('고객사 식별코드');
+IMP.request_pay({
+  pg: 'tosspayments',
+  pay_method: 'card',
+  merchant_uid: 'unique_order_id',
+  name: '주문명',
+  amount: 1000,
+}, function(rsp) {
+  // 결제 결과 처리
+});
+```
+
+## **🛠️ 3. Replit에서 통합 구현 방법**
+
+### **A. 환경 설정**
+Replit의 Secrets 기능으로 모든 API 키를 안전하게 관리:
+
+```
+NAVER_CLIENT_ID=your_naver_id
+NAVER_CLIENT_SECRET=your_naver_secret
+KAKAO_REST_API_KEY=your_kakao_key
+TOSS_CLIENT_KEY=test_gck_xxxxxxxxx
+TOSS_SECRET_KEY=test_sk_xxxxxxxxx
+```
+
+### **B. 통합 프롬프트 예시**
+```
+"네이버, 카카오 간편로그인과 토스페이먼츠 결제가 모두 포함된 쇼핑몰을 만들어줘.
+
+기능 요구사항:
+1. 네이버/카카오 소셜 로그인
+2. 로그인 후 상품 목록 표시
+3. 토스페이먼츠로 결제 처리
+4. 주문 내역 관리
+
+사용할 API 키들:
+- 네이버 클라이언트 ID: [발급받은 키]
+- 카카오 REST API 키: [발급받은 키]  
+- 토스페이먼츠 클라이언트 키: [발급받은 키]
+
+리다이렉트 URL은 Replit 배포 URL에 맞게 설정해줘."
+```
+
+### **C. 배포 시 주의사항**
+
+**1) 리다이렉트 URL 업데이트**
+- Replit 배포 후 실제 URL로 네이버/카카오 개발자센터에서 콜백 URL 변경
+
+**2) HTTPS 설정**
+- Replit 배포는 자동으로 HTTPS 제공
+- 커스텀 도메인 사용 시 SSL 자동 적용
+
+**3) CORS 설정**
+- 네이버/카카오 로그인 시 CORS 에러 방지를 위한 도메인 설정
+
+## **🚀 4. 실행 순서**
+
+1. **네이버/카카오 개발자센터 애플리케이션 등록**
+2. **토스페이먼츠 가입 및 API 키 발급**
+3. **Replit에서 새 프로젝트 생성**
+4. **Replit Agent에게 통합 서비스 개발 요청**
+5. **API 키들을 Secrets에 안전하게 저장**
+6. **배포 후 실제 URL로 리다이렉트 URI 업데이트**
+7. **테스트 및 디버깅**
+
+Replit Agent의 강력한 API 연동 기능을 활용하면 복잡한 OAuth 인증과 결제 시스템도 쉽게 구현할 수 있습니다. 특히 토스페이먼츠의 MCP 지원으로 결제 연동 정확도가 크게 향상되어 더욱 안정적인 서비스 구축이 가능합니다.
