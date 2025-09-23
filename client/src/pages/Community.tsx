@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Search, MessageSquare, TrendingUp, MessageCircle, Filter } from 'lucide-react';
 import { CommunityPostForm } from '@/components/CommunityPostForm';
 import { useQuery } from '@tanstack/react-query';
+import CommunityBannerImage from '@assets/image_1758608155574.png';
 
 export default function Community() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +56,20 @@ export default function Community() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">커뮤니티</h1>
+
+      {/* 커뮤니티 홍보 배너 */}
+      <section className="community-banner bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+        <img 
+          src={CommunityBannerImage} 
+          alt="커뮤니티 - 반려동물과 함께하는 소통공간" 
+          className="w-full h-auto max-h-[250px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          onClick={() => {
+            // 게시글 작성 모달 열기
+            setIsPostFormOpen(true);
+          }}
+          data-testid="community-banner"
+        />
+      </section>
       
       {/* 디버깅 정보 표시 */}
       <div className="mb-4 p-4 bg-yellow-100 rounded-lg">

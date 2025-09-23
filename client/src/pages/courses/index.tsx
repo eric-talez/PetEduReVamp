@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import CoursesBannerImage from '@assets/image_1758608047709.png';
 
 interface CoursesPageProps {
   mode?: 'view' | 'create' | 'edit';
@@ -288,26 +289,35 @@ export default function Courses(props?: CoursesPageProps) {
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
+      {/* 강의찾기 홍보 배너 */}
+      <section className="courses-banner bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
         <img 
-          src="/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png" 
-          alt="전문 훈련사와 함께하는 강의 탐색"
-          className="w-full h-full object-cover absolute"
+          src={CoursesBannerImage} 
+          alt="풍부한 콘텐츠 - 반려견을 위한 체계적인 교육 과정" 
+          className="w-full h-auto max-h-[300px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          onClick={() => {
+            // 검색 입력창으로 포커스
+            const searchInput = document.querySelector('input[placeholder*="강의"]') as HTMLInputElement;
+            if (searchInput) {
+              searchInput.focus();
+            }
+          }}
+          data-testid="courses-banner"
         />
+      </section>
 
-
-
-        <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <h1 className="text-primary dark:text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
+      {/* 검색 섹션 */}
+      <div className="mb-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold text-center mb-4">
             반려견을 위한 체계적인 교육 과정
           </h1>
-          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
+          <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
             평생 함께할 반려견에게 필요한 훈련과 교육을 전문가와 함께 시작하세요.
           </p>
-
+          
           {/* Search Bar */}
-          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center p-2">
             <div className="px-2">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
