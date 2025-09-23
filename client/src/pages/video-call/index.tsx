@@ -26,6 +26,7 @@ import { ko } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import VideoClassBannerImage from '@assets/image_1758608084415.png';
 
 interface Meeting {
   id: string;
@@ -260,6 +261,20 @@ export default function VideoCallPage() {
         <h1 className="text-3xl font-bold mb-2">화상 강의</h1>
         <p className="text-muted-foreground">실시간 화상 강의 및 미팅을 관리하고 참여하세요.</p>
       </div>
+
+      {/* 강아지 화상 강의 배너 */}
+      <section className="video-class-banner bg-white rounded-lg shadow-md overflow-hidden">
+        <img 
+          src={VideoClassBannerImage} 
+          alt="강아지 화상 강의 - 실시간 펫케어 클래스" 
+          className="w-full h-auto max-h-[250px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          onClick={() => {
+            // 화상 강의 예약 페이지로 이동 또는 특별 이벤트 페이지로 이동
+            setActiveTab('trainers');
+          }}
+          data-testid="video-class-banner"
+        />
+      </section>
 
       {/* 메인 탭 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
