@@ -7,6 +7,7 @@ import { useLocation } from 'wouter';
 import { TopBar } from '@/components/TopBar';
 import { Sidebar } from '@/components/Sidebar';
 import { Badge } from '@/components/ui/badge';
+import PetcareBannerImage from '@assets/image_1758604283508.png';
 
 /**
  * 테일즈 샵 스타일의 쇼핑몰 메인 컴포넌트
@@ -53,7 +54,7 @@ export default function ShopIndex() {
   ]);
   
   const [sliders] = useState([
-    { id: 1, title: "반려동물 봄 신상품 모음전", subtitle: "견생주치가 추천하는 반려동물 맞춤 상품", imageUrl: "/images/pet-banner-spring.jpg" },
+    { id: 1, title: "테일즈 초특가 핫딜", subtitle: "펫케어 특가 모음전 - 한정 수량, 지금만 이 가격", imageUrl: "/images/pet-banner-spring.jpg" },
     { id: 2, title: "프리미엄 사료 할인전", subtitle: "건강한 영양을 위한 최고급 사료 모음", imageUrl: "/images/pet-banner-food.jpg" },
     { id: 3, title: "펫 장난감 특별기획전", subtitle: "활동성 높은 반려동물을 위한 다양한 장난감", imageUrl: "/images/pet-banner-toys.jpg" }
   ]);
@@ -580,6 +581,25 @@ export default function ShopIndex() {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+        
+        {/* 펫케어 특가 모음전 배너 */}
+        <section className="petcare-special-banner bg-white dark:bg-gray-800 py-6">
+          <div className="container mx-auto px-4">
+            <div className="relative rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={PetcareBannerImage} 
+                alt="펫케어 특가 모음전 - 테일즈 초특가 핫딜" 
+                className="w-full h-auto max-h-[300px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => {
+                  // 특가 상품 페이지로 이동
+                  setLocation('/shop/special-deals');
+                }}
+                data-testid="petcare-special-banner"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-transparent hover:from-black/10 hover:to-transparent transition-all duration-300"></div>
             </div>
           </div>
         </section>
