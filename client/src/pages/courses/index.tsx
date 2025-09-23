@@ -7,7 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import CoursesBannerImage from '@assets/image_1758608047709.png';
+import CoursesBannerImage from '@assets/image_1758608058600.png';
 
 interface CoursesPageProps {
   mode?: 'view' | 'create' | 'edit';
@@ -29,6 +29,10 @@ interface Course {
   averageRating?: number;
   createdAt: string;
   updatedAt: string;
+  thumbnailUrl?: string;
+  hasAnyVideo?: boolean;
+  totalVideos?: number;
+  modulesWithVideoCount?: number;
 }
 
 export default function Courses(props?: CoursesPageProps) {
@@ -64,7 +68,7 @@ export default function Courses(props?: CoursesPageProps) {
   const handleJoinCourse = (courseId: string) => {
     console.log('강좌 참여하기 클릭:', courseId);
     // 로그인 체크 후 수강 신청 프로세스 시작
-    handleEnrollment(parseInt(courseId));
+    handleEnroll();
   };
 
   // 미리보기 핸들러
@@ -260,7 +264,7 @@ export default function Courses(props?: CoursesPageProps) {
       case 'intermediate':
         return <Badge className="bg-blue-500 text-white">중급</Badge>;
       case 'advanced':
-        return <Badge variant="destructive">고급</Badge>;
+        return <Badge variant="danger">고급</Badge>;
       default:
         return <Badge variant="secondary">미설정</Badge>;
     }

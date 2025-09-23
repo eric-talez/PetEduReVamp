@@ -61,6 +61,17 @@ interface LocationItem {
   status: 'active' | 'pending' | 'inactive';
   createdAt: string;
   updatedAt: string;
+  gallery?: string[];
+  amenities?: string[];
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  facilities?: any;
+  certifications?: string[];
+  specialPrograms?: string[];
+  philosophy?: string;
+  slogan?: string;
 }
 
 interface Location {
@@ -1576,7 +1587,7 @@ export default function LocationFinder() {
                               </Badge>
                               <Badge variant={
                                 location.status === 'active' ? "default" : 
-                                location.status === 'pending' ? "secondary" : "destructive"
+                                location.status === 'pending' ? "secondary" : "danger"
                               }>
                                 {location.status === 'active' ? "활성" : 
                                  location.status === 'pending' ? "승인대기" : "비활성"}
