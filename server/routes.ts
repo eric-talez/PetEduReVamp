@@ -11,12 +11,13 @@ import { simpleProductRoutes } from "./routes/simple-products";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
 import { storage } from "./storage";
 
-// OpenAI 초기화 (blueprint 기반)
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+// AI 모델 초기화
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // =============================================================================
 // AI 분석 Helper 함수들
@@ -85,36 +86,109 @@ function generateAnalysisPrompt(logs: any[], selectedSignals: any): string {
   return prompt;
 }
 
-// OpenAI API를 사용하여 분석 수행
-async function performAiAnalysis(prompt: string, model: string = "gpt-5"): Promise<any> {
-  try {
-    const response = await openai.chat.completions.create({
-      model: model,
-      messages: [
-        {
-          role: "system",
-          content: "당신은 반려동물 건강 및 행동 전문가입니다. 반려동물의 일상 데이터를 분석하여 건강 상태, 행동 패턴, 영양 상태 등에 대한 전문적인 조언을 제공합니다."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      response_format: { type: "json_object" },
-      max_completion_tokens: 2048
-    });
+// 허용된 AI 모델 목록
+const ALLOWED_MODELS = [
+  "gpt-4o",
+  "gpt-4o-mini", 
+  "claude-3-5-sonnet-20241022",
+  "claude-3-5-haiku-20241022"
+];
 
-    const result = JSON.parse(response.choices[0].message.content || '{}');
+// AI 분석 수행 (ChatGPT 또는 Claude 선택 가능)
+async function performAiAnalysis(prompt: string, model: string = "gpt-4o"): Promise<any> {
+  // 모델 허용 목록 확인
+  if (!ALLOWED_MODELS.includes(model)) {
+    throw new Error(`허용되지 않은 AI 모델입니다: ${model}`);
+  }
+
+  const systemPrompt = "당신은 반려동물 건강 및 행동 전문가입니다. 반려동물의 일상 데이터를 분석하여 건강 상태, 행동 패턴, 영양 상태 등에 대한 전문적인 조언을 제공합니다. 응답은 반드시 다음 JSON 형식으로 제공해주세요: {\"summary\": \"전반적인 상태 요약\", \"behavior\": \"행동 패턴 분석\", \"health\": \"건강 상태 분석\", \"nutrition\": \"영양 상태 분석\", \"activity\": \"운동/활동 분석\", \"redFlags\": [\"주의사항1\", \"주의사항2\"], \"nextSteps\": [\"권장사항1\", \"권장사항2\"]}";
+  
+  try {
+    let result: any;
+    let tokensUsed = { input: 0, output: 0 };
+
+    if (model.startsWith('claude')) {
+      // Claude 모델 사용
+      const response = await anthropic.messages.create({
+        model: model,
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      });
+
+      // 응답 구조 확인
+      if (!response.content || response.content.length === 0) {
+        throw new Error("Claude API에서 빈 응답을 받았습니다.");
+      }
+
+      const content = response.content[0];
+      if (content.type !== 'text') {
+        throw new Error("Claude API에서 예상치 못한 응답 형식을 받았습니다.");
+      }
+
+      try {
+        result = JSON.parse(content.text);
+        // JSON 구조 검증
+        if (!result.summary || !result.redFlags || !result.nextSteps) {
+          throw new Error("응답 형식이 올바르지 않습니다.");
+        }
+      } catch (parseError) {
+        console.warn('Claude JSON 파싱 실패:', parseError);
+        // JSON 파싱 실패시 텍스트를 적절히 변환
+        result = {
+          summary: content.text.substring(0, 500) + "...",
+          behavior: "Claude 분석 결과를 참고해주세요.",
+          health: "전문 수의사와 상담을 권장합니다.",
+          nutrition: "균형잡힌 식단을 유지해주세요.",
+          activity: "적절한 운동량을 유지해주세요.",
+          redFlags: ["JSON 파싱 실패로 인한 수동 검토 필요"],
+          nextSteps: ["전문가 상담", "지속적인 관찰"]
+        };
+      }
+
+      tokensUsed = {
+        input: response.usage.input_tokens,
+        output: response.usage.output_tokens
+      };
+
+    } else {
+      // ChatGPT 모델 사용
+      const response = await openai.chat.completions.create({
+        model: model,
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 2048
+      });
+
+      result = JSON.parse(response.choices[0].message.content || '{}');
+      tokensUsed = {
+        input: response.usage?.prompt_tokens || 0,
+        output: response.usage?.completion_tokens || 0
+      };
+    }
     
     return {
       ...result,
-      tokensUsed: {
-        input: response.usage?.prompt_tokens || 0,
-        output: response.usage?.completion_tokens || 0
-      }
+      model: model,
+      tokensUsed
     };
+
   } catch (error) {
-    console.error('OpenAI API 오류:', error);
+    console.error(`AI API 오류 (${model}):`, error);
     
     // 폴백 분석 결과
     return {
@@ -125,6 +199,7 @@ async function performAiAnalysis(prompt: string, model: string = "gpt-5"): Promi
       activity: "적절한 운동량을 유지해주세요.",
       redFlags: ["AI 분석 실패로 인한 수동 검토 필요"],
       nextSteps: ["전문 수의사 상담", "데이터 재수집"],
+      model: model,
       tokensUsed: { input: 0, output: 0 },
       error: error instanceof Error ? error.message : '알 수 없는 오류'
     };

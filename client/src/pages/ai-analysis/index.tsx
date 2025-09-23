@@ -72,6 +72,7 @@ export default function AiAnalysisPage() {
     media: false
   });
   const [selectedLogIds, setSelectedLogIds] = useState<number[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
 
   // 임시 반려동물 목록 (실제로는 API에서 가져와야 함)
   const pets = [
@@ -161,7 +162,8 @@ export default function AiAnalysisPage() {
       petId: selectedPetId,
       logIds: selectedLogIds,
       selectedSignals,
-      dateRange: `${dateRange.start} to ${dateRange.end}`
+      dateRange: `${dateRange.start} to ${dateRange.end}`,
+      model: selectedModel
     });
   };
 
@@ -236,6 +238,22 @@ export default function AiAnalysisPage() {
                 </div>
               </div>
 
+              {/* AI 모델 선택 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">AI 모델 선택</label>
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <SelectTrigger data-testid="select-model">
+                    <SelectValue placeholder="AI 모델을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gpt-4o">ChatGPT 4o</SelectItem>
+                    <SelectItem value="gpt-4o-mini">ChatGPT 4o Mini</SelectItem>
+                    <SelectItem value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</SelectItem>
+                    <SelectItem value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* 분석 항목 선택 */}
               <div>
                 <label className="text-sm font-medium mb-2 block">분석할 항목</label>
@@ -265,22 +283,30 @@ export default function AiAnalysisPage() {
               {/* 분석 실행 버튼 */}
               <Button 
                 onClick={handleAnalyze}
-                disabled={analyzeDataMutation.isPending || !selectedPetId}
+                disabled={analyzeDataMutation.isPending || !selectedPetId || selectedLogIds.length === 0}
                 className="w-full"
                 data-testid="button-analyze"
               >
                 {analyzeDataMutation.isPending ? (
                   <>
                     <Clock className="mr-2 h-4 w-4 animate-spin" />
-                    AI 분석 중...
+                    {selectedModel.startsWith('claude') ? 'Claude' : 'ChatGPT'} 분석 중...
                   </>
                 ) : (
                   <>
                     <Brain className="mr-2 h-4 w-4" />
-                    AI 분석 실행
+                    {selectedModel.startsWith('claude') ? 'Claude' : 'ChatGPT'}로 AI 분석 실행
                   </>
                 )}
               </Button>
+              
+              {/* 분석 정보 */}
+              {analyzeDataMutation.isPending && (
+                <div className="text-sm text-muted-foreground text-center p-2 bg-blue-50 rounded-md">
+                  <p>선택된 {selectedLogIds.length}개의 알림장을 {selectedModel.startsWith('claude') ? 'Claude' : 'ChatGPT'}로 분석 중입니다...</p>
+                  <p>잠시만 기다려주세요.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -328,6 +354,7 @@ export default function AiAnalysisPage() {
                                   <Checkbox 
                                     checked={selectedLogIds.includes(log.id)}
                                     onCheckedChange={(checked) => handleLogSelection(log.id, checked as boolean)}
+                                    disabled={analyzeDataMutation.isPending}
                                     data-testid={`checkbox-log-${log.id}`}
                                   />
                                   <span className="text-sm font-medium">알림장 #{log.id}</span>
@@ -404,7 +431,7 @@ export default function AiAnalysisPage() {
                               <h4 className="font-medium">분석 #{analysis.id}</h4>
                               <p className="text-sm text-muted-foreground">
                                 {format(new Date(analysis.createdAt), 'M월 d일 HH:mm', { locale: ko })} | 
-                                모델: {analysis.model}
+                                모델: {analysis.model.startsWith('claude') ? 'Claude' : 'ChatGPT'} ({analysis.model})
                               </p>
                             </div>
                             <Badge variant="outline">{analysis.timeRange}</Badge>
