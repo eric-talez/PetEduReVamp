@@ -41,6 +41,11 @@ interface AiAnalysis {
     activity?: string;
     redFlags: string[];
     nextSteps: string[];
+    model?: string;
+    tokensUsed?: {
+      input: number;
+      output: number;
+    };
   };
   selectedSignals: {
     text: boolean;
@@ -78,82 +83,108 @@ export default function AiAnalysisPage() {
   const pets = [
     { id: 1, name: '멍멍이', species: '개', breed: '골든 리트리버' },
     { id: 2, name: '야옹이', species: '고양이', breed: '페르시안' },
-    { id: 3, name: '코코', species: '개', breed: '푸들' }
+    { id: 3, name: '복실이', species: '개', breed: '포메라니안' }
   ];
 
-  // API 쿼리
-  const { data: careLogsData, isLoading: isLoadingLogs } = useQuery({
-    queryKey: ['/api/ai-analysis/care-logs', selectedPetId, dateRange.start, dateRange.end],
-    queryFn: () => selectedPetId ? apiRequest(`/api/ai-analysis/care-logs?petId=${selectedPetId}&startDate=${dateRange.start}&endDate=${dateRange.end}`) : null,
-    enabled: !!selectedPetId
+  // 알림장 데이터 조회
+  const careLogsQuery = useQuery({
+    queryKey: ['/api/ai-analysis/care-logs', selectedPetId, dateRange],
+    enabled: !!selectedPetId,
+    queryFn: () => {
+      const params = new URLSearchParams({
+        petId: selectedPetId!.toString(),
+        startDate: dateRange.start,
+        endDate: dateRange.end
+      });
+      return fetch(`/api/ai-analysis/care-logs?${params}`)
+        .then(res => res.json());
+    }
   });
 
-  const { data: analysisHistory } = useQuery({
+  // AI 분석 기록 조회
+  const analysisHistoryQuery = useQuery({
     queryKey: ['/api/ai-analysis/history', selectedPetId],
-    queryFn: () => selectedPetId ? apiRequest(`/api/ai-analysis/history?petId=${selectedPetId}`) : null,
-    enabled: !!selectedPetId
+    enabled: !!selectedPetId,
+    queryFn: () => {
+      const params = new URLSearchParams({
+        petId: selectedPetId!.toString()
+      });
+      return fetch(`/api/ai-analysis/history?${params}`)
+        .then(res => res.json());
+    }
   });
 
-  // AI 분석 실행 mutation
+  // AI 분석 실행
   const analyzeDataMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/ai-analysis/analyze', {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' }
-    }),
+    mutationFn: async (data: {
+      petId: number;
+      logIds: number[];
+      selectedSignals: any;
+      dateRange: string;
+      model: string;
+    }) => {
+      const response = await fetch('/api/ai-analysis/analyze', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('AI 분석 요청 실패');
+      }
+      return response.json();
+    },
     onSuccess: () => {
       toast({
-        title: 'AI 분석 완료',
-        description: '반려동물 데이터 분석이 성공적으로 완료되었습니다.',
+        title: "분석 완료",
+        description: "AI 분석이 성공적으로 완료되었습니다.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/ai-analysis/history', selectedPetId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/ai-analysis/history'] });
+      setSelectedLogIds([]);
     },
     onError: (error: any) => {
       toast({
-        title: 'AI 분석 실패',
-        description: error.message || 'AI 분석 중 오류가 발생했습니다.',
-        variant: 'destructive'
+        title: "분석 실패",
+        description: error?.message || "AI 분석 중 오류가 발생했습니다.",
+        variant: "destructive",
       });
     }
   });
 
+  // 신호 선택 핸들러
   const handleSignalChange = (signal: string, checked: boolean) => {
-    setSelectedSignals(prev => ({ ...prev, [signal]: checked }));
+    setSelectedSignals(prev => ({
+      ...prev,
+      [signal]: checked
+    }));
   };
 
+  // 로그 선택 핸들러
   const handleLogSelection = (logId: number, checked: boolean) => {
-    setSelectedLogIds(prev => 
-      checked 
-        ? [...prev, logId]
-        : prev.filter(id => id !== logId)
-    );
+    if (checked) {
+      setSelectedLogIds(prev => [...prev, logId]);
+    } else {
+      setSelectedLogIds(prev => prev.filter(id => id !== logId));
+    }
   };
 
+  // 분석 실행 핸들러
   const handleAnalyze = () => {
     if (!selectedPetId) {
       toast({
-        title: '반려동물을 선택해주세요',
-        description: '분석할 반려동물을 먼저 선택해주세요.',
-        variant: 'destructive'
+        title: "반려동물을 선택해주세요",
+        description: "분석할 반려동물을 먼저 선택해주세요.",
+        variant: "destructive",
       });
       return;
     }
 
     if (selectedLogIds.length === 0) {
       toast({
-        title: '분석할 데이터를 선택해주세요',
-        description: '최소 1개의 알림장을 선택해주세요.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    const hasSelectedSignals = Object.values(selectedSignals).some(v => v);
-    if (!hasSelectedSignals) {
-      toast({
-        title: '분석할 항목을 선택해주세요',
-        description: '텍스트, 배변상태, 식사상태, 산책상태, 미디어 중 최소 1개를 선택해주세요.',
-        variant: 'destructive'
+        title: "알림장을 선택해주세요",
+        description: "분석할 알림장을 하나 이상 선택해주세요.",
+        variant: "destructive",
       });
       return;
     }
@@ -169,41 +200,58 @@ export default function AiAnalysisPage() {
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'normal': return 'bg-green-100 text-green-800';
-      case 'soft': case 'low': case 'short': return 'bg-yellow-100 text-yellow-800';
-      case 'diarrhea': case 'skipped': case 'long': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'good': 
+      case 'normal': 
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'warning': 
+      case 'irregular':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'bad': 
+      case 'skipped':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
+  const careLogsData = careLogsQuery.data;
+  const analysisHistoryData = analysisHistoryQuery.data;
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Brain className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">AI 분석</h1>
-          <p className="text-muted-foreground">반려동물 알림장 데이터를 AI로 분석하여 건강 상태와 행동 패턴을 파악해보세요</p>
-        </div>
+    <div className="container mx-auto px-4 py-8 space-y-6">
+      {/* 헤더 */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-3">
+          <Brain className="w-8 h-8 text-blue-600" />
+          AI 분석 시스템
+        </h1>
+        <p className="text-gray-600">
+          반려동물의 알림장 데이터를 AI로 분석하여 건강 상태와 행동 패턴을 파악합니다
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 설정 패널 */}
-        <div className="lg:col-span-1 space-y-4">
-          <Card data-testid="analysis-settings-card">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* 좌측: 분석 설정 */}
+        <div>
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <PawPrint className="h-5 w-5" />
+                <PawPrint className="w-5 h-5" />
                 분석 설정
               </CardTitle>
               <CardDescription>
-                반려동물과 분석할 기간을 선택하세요
+                분석할 반려동물과 기간, 항목을 선택하세요
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* 반려동물 선택 */}
               <div>
                 <label className="text-sm font-medium mb-2 block">반려동물 선택</label>
-                <Select value={selectedPetId?.toString() || ""} onValueChange={(value) => setSelectedPetId(parseInt(value))}>
+                <Select 
+                  value={selectedPetId?.toString() || ""} 
+                  onValueChange={(value) => setSelectedPetId(parseInt(value))}
+                >
                   <SelectTrigger data-testid="select-pet">
                     <SelectValue placeholder="반려동물을 선택하세요" />
                   </SelectTrigger>
@@ -217,23 +265,26 @@ export default function AiAnalysisPage() {
                 </Select>
               </div>
 
-              {/* 날짜 범위 */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">분석 기간</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input 
-                    type="date" 
+              {/* 기간 선택 */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">시작일</label>
+                  <input
+                    type="date"
                     value={dateRange.start}
                     onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="border rounded-md px-3 py-2 text-sm"
-                    data-testid="date-start"
+                    className="w-full px-3 py-2 border rounded-md text-sm"
+                    data-testid="input-start-date"
                   />
-                  <input 
-                    type="date" 
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">종료일</label>
+                  <input
+                    type="date"
                     value={dateRange.end}
                     onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="border rounded-md px-3 py-2 text-sm"
-                    data-testid="date-end"
+                    className="w-full px-3 py-2 border rounded-md text-sm"
+                    data-testid="input-end-date"
                   />
                 </div>
               </div>
@@ -311,189 +362,246 @@ export default function AiAnalysisPage() {
           </Card>
         </div>
 
-        {/* 메인 콘텐츠 */}
-        <div className="lg:col-span-2">
-          <Tabs defaultValue="care-logs" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="care-logs" data-testid="tab-care-logs">알림장 선택</TabsTrigger>
-              <TabsTrigger value="analysis" data-testid="tab-analysis">분석 결과</TabsTrigger>
-            </TabsList>
-
-            {/* 알림장 목록 탭 */}
-            <TabsContent value="care-logs" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    등록된 알림장 ({selectedLogIds.length}개 선택됨)
-                  </CardTitle>
-                  <CardDescription>
-                    분석할 알림장을 선택하세요. 날짜별로 그룹화되어 표시됩니다.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingLogs ? (
-                    <div className="text-center py-8">
-                      <Clock className="h-8 w-8 animate-spin mx-auto mb-2" />
-                      <p className="text-muted-foreground">알림장 데이터를 불러오는 중...</p>
-                    </div>
-                  ) : careLogsData?.dates?.length > 0 ? (
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {careLogsData.dates.map((date: string) => (
-                        <div key={date} className="border rounded-lg p-4">
-                          <h4 className="font-medium mb-3">
-                            {format(new Date(date), 'M월 d일 (EEE)', { locale: ko })} 
-                            <span className="text-sm text-muted-foreground ml-2">
-                              ({careLogsData.counts[date]}개 항목)
-                            </span>
-                          </h4>
-                          <div className="space-y-2">
-                            {careLogsData.logsByDate[date]?.map((log: CareLog) => (
-                              <div key={log.id} className="border rounded p-3 space-y-2">
-                                <div className="flex items-center space-x-2">
-                                  <Checkbox 
-                                    checked={selectedLogIds.includes(log.id)}
-                                    onCheckedChange={(checked) => handleLogSelection(log.id, checked as boolean)}
-                                    disabled={analyzeDataMutation.isPending}
-                                    data-testid={`checkbox-log-${log.id}`}
-                                  />
-                                  <span className="text-sm font-medium">알림장 #{log.id}</span>
-                                </div>
-                                
-                                {log.note && (
-                                  <p className="text-sm text-gray-700 ml-6">📝 {log.note}</p>
-                                )}
-                                
-                                <div className="flex flex-wrap gap-2 ml-6">
-                                  {log.poopStatus && (
-                                    <Badge className={getStatusBadgeColor(log.poopStatus)}>
-                                      💩 {log.poopStatus}
-                                    </Badge>
-                                  )}
-                                  {log.mealStatus && (
-                                    <Badge className={getStatusBadgeColor(log.mealStatus)}>
-                                      🍽️ {log.mealStatus}
-                                    </Badge>
-                                  )}
-                                  {log.walkStatus && (
-                                    <Badge className={getStatusBadgeColor(log.walkStatus)}>
-                                      🚶 {log.walkStatus}
-                                    </Badge>
-                                  )}
-                                  {log.energyLevel && (
-                                    <Badge className="bg-blue-100 text-blue-800">
-                                      ⚡ {log.energyLevel}/5
-                                    </Badge>
-                                  )}
-                                  {log.media && log.media.length > 0 && (
-                                    <Badge className="bg-purple-100 text-purple-800">
-                                      📸 {log.media.length}개
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <PawPrint className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">
-                        {selectedPetId ? '해당 기간에 등록된 알림장이 없습니다.' : '반려동물을 먼저 선택해주세요.'}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* 분석 결과 탭 */}
-            <TabsContent value="analysis" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Brain className="h-5 w-5" />
-                    AI 분석 결과
-                  </CardTitle>
-                  <CardDescription>
-                    최근 분석 결과를 확인하세요
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {analysisHistory?.analyses?.length > 0 ? (
-                    <div className="space-y-4">
-                      {analysisHistory.analyses.slice(0, 3).map((analysis: AiAnalysis) => (
-                        <div key={analysis.id} className="border rounded-lg p-4 space-y-3">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium">분석 #{analysis.id}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {format(new Date(analysis.createdAt), 'M월 d일 HH:mm', { locale: ko })} | 
-                                모델: {analysis.model.startsWith('claude') ? 'Claude' : 'ChatGPT'} ({analysis.model})
-                              </p>
+        {/* 우측: 알림장 목록 */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                알림장 목록
+              </CardTitle>
+              <CardDescription>
+                {selectedPetId ? `${pets.find(p => p.id === selectedPetId)?.name}의 알림장` : '반려동물을 선택해주세요'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!selectedPetId ? (
+                <div className="text-center py-8 text-gray-500">
+                  <PawPrint className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>반려동물을 선택하면 알림장 목록이 표시됩니다</p>
+                </div>
+              ) : careLogsQuery.isLoading ? (
+                <div className="text-center py-8">
+                  <Clock className="w-6 h-6 mx-auto mb-2 animate-spin" />
+                  <p>알림장을 불러오는 중...</p>
+                </div>
+              ) : careLogsData?.dates?.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>선택한 기간에 알림장이 없습니다</p>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {careLogsData?.dates?.map((date: string) => (
+                    <div key={date} className="border rounded-lg p-3">
+                      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        {format(new Date(date), 'M월 d일 (E)', { locale: ko })}
+                        <Badge variant="outline" className="ml-auto">
+                          {careLogsData.counts[date]}개
+                        </Badge>
+                      </h4>
+                      <div className="space-y-2">
+                        {careLogsData.logsByDate[date]?.map((log: CareLog) => (
+                          <div key={log.id} className="border rounded p-3 space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox 
+                                checked={selectedLogIds.includes(log.id)}
+                                onCheckedChange={(checked) => handleLogSelection(log.id, checked as boolean)}
+                                disabled={analyzeDataMutation.isPending}
+                                data-testid={`checkbox-log-${log.id}`}
+                              />
+                              <span className="text-sm font-medium">알림장 #{log.id}</span>
                             </div>
-                            <Badge variant="outline">{analysis.timeRange}</Badge>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div>
-                              <h5 className="font-medium text-sm mb-1">📋 전체 요약</h5>
-                              <p className="text-sm text-gray-700">{analysis.resultJson.summary}</p>
+                            
+                            {log.note && (
+                              <p className="text-sm text-gray-700 ml-6">📝 {log.note}</p>
+                            )}
+                            
+                            <div className="ml-6 flex flex-wrap gap-2">
+                              {log.poopStatus && (
+                                <Badge className={getStatusBadgeColor(log.poopStatus)}>
+                                  💩 {log.poopStatus}
+                                </Badge>
+                              )}
+                              {log.mealStatus && (
+                                <Badge className={getStatusBadgeColor(log.mealStatus)}>
+                                  🍽️ {log.mealStatus}
+                                </Badge>
+                              )}
+                              {log.walkStatus && (
+                                <Badge className={getStatusBadgeColor(log.walkStatus)}>
+                                  🚶 {log.walkStatus}
+                                </Badge>
+                              )}
+                              {log.mood && (
+                                <Badge variant="outline">
+                                  😊 {log.mood}
+                                </Badge>
+                              )}
                             </div>
-
-                            {analysis.resultJson.redFlags?.length > 0 && (
-                              <div>
-                                <h5 className="font-medium text-sm mb-1 flex items-center gap-1">
-                                  <AlertTriangle className="h-4 w-4 text-red-500" />
-                                  주의사항
-                                </h5>
-                                <ul className="text-sm text-red-700 space-y-1">
-                                  {analysis.resultJson.redFlags.map((flag: string, index: number) => (
-                                    <li key={index} className="flex items-start gap-1">
-                                      <span className="text-red-500 text-xs mt-1">•</span>
-                                      {flag}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            {analysis.resultJson.nextSteps?.length > 0 && (
-                              <div>
-                                <h5 className="font-medium text-sm mb-1 flex items-center gap-1">
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                  권장사항
-                                </h5>
-                                <ul className="text-sm text-green-700 space-y-1">
-                                  {analysis.resultJson.nextSteps.map((step: string, index: number) => (
-                                    <li key={index} className="flex items-start gap-1">
-                                      <span className="text-green-500 text-xs mt-1">•</span>
-                                      {step}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">
-                        아직 분석 결과가 없습니다. AI 분석을 실행해보세요.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* 분석 결과 섹션 */}
+      <Tabs defaultValue="results" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="results" data-testid="tab-results">최신 분석 결과</TabsTrigger>
+          <TabsTrigger value="history" data-testid="tab-history">분석 기록</TabsTrigger>
+        </TabsList>
+
+        {/* 최신 분석 결과 탭 */}
+        <TabsContent value="results" className="space-y-4">
+          {analyzeDataMutation.isSuccess && analyzeDataMutation.data ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  최신 분석 결과
+                </CardTitle>
+                <CardDescription>
+                  방금 완료된 AI 분석 결과입니다 ({selectedModel.startsWith('claude') ? 'Claude' : 'ChatGPT'} {selectedModel})
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">📊 종합 분석</h4>
+                  <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+                    {(analyzeDataMutation.data as any).summary || '분석 결과가 없습니다.'}
+                  </p>
+                </div>
+
+                {(analyzeDataMutation.data as any).behavior && (
+                  <div>
+                    <h4 className="font-medium mb-2">🐕 행동 패턴</h4>
+                    <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded">
+                      {(analyzeDataMutation.data as any).behavior}
+                    </p>
+                  </div>
+                )}
+
+                {(analyzeDataMutation.data as any).health && (
+                  <div>
+                    <h4 className="font-medium mb-2">💊 건강 상태</h4>
+                    <p className="text-sm text-gray-700 bg-green-50 p-3 rounded">
+                      {(analyzeDataMutation.data as any).health}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500" />
+                    주의사항
+                  </h4>
+                  <div className="space-y-2">
+                    {((analyzeDataMutation.data as any).redFlags || []).map((flag: string, index: number) => (
+                      <div key={index} className="text-sm bg-amber-50 border-l-4 border-amber-400 p-3">
+                        {flag}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-2">✅ 권장사항</h4>
+                  <div className="space-y-2">
+                    {((analyzeDataMutation.data as any).nextSteps || []).map((step: string, index: number) => (
+                      <div key={index} className="text-sm bg-blue-50 border-l-4 border-blue-400 p-3">
+                        {step}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="text-center py-8 text-gray-500">
+                <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>AI 분석을 실행하면 결과가 여기에 표시됩니다</p>
+                <p className="text-sm">반려동물과 알림장을 선택한 후 분석 버튼을 클릭하세요</p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* 분석 기록 탭 */}
+        <TabsContent value="history" className="space-y-4">
+          {!selectedPetId ? (
+            <Card>
+              <CardContent className="text-center py-8 text-gray-500">
+                <PawPrint className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>반려동물을 선택하면 분석 기록을 볼 수 있습니다</p>
+              </CardContent>
+            </Card>
+          ) : analysisHistoryQuery.isLoading ? (
+            <Card>
+              <CardContent className="text-center py-8">
+                <Clock className="w-6 h-6 mx-auto mb-2 animate-spin" />
+                <p>분석 기록을 불러오는 중...</p>
+              </CardContent>
+            </Card>
+          ) : analysisHistoryData?.analyses?.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-8 text-gray-500">
+                <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>아직 분석 기록이 없습니다</p>
+                <p className="text-sm">첫 번째 AI 분석을 실행해보세요</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {analysisHistoryData?.analyses?.map((analysis: AiAnalysis) => (
+                <div key={analysis.id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">분석 #{analysis.id}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(analysis.createdAt), 'M월 d일 HH:mm', { locale: ko })} | 
+                        모델: {analysis.model.startsWith('claude') ? 'Claude' : 'ChatGPT'} ({analysis.model})
+                      </p>
+                    </div>
+                    <Badge variant="outline">{analysis.timeRange}</Badge>
+                  </div>
+
+                  <div>
+                    <h5 className="font-medium text-sm mb-1">📊 종합 분석</h5>
+                    <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                      {analysis.resultJson.summary}
+                    </p>
+                  </div>
+
+                  {analysis.resultJson.redFlags?.length > 0 && (
+                    <div>
+                      <h5 className="font-medium text-sm mb-1 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-amber-500" />
+                        주의사항
+                      </h5>
+                      <div className="space-y-1">
+                        {analysis.resultJson.redFlags.map((flag: string, index: number) => (
+                          <div key={index} className="text-xs bg-amber-50 border-l-2 border-amber-400 p-2">
+                            {flag}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
