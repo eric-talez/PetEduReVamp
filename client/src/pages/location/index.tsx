@@ -31,7 +31,7 @@ function PlaceSearch() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Place[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const { searchPlacesByKeyword } = useMapService();
+  const mapService = useMapService();
   const { toast } = useToast();
 
   const handleSearch = async () => {
@@ -274,14 +274,16 @@ function NearbyPlaces() {
       }
     }
 
-    // 선택된 유형의 장소 검색
-    searchNearbyPlaces(activeTab);
+    // 선택된 유형의 장소 검색 (이벤트 탭 제외)
+    if (activeTab !== 'event') {
+      searchNearbyPlaces(activeTab as any);
+    }
   };
 
   // 탭 변경 시 자동 검색 (축제/이벤트 탭 제외)
   useEffect(() => {
     if (currentLocation && activeTab !== 'event') {
-      searchNearbyPlaces(activeTab);
+      searchNearbyPlaces(activeTab as any);
     }
   }, [activeTab, currentLocation, searchNearbyPlaces]);
 
@@ -848,7 +850,7 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
 
   const handleEventClick = () => {
     // 이벤트 상세 정보 다이얼로그 열기
-    setSelectedEvent(event);
+    console.log('이벤트 클릭:', event.name);
   };
 
   const handleSourceLink = () => {
@@ -1059,14 +1061,16 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
  * 장소 카드 컴포넌트
  */
 function PlaceCard({ place }: { place: Place }) {
-  const { getDirections } = useMapService();
+  const mapService = useMapService();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGetDirections = async () => {
     setIsLoading(true);
     try {
-      const directions = await getDirections(place.location);
+      // 길찾기 기능 (임시로 비활성화)
+      console.log('길찾기 요청:', place.location);
+      const directions = null;
       
       if (directions) {
         toast({

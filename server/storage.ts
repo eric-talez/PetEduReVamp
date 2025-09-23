@@ -2386,7 +2386,7 @@ class Storage {
 
     // 훈련사는 담당 펫의 일지만 생성 가능
     if (userRole === 'trainer') {
-      const pet = this.getPetById(petId);
+      const pet = this.getPostById(petId as any);
       return pet && pet.assignedTrainerId === userId;
     }
 
@@ -2663,7 +2663,65 @@ class Storage {
 
   // 이벤트 관리 메서드
   getAllEvents(): any[] {
-    return this.events || [];
+    // 커뮤니티 게시글 중 이벤트 관련 게시글을 이벤트 형태로 변환하여 반환
+    const communityPosts = this.posts || [];
+    const eventKeywords = ['축제', '이벤트', '박람회', '대회', '행사', '펫페어', '문화축제'];
+    
+    const eventPosts = communityPosts.filter((post: any) => {
+      return eventKeywords.some(keyword => 
+        post.title.includes(keyword) || 
+        (post.content && post.content.includes(keyword)) ||
+        (post.tag && post.tag.includes(keyword))
+      );
+    });
+
+    // 커뮤니티 게시글을 이벤트 형태로 변환
+    const eventsFromCommunity = eventPosts.map((post: any) => ({
+      id: post.id,
+      name: post.title,
+      description: post.content || post.title,
+      startDate: post.createdAt || new Date().toISOString(),
+      endDate: post.createdAt || new Date().toISOString(),
+      location: {
+        name: this.extractLocationFromText(post.title + ' ' + (post.content || '')),
+        address: this.extractLocationFromText(post.title + ' ' + (post.content || '')),
+        latitude: 37.5665,
+        longitude: 126.9780
+      },
+      category: this.getEventCategory(post.title),
+      status: 'active',
+      price: '무료',
+      maxAttendees: 100,
+      currentAttendees: 0,
+      organizerId: post.authorId || 1,
+      organizer: post.author?.name || '관리자',
+      tags: post.tag ? [post.tag] : ['커뮤니티'],
+      image: post.linkInfo?.image || '/attached_assets/image_1758608084415.png',
+      sourceUrl: post.linkInfo?.url || '',
+      featured: false,
+      createdAt: post.createdAt || new Date().toISOString(),
+      updatedAt: post.updatedAt || new Date().toISOString()
+    }));
+
+    // 기존 이벤트 데이터와 커뮤니티 이벤트를 합쳐서 반환
+    return [...(this.events || []), ...eventsFromCommunity];
+  }
+
+  // 텍스트에서 위치 정보 추출 헬퍼 메서드
+  private extractLocationFromText(text: string): string {
+    const locationRegex = /(서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)/;
+    const match = text.match(locationRegex);
+    return match ? match[0] : '전국';
+  }
+
+  // 이벤트 카테고리 결정 헬퍼 메서드  
+  private getEventCategory(title: string): string {
+    if (title.includes('박람회') || title.includes('펫페어')) return '박람회';
+    if (title.includes('대회') || title.includes('경연')) return '대회';
+    if (title.includes('문화축제') || title.includes('축제')) return '문화축제';
+    if (title.includes('건강검진') || title.includes('의료')) return '의료행사';
+    if (title.includes('입양') || title.includes('봉사')) return '사회공헌';
+    return '일반이벤트';
   }
 
   getEventById(id: number): any {
