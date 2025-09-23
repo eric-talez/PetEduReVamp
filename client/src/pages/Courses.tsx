@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, BookOpen, Clock, User, Star, Eye, Play, ChevronRight, Package, Video, VideoOff } from 'lucide-react';
+import CourseBannerImage from '@assets/image_1758608058600.png';
 
 export default function Courses() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -115,6 +116,20 @@ export default function Courses() {
             </div>
           )}
         </div>
+
+        {/* 풍부한 콘텐츠 제공 배너 */}
+        <section className="course-content-banner bg-white rounded-lg shadow-md overflow-hidden mb-8">
+          <img 
+            src={CourseBannerImage} 
+            alt="풍부한 콘텐츠 제공 - 테일즈 무제한 감상" 
+            className="w-full h-auto max-h-[250px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+            onClick={() => {
+              // 서비스 안내 페이지로 이동
+              window.location.href = '/services';
+            }}
+            data-testid="course-content-banner"
+          />
+        </section>
 
         {/* Search Bar */}
         <div className="mb-6">
