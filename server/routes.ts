@@ -10,8 +10,127 @@ import { productRoutes } from "./routes/products";
 import { simpleProductRoutes } from "./routes/simple-products";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
+import OpenAI from "openai";
 
 import { storage } from "./storage";
+
+// OpenAI 초기화 (blueprint 기반)
+// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// =============================================================================
+// AI 분석 Helper 함수들
+// =============================================================================
+
+// 알림장 데이터를 분석 프롬프트로 변환
+function generateAnalysisPrompt(logs: any[], selectedSignals: any): string {
+  let prompt = `다음은 반려동물의 일상 알림장 데이터입니다. 선택된 항목들을 기반으로 전문적인 분석을 제공해주세요.
+
+분석할 데이터:
+`;
+
+  logs.forEach((log, index) => {
+    prompt += `\n=== ${log.date} ===\n`;
+    
+    if (selectedSignals.text && log.note) {
+      prompt += `메모: ${log.note}\n`;
+    }
+    
+    if (selectedSignals.poop && log.poopStatus) {
+      prompt += `배변 상태: ${log.poopStatus}\n`;
+    }
+    
+    if (selectedSignals.meal && log.mealStatus) {
+      prompt += `식사 상태: ${log.mealStatus}\n`;
+    }
+    
+    if (selectedSignals.walk && log.walkStatus) {
+      prompt += `산책 상태: ${log.walkStatus}\n`;
+    }
+    
+    if (log.mood) {
+      prompt += `기분: ${log.mood}\n`;
+    }
+    
+    if (log.energyLevel) {
+      prompt += `에너지 레벨: ${log.energyLevel}/5\n`;
+    }
+    
+    if (selectedSignals.media && log.media && log.media.length > 0) {
+      prompt += `미디어: ${log.media.length}개의 사진/동영상\n`;
+    }
+  });
+
+  prompt += `
+
+분석 요청사항:
+1. 전반적인 건강 상태 요약
+2. 행동 패턴 분석 
+3. 영양 상태 평가
+4. 운동/활동 수준 분석
+5. 주의가 필요한 징후 (red flags)
+6. 개선을 위한 권장사항
+
+응답은 반드시 다음 JSON 형식으로 제공해주세요:
+{
+  "summary": "전반적인 상태 요약",
+  "behavior": "행동 패턴 분석",
+  "health": "건강 상태 분석", 
+  "nutrition": "영양 상태 분석",
+  "activity": "운동/활동 분석",
+  "redFlags": ["주의사항1", "주의사항2"],
+  "nextSteps": ["권장사항1", "권장사항2"]
+}`;
+
+  return prompt;
+}
+
+// OpenAI API를 사용하여 분석 수행
+async function performAiAnalysis(prompt: string, model: string = "gpt-5"): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: model,
+      messages: [
+        {
+          role: "system",
+          content: "당신은 반려동물 건강 및 행동 전문가입니다. 반려동물의 일상 데이터를 분석하여 건강 상태, 행동 패턴, 영양 상태 등에 대한 전문적인 조언을 제공합니다."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 2048
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    
+    return {
+      ...result,
+      tokensUsed: {
+        input: response.usage?.prompt_tokens || 0,
+        output: response.usage?.completion_tokens || 0
+      }
+    };
+  } catch (error) {
+    console.error('OpenAI API 오류:', error);
+    
+    // 폴백 분석 결과
+    return {
+      summary: "AI 분석 중 오류가 발생했습니다. 수동으로 데이터를 검토해주세요.",
+      behavior: "분석 데이터를 수동으로 확인하시기 바랍니다.",
+      health: "전문 수의사와 상담을 권장합니다.",
+      nutrition: "균형잡힌 식단을 유지해주세요.",
+      activity: "적절한 운동량을 유지해주세요.",
+      redFlags: ["AI 분석 실패로 인한 수동 검토 필요"],
+      nextSteps: ["전문 수의사 상담", "데이터 재수집"],
+      tokensUsed: { input: 0, output: 0 },
+      error: error instanceof Error ? error.message : '알 수 없는 오류'
+    };
+  }
+}
+
 import Stripe from "stripe";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
@@ -7530,6 +7649,135 @@ app.get('/api/search', async (req, res) => {
       res.status(500).json({
         success: false,
         error: '미팅 목록을 가져오는 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+// =============================================================================
+// AI 분석 시스템 API 엔드포인트
+// =============================================================================
+
+// 반려동물 알림장 조회 (일자별 그룹화)
+  app.get("/api/ai-analysis/care-logs", async (req, res) => {
+    try {
+      const { petId, startDate, endDate } = req.query;
+      
+      if (!petId) {
+        return res.status(400).json({
+          success: false,
+          error: '반려동물 ID는 필수입니다.'
+        });
+      }
+
+      const result = await storage.getCareLogsGroupedByDate(
+        parseInt(petId as string),
+        startDate as string,
+        endDate as string
+      );
+
+      res.json({
+        success: true,
+        ...result
+      });
+    } catch (error) {
+      console.error('Error fetching care logs:', error);
+      res.status(500).json({
+        success: false,
+        error: '알림장 데이터를 가져오는 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+// AI 분석 요청
+  app.post("/api/ai-analysis/analyze", async (req, res) => {
+    try {
+      const { petId, dateRange, dates, logIds, selectedSignals, model = "gpt-4o-mini" } = req.body;
+      
+      if (!petId || (!dateRange && !dates && !logIds)) {
+        return res.status(400).json({
+          success: false,
+          error: '반려동물 ID와 분석할 데이터(날짜 범위, 날짜 목록, 또는 로그 ID)가 필요합니다.'
+        });
+      }
+
+      // 분석할 로그 데이터 가져오기
+      let logs: any[] = [];
+      if (logIds && logIds.length > 0) {
+        logs = await storage.getCareLogsByIds(logIds);
+      } else if (dateRange) {
+        const [startDate, endDate] = dateRange.split(' to ');
+        logs = await storage.getCareLogsByDateRange(parseInt(petId), startDate, endDate);
+      } else if (dates && dates.length > 0) {
+        // 특정 날짜들의 로그 가져오기
+        for (const date of dates) {
+          const dateLogs = await storage.getCareLogsByDateRange(parseInt(petId), date, date);
+          logs.push(...dateLogs);
+        }
+      }
+
+      if (logs.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: '분석할 알림장 데이터가 없습니다.'
+        });
+      }
+
+      // AI 분석 프롬프트 구성
+      const analysisPrompt = generateAnalysisPrompt(logs, selectedSignals);
+      
+      // OpenAI API 호출 (임시 구현)
+      const analysisResult = await performAiAnalysis(analysisPrompt, model);
+      
+      // 분석 결과 저장
+      const savedAnalysis = await storage.createAiAnalysis({
+        petId: parseInt(petId),
+        userId: req.session?.user?.id || 1, // 세션에서 사용자 ID 가져오기
+        inputLogIds: logs.map(log => log.id),
+        selectedSignals,
+        timeRange: dateRange || `${dates?.[0]} to ${dates?.[dates.length - 1]}`,
+        model,
+        resultJson: analysisResult,
+        tokensIn: analysisResult.tokensUsed?.input || 0,
+        tokensOut: analysisResult.tokensUsed?.output || 0
+      });
+
+      res.json({
+        success: true,
+        analysis: savedAnalysis,
+        message: 'AI 분석이 완료되었습니다.'
+      });
+    } catch (error) {
+      console.error('Error performing AI analysis:', error);
+      res.status(500).json({
+        success: false,
+        error: 'AI 분석 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+// AI 분석 기록 조회
+  app.get("/api/ai-analysis/history", async (req, res) => {
+    try {
+      const { petId } = req.query;
+      
+      if (!petId) {
+        return res.status(400).json({
+          success: false,
+          error: '반려동물 ID는 필수입니다.'
+        });
+      }
+
+      const analyses = await storage.getAiAnalysesByPetId(parseInt(petId as string));
+
+      res.json({
+        success: true,
+        analyses
+      });
+    } catch (error) {
+      console.error('Error fetching AI analysis history:', error);
+      res.status(500).json({
+        success: false,
+        error: 'AI 분석 기록을 가져오는 중 오류가 발생했습니다.'
       });
     }
   });
