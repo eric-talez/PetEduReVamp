@@ -372,6 +372,7 @@ export const systemSettings = pgTable("system_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+
 // Zod 스키마 생성
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
@@ -681,14 +682,20 @@ export const banners = pgTable("banners", {
   title: varchar("title", { length: 200 }).notNull(),
   content: text("content"),
   imageUrl: text("image_url"),
-  linkUrl: text("link_url"), // 클릭시 이동할 URL
-  targetPosition: varchar("target_position", { length: 50 }).default("home-hero"), // home-hero, sidebar, footer 등
+  actionText: varchar("action_text", { length: 100 }), // 버튼 텍스트
+  actionUrl: text("action_url"), // 클릭시 이동할 URL (linkUrl과 동일한 역할)
+  linkUrl: text("link_url"), // 호환성을 위해 유지
+  position: varchar("position", { length: 50 }).default("hero"), // hero, top, middle, bottom, sidebar
+  type: varchar("type", { length: 50 }).default("main"), // main, promotion, announcement, event
+  targetPosition: varchar("target_position", { length: 50 }).default("home-hero"), // 기존 필드 유지
   displayOrder: integer("display_order").default(0), // 표시 순서
+  priority: integer("priority").default(5), // 우선순위 (1-10, 높을수록 우선)
   targetUserGroup: varchar("target_user_group", { length: 50 }).default("all"), // all, pet-owners, trainers, admins
   startDate: timestamp("start_date"), // 표시 시작일
   endDate: timestamp("end_date"), // 표시 종료일
   clickCount: integer("click_count").default(0), // 클릭 수
   viewCount: integer("view_count").default(0), // 노출 수
+  impressionCount: integer("impression_count").default(0), // 노출 수 (viewCount와 동일)
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
