@@ -46,6 +46,7 @@ import { format, isToday, isYesterday, subDays, addDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth-compat';
+import NotebookBannerImage from '@assets/image_1758608121170.png';
 
 // 알림장 엔트리 타입 정의
 interface NotebookEntry {
@@ -957,6 +958,20 @@ export default function NotebookPage() {
           </h1>
           <p className="text-gray-600 mt-2">반려동물의 일일 훈련 기록과 상태를 관리하세요</p>
         </div>
+
+        {/* 알림장 홍보 배너 */}
+        <section className="notebook-banner bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+          <img 
+            src={NotebookBannerImage} 
+            alt="알림장 - 기존 생성된 이미지대로" 
+            className="w-full h-auto max-h-[250px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+            onClick={() => {
+              // 새 알림장 작성 모달 열기
+              setIsNewEntryOpen(true);
+            }}
+            data-testid="notebook-banner"
+          />
+        </section>
 
         <div className="flex gap-2">
           {canCreateNotebook && (
