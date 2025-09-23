@@ -48,6 +48,7 @@ interface PetProfile {
 export default function AIAnalysisPage() {
   const [prompt, setPrompt] = useState('');
   const [analysisType, setAnalysisType] = useState('behavior');
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
   const [complexity, setComplexity] = useState('medium');
   const [urgency, setUrgency] = useState('medium');
   const [petProfile, setPetProfile] = useState<Partial<PetProfile>>({});
@@ -132,6 +133,7 @@ export default function AIAnalysisPage() {
     const analysisData = {
       prompt,
       analysisType,
+      model: selectedModel,
       petProfile: showPetProfile ? petProfile : undefined,
       options: {
         complexity,
@@ -234,6 +236,42 @@ export default function AIAnalysisPage() {
                       <div className="flex items-center gap-2">
                         <Bot className="w-4 h-4" />
                         일반 상담
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* AI 모델 선택 */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">AI 모델 선택</label>
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <SelectTrigger data-testid="select-ai-model">
+                    <SelectValue placeholder="AI 모델을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gpt-4o">
+                      <div className="flex items-center gap-2">
+                        <Bot className="w-4 h-4" />
+                        ChatGPT 4o
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="gpt-4o-mini">
+                      <div className="flex items-center gap-2">
+                        <Bot className="w-4 h-4" />
+                        ChatGPT 4o Mini
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="claude-3-5-sonnet-20241022">
+                      <div className="flex items-center gap-2">
+                        <Brain className="w-4 h-4" />
+                        Claude 3.5 Sonnet
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="claude-3-5-haiku-20241022">
+                      <div className="flex items-center gap-2">
+                        <Brain className="w-4 h-4" />
+                        Claude 3.5 Haiku
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -348,12 +386,12 @@ export default function AIAnalysisPage() {
                 {isAnalyzing ? (
                   <div className="flex items-center gap-2">
                     <Activity className="w-4 h-4 animate-spin" />
-                    AI 분석 중...
+                    {selectedModel.startsWith('claude') ? 'Claude' : 'ChatGPT'} 분석 중...
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     {getAnalysisIcon(analysisType)}
-                    AI 분석 시작
+                    {selectedModel.startsWith('claude') ? 'Claude' : 'ChatGPT'}로 AI 분석 시작
                   </div>
                 )}
               </Button>
