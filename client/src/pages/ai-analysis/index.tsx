@@ -1,681 +1,472 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Sparkles, Clock, Calendar, LineChart, AlertCircle, Check, Brain, 
-  Lightbulb, ChevronRight, Book, X, Crown, Zap, Star, Shield, RefreshCw, PackageCheck
-} from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar, PawPrint, Brain, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
-// 로컬 스토리지에 저장할 분석 정보 인터페이스
-interface AnalysisData {
-  lastAnalysisDate: string;
-  personalityType: string;
-  strengths: string[];
-  weaknesses: string[];
-  recommendations: string[];
-  trainingProgress: {
-    obedience: number;
-    socialization: number;
-    tricks: number;
-    agility: number;
-  };
-  mood: {
-    current: string;
-    forecast: string;
-  };
-  compatibility: {
-    owner: number;
-    otherDogs: number;
-    children: number;
-    cats: number;
-  };
-}
-
-// 구독 정보 인터페이스
-interface SubscriptionInfo {
-  isSubscribed: boolean;
-  plan: 'free' | 'basic' | 'premium' | 'unlimited';
-  remainingAnalyses: number;
-  maxAnalysesPerDay: number;
-  startDate: string;
-  endDate: string | null;
-}
-
-// 기본 분석 데이터
-const defaultAnalysis: AnalysisData = {
-  lastAnalysisDate: new Date().toISOString().split('T')[0],
-  personalityType: '활발한 탐험가',
-  strengths: ['높은 에너지', '사회성', '학습 능력'],
-  weaknesses: ['집중력 부족', '과도한 활동성'],
-  recommendations: [
-    '매일 30분 이상 산책',
-    '다양한 장난감으로 정신적 자극',
-    '기본 명령어 반복 훈련'
-  ],
-  trainingProgress: {
-    obedience: 75,
-    socialization: 85,
-    tricks: 60,
-    agility: 90
-  },
-  mood: {
-    current: '활발함',
-    forecast: '안정적'
-  },
-  compatibility: {
-    owner: 95,
-    otherDogs: 80,
-    children: 85,
-    cats: 60
-  }
-};
-
-// Mock analysis data generator
-const generateMockAnalysis = (): AnalysisData => {
-  const personalities = ['활발한 탐험가', '조용한 관찰자', '사교적인 리더', '신중한 수호자'];
-  const moods = ['활발함', '차분함', '호기심 많음', '경계심'];
-  const forecasts = ['안정적', '향상 예상', '주의 필요', '긍정적'];
-  
-  return {
-    lastAnalysisDate: new Date().toISOString().split('T')[0],
-    personalityType: personalities[Math.floor(Math.random() * personalities.length)],
-    strengths: ['높은 학습능력', '뛰어난 사회성', '강한 충성심'].slice(0, Math.floor(Math.random() * 3) + 1),
-    weaknesses: ['산만함', '과도한 에너지', '분리불안'].slice(0, Math.floor(Math.random() * 2) + 1),
-    recommendations: [
-      '정기적인 운동',
-      '지속적인 훈련',
-      '사회화 활동',
-      '정신적 자극'
-    ].slice(0, Math.floor(Math.random() * 3) + 2),
-    trainingProgress: {
-      obedience: Math.floor(Math.random() * 100),
-      socialization: Math.floor(Math.random() * 100),
-      tricks: Math.floor(Math.random() * 100),
-      agility: Math.floor(Math.random() * 100)
-    },
-    mood: {
-      current: moods[Math.floor(Math.random() * moods.length)],
-      forecast: forecasts[Math.floor(Math.random() * forecasts.length)]
-    },
-    compatibility: {
-      owner: Math.floor(Math.random() * 100),
-      otherDogs: Math.floor(Math.random() * 100),
-      children: Math.floor(Math.random() * 100),
-      cats: Math.floor(Math.random() * 100)
-    }
-  };
-};
-
-interface DiaryEntry {
+interface CareLog {
   id: number;
+  petId: number;
+  userId: number;
   date: string;
-  content: string;
-  trainer: string;
-  tags: string[];
+  note?: string;
+  poopStatus?: string;
+  mealStatus?: string;
+  walkStatus?: string;
+  mood?: string;
+  energyLevel?: number;
+  media?: any[];
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-export default function AIAnalysisPage() {
-  const [analysisData, setAnalysisData] = useState<AnalysisData>(defaultAnalysis);
-  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo>({
-    isSubscribed: false,
-    plan: 'free',
-    remainingAnalyses: 2,
-    maxAnalysesPerDay: 3,
-    startDate: '',
-    endDate: null
-  });
-  
-  const [selectedPet, setSelectedPet] = useState<string>('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState(false);
+interface AiAnalysis {
+  id: number;
+  petId: number;
+  userId: number;
+  resultJson: {
+    summary: string;
+    behavior?: string;
+    health?: string;
+    nutrition?: string;
+    activity?: string;
+    redFlags: string[];
+    nextSteps: string[];
+  };
+  selectedSignals: {
+    text: boolean;
+    poop: boolean;
+    meal: boolean;
+    walk: boolean;
+    media: boolean;
+  };
+  timeRange: string;
+  model: string;
+  createdAt: string;
+}
+
+export default function AiAnalysisPage() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // State
+  const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+    start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7일 전
+    end: new Date().toISOString().split('T')[0] // 오늘
+  });
+  const [selectedSignals, setSelectedSignals] = useState({
+    text: true,
+    poop: true,
+    meal: true,
+    walk: true,
+    media: false
+  });
+  const [selectedLogIds, setSelectedLogIds] = useState<number[]>([]);
 
+  // 임시 반려동물 목록 (실제로는 API에서 가져와야 함)
   const pets = [
-    { id: '1', name: '뽀삐', type: '골든 리트리버', age: '2세' },
-    { id: '2', name: '몽이', type: '푸들', age: '1세' },
-    { id: '3', name: '코코', type: '시바견', age: '3세' }
+    { id: 1, name: '멍멍이', species: '개', breed: '골든 리트리버' },
+    { id: 2, name: '야옹이', species: '고양이', breed: '페르시안' },
+    { id: 3, name: '코코', species: '개', breed: '푸들' }
   ];
 
-  const subscriptionPlans = [
-    {
-      id: 'basic',
-      name: '베이직',
-      price: '9,900원',
-      period: '월',
-      analyses: 10,
-      features: ['기본 AI 분석', '주간 리포트', '이메일 지원']
-    },
-    {
-      id: 'premium',
-      name: '프리미엄',
-      price: '19,900원',
-      period: '월',
-      analyses: 50,
-      features: ['고급 AI 분석', '실시간 상담', '맞춤 훈련 프로그램', '우선 지원']
-    },
-    {
-      id: 'unlimited',
-      name: '무제한',
-      price: '29,900원',
-      period: '월',
-      analyses: 999,
-      features: ['무제한 분석', '전문가 상담', '개인 맞춤 서비스', '24/7 지원']
-    }
-  ];
+  // API 쿼리
+  const { data: careLogsData, isLoading: isLoadingLogs } = useQuery({
+    queryKey: ['/api/ai-analysis/care-logs', selectedPetId, dateRange.start, dateRange.end],
+    queryFn: () => selectedPetId ? apiRequest(`/api/ai-analysis/care-logs?petId=${selectedPetId}&startDate=${dateRange.start}&endDate=${dateRange.end}`) : null,
+    enabled: !!selectedPetId
+  });
 
-  useEffect(() => {
-    // Load saved analysis data
-    const savedData = localStorage.getItem('petAnalysisData');
-    if (savedData) {
-      setAnalysisData(JSON.parse(savedData));
-    }
+  const { data: analysisHistory } = useQuery({
+    queryKey: ['/api/ai-analysis/history', selectedPetId],
+    queryFn: () => selectedPetId ? apiRequest(`/api/ai-analysis/history?petId=${selectedPetId}`) : null,
+    enabled: !!selectedPetId
+  });
 
-    // Load subscription info
-    const savedSubscription = localStorage.getItem('subscriptionInfo');
-    if (savedSubscription) {
-      setSubscriptionInfo(JSON.parse(savedSubscription));
-    }
-  }, []);
-
-  const runAnalysis = async () => {
-    if (!selectedPet) {
+  // AI 분석 실행 mutation
+  const analyzeDataMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/ai-analysis/analyze', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' }
+    }),
+    onSuccess: () => {
       toast({
-        title: "반려동물을 선택해주세요",
-        description: "분석할 반려동물을 먼저 선택해주세요.",
-        variant: "warning"
+        title: 'AI 분석 완료',
+        description: '반려동물 데이터 분석이 성공적으로 완료되었습니다.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/ai-analysis/history', selectedPetId] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'AI 분석 실패',
+        description: error.message || 'AI 분석 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    }
+  });
+
+  const handleSignalChange = (signal: string, checked: boolean) => {
+    setSelectedSignals(prev => ({ ...prev, [signal]: checked }));
+  };
+
+  const handleLogSelection = (logId: number, checked: boolean) => {
+    setSelectedLogIds(prev => 
+      checked 
+        ? [...prev, logId]
+        : prev.filter(id => id !== logId)
+    );
+  };
+
+  const handleAnalyze = () => {
+    if (!selectedPetId) {
+      toast({
+        title: '반려동물을 선택해주세요',
+        description: '분석할 반려동물을 먼저 선택해주세요.',
+        variant: 'destructive'
       });
       return;
     }
 
-    if (subscriptionInfo.remainingAnalyses <= 0 && !subscriptionInfo.isSubscribed) {
-      setShowUpgrade(true);
+    if (selectedLogIds.length === 0) {
+      toast({
+        title: '분석할 데이터를 선택해주세요',
+        description: '최소 1개의 알림장을 선택해주세요.',
+        variant: 'destructive'
+      });
       return;
     }
 
-    setIsAnalyzing(true);
-
-    // Simulate AI analysis
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    const newAnalysis = generateMockAnalysis();
-    setAnalysisData(newAnalysis);
-    localStorage.setItem('petAnalysisData', JSON.stringify(newAnalysis));
-
-    // Update remaining analyses
-    if (!subscriptionInfo.isSubscribed) {
-      const updatedSubscription: SubscriptionInfo = {
-        ...subscriptionInfo,
-        remainingAnalyses: Math.max(0, subscriptionInfo.remainingAnalyses - 1)
-      };
-      setSubscriptionInfo(updatedSubscription);
-      localStorage.setItem('subscriptionInfo', JSON.stringify(updatedSubscription));
+    const hasSelectedSignals = Object.values(selectedSignals).some(v => v);
+    if (!hasSelectedSignals) {
+      toast({
+        title: '분석할 항목을 선택해주세요',
+        description: '텍스트, 배변상태, 식사상태, 산책상태, 미디어 중 최소 1개를 선택해주세요.',
+        variant: 'destructive'
+      });
+      return;
     }
 
-    setIsAnalyzing(false);
-    toast({
-      title: "분석 완료!",
-      description: `${pets.find(p => p.id === selectedPet)?.name}의 새로운 분석 결과가 준비되었습니다.`,
-      variant: "success"
+    analyzeDataMutation.mutate({
+      petId: selectedPetId,
+      logIds: selectedLogIds,
+      selectedSignals,
+      dateRange: `${dateRange.start} to ${dateRange.end}`
     });
   };
 
-  const handleSubscribe = (planId: string) => {
-    const plan = subscriptionPlans.find(p => p.id === planId);
-    if (plan) {
-      const newSubscription: SubscriptionInfo = {
-        isSubscribed: true,
-        plan: planId as 'basic' | 'premium' | 'unlimited',
-        remainingAnalyses: plan.analyses,
-        maxAnalysesPerDay: plan.analyses,
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      };
-      
-      setSubscriptionInfo(newSubscription);
-      localStorage.setItem('subscriptionInfo', JSON.stringify(newSubscription));
-      setShowUpgrade(false);
-      
-      toast({
-        title: "구독 완료!",
-        description: `${plan.name} 플랜이 활성화되었습니다.`,
-        variant: "success"
-      });
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'normal': return 'bg-green-100 text-green-800';
+      case 'soft': case 'low': case 'short': return 'bg-yellow-100 text-yellow-800';
+      case 'diarrhea': case 'skipped': case 'long': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Brain className="h-6 w-6" />
-        <h1 className="text-2xl font-bold">AI 분석</h1>
-        <Badge variant="secondary">Beta</Badge>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center gap-2 mb-6">
+        <Brain className="h-8 w-8 text-primary" />
+        <div>
+          <h1 className="text-3xl font-bold">AI 분석</h1>
+          <p className="text-muted-foreground">반려동물 알림장 데이터를 AI로 분석하여 건강 상태와 행동 패턴을 파악해보세요</p>
+        </div>
       </div>
 
-      {/* Pet Selection and Analysis Controls */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            AI 분석 시작하기
-          </CardTitle>
-          <CardDescription>
-            반려동물의 행동 패턴을 AI로 분석하여 맞춤형 케어 가이드를 제공합니다.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">분석할 반려동물 선택</label>
-            <Select value={selectedPet} onValueChange={setSelectedPet}>
-              <SelectTrigger>
-                <SelectValue placeholder="반려동물을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                {pets.map((pet) => (
-                  <SelectItem key={pet.id} value={pet.id}>
-                    {pet.name} ({pet.type}, {pet.age})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-            <div>
-              <p className="text-sm font-medium">
-                {subscriptionInfo.isSubscribed ? '구독 활성화' : '무료 사용'}
-              </p>
-              <p className="text-xs text-gray-600">
-                {subscriptionInfo.isSubscribed 
-                  ? `${subscriptionInfo.plan} 플랜` 
-                  : `남은 분석: ${subscriptionInfo.remainingAnalyses}회`}
-              </p>
-            </div>
-            {!subscriptionInfo.isSubscribed && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowUpgrade(true)}
-              >
-                업그레이드
-              </Button>
-            )}
-          </div>
-
-          <Button 
-            onClick={runAnalysis} 
-            disabled={isAnalyzing || !selectedPet}
-            className="w-full"
-          >
-            {isAnalyzing ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                분석 중...
-              </>
-            ) : (
-              <>
-                <Zap className="h-4 w-4 mr-2" />
-                AI 분석 시작
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Analysis Results */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">개요</TabsTrigger>
-          <TabsTrigger value="personality">성격 분석</TabsTrigger>
-          <TabsTrigger value="training">훈련 현황</TabsTrigger>
-          <TabsTrigger value="recommendations">추천사항</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  전체 평가
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary mb-2">
-                    {Math.round((analysisData.trainingProgress.obedience + 
-                              analysisData.trainingProgress.socialization + 
-                              analysisData.trainingProgress.tricks + 
-                              analysisData.trainingProgress.agility) / 4)}점
-                  </div>
-                  <p className="text-sm text-gray-600">100점 만점</p>
-                  <p className="mt-2 text-sm">
-                    마지막 분석: {analysisData.lastAnalysisDate}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5" />
-                  성격 유형
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="text-xl font-bold mb-2">
-                    {analysisData.personalityType}
-                  </div>
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-sm font-medium text-green-600">강점</p>
-                      <p className="text-sm">
-                        {analysisData.strengths.join(', ')}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-amber-600">개선점</p>
-                      <p className="text-sm">
-                        {analysisData.weaknesses.join(', ')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>현재 기분 상태</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium mb-1">현재 상태</p>
-                  <Badge variant="secondary">{analysisData.mood.current}</Badge>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-1">예상 변화</p>
-                  <Badge variant="outline">{analysisData.mood.forecast}</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="personality" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>성격 분석 상세</CardTitle>
-              <CardDescription>
-                AI가 분석한 반려동물의 성격 특성과 행동 패턴입니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-medium mb-2">주요 성격 유형</h3>
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="font-medium text-blue-900">{analysisData.personalityType}</p>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-medium mb-2 text-green-600">강점</h3>
-                  <ul className="space-y-1">
-                    {analysisData.strengths.map((strength, index) => (
-                      <li key={index} className="flex items-center gap-2 text-sm">
-                        <Check className="h-4 w-4 text-green-500" />
-                        {strength}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-medium mb-2 text-amber-600">개선이 필요한 영역</h3>
-                  <ul className="space-y-1">
-                    {analysisData.weaknesses.map((weakness, index) => (
-                      <li key={index} className="flex items-center gap-2 text-sm">
-                        <AlertCircle className="h-4 w-4 text-amber-500" />
-                        {weakness}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>호환성 지수</CardTitle>
-              <CardDescription>
-                다양한 환경과 대상에 대한 적응력을 평가합니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>주인과의 친밀도</span>
-                    <span>{analysisData.compatibility.owner}%</span>
-                  </div>
-                  <Progress value={analysisData.compatibility.owner} />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>다른 강아지와의 사회성</span>
-                    <span>{analysisData.compatibility.otherDogs}%</span>
-                  </div>
-                  <Progress value={analysisData.compatibility.otherDogs} />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>아이들과의 친화력</span>
-                    <span>{analysisData.compatibility.children}%</span>
-                  </div>
-                  <Progress value={analysisData.compatibility.children} />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>고양이와의 적응력</span>
-                    <span>{analysisData.compatibility.cats}%</span>
-                  </div>
-                  <Progress value={analysisData.compatibility.cats} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="training" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>훈련 진행 현황</CardTitle>
-              <CardDescription>
-                각 영역별 훈련 성과와 발전 상황을 확인하세요.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-medium mb-3">기본 훈련</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>복종 훈련</span>
-                        <span>{analysisData.trainingProgress.obedience}%</span>
-                      </div>
-                      <Progress value={analysisData.trainingProgress.obedience} />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>사회화 훈련</span>
-                        <span>{analysisData.trainingProgress.socialization}%</span>
-                      </div>
-                      <Progress value={analysisData.trainingProgress.socialization} />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium mb-3">고급 훈련</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>트릭 훈련</span>
-                        <span>{analysisData.trainingProgress.tricks}%</span>
-                      </div>
-                      <Progress value={analysisData.trainingProgress.tricks} />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>민첩성 훈련</span>
-                        <span>{analysisData.trainingProgress.agility}%</span>
-                      </div>
-                      <Progress value={analysisData.trainingProgress.agility} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium mb-2">훈련 팁</h4>
-                <ul className="text-sm space-y-1 text-gray-600">
-                  <li>• 짧고 빈번한 훈련 세션이 더 효과적입니다</li>
-                  <li>• 긍정적 강화를 활용하세요</li>
-                  <li>• 일관성 있는 명령어를 사용하세요</li>
-                  <li>• 충분한 휴식시간을 제공하세요</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="recommendations" className="space-y-6">
-          <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 설정 패널 */}
+        <div className="lg:col-span-1 space-y-4">
+          <Card data-testid="analysis-settings-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
-                맞춤형 추천사항
+                <PawPrint className="h-5 w-5" />
+                분석 설정
               </CardTitle>
               <CardDescription>
-                AI 분석을 바탕으로 한 개인화된 케어 가이드입니다.
+                반려동물과 분석할 기간을 선택하세요
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {analysisData.recommendations.map((recommendation, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <ChevronRight className="h-4 w-4 text-blue-600 mt-0.5" />
-                    <p className="text-sm">{recommendation}</p>
-                  </div>
-                ))}
+            <CardContent className="space-y-4">
+              {/* 반려동물 선택 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">반려동물 선택</label>
+                <Select value={selectedPetId?.toString() || ""} onValueChange={(value) => setSelectedPetId(parseInt(value))}>
+                  <SelectTrigger data-testid="select-pet">
+                    <SelectValue placeholder="반려동물을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pets.map(pet => (
+                      <SelectItem key={pet.id} value={pet.id.toString()}>
+                        {pet.name} ({pet.breed})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>추가 리소스</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <Button variant="outline" className="h-auto p-4 flex-col items-start">
-                  <Book className="h-5 w-5 mb-2" />
-                  <span className="font-medium">훈련 가이드</span>
-                  <span className="text-xs text-gray-600">단계별 훈련 매뉴얼</span>
-                </Button>
-                <Button variant="outline" className="h-auto p-4 flex-col items-start">
-                  <Calendar className="h-5 w-5 mb-2" />
-                  <span className="font-medium">일정 관리</span>
-                  <span className="text-xs text-gray-600">훈련 스케줄 설정</span>
-                </Button>
+              {/* 날짜 범위 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">분석 기간</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input 
+                    type="date" 
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    className="border rounded-md px-3 py-2 text-sm"
+                    data-testid="date-start"
+                  />
+                  <input 
+                    type="date" 
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    className="border rounded-md px-3 py-2 text-sm"
+                    data-testid="date-end"
+                  />
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
 
-      {/* Subscription Upgrade Dialog */}
-      <Dialog open={showUpgrade} onOpenChange={setShowUpgrade}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5" />
-              AI 분석 플랜 업그레이드
-            </DialogTitle>
-            <DialogDescription>
-              더 많은 분석과 고급 기능을 이용하세요.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid md:grid-cols-3 gap-4">
-            {subscriptionPlans.map((plan) => (
-              <Card key={plan.id} className="relative">
-                {plan.id === 'premium' && (
-                  <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-primary">인기</Badge>
-                  </div>
+              {/* 분석 항목 선택 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">분석할 항목</label>
+                <div className="space-y-2">
+                  {[
+                    { key: 'text', label: '텍스트 메모', icon: '📝' },
+                    { key: 'poop', label: '배변 상태', icon: '💩' },
+                    { key: 'meal', label: '식사 상태', icon: '🍽️' },
+                    { key: 'walk', label: '산책 상태', icon: '🚶' },
+                    { key: 'media', label: '미디어 자료', icon: '📸' }
+                  ].map(item => (
+                    <div key={item.key} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={item.key}
+                        checked={selectedSignals[item.key as keyof typeof selectedSignals]}
+                        onCheckedChange={(checked) => handleSignalChange(item.key, checked as boolean)}
+                        data-testid={`checkbox-${item.key}`}
+                      />
+                      <label htmlFor={item.key} className="text-sm cursor-pointer">
+                        {item.icon} {item.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 분석 실행 버튼 */}
+              <Button 
+                onClick={handleAnalyze}
+                disabled={analyzeDataMutation.isPending || !selectedPetId}
+                className="w-full"
+                data-testid="button-analyze"
+              >
+                {analyzeDataMutation.isPending ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4 animate-spin" />
+                    AI 분석 중...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="mr-2 h-4 w-4" />
+                    AI 분석 실행
+                  </>
                 )}
-                <CardHeader className="text-center">
-                  <CardTitle>{plan.name}</CardTitle>
-                  <div className="text-2xl font-bold">
-                    {plan.price}
-                    <span className="text-sm font-normal">/{plan.period}</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    월 {plan.analyses}회 분석
-                  </p>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 메인 콘텐츠 */}
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="care-logs" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="care-logs" data-testid="tab-care-logs">알림장 선택</TabsTrigger>
+              <TabsTrigger value="analysis" data-testid="tab-analysis">분석 결과</TabsTrigger>
+            </TabsList>
+
+            {/* 알림장 목록 탭 */}
+            <TabsContent value="care-logs" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    등록된 알림장 ({selectedLogIds.length}개 선택됨)
+                  </CardTitle>
+                  <CardDescription>
+                    분석할 알림장을 선택하세요. 날짜별로 그룹화되어 표시됩니다.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2 text-sm">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
+                  {isLoadingLogs ? (
+                    <div className="text-center py-8">
+                      <Clock className="h-8 w-8 animate-spin mx-auto mb-2" />
+                      <p className="text-muted-foreground">알림장 데이터를 불러오는 중...</p>
+                    </div>
+                  ) : careLogsData?.dates?.length > 0 ? (
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {careLogsData.dates.map((date: string) => (
+                        <div key={date} className="border rounded-lg p-4">
+                          <h4 className="font-medium mb-3">
+                            {format(new Date(date), 'M월 d일 (EEE)', { locale: ko })} 
+                            <span className="text-sm text-muted-foreground ml-2">
+                              ({careLogsData.counts[date]}개 항목)
+                            </span>
+                          </h4>
+                          <div className="space-y-2">
+                            {careLogsData.logsByDate[date]?.map((log: CareLog) => (
+                              <div key={log.id} className="border rounded p-3 space-y-2">
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox 
+                                    checked={selectedLogIds.includes(log.id)}
+                                    onCheckedChange={(checked) => handleLogSelection(log.id, checked as boolean)}
+                                    data-testid={`checkbox-log-${log.id}`}
+                                  />
+                                  <span className="text-sm font-medium">알림장 #{log.id}</span>
+                                </div>
+                                
+                                {log.note && (
+                                  <p className="text-sm text-gray-700 ml-6">📝 {log.note}</p>
+                                )}
+                                
+                                <div className="flex flex-wrap gap-2 ml-6">
+                                  {log.poopStatus && (
+                                    <Badge className={getStatusBadgeColor(log.poopStatus)}>
+                                      💩 {log.poopStatus}
+                                    </Badge>
+                                  )}
+                                  {log.mealStatus && (
+                                    <Badge className={getStatusBadgeColor(log.mealStatus)}>
+                                      🍽️ {log.mealStatus}
+                                    </Badge>
+                                  )}
+                                  {log.walkStatus && (
+                                    <Badge className={getStatusBadgeColor(log.walkStatus)}>
+                                      🚶 {log.walkStatus}
+                                    </Badge>
+                                  )}
+                                  {log.energyLevel && (
+                                    <Badge className="bg-blue-100 text-blue-800">
+                                      ⚡ {log.energyLevel}/5
+                                    </Badge>
+                                  )}
+                                  {log.media && log.media.length > 0 && (
+                                    <Badge className="bg-purple-100 text-purple-800">
+                                      📸 {log.media.length}개
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <PawPrint className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">
+                        {selectedPetId ? '해당 기간에 등록된 알림장이 없습니다.' : '반려동물을 먼저 선택해주세요.'}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={() => handleSubscribe(plan.id)}
-                    className="w-full"
-                    variant={plan.id === 'premium' ? 'default' : 'outline'}
-                  >
-                    {plan.id === 'premium' ? '추천 플랜 선택' : '플랜 선택'}
-                  </Button>
-                </CardFooter>
               </Card>
-            ))}
-          </div>
-          
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">나중에</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </TabsContent>
+
+            {/* 분석 결과 탭 */}
+            <TabsContent value="analysis" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
+                    AI 분석 결과
+                  </CardTitle>
+                  <CardDescription>
+                    최근 분석 결과를 확인하세요
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {analysisHistory?.analyses?.length > 0 ? (
+                    <div className="space-y-4">
+                      {analysisHistory.analyses.slice(0, 3).map((analysis: AiAnalysis) => (
+                        <div key={analysis.id} className="border rounded-lg p-4 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">분석 #{analysis.id}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {format(new Date(analysis.createdAt), 'M월 d일 HH:mm', { locale: ko })} | 
+                                모델: {analysis.model}
+                              </p>
+                            </div>
+                            <Badge variant="outline">{analysis.timeRange}</Badge>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div>
+                              <h5 className="font-medium text-sm mb-1">📋 전체 요약</h5>
+                              <p className="text-sm text-gray-700">{analysis.resultJson.summary}</p>
+                            </div>
+
+                            {analysis.resultJson.redFlags?.length > 0 && (
+                              <div>
+                                <h5 className="font-medium text-sm mb-1 flex items-center gap-1">
+                                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                                  주의사항
+                                </h5>
+                                <ul className="text-sm text-red-700 space-y-1">
+                                  {analysis.resultJson.redFlags.map((flag: string, index: number) => (
+                                    <li key={index} className="flex items-start gap-1">
+                                      <span className="text-red-500 text-xs mt-1">•</span>
+                                      {flag}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {analysis.resultJson.nextSteps?.length > 0 && (
+                              <div>
+                                <h5 className="font-medium text-sm mb-1 flex items-center gap-1">
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  권장사항
+                                </h5>
+                                <ul className="text-sm text-green-700 space-y-1">
+                                  {analysis.resultJson.nextSteps.map((step: string, index: number) => (
+                                    <li key={index} className="flex items-start gap-1">
+                                      <span className="text-green-500 text-xs mt-1">•</span>
+                                      {step}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">
+                        아직 분석 결과가 없습니다. AI 분석을 실행해보세요.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
