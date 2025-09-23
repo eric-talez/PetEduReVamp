@@ -38,6 +38,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { KakaoMapView } from '@/components/KakaoMapView';
 import { LocationDetailModal } from '@/components/LocationDetailModal';
+import LocationServiceBannerImage from '@assets/image_1758608093240.png';
 
 interface LocationItem {
   id: number;
@@ -804,6 +805,23 @@ export default function LocationFinder() {
             </div>
           )}
       </div>
+
+      {/* 위치 찾기 서비스 홍보 배너 */}
+      <section className="location-service-banner bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+        <img 
+          src={LocationServiceBannerImage} 
+          alt="위치 찾기 서비스 - 반려동물의 위치를 쉽게 확인하세요" 
+          className="w-full h-auto max-h-[250px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          onClick={() => {
+            // 지도 뷰나 특별 기능으로 이동
+            const mapSection = document.getElementById('map-container');
+            if (mapSection) {
+              mapSection.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+          data-testid="location-service-banner"
+        />
+      </section>
 
       {/* 관리자용 통계 카드 */}
       {userRole === 'admin' && (
