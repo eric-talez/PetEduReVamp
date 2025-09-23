@@ -181,13 +181,24 @@ function NearbyPlaces() {
     try {
       setIsLoadingEvents(true);
       console.log('🔥 이벤트 API 호출 시작');
-      const response = await apiRequest('GET', '/api/events');
+      
+      // 직접 fetch 사용하여 API 호출
+      const response = await fetch('/api/events');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       console.log('🔥 API 응답 데이터:', data);
+      console.log('🔥 API 응답 타입:', typeof data, Array.isArray(data));
       
       if (Array.isArray(data)) {
         setEventData(data);
         console.log('🔥 이벤트 데이터 설정 완료, 총 개수:', data.length);
+      } else if (data && data.items && Array.isArray(data.items)) {
+        // 페이지네이션 형태의 응답 처리
+        setEventData(data.items);
+        console.log('🔥 이벤트 데이터 설정 완료 (페이지네이션), 총 개수:', data.items.length);
       } else {
         console.error('🔥 API 응답이 배열이 아님:', data);
         setEventData([]);
