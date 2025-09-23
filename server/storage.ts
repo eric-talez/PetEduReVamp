@@ -20,8 +20,57 @@ class Storage {
   pointSettings: any = {};
   logoSettings: any = {};
   banners: any[] = [];
-  // AI 분석 시스템 데이터 저장소
-  careLogs: any[] = [];
+  // AI 분석 시스템 데이터 저장소 
+  careLogs: any[] = [
+    {
+      id: 1,
+      petId: 1, 
+      userId: 1,
+      date: "2025-09-23",
+      note: "멍멍이가 오늘 아침 식욕이 좋았어요. 산책 중에 다른 강아지들과 잘 지냈습니다.",
+      poopStatus: "normal",
+      mealStatus: "normal", 
+      walkStatus: "normal",
+      mood: "happy",
+      energyLevel: 8,
+      media: [],
+      tags: ["건강", "활발"],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 2,
+      petId: 1,
+      userId: 1, 
+      date: "2025-09-22",
+      note: "어제보다 조금 피곤해 보이지만 전반적으로 건강해요. 오후에 간식을 많이 먹었네요.",
+      poopStatus: "normal",
+      mealStatus: "overeaten",
+      walkStatus: "short", 
+      mood: "calm",
+      energyLevel: 6,
+      media: [],
+      tags: ["피곤", "간식"],
+      createdAt: new Date(Date.now() - 24*60*60*1000).toISOString(),
+      updatedAt: new Date(Date.now() - 24*60*60*1000).toISOString()
+    },
+    {
+      id: 3,
+      petId: 2,
+      userId: 2,
+      date: "2025-09-23", 
+      note: "야옹이가 새로운 장난감을 매우 좋아해요. 활동적이고 기분이 좋아보입니다.",
+      poopStatus: "normal",
+      mealStatus: "normal",
+      walkStatus: "normal",
+      mood: "energetic",
+      energyLevel: 9,
+      media: [],
+      tags: ["활발", "장난감", "기분좋음"],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()  
+    }
+  ];
   aiAnalyses: any[] = [];
   // 대체 훈련사 시스템 데이터 저장소
   substituteClassPosts: any[] = [];
