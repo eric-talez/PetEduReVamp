@@ -20,6 +20,9 @@ class Storage {
   pointSettings: any = {};
   logoSettings: any = {};
   banners: any[] = [];
+  // AI 분석 시스템 데이터 저장소
+  careLogs: any[] = [];
+  aiAnalyses: any[] = [];
   // 대체 훈련사 시스템 데이터 저장소
   substituteClassPosts: any[] = [];
   substituteClassApplications: any[] = [];
@@ -4945,6 +4948,111 @@ class HybridStorage extends Storage {
   async getEventsByCategory(category: string): Promise<any[]> {
     // 카테고리별 이벤트 필터링
     return this.events.filter(event => event.category === category);
+  }
+
+  // =============================================================================
+  // AI 분석 시스템: Care Logs 관련 메서드
+  // =============================================================================
+
+  async getCareLogsByPetId(petId: number): Promise<any[]> {
+    return this.careLogs.filter(log => log.petId === petId)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  async getCareLogsByDateRange(petId: number, startDate: string, endDate: string): Promise<any[]> {
+    return this.careLogs.filter(log => 
+      log.petId === petId && 
+      log.date >= startDate && 
+      log.date <= endDate
+    ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  async getCareLogsByIds(logIds: number[]): Promise<any[]> {
+    return this.careLogs.filter(log => logIds.includes(log.id));
+  }
+
+  async createCareLog(careLogData: any): Promise<any> {
+    const newCareLog = {
+      id: this.careLogs.length + 1,
+      ...careLogData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    this.careLogs.push(newCareLog);
+    return newCareLog;
+  }
+
+  async updateCareLog(id: number, updateData: any): Promise<any> {
+    const index = this.careLogs.findIndex(log => log.id === id);
+    if (index === -1) {
+      throw new Error('Care log not found');
+    }
+    
+    this.careLogs[index] = {
+      ...this.careLogs[index],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    return this.careLogs[index];
+  }
+
+  async deleteCareLog(id: number): Promise<boolean> {
+    const index = this.careLogs.findIndex(log => log.id === id);
+    if (index === -1) {
+      return false;
+    }
+    this.careLogs.splice(index, 1);
+    return true;
+  }
+
+  // =============================================================================
+  // AI 분석 시스템: AI Analyses 관련 메서드
+  // =============================================================================
+
+  async createAiAnalysis(analysisData: any): Promise<any> {
+    const newAnalysis = {
+      id: this.aiAnalyses.length + 1,
+      ...analysisData,
+      createdAt: new Date().toISOString()
+    };
+    this.aiAnalyses.push(newAnalysis);
+    return newAnalysis;
+  }
+
+  async getAiAnalysesByPetId(petId: number): Promise<any[]> {
+    return this.aiAnalyses.filter(analysis => analysis.petId === petId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getAiAnalysisById(id: number): Promise<any | null> {
+    return this.aiAnalyses.find(analysis => analysis.id === id) || null;
+  }
+
+  // Care logs를 날짜별로 그룹화하여 반환
+  async getCareLogsGroupedByDate(petId: number, startDate?: string, endDate?: string): Promise<{dates: string[], logsByDate: Record<string, any[]>, counts: Record<string, number>}> {
+    let logs = this.careLogs.filter(log => log.petId === petId);
+    
+    if (startDate && endDate) {
+      logs = logs.filter(log => log.date >= startDate && log.date <= endDate);
+    }
+
+    // 날짜별로 그룹화
+    const logsByDate: Record<string, any[]> = {};
+    const counts: Record<string, number> = {};
+    
+    logs.forEach(log => {
+      const date = log.date;
+      if (!logsByDate[date]) {
+        logsByDate[date] = [];
+        counts[date] = 0;
+      }
+      logsByDate[date].push(log);
+      counts[date]++;
+    });
+
+    const dates = Object.keys(logsByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    
+    return { dates, logsByDate, counts };
   }
 }
 
