@@ -476,24 +476,42 @@ export default function AiAnalysisPage() {
                 <div>
                   <h4 className="font-medium mb-2">📊 종합 분석</h4>
                   <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                    {(analyzeDataMutation.data as any).summary || '분석 결과가 없습니다.'}
+                    {(analyzeDataMutation.data as any)?.analysis?.resultJson?.summary || '분석 결과가 없습니다.'}
                   </p>
                 </div>
 
-                {(analyzeDataMutation.data as any).behavior && (
+                {(analyzeDataMutation.data as any)?.analysis?.resultJson?.behavior && (
                   <div>
                     <h4 className="font-medium mb-2">🐕 행동 패턴</h4>
                     <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded">
-                      {(analyzeDataMutation.data as any).behavior}
+                      {(analyzeDataMutation.data as any).analysis.resultJson.behavior}
                     </p>
                   </div>
                 )}
 
-                {(analyzeDataMutation.data as any).health && (
+                {(analyzeDataMutation.data as any)?.analysis?.resultJson?.health && (
                   <div>
                     <h4 className="font-medium mb-2">💊 건강 상태</h4>
                     <p className="text-sm text-gray-700 bg-green-50 p-3 rounded">
-                      {(analyzeDataMutation.data as any).health}
+                      {(analyzeDataMutation.data as any).analysis.resultJson.health}
+                    </p>
+                  </div>
+                )}
+
+                {(analyzeDataMutation.data as any)?.analysis?.resultJson?.nutrition && (
+                  <div>
+                    <h4 className="font-medium mb-2">🍽️ 영양 상태</h4>
+                    <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded">
+                      {(analyzeDataMutation.data as any).analysis.resultJson.nutrition}
+                    </p>
+                  </div>
+                )}
+
+                {(analyzeDataMutation.data as any)?.analysis?.resultJson?.activity && (
+                  <div>
+                    <h4 className="font-medium mb-2">🏃 활동 상태</h4>
+                    <p className="text-sm text-gray-700 bg-purple-50 p-3 rounded">
+                      {(analyzeDataMutation.data as any).analysis.resultJson.activity}
                     </p>
                   </div>
                 )}
@@ -504,7 +522,7 @@ export default function AiAnalysisPage() {
                     주의사항
                   </h4>
                   <div className="space-y-2">
-                    {((analyzeDataMutation.data as any).redFlags || []).map((flag: string, index: number) => (
+                    {((analyzeDataMutation.data as any)?.analysis?.resultJson?.redFlags || []).map((flag: string, index: number) => (
                       <div key={index} className="text-sm bg-amber-50 border-l-4 border-amber-400 p-3">
                         {flag}
                       </div>
@@ -515,13 +533,23 @@ export default function AiAnalysisPage() {
                 <div>
                   <h4 className="font-medium mb-2">✅ 권장사항</h4>
                   <div className="space-y-2">
-                    {((analyzeDataMutation.data as any).nextSteps || []).map((step: string, index: number) => (
+                    {((analyzeDataMutation.data as any)?.analysis?.resultJson?.nextSteps || []).map((step: string, index: number) => (
                       <div key={index} className="text-sm bg-blue-50 border-l-4 border-blue-400 p-3">
                         {step}
                       </div>
                     ))}
                   </div>
                 </div>
+
+                {/* AI 오류 표시 */}
+                {(analyzeDataMutation.data as any)?.analysis?.resultJson?.error && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h4 className="font-medium text-red-800 mb-2">⚠️ 참고사항</h4>
+                    <p className="text-sm text-red-700">
+                      AI API 할당량 초과로 임시 분석을 제공하고 있습니다. 실제 AI 분석을 위해서는 API 키 설정이 필요합니다.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
