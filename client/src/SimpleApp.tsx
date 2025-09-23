@@ -673,17 +673,6 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 인증 */}
                   <Route path="/auth" component={Login} />
 
-                  {/* AI 분석 */}
-                  <Route path="/ai-analysis">
-                    {() => {
-                      const AIAnalysisPage = lazy(() => import('./pages/AIAnalysisPage'));
-                      return (
-                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
-                          <AIAnalysisPage />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
 
                   {/* AI 챗봇 - /chatbot 경로도 지원 */}
                   <Route path="/chatbot">
@@ -2224,22 +2213,6 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
-        {/* AI 분석 페이지 */}
-        <Route path="/ai-analysis">
-          {() => {
-            console.log("회원 AI 분석 페이지 로딩");
-            const AIAnalysisPage = lazy(() => import('./pages/ai-analysis'));
-            return (
-              <Suspense fallback={
-                <div className="flex justify-center items-center h-screen">
-                  <DogLoading message="AI 반려동물 분석 페이지 로딩중" size="medium" showTips={true} />
-                </div>
-              }>
-                <AIAnalysisPage />
-              </Suspense>
-            );
-          }}
-        </Route>
 
         {/* 분석 및 보고서 페이지 */}
         <Route path="/analytics">
