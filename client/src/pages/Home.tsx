@@ -794,7 +794,7 @@ export default function Home() {
 
         {/* 메인 배너 슬라이더 */}
         <div className="mb-8">
-          <div className="relative overflow-hidden rounded-xl min-h-[280px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+          <div className="relative overflow-hidden rounded-xl min-h-[400px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
             {/* 배경 이미지 */}
             <div className="absolute inset-0 transition-all duration-500 ease-in-out">
               <img 
@@ -806,7 +806,7 @@ export default function Home() {
             </div>
             
             {/* 배너 콘텐츠 */}
-            <div className="relative z-10 flex flex-col justify-center min-h-[280px] py-8 px-6 md:px-12">
+            <div className="relative z-10 flex flex-col justify-center min-h-[400px] py-8 px-6 md:px-12">
               <div className="max-w-4xl mx-auto w-full">
                 <h1 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
                   {bannerSlides[currentSlide].title}
