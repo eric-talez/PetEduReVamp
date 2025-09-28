@@ -1,0 +1,217 @@
+가능성 높은 원인부터 “바로 체크→수정” 순서로 정리했어요. 대부분은 **쿠키/세션(CORS·SameSite)**, **도메인/리다이렉트 URL**, **환경변수 누락**에서 발생합니다.
+
+---
+
+# 0) 증상 빠른 판별
+
+* **프론트 콘솔**: `401 /api/auth/user`, `Set-Cookie was blocked`, `CORS policy`, `cookie not sent`
+* **네트워크 탭**: 로그인 API 응답이 200인데 쿠키가 안 생기거나, 응답 헤더에 `Set-Cookie`가 있는데 브라우저에 저장 안 됨
+* **백엔드 로그**: “invalid signature”, “CSRF”, “session not found”, “Origin not allowed”
+
+→ 이런 메시지가 보이면 아래 1~4번을 우선 적용하세요.
+
+---
+
+# 1) 쿠키/세션 이슈 (가장 흔함)
+
+프론트와 백엔드가 **다른 도메인**(예: `*.repl.co` ↔ `labsphone.com`)이면 브라우저가 **크로스사이트 쿠키를 차단**합니다.
+
+### 필수 설정
+
+* **백엔드 Set-Cookie**: `SameSite=None; Secure; HttpOnly`
+* **프론트 fetch/axios**: `credentials: 'include'` 또는 `withCredentials: true`
+* **백엔드 CORS**: `Access-Control-Allow-Credentials: true` + `Access-Control-Allow-Origin: (정확한 도메인)`
+
+  * 절대 `*` 와 `credentials:true`를 함께 쓰지 마세요.
+
+#### Express 예시
+
+```js
+// server.ts
+import cors from 'cors';
+app.use(cors({
+  origin: ['https://labsphone.com', 'https://stax.myhiddden.com'], // 정확히 명시
+  credentials: true,
+}));
+
+// 로그인 성공 시
+res.cookie('session', token, {
+  httpOnly: true,
+  secure: true,          // https 필수
+  sameSite: 'none',      // 크로스사이트 허용
+  domain: '.myhiddden.com', // 프론트·백이 모두 *.myhiddden.com이면 지정
+  path: '/',
+});
+res.json({ ok: true });
+```
+
+#### Spring Boot 예시
+
+```java
+// CORS
+@Bean
+public WebMvcConfigurer corsConfigurer() {
+  return new WebMvcConfigurer() {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+      registry.addMapping("/**")
+        .allowedOrigins("https://labsphone.com","https://stax.myhiddden.com")
+        .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
+        .allowCredentials(true);
+    }
+  };
+}
+
+// Set-Cookie는 통상 Spring Session/Filter에서 설정되므로
+// 프록시/HTTPS가 잡혀 있어야 SameSite=None; Secure가 유효
+```
+
+#### 프론트(React/axios)
+
+```ts
+axios.defaults.withCredentials = true;
+// 또는
+fetch('/api/auth/login', { method:'POST', credentials:'include', ... })
+```
+
+> **참고**: 프론트 `http://`와 백엔드 `https://`가 섞이면 쿠키가 안 잡힙니다. **모두 https**로 통일하세요.
+
+---
+
+# 2) 도메인·리다이렉트 URL 불일치 (OAuth/Naver 등)
+
+리플릿 배포 후 **도메인이 바뀌면** 네이버/카카오/구글 콘솔에 등록한 **Redirect URI**가 불일치합니다.
+
+### 체크리스트
+
+* 네이버 개발자센터 → 애플리케이션 → 로그인 오픈 API → **Callback URL**에
+
+  * `https://labsphone.com/auth/callback/naver`
+  * `https://stax.myhiddden.com/auth/callback/naver`
+    등 실제 배포 URL을 모두 등록
+* 프론트 `.env`의 `NEXT_PUBLIC_BASE_URL`/`VITE_BASE_URL`과 백엔드 `BASE_URL` 일치
+* OAuth 스코프/Client ID·Secret이 **운영용 키**로 되어 있는지
+* 리다이렉트가 `http`가 아닌 **`https`**
+
+증상: 로그인 팝업은 성공처럼 보이는데, 콜백이 `redirect_uri_mismatch` 또는 조용히 실패 → 결국 세션 미생성.
+
+---
+
+# 3) 환경변수/시크릿 누락 (Replit → Deploy 전환 시 자주 발생)
+
+* Replit의 **Secrets(.env)** 값이 **Deploy 환경에 복제**되지 않았을 수 있습니다.
+
+  * Replit Deploy 탭에서 **환경변수 목록** 다시 입력/확인
+  * 예: `JWT_SECRET`, `SESSION_SECRET`, `OAUTH_NAVER_ID/SECRET`, `DB_URL`, `CORS_ORIGIN`
+* **시간 불일치(NTP)**로 JWT 만료 오판 → 서버 시각 확인(컨테이너/런타임 시간과 시스템 시간)
+
+---
+
+# 4) 프록시/HTTPS/헤더 전파 (Secure 쿠키 인식)
+
+* **HTTPS가 아닌 환경**에 `Secure` 쿠키를 보내면 **브라우저가 저장 안 함**
+* 프록시(Nginx/리버스 프록시/플랫폼) 사용 시:
+
+  * Express: `app.set('trust proxy', 1)` (Heroku/Replit 배포 같은 프록시 뒤에 있을 때 필수)
+  * Spring: `server.forward-headers-strategy=framework` 또는 `X-Forwarded-*` 신뢰 설정
+* `X-Forwarded-Proto: https`가 백엔드까지 전달되는지 확인
+
+---
+
+# 5) 프론트/백엔드 도메인 전략 정리
+
+### A안: 같은 2차 도메인의 서브도메인으로 통일
+
+* 프론트: `https://app.myhiddden.com`
+* 백엔드: `https://api.myhiddden.com`
+* 쿠키 도메인: `.myhiddden.com`
+  → **SameSite=None; Secure**로 크로스사이트 쿠키 작동, CORS origin 1~2개만 허용.
+
+### B안: 완전히 다른 도메인(예: repl.co ↔ labsphone.com)
+
+* 쿠키 기반 세션이 번거롭습니다.
+* **권장**: 쿠키 대신 **Authorization: Bearer <JWT>** 헤더 방식으로 전환(로컬스토리지/메모리 보관 주의)
+* 또는 프런트와 백엔드를 **같은 도메인**으로 묶는 게 최선.
+
+---
+
+# 6) 진단용 체크 포인트(빠르게 보는 6가지)
+
+1. **네트워크 탭 → 로그인 응답에 `Set-Cookie` 있는가?** 저장은 되는가?
+2. **응답 헤더**: `Access-Control-Allow-Origin`에 정확한 도메인? `Allow-Credentials: true`?
+3. **요청 옵션**: `credentials: 'include'` 붙였는가?
+4. **쿠키 속성**: `SameSite=None; Secure; HttpOnly` 인가? (크로스도메인이라면 필수)
+5. **HTTPS**: 프론트·백 모두 https인가? (혼재 시 쿠키 거부)
+6. **OAuth 콘솔 Redirect URL**: 배포 도메인으로 최신화했는가?
+
+---
+
+# 7) 대표 코드/설정 스니펫
+
+### Express + Cookie 기반 세션
+
+```js
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
+
+app.set('trust proxy', 1); // 프록시 뒤에 있을 때
+app.use(cookieParser());
+app.use(session({
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: true,       // https 필수
+    sameSite: 'none',
+    domain: '.myhiddden.com', // 상황에 맞게
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  }
+}));
+```
+
+### Spring Boot (application.yml)
+
+```yaml
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: none
+# 프록시 헤더 신뢰 (Spring Boot 3+)
+server.forward-headers-strategy: framework
+```
+
+### Nginx (리버스 프록시 사용하는 경우)
+
+```nginx
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Host $host;
+```
+
+---
+
+# 8) 리플릿 특이점 3가지
+
+1. **Deploy 환경과 Run 환경 분리**: Run에서 되던 env/권한이 Deploy에 누락될 수 있음 → Deploy 환경변수 재점검
+2. **포트/경로 고정**: 플랫폼이 정한 포트를 사용해야 함(일반적으로 `process.env.PORT`)
+3. **프리뷰(iframe)에서 테스트 시**: 크로스사이트 규칙이 더 엄격할 수 있으니 **실제 도메인에서 테스트** 권장
+
+---
+
+# 9) “지금 당장” 적용 순서 (실무용 7단계)
+
+1. 프론트 요청에 `credentials: 'include'` 강제
+2. 백엔드 CORS: 정확한 Origin 목록 + `credentials:true`
+3. 쿠키: `SameSite=None; Secure; HttpOnly`
+4. 프록시 신뢰 설정(`trust proxy`/`forward-headers`)
+5. 프론트·백 **모두 https**로 접근
+6. OAuth Redirect URL을 **배포 도메인으로 갱신**(네이버 등)
+7. Replit **Deploy 환경변수** 재입력(SESSION/JWT/DB/OAUTH…)
+
+---
+
+원하시면 **현재 도메인/엔드포인트 구조(프론트 URL, 백엔드 URL, OAuth 사용 여부)**를 알려주시지 않아도, 위 순서대로 적용하면 대부분 바로 정상화됩니다. 적용 후에도 `401`이 남으면 **네트워크 탭의 요청/응답 헤더**와 **백엔드 로그의 에러 문구**를 기준으로 다음 수정을 이어가면 됩니다.
