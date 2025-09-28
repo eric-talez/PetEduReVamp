@@ -7,13 +7,14 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, Star, TrendingUp, Calendar, Clock, Bell, List, 
-  ChevronRight, MessageCircle, BookOpen, Clipboard, Award
+  ChevronRight, MessageCircle, BookOpen, Clipboard, Award, DollarSign
 } from 'lucide-react';
 import { Link } from 'wouter';
+import ZoomMeetingManager from '@/components/ZoomMeetingManager';
 
 export default function TrainerHome() {
   const { userName } = useAuth();
-  
+
   // 수강생 데이터 모의 
   const recentStudents = [
     {
@@ -81,7 +82,7 @@ export default function TrainerHome() {
       pet: "콩이"
     }
   ];
-  
+
   // 알림장 최근 활동
   const recentNotebooks = [
     {
@@ -101,7 +102,7 @@ export default function TrainerHome() {
       hasImage: false
     }
   ];
-  
+
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       {/* 상단 헤더 영역 */}
@@ -112,7 +113,7 @@ export default function TrainerHome() {
             안녕하세요, {userName}님! 오늘도 좋은 하루 되세요.
           </p>
         </div>
-        
+
         <div className="flex space-x-2 mt-4 md:mt-0">
           <Button 
             variant="outline" 
@@ -153,7 +154,7 @@ export default function TrainerHome() {
           </Link>
         </div>
       </div>
-      
+
       {/* 통계 카드 영역 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
@@ -173,7 +174,7 @@ export default function TrainerHome() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -191,7 +192,7 @@ export default function TrainerHome() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -209,7 +210,7 @@ export default function TrainerHome() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -228,7 +229,7 @@ export default function TrainerHome() {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* 빠른 액세스 메뉴 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Link href="/trainer/earnings">
@@ -291,7 +292,7 @@ export default function TrainerHome() {
           </Card>
         </Link>
       </div>
-      
+
       {/* 메인 콘텐츠 영역 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* 다가오는 일정 */}
@@ -330,7 +331,7 @@ export default function TrainerHome() {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* 알림장 최근 활동 */}
         <Card>
           <CardHeader className="pb-3">
@@ -373,7 +374,7 @@ export default function TrainerHome() {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* 최근 수강생 */}
         <Card>
           <CardHeader className="pb-3">
@@ -414,11 +415,11 @@ export default function TrainerHome() {
                       {student.lastActivity}
                     </div>
                   </div>
-                  
+
                   <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
                     {student.course}
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-xs mt-1 mb-1">
                     <span className="text-gray-600 dark:text-gray-400">진도율</span>
                     <span className="font-medium">{student.progress}%</span>
@@ -430,7 +431,7 @@ export default function TrainerHome() {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* 액션 버튼 영역 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="hover:bg-primary-50 dark:hover:bg-primary-950/10 cursor-pointer transition-colors">
@@ -446,7 +447,7 @@ export default function TrainerHome() {
             </CardContent>
           </Link>
         </Card>
-        
+
         <Card className="hover:bg-primary-50 dark:hover:bg-primary-950/10 cursor-pointer transition-colors">
           <Link href="/trainer-reviews">
             <CardContent className="p-6 flex items-center">
@@ -460,7 +461,7 @@ export default function TrainerHome() {
             </CardContent>
           </Link>
         </Card>
-        
+
         <Card className="hover:bg-primary-50 dark:hover:bg-primary-950/10 cursor-pointer transition-colors">
           <Link href="/trainer-earnings">
             <CardContent className="p-6 flex items-center">
@@ -474,7 +475,7 @@ export default function TrainerHome() {
             </CardContent>
           </Link>
         </Card>
-        
+
         <Card className="hover:bg-primary-50 dark:hover:bg-primary-950/10 cursor-pointer transition-colors">
           <Link href="/trainer-referrals">
             <CardContent className="p-6 flex items-center">
@@ -488,6 +489,11 @@ export default function TrainerHome() {
             </CardContent>
           </Link>
         </Card>
+      </div>
+
+      {/* 화상수업 관리 */}
+      <div className="grid gap-6 mb-6">
+        <ZoomMeetingManager userRole="trainer" userName="강동훈" />
       </div>
     </div>
   );

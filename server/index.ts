@@ -40,12 +40,51 @@ app.use(helmet({
   },
 }));
 
-// CORS configuration
+// CORS 설정 개선
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [
+      'https://funnytalez.com',
+      'https://www.funnytalez.com',
+      'https://*.replit.dev',
+      'https://*.repl.co'
+    ]
+  : [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://localhost:3000',
+      'https://localhost:5173',
+      'https://*.replit.dev',
+      'https://*.repl.co'
+    ];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://your-domain.com']
-    : ['http://localhost:3000', 'http://localhost:5000'],
-  credentials: true
+  origin: function(origin, callback) {
+    // 개발 환경에서는 origin이 없을 수 있음 (같은 도메인)
+    if (!origin && process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+
+    // 허용된 origin 목록 체크
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin.includes('*')) {
+        const pattern = allowedOrigin.replace(/\*/g, '.*');
+        return new RegExp(pattern).test(origin || '');
+      }
+      return allowedOrigin === origin;
+    });
+
+    if (isAllowed || !origin) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS 차단된 origin: ${origin}`);
+      callback(new Error('CORS policy violation'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'Accept', 'Origin', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 200
 }));
 
 // 운영 환경 보안 헤더
@@ -146,20 +185,26 @@ app.get('/attached_assets/:filename', (req, res) => {
   }
 });
 
-// Session configuration - 보안 강화
-app.use(session({
+// 세션 설정 - 크로스 도메인 지원 개선
+const isProduction = process.env.NODE_ENV === 'production';
+const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'talez-super-secure-session-secret-2025-production-ready',
   resave: false,
   saveUninitialized: false,
   name: 'talez.sid', // 기본 세션 이름 변경으로 보안 강화
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction, // HTTPS에서만 secure 쿠키
     httpOnly: true,
-    sameSite: 'lax', // OAuth 호환성을 위해 'strict'에서 'lax'로 변경
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
-
+    sameSite: isProduction ? 'none' as const : 'lax' as const, // 프로덕션에서는 크로스사이트 허용
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    // 도메인 설정 (같은 2차 도메인 사용 시)
+    ...(isProduction && process.env.COOKIE_DOMAIN && {
+      domain: process.env.COOKIE_DOMAIN
+    })
+  },
+  // sessionStore는 setupAuth에서 정의되거나, 필요시 여기서 초기화
+  // 예: store: new (require('connect-redis'))(session)({ client: redisClient })
+};
 // Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());
@@ -414,6 +459,9 @@ function initializeMemoryData() {
 
 async function startServer() {
   try {
+    // 세션 미들웨어 설정 (express-session)
+    app.use(session({ ...sessionConfig, store: storage.sessionStore }));
+
     // 메모리 데이터 초기화
     initializeMemoryData();
 
