@@ -27,15 +27,31 @@ const PORT = parseInt(process.env.PORT || "5000", 10);
 // Production proxy compatibility - CRITICAL for production deployment
 app.set('trust proxy', 1);
 
-// Security middleware
+// Security middleware - Enhanced CSP without unsafe directives
 app.use(helmet({
-  contentSecurityPolicy: {
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "data:"],
+      scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:"],
+      connectSrc: ["'self'", "ws:", "wss:", "https:"],
+      fontSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'", "https:"],
+      frameSrc: ["'none'"],
+    },
+  } : {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "data:"], // Only for development
+      scriptSrc: ["'self'", "'unsafe-eval'"], // Only eval needed for Vite HMR
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      connectSrc: ["'self'", "ws:", "wss:", "https:", "http:"],
+      fontSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'", "https:"],
+      frameSrc: ["'none'"],
     },
   },
 }));
@@ -50,7 +66,9 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
     ]
   : [
       'http://localhost:3000',
+      'http://localhost:5000',
       'http://localhost:5173',
+      'http://127.0.0.1:5000',
       'https://localhost:3000',
       'https://localhost:5173',
       'https://*.replit.dev',
@@ -205,6 +223,10 @@ const sessionConfig = {
   // sessionStore는 setupAuth에서 정의되거나, 필요시 여기서 초기화
   // 예: store: new (require('connect-redis'))(session)({ client: redisClient })
 };
+
+// Session middleware MUST be applied before Passport
+app.use(session(sessionConfig));
+
 // Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());

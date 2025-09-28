@@ -9336,6 +9336,132 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // Stripe Webhook 엔드포인트 - 보안 검증 포함
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'] as string;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    if (!webhookSecret) {
+      console.error('❌ STRIPE_WEBHOOK_SECRET이 설정되지 않음');
+      return res.status(500).send('Webhook secret not configured');
+    }
+    
+    if (!stripe) {
+      console.error('❌ Stripe가 초기화되지 않음');
+      return res.status(500).send('Stripe not initialized');
+    }
+    
+    let event: Stripe.Event;
+
+    try {
+      // Webhook 서명 검증 - 보안상 필수
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      console.log('✅ Webhook 서명 검증 성공:', event.type);
+    } catch (err: any) {
+      console.error('❌ Webhook 서명 검증 실패:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // 이벤트 처리
+    try {
+      switch (event.type) {
+        case 'payment_intent.succeeded': {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          console.log('💳 결제 성공:', paymentIntent.id);
+          
+          // 메타데이터에서 구매 정보 추출
+          const { type, courseId, productId } = paymentIntent.metadata;
+          
+          if (type === 'course' && courseId) {
+            // 강의 구매 완료 처리
+            console.log(`🎓 강의 구매 완료 처리: ${courseId}`);
+            // TODO: 데이터베이스에 구매 기록 저장
+            // TODO: 사용자에게 강의 액세스 권한 부여
+          } else if (type === 'product' && productId) {
+            // 상품 구매 완료 처리
+            console.log(`🛒 상품 구매 완료 처리: ${productId}`);
+            // TODO: 데이터베이스에 주문 기록 저장
+            // TODO: 재고 업데이트
+          }
+          
+          break;
+        }
+
+        case 'payment_intent.payment_failed': {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          console.log('❌ 결제 실패:', paymentIntent.id);
+          
+          // 실패 로그 기록 및 사용자 알림
+          // TODO: 실패 이유 분석 및 재시도 옵션 제공
+          break;
+        }
+
+        case 'payment_intent.requires_action': {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          console.log('⚠️ 추가 인증 필요:', paymentIntent.id);
+          
+          // 3D Secure 등 추가 인증이 필요한 경우
+          // TODO: 사용자에게 추가 인증 요청 알림
+          break;
+        }
+
+        default:
+          console.log(`🔄 처리하지 않는 이벤트 타입: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (err: any) {
+      console.error('❌ Webhook 이벤트 처리 실패:', err);
+      res.status(500).send(`Webhook handler failed: ${err.message}`);
+    }
+  });
+
+  // 환불 처리 API
+  app.post('/api/stripe/refund', async (req, res) => {
+    try {
+      const { paymentIntentId, reason } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ error: '로그인이 필요합니다.' });
+      }
+
+      if (!stripe) {
+        return res.status(503).json({ error: '결제 시스템이 설정되지 않았습니다.' });
+      }
+
+      if (!paymentIntentId) {
+        return res.status(400).json({ error: '결제 ID가 필요합니다.' });
+      }
+
+      // 환불 생성
+      const refund = await stripe.refunds.create({
+        payment_intent: paymentIntentId,
+        reason: reason || 'requested_by_customer',
+        metadata: {
+          userId: userId.toString(),
+          refundedAt: new Date().toISOString()
+        }
+      });
+
+      console.log('💰 환불 처리 완료:', refund.id);
+
+      res.json({
+        success: true,
+        refundId: refund.id,
+        status: refund.status,
+        message: '환불이 정상적으로 처리되었습니다.'
+      });
+
+    } catch (error: any) {
+      console.error('환불 처리 오류:', error);
+      res.status(500).json({ 
+        error: '환불 처리 중 오류가 발생했습니다.',
+        details: error.message 
+      });
+    }
+  });
+
   // 결제 이력 조회
   app.get('/api/payment-history', async (req, res) => {
     try {
