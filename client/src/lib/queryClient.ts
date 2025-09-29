@@ -38,27 +38,27 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export const apiRequest = async (method: string, url: string, data?: any) => {
-  const config: RequestInit = {
-    method: method.toUpperCase(),
+export const apiRequest = async (method: string, url: string, data?: any): Promise<Response> => {
+  const options: RequestInit = {
+    method,
+    credentials: 'include', // 쿠키 포함
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
   };
 
   // POST, PUT, PATCH, DELETE 요청에는 CSRF 토큰 추가
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
     try {
       const csrfToken = await getCSRFToken();
-      (config.headers as any)['X-CSRF-Token'] = csrfToken;
+      (options.headers as any)['X-CSRF-Token'] = csrfToken;
     } catch (error) {
       console.warn('[apiRequest] CSRF 토큰 가져오기 실패:', error);
     }
   }
 
   if (data && method.toUpperCase() !== 'GET') {
-    config.body = JSON.stringify(data);
+    options.body = JSON.stringify(data);
   }
 
   if (data && method.toUpperCase() === 'GET') {
@@ -69,7 +69,7 @@ export const apiRequest = async (method: string, url: string, data?: any) => {
   console.log(`[apiRequest] ${method.toUpperCase()} ${url}`, data ? { body: data } : {});
 
   try {
-    const response = await fetch(url, config);
+    const response = await fetch(url, options);
 
     console.log(`[apiRequest] Response: ${response.status} ${response.statusText}`);
 

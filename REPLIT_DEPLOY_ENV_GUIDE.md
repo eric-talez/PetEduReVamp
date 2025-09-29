@@ -22,6 +22,7 @@ ENCRYPTION_KEY=talez-32-character-encryption-key
 ```
 CORS_ORIGIN=https://your-deploy-domain.replit.app,https://your-custom-domain.com
 COOKIE_DOMAIN=.your-custom-domain.com
+REPLIT_DEV_DOMAIN=your-deploy-domain.replit.app
 ```
 
 ### 4. 외부 서비스 API

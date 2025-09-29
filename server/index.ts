@@ -27,31 +27,15 @@ const PORT = parseInt(process.env.PORT || "5000", 10);
 // Production proxy compatibility - CRITICAL for production deployment
 app.set('trust proxy', 1);
 
-// Security middleware - Enhanced CSP without unsafe directives
+// Security middleware
 app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+  contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "data:"],
-      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:", "https:"],
-      fontSrc: ["'self'", "data:", "https:"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'", "https:"],
-      frameSrc: ["'none'"],
-    },
-  } : {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "data:"], // Only for development
-      scriptSrc: ["'self'", "'unsafe-eval'"], // Only eval needed for Vite HMR
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "ws:", "wss:", "https:", "http:"],
-      fontSrc: ["'self'", "data:", "https:"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'", "https:"],
-      frameSrc: ["'none'"],
+      connectSrc: ["'self'", "ws:", "wss:"],
     },
   },
 }));
@@ -66,9 +50,7 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
     ]
   : [
       'http://localhost:3000',
-      'http://localhost:5000',
       'http://localhost:5173',
-      'http://127.0.0.1:5000',
       'https://localhost:3000',
       'https://localhost:5173',
       'https://*.replit.dev',
@@ -223,9 +205,8 @@ const sessionConfig = {
   // sessionStore는 setupAuth에서 정의되거나, 필요시 여기서 초기화
   // 예: store: new (require('connect-redis'))(session)({ client: redisClient })
 };
-
-// Session middleware MUST be applied before Passport
-app.use(session(sessionConfig));
+// 세션 미들웨어를 먼저 설정
+app.use(session({ ...sessionConfig, store: storage.sessionStore }));
 
 // Passport initialization
 app.use(passport.initialize());
@@ -233,6 +214,9 @@ app.use(passport.session());
 
 // Setup authentication system
 setupAuth(app);
+
+// API 표준화 미들웨어 적용 - Response 객체에 표준 메서드 추가
+app.use(extendResponse);
 
 // Session to req.user middleware
 app.use((req: any, res: any, next: any) => {
@@ -246,9 +230,6 @@ app.use((req: any, res: any, next: any) => {
     next();
   }
 });
-
-// API 표준화 미들웨어 적용 - Response 객체에 표준 메서드 추가
-app.use(extendResponse);
 
 // REMOVED: Critical security fix - these endpoints have been moved to routes.ts with proper authentication
 
@@ -481,9 +462,6 @@ function initializeMemoryData() {
 
 async function startServer() {
   try {
-    // 세션 미들웨어 설정 (express-session)
-    app.use(session({ ...sessionConfig, store: storage.sessionStore }));
-
     // 메모리 데이터 초기화
     initializeMemoryData();
 
