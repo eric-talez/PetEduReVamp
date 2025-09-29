@@ -27,13 +27,17 @@ const PORT = parseInt(process.env.PORT || "5000", 10);
 // Production proxy compatibility - CRITICAL for production deployment
 app.set('trust proxy', 1);
 
-// Security middleware
+// Security middleware - 프로덕션에서 unsafe 제거
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: process.env.NODE_ENV === 'production' 
+        ? ["'self'", "https://fonts.googleapis.com"]
+        : ["'self'", "'unsafe-inline'"],
+      scriptSrc: process.env.NODE_ENV === 'production'
+        ? ["'self'", "https://dapi.kakao.com", "https://developers.kakao.com"]
+        : ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "ws:", "wss:"],
     },
@@ -44,9 +48,8 @@ app.use(helmet({
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
       'https://funnytalez.com',
-      'https://www.funnytalez.com',
-      'https://*.replit.dev',
-      'https://*.repl.co'
+      'https://www.funnytalez.com'
+      // 프로덕션에서는 와일드카드 도메인 제거 (보안 강화)
     ]
   : [
       'http://localhost:3000',

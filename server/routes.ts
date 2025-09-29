@@ -1,6 +1,8 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
+import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
 import { registerAdminRoutes } from "./routes/admin";
@@ -2077,8 +2079,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 메시징 설정 저장 (런타임 환경변수 업데이트)
-  app.post('/api/admin/messaging/save', async (req, res) => {
+  // 메시징 설정 저장 (런타임 환경변수 업데이트) - 관리자 전용, CSRF 보호
+  app.post('/api/admin/messaging/save', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const adminId = req.headers['x-admin-id'] || 'admin';
       const settings = req.body;
@@ -2110,8 +2112,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 이메일 테스트 발송
-  app.post('/api/admin/messaging/test/email', async (req, res) => {
+  // 이메일 테스트 발송 - 관리자 전용, CSRF 보호
+  app.post('/api/admin/messaging/test/email', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { to } = req.query;
       
@@ -2154,8 +2156,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // SMS 테스트 발송
-  app.post('/api/admin/messaging/test/sms', async (req, res) => {
+  // SMS 테스트 발송 - 관리자 전용, CSRF 보호
+  app.post('/api/admin/messaging/test/sms', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { phone } = req.query;
       
@@ -4842,7 +4844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 훈련사 프로필 업데이트 API (PMI 정보 포함)
-  app.put("/api/trainer/profile", async (req, res) => {
+  app.put("/api/trainer/profile", requireAuth(['trainer', 'admin']), csrfProtection, async (req, res) => {
     try {
       const { 
         zoomLink, 
@@ -4954,7 +4956,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/api-configs", async (req, res) => {
+  app.put("/api/admin/api-configs", requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { apiId, values, isEnabled } = req.body;
       
@@ -4982,7 +4984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/api-configs/:apiId/test", async (req, res) => {
+  app.post("/api/admin/api-configs/:apiId/test", requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { apiId } = req.params;
       
@@ -5769,7 +5771,7 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  app.post("/api/substitute-posts", async (req, res) => {
+  app.post("/api/substitute-posts", requireAuth(['trainer', 'admin']), csrfProtection, validateRequest(createSubstitutePostSchema), async (req, res) => {
     try {
       const postData = req.body;
       const newPost = await storage.createSubstitutePost(postData);
@@ -5780,10 +5782,23 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  app.put("/api/substitute-posts/:id", async (req, res) => {
+  app.put("/api/substitute-posts/:id", requireAuth(['trainer', 'admin']), csrfProtection, validateRequest(updateSubstitutePostSchema), async (req, res) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
+      const user = (req as any).user;
+      
+      // 소유권 검증: 관리자가 아닌 경우 본인이 작성한 게시글만 수정 가능
+      if (user.role !== 'admin') {
+        const existingPost = await storage.getSubstitutePost(id);
+        if (!existingPost || existingPost.authorId !== user.id) {
+          return res.status(403).json({ 
+            error: "본인이 작성한 게시글만 수정할 수 있습니다.",
+            code: "FORBIDDEN_OWNERSHIP_VIOLATION"
+          });
+        }
+      }
+      
       const updatedPost = await storage.updateSubstitutePost(id, updateData);
       res.json(updatedPost);
     } catch (error) {
@@ -5792,9 +5807,22 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  app.delete("/api/substitute-posts/:id", async (req, res) => {
+  app.delete("/api/substitute-posts/:id", requireAuth(['trainer', 'admin']), csrfProtection, async (req, res) => {
     try {
       const { id } = req.params;
+      const user = (req as any).user;
+      
+      // 소유권 검증: 관리자가 아닌 경우 본인이 작성한 게시글만 삭제 가능
+      if (user.role !== 'admin') {
+        const existingPost = await storage.getSubstitutePost(id);
+        if (!existingPost || existingPost.authorId !== user.id) {
+          return res.status(403).json({ 
+            error: "본인이 작성한 게시글만 삭제할 수 있습니다.",
+            code: "FORBIDDEN_OWNERSHIP_VIOLATION"
+          });
+        }
+      }
+      
       await storage.deleteSubstitutePost(id);
       res.json({ success: true });
     } catch (error) {
@@ -5803,8 +5831,8 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 대체 훈련사 지원 API
-  app.post("/api/substitute-posts/:id/apply", async (req, res) => {
+  // 대체 훈련사 지원 API - 훈련사 인증 필요
+  app.post("/api/substitute-posts/:id/apply", requireAuth(['trainer', 'admin']), csrfProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const applicationData = req.body;
@@ -5857,7 +5885,7 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  app.put("/api/substitute-alerts/:id/resolve", async (req, res) => {
+  app.put("/api/substitute-alerts/:id/resolve", requireAuth(['admin', 'trainer']), csrfProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const result = await storage.resolveSubstituteAlert(id);
@@ -9229,8 +9257,8 @@ app.get('/api/search', async (req, res) => {
 
   // Stripe 결제 시스템 API
   
-  // 강의 구매 및 상품 구매 결제 인텐트 생성
-  app.post('/api/create-payment-intent', async (req, res) => {
+  // 강의 구매 및 상품 구매 결제 인텐트 생성 - 인증, CSRF 보호, 입력 검증 적용
+  app.post('/api/create-payment-intent', requireAuth(), csrfProtection, validateRequest(createPaymentIntentSchema), async (req, res) => {
     try {
       const { amount, courseId, courseTitle, itemId, itemName, itemType } = req.body;
       

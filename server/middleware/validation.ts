@@ -98,3 +98,48 @@ export const updateCourseStatusSchema = {
     courseId: z.string().min(1, '강좌 ID는 필수입니다.')
   })
 };
+
+// 대체 훈련사 게시글 생성 스키마
+export const createSubstitutePostSchema = {
+  body: z.object({
+    title: z.string().min(1, '제목은 필수입니다.').max(100, '제목은 100자 이하여야 합니다.'),
+    description: z.string().min(10, '설명은 최소 10자 이상이어야 합니다.').max(1000, '설명은 1000자 이하여야 합니다.'),
+    date: z.string().min(1, '수업 날짜는 필수입니다.'),
+    time: z.string().min(1, '수업 시간은 필수입니다.'),
+    location: z.string().min(1, '수업 장소는 필수입니다.'),
+    pay: z.number().min(0, '급여는 0원 이상이어야 합니다.'),
+    requirements: z.array(z.string()).optional(),
+    urgent: z.boolean().optional().default(false)
+  })
+};
+
+// 대체 훈련사 게시글 수정 스키마
+export const updateSubstitutePostSchema = {
+  body: z.object({
+    title: z.string().min(1, '제목은 필수입니다.').max(100, '제목은 100자 이하여야 합니다.').optional(),
+    description: z.string().min(10, '설명은 최소 10자 이상이어야 합니다.').max(1000, '설명은 1000자 이하여야 합니다.').optional(),
+    date: z.string().min(1, '수업 날짜는 필수입니다.').optional(),
+    time: z.string().min(1, '수업 시간은 필수입니다.').optional(),
+    location: z.string().min(1, '수업 장소는 필수입니다.').optional(),
+    pay: z.number().min(0, '급여는 0원 이상이어야 합니다.').optional(),
+    requirements: z.array(z.string()).optional(),
+    urgent: z.boolean().optional()
+  }),
+  params: z.object({
+    id: z.string().min(1, '게시글 ID는 필수입니다.')
+  })
+};
+
+// 결제 인텐트 생성 스키마
+export const createPaymentIntentSchema = {
+  body: z.object({
+    amount: z.number().min(1, '금액은 1원 이상이어야 합니다.').max(10000000, '금액은 천만원 이하여야 합니다.'),
+    courseId: z.string().optional(),
+    courseTitle: z.string().optional(),
+    itemId: z.string().optional(),
+    itemName: z.string().optional(),
+    itemType: z.enum(['course', 'product']).optional()
+  }).refine(data => data.courseId || data.itemId, {
+    message: '강의 ID 또는 상품 ID가 필요합니다.'
+  })
+};
