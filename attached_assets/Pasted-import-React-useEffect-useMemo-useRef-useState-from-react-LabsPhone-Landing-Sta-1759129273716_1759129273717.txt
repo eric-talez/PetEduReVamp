@@ -1,0 +1,426 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
+/**
+ * LabsPhone – Landing Starter (React + Tailwind only)
+ * - Design tokens (CSS variables)
+ * - Duotone icon set (12)
+ * - Hero + Feature Grid + Transparency + Testimonials + Footer
+ * - Live Countdown (초 단위) + Realtime Inquiry Counter (mock)
+ * - No external deps (safe in preview)
+ */
+
+// =====================
+//  Design Tokens (CSS)
+// =====================
+const DesignTokens = () => (
+  <style>{`
+    :root{
+      --brand:#5B7CFF;        /* 신뢰 파란 */
+      --brand-2:#7C4DFF;      /* 포인트 보라 */
+      --tile-blue:#E8F1FF;
+      --tile-lilac:#EEE7FF;
+      --tile-teal:#E6FFFA;
+      --tile-yellow:#FFF6D6;
+      --tile-pink:#FFE4EA;
+      --txt-strong:#0D1321;
+      --txt:#232B3A;
+      --txt-weak:#6B7486;
+      --ok:#23C552; --warn:#FFB020; --danger:#FF5D5D;
+      --line:#E6E8ED; --card:#FFFFFF; --bg:#FAFBFE;
+      --r-8:8px; --r-12:12px; --r-16:16px; --r-24:24px;
+      --shadow:0 6px 20px rgba(18,25,38,.06);
+    }
+    .tile{ border-radius: var(--r-16); box-shadow: var(--shadow); }
+    .duo{ fill: currentColor; }
+    .btn{ border-radius: 9999px; padding: 12px 20px; font-weight: 700; }
+    .btn-primary{ background: var(--brand); color:#fff; }
+    .btn-ghost{ background: #fff; color: var(--txt-strong); border:1px solid var(--line); }
+    .pulse{ animation:pulse 1s ease-out 1; }
+    @keyframes pulse{ 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
+  `}</style>
+);
+
+// =====================
+//  Duotone Icons (12)
+// =====================
+const IconWrap: React.FC<{ bg?: string; children: React.ReactNode }>=({ bg, children })=> (
+  <div
+    className={`tile flex h-16 w-16 items-center justify-center transition-transform hover:-translate-y-0.5 hover:scale-[1.02]`}
+    style={{ background: bg ?? "var(--tile-blue)" }}
+    aria-hidden
+  >
+    {children}
+  </div>
+);
+
+const IconPriceTag = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8" aria-hidden>
+    <path className="duo" d="M12 28L36 4l16 16L28 44 12 28z" fill="currentColor"/>
+    <circle cx="40" cy="16" r="4" fill="var(--brand-2)"/>
+  </svg>
+);
+const IconNoAddon = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <circle cx="32" cy="32" r="20" fill="#EDE7F7"/>
+    <text x="32" y="38" textAnchor="middle" fontSize="28" fontWeight="800" fill="#6B46C1">0</text>
+    <line x1="12" y1="52" x2="52" y2="12" stroke="#6B46C1" strokeWidth="5" strokeLinecap="round"/>
+  </svg>
+);
+const IconLightning = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <polygon points="36 4 12 36 28 36 24 60 52 24 36 24" fill="var(--brand)"/>
+  </svg>
+);
+const IconDocOCR = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <rect x="12" y="8" width="40" height="48" rx="6" fill="#E6FFFA"/>
+    <rect x="18" y="18" width="28" height="6" rx="3" fill="#2A9D8F"/>
+    <rect x="18" y="28" width="20" height="6" rx="3" fill="#2A9D8F"/>
+    <rect x="18" y="38" width="14" height="6" rx="3" fill="#2A9D8F"/>
+    <circle cx="44" cy="44" r="6" fill="var(--brand)"/>
+  </svg>
+);
+const IconShield = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <path d="M32 6l18 6v14c0 12-7.6 22.5-18 26C21.6 48.5 14 38 14 26V12l18-6z" fill="#E8F1FF"/>
+    <path d="M32 14l10 3v9c0 8-4.8 15-10 17-5.2-2-10-9-10-17v-9l10-3z" fill="var(--brand)"/>
+    <path d="M26 28l4 4 8-8" stroke="#fff" strokeWidth="4" strokeLinecap="round" fill="none"/>
+  </svg>
+);
+const IconCardDiscount = () => (
+  <svg viewBox="0 0 64 32" className="h-8 w-8">
+    <rect x="2" y="4" width="60" height="24" rx="6" fill="#FFE4EA"/>
+    <rect x="8" y="10" width="14" height="4" rx="2" fill="#FF5D8F"/>
+    <circle cx="46" cy="20" r="3" fill="#FF5D8F"/>
+    <circle cx="54" cy="20" r="3" fill="#FF5D8F"/>
+    <path d="M18 26 L46 6" stroke="#FF5D8F" strokeWidth="4"/>
+  </svg>
+);
+const IconDrawer = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <rect x="8" y="12" width="48" height="40" rx="8" fill="#FFF6D6"/>
+    <rect x="12" y="28" width="40" height="16" rx="4" fill="#F59E0B"/>
+    <circle cx="32" cy="36" r="3" fill="#fff"/>
+  </svg>
+);
+const IconStars = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <polygon points="32,8 38,24 56,24 42,34 48,50 32,40 16,50 22,34 8,24 26,24" fill="#FFD166"/>
+  </svg>
+);
+const IconTelcoTri = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <circle cx="20" cy="32" r="10" fill="#5B7CFF"/>
+    <circle cx="44" cy="20" r="10" fill="#7C4DFF"/>
+    <circle cx="44" cy="44" r="10" fill="#23C552"/>
+  </svg>
+);
+const IconHeadset = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <path d="M12 34a20 20 0 1140 0v12a6 6 0 01-6 6h-4v-8h6V34a16 16 0 10-32 0v10h6v8h-4a6 6 0 01-6-6V34z" fill="#E8F1FF"/>
+    <rect x="18" y="34" width="8" height="12" rx="4" fill="var(--brand)"/>
+    <rect x="38" y="34" width="8" height="12" rx="4" fill="var(--brand)"/>
+  </svg>
+);
+const IconClock = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <circle cx="32" cy="32" r="24" fill="#EEE7FF"/>
+    <path d="M32 18v14l10 6" stroke="#6B46C1" strokeWidth="4" strokeLinecap="round" fill="none"/>
+  </svg>
+);
+const IconRibbon = () => (
+  <svg viewBox="0 0 64 64" className="h-8 w-8">
+    <circle cx="24" cy="24" r="12" fill="#E6FFFA"/>
+    <path d="M24 12a12 12 0 110 24 12 12 0 010-24z" stroke="#2A9D8F" strokeWidth="4" fill="none"/>
+    <path d="M30 34l10 12-8-2-4 8-4-12" fill="#2A9D8F"/>
+  </svg>
+);
+
+// Convenience map for listing
+const ICONS = {
+  price: <IconPriceTag/>,
+  zero: <IconNoAddon/>,
+  bolt: <IconLightning/>,
+  ocr: <IconDocOCR/>,
+  shield: <IconShield/>,
+  card: <IconCardDiscount/>,
+  drawer: <IconDrawer/>,
+  stars: <IconStars/>,
+  telco: <IconTelcoTri/>,
+  help: <IconHeadset/>,
+  clock: <IconClock/>,
+  ribbon: <IconRibbon/>,
+};
+
+// =====================
+//  Utilities
+// =====================
+function classNames(...arr: (string | false | undefined)[]) {
+  return arr.filter(Boolean).join(" ");
+}
+
+// 초 단위 카운트다운 (target: Date)
+const useCountdown = (target: Date) => {
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => rerender((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const now = new Date().getTime();
+  const diff = Math.max(0, target.getTime() - now);
+  const s = Math.floor(diff / 1000);
+  const hh = String(Math.floor(s / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return { hh, mm, ss, s };
+};
+
+// 문의건수 모의 증가
+const useInquiryCounter = (initial = 128) => {
+  const [count, setCount] = useState(initial);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setCount((c) => c + Math.floor(Math.random() * 3));
+    }, 4000);
+    return () => clearInterval(t);
+  }, []);
+  return count;
+};
+
+// =====================
+//  Sections
+// =====================
+const StatBadge: React.FC<{ label: string; value: string; tone?: string }> = ({ label, value, tone }) => (
+  <div className="flex items-center gap-2 rounded-full border px-3 py-1 text-sm" style={{ borderColor: "var(--line)", background: "#fff" }}>
+    <span className="font-semibold" style={{ color: tone ?? "var(--brand)" }}>{value}</span>
+    <span className="text-[13px] text-[color:var(--txt-weak)]">{label}</span>
+  </div>
+);
+
+const Countdown: React.FC<{ hoursFromNow?: number }> = ({ hoursFromNow = 4 }) => {
+  const target = useMemo(() => {
+    const d = new Date();
+    d.setHours(d.getHours() + hoursFromNow);
+    d.setSeconds(0);
+    return d;
+  }, [hoursFromNow]);
+  const { hh, mm, ss } = useCountdown(target);
+  const [pulse, setPulse] = useState(false);
+  useEffect(() => {
+    if (ss === "00") {
+      setPulse(true);
+      const t = setTimeout(() => setPulse(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [ss]);
+  return (
+    <div className={classNames("tile inline-flex items-center gap-2 px-3 py-2", pulse && "pulse")} style={{ background: "var(--tile-lilac)" }}>
+      <IconClock/>
+      <div className="font-mono text-lg font-bold">{hh}:{mm}:{ss}</div>
+      <div className="text-sm text-[color:var(--txt-weak)]">오늘의 딜 마감</div>
+    </div>
+  );
+};
+
+const Hero: React.FC = () => {
+  const inquiries = useInquiryCounter(372);
+  return (
+    <section className="relative mx-auto max-w-6xl px-4 pt-14 pb-10">
+      <div className="grid items-center gap-10 md:grid-cols-2">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-[var(--tile-teal)] px-3 py-1 text-sm font-semibold text-[color:var(--txt)]">
+            <span className="text-[12px]">LabsPhone</span>
+            <span className="text-[12px] text-[color:var(--txt-weak)]">부가서비스 0 · 거짓 없는 최저가</span>
+          </div>
+          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-[color:var(--txt-strong)] md:text-5xl">
+            핸드폰, <span style={{ color: "var(--brand)" }}>거짓 없이 최저가</span>.
+            <br className="hidden sm:block"/> 원하는 요금제 그대로.
+          </h1>
+          <p className="mt-4 text-[color:var(--txt)]">
+            정책 원본 공개(OCR), 판매자 인증, 즉시개통까지 한 번에. 오늘의 딜은 카운트다운 안에만 유효합니다.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button className="btn btn-primary">최저가 확인</button>
+            <button className="btn btn-ghost">즉시 개통하기</button>
+            <Countdown/>
+          </div>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <StatBadge label="실시간 문의" value={`${inquiries.toLocaleString()} 건/24h`} />
+            <StatBadge label="오늘 마감 딜" value={"23 개"} tone="var(--brand-2)"/>
+          </div>
+        </div>
+        <div className="relative">
+          <div className="tile relative mx-auto h-72 w-full max-w-md bg-[var(--bg)] p-6">
+            <div className="absolute -left-6 -top-6 rotate-[-8deg]">
+              <IconWrap bg="var(--tile-yellow)"><IconPriceTag/></IconWrap>
+            </div>
+            <div className="absolute -right-6 -bottom-6 rotate-[10deg]">
+              <IconWrap bg="var(--tile-pink)"><IconNoAddon/></IconWrap>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { icon: ICONS.bolt, label: "즉시개통" },
+                { icon: ICONS.ocr, label: "정책 OCR" },
+                { icon: ICONS.card, label: "카드할인" },
+                { icon: ICONS.shield, label: "판매자 인증" },
+                { icon: ICONS.stars, label: "리뷰 보증" },
+                { icon: ICONS.drawer, label: "내 견적함" },
+              ].map((it, i) => (
+                <div key={i} className="tile flex flex-col items-center gap-2 bg-white p-3 text-center transition-transform hover:-translate-y-0.5">
+                  <div className="h-10">{it.icon}</div>
+                  <div className="text-sm font-semibold text-[color:var(--txt)]">{it.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const FeatureGrid: React.FC = () => (
+  <section className="mx-auto max-w-6xl px-4 py-8">
+    <div className="grid gap-5 md:grid-cols-3">
+      {[
+        { bg: "var(--tile-blue)", icon: ICONS.bolt, title: "간편 신청", desc: "모델·색상·용량, 요금제 선택까지 1분" },
+        { bg: "var(--tile-lilac)", icon: ICONS.drawer, title: "내 견적함", desc: "판매자/정책 이미지 비교 & 가격 구성표" },
+        { bg: "var(--tile-teal)", icon: ICONS.clock, title: "즉시개통/오늘 수령", desc: "재고·개통 가능 시간 실시간 표시" },
+      ].map((f, i) => (
+        <div key={i} className="tile flex items-start gap-4 bg-white p-6">
+          <IconWrap bg={f.bg}>{f.icon}</IconWrap>
+          <div>
+            <h3 className="text-lg font-bold text-[color:var(--txt-strong)]">{f.title}</h3>
+            <p className="mt-1 text-[color:var(--txt)]">{f.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
+const Transparency: React.FC = () => (
+  <section className="mx-auto max-w-6xl px-4 py-10">
+    <div className="tile grid gap-8 bg-white p-6 md:grid-cols-2">
+      <div>
+        <h3 className="text-2xl font-extrabold text-[color:var(--txt-strong)]">가격 구성표 – 숨김없이 공개</h3>
+        <p className="mt-2 text-[color:var(--txt)]">출고가, 공시/추가지원금, 카드할인, 플랫폼/판매자 수수료까지 투명 공개합니다.</p>
+        <div className="mt-4 divide-y rounded-lg border" style={{ borderColor: "var(--line)" }}>
+          {[
+            { k: "출고가", v: "1,452,000원" },
+            { k: "공시/추가지원금", v: "-420,000원" },
+            { k: "카드할인", v: "-120,000원" },
+            { k: "플랫폼 수수료", v: "0원 (프로모션)" },
+            { k: "판매자 수수료", v: "-10,000원" },
+            { k: "최종 결제금액", v: "902,000원", strong: true },
+          ].map((row, i) => (
+            <div key={i} className="flex items-center justify-between px-4 py-3">
+              <div className="text-[color:var(--txt)]">{row.k}</div>
+              <div className={classNames("font-semibold", row.strong && "text-xl text-[color:var(--brand)]")}>{row.v}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button className="btn btn-primary">정책 원본 보기 (OCR)</button>
+          <button className="btn btn-ghost">판매자 인증 기준</button>
+        </div>
+      </div>
+      <div>
+        <h3 className="text-2xl font-extrabold text-[color:var(--txt-strong)]">신뢰 배지 & 기능</h3>
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          {[ {label:"정직 최저가", icon: ICONS.price, bg:"var(--tile-blue)"},
+             {label:"부가서비스 0", icon: ICONS.zero, bg:"var(--tile-pink)"},
+             {label:"통신3사 지원", icon: ICONS.telco, bg:"var(--tile-lilac)"},
+             {label:"A/S·환불 안내", icon: ICONS.ribbon, bg:"var(--tile-teal)"} ].map((b,i)=> (
+            <div key={i} className="tile flex items-center gap-3 bg-white p-4">
+              <IconWrap bg={b.bg}>{b.icon}</IconWrap>
+              <div className="font-semibold text-[color:var(--txt)]">{b.label}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex items-center gap-3 text-sm text-[color:var(--txt-weak)]">
+          <IconHeadset/> 365일 상담 · 응답속도 평균 2분 · 취소율 0.7%
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const Testimonials: React.FC = () => (
+  <section className="mx-auto max-w-6xl px-4 pb-16">
+    <h3 className="text-2xl font-extrabold text-[color:var(--txt-strong)]">구매 후기</h3>
+    <div className="mt-4 grid gap-4 md:grid-cols-3">
+      {[
+        { name: "이**", model: "S25 Ultra 512G / 자유요금제", text: "부가서비스 강요 없이 진짜 최저가로 샀어요. 정책 원본까지 확인되니 안심." },
+        { name: "박**", model: "아이폰 16 / 카드할인", text: "딜 카운트다운 덕에 망설임 없이 결제 성공. 개통까지 30분!" },
+        { name: "김**", model: "A55 / 공시지원", text: "판매자 인증 기준이 명확해서 신뢰가 갔습니다." },
+      ].map((t, i) => (
+        <div key={i} className="tile bg-white p-5">
+          <div className="flex items-center gap-2 text-[color:var(--txt-weak)]">
+            <IconStars/>
+            <span className="text-sm">{t.model}</span>
+          </div>
+          <p className="mt-2 text-[color:var(--txt)]">“{t.text}”</p>
+          <div className="mt-3 text-sm font-semibold text-[color:var(--txt-strong)]">{t.name} 님</div>
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
+const Footer: React.FC = () => (
+  <footer className="border-t py-8 text-sm" style={{ borderColor: "var(--line)" }}>
+    <div className="mx-auto max-w-6xl px-4 text-[color:var(--txt-weak)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="font-semibold text-[color:var(--txt)]">㈜ 히든랩스 · LabsPhone</div>
+          <div className="mt-1">사업자등록번호 · 통신판매업 신고 · PG사 정보</div>
+          <div className="mt-1">
+            <a href="#" className="underline">개인정보처리방침</a> · <a href="#" className="underline">전자금융거래 이용약관</a>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="btn btn-ghost">카카오 상담</button>
+          <button className="btn btn-primary">바로 문의</button>
+        </div>
+      </div>
+    </div>
+  </footer>
+);
+
+// =====================
+//  Page
+// =====================
+export default function LabsPhoneLanding(){
+  return (
+    <div className="min-h-screen bg-[var(--bg)] font-sans">
+      <DesignTokens/>
+      <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur" style={{ borderColor: "var(--line)" }}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="tile grid h-9 w-9 place-items-center bg-[var(--tile-blue)]"><IconLightning/></div>
+            <div className="text-lg font-extrabold" style={{ color: "var(--brand)" }}>LabsPhone</div>
+          </div>
+          <nav className="hidden items-center gap-6 md:flex text-[color:var(--txt)]">
+            <a href="#" className="hover:text-[color:var(--brand)]">가격</a>
+            <a href="#" className="hover:text-[color:var(--brand)]">정책·투명성</a>
+            <a href="#" className="hover:text-[color:var(--brand)]">후기</a>
+          </nav>
+          <div className="flex items-center gap-2">
+            <button className="btn btn-ghost">로그인</button>
+            <button className="btn btn-primary">시작하기</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <Hero/>
+        <FeatureGrid/>
+        <Transparency/>
+        <Testimonials/>
+      </main>
+
+      <Footer/>
+    </div>
+  );
+}
