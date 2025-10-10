@@ -37,6 +37,7 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
   const [markers, setMarkers] = useState<any[]>([]);
   const [isLocating, setIsLocating] = useState(false);
   const [myLocation, setMyLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [mapLoadError, setMapLoadError] = useState(false);
 
   // 맵 초기화 
   useEffect(() => {
@@ -45,32 +46,61 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
     const initializeMap = () => {
       if (!window.kakao) {
         console.error('카카오 맵 API가 로드되지 않았습니다.');
+        setMapLoadError(true);
         return;
       }
 
-      // 서울 시청 좌표를 기본 중심점으로 사용
-      const defaultCenter = new window.kakao.maps.LatLng(37.5665, 126.9780);
-      
-      const options = {
-        center: defaultCenter,
-        level: 5
-      };
+      try {
+        // 서울 시청 좌표를 기본 중심점으로 사용
+        const defaultCenter = new window.kakao.maps.LatLng(37.5665, 126.9780);
+        
+        const options = {
+          center: defaultCenter,
+          level: 5
+        };
 
-      const newMap = new window.kakao.maps.Map(mapContainerRef.current, options);
-      setMap(newMap);
+        const newMap = new window.kakao.maps.Map(mapContainerRef.current, options);
+        setMap(newMap);
+        setMapLoadError(false);
+      } catch (error) {
+        console.error('카카오 맵 초기화 실패:', error);
+        setMapLoadError(true);
+        toast({
+          title: "지도 로드 실패",
+          description: "카카오맵을 불러오는데 실패했습니다. 페이지를 새로고침 해주세요.",
+          variant: "destructive"
+        });
+      }
     };
 
-    // 카카오맵 스크립트 로드 확인
+    // 카카오맵 스크립트 로드 확인 (최대 10초 대기)
     if (window.kakao && window.kakao.maps) {
       initializeMap();
     } else {
       console.log('카카오맵 로딩 중...');
+      let attempts = 0;
+      const maxAttempts = 33; // 약 10초 (300ms * 33)
+      
       const checkKakaoMapInterval = setInterval(() => {
+        attempts++;
+        
         if (window.kakao && window.kakao.maps) {
           clearInterval(checkKakaoMapInterval);
           initializeMap();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkKakaoMapInterval);
+          console.error('카카오맵 로드 시간 초과');
+          setMapLoadError(true);
+          toast({
+            title: "지도 로드 시간 초과",
+            description: "카카오맵을 불러오는데 시간이 너무 오래 걸립니다. 페이지를 새로고침 해주세요.",
+            variant: "destructive"
+          });
         }
       }, 300);
+
+      // cleanup
+      return () => clearInterval(checkKakaoMapInterval);
     }
   }, []);
 
@@ -251,25 +281,46 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
         <div 
           ref={mapContainerRef} 
           className="h-[350px] w-full rounded-lg bg-gray-100 dark:bg-gray-800 mb-4"
-        />
+        >
+          {/* 지도 로드 실패 시 fallback UI */}
+          {mapLoadError && (
+            <div className="flex flex-col items-center justify-center h-full text-center p-6">
+              <MapPin className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">지도를 불러올 수 없습니다</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                카카오맵 서비스에 연결할 수 없습니다.<br />
+                페이지를 새로고침하거나 잠시 후 다시 시도해주세요.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+              >
+                페이지 새로고침
+              </Button>
+            </div>
+          )}
+        </div>
         
         {/* 내 위치 찾기 버튼 */}
-        <div className="absolute bottom-4 right-4 z-10">
-          <Button
-            variant="default"
-            size="sm"
-            className="flex items-center space-x-1 bg-white/90 hover:bg-white text-black shadow-md"
-            onClick={findMyLocation}
-            disabled={isLocating}
-          >
-            {isLocating ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-1" />
-            ) : (
-              <Locate className="h-4 w-4 mr-1" />
-            )}
-            <span>{isLocating ? "위치 찾는 중..." : "내 위치 찾기"}</span>
-          </Button>
-        </div>
+        {!mapLoadError && (
+          <div className="absolute bottom-4 right-4 z-10">
+            <Button
+              variant="default"
+              size="sm"
+              className="flex items-center space-x-1 bg-white/90 hover:bg-white text-black shadow-md"
+              onClick={findMyLocation}
+              disabled={isLocating || !map}
+            >
+              {isLocating ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Locate className="h-4 w-4 mr-1" />
+              )}
+              <span>{isLocating ? "위치 찾는 중..." : "내 위치 찾기"}</span>
+            </Button>
+          </div>
+        )}
       </div>
       
       {/* 위치 및 날씨 정보 */}
