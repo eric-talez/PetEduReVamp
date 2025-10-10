@@ -6,36 +6,6 @@
     "auditLog": "/home/runner/workspace/logs/.def2f1a9ee0e8309358a0ec557e2d49e24ceb70e-audit.json",
     "files": [
         {
-            "date": 1757957707752,
-            "name": "/home/runner/workspace/logs/application-2025-09-15.log",
-            "hash": "0326df4d20415efcd8a4190c1a810d39740df5ddc51dcf5b307071ce4e583fb8"
-        },
-        {
-            "date": 1758087459806,
-            "name": "/home/runner/workspace/logs/application-2025-09-17.log",
-            "hash": "e9c2ed7d12569d2c857afb341575ce3833b97b20ef87bd1f2413c68a6cc2161c"
-        },
-        {
-            "date": 1758258633676,
-            "name": "/home/runner/workspace/logs/application-2025-09-19.log",
-            "hash": "ef703ab55420bd62fba6c42b3f76df75b0905e6df77970996f1c488036b9957a"
-        },
-        {
-            "date": 1758449888269,
-            "name": "/home/runner/workspace/logs/application-2025-09-21.log",
-            "hash": "e1148b68f47bfed159afb4ad4d9a09ad6836ab3b35a4ca93c69848722ceaa97b"
-        },
-        {
-            "date": 1758509386961,
-            "name": "/home/runner/workspace/logs/application-2025-09-22.log",
-            "hash": "c2f21bfdc9d92876b9063262b4be5c9b562630fb9ad0e3edf24ce342f56997c8"
-        },
-        {
-            "date": 1758588687617,
-            "name": "/home/runner/workspace/logs/application-2025-09-23.log",
-            "hash": "ec638b0dd2ec0770b54fcb996679571120fab594581252dfd16d5ba47d487e4a"
-        },
-        {
             "date": 1759075931555,
             "name": "/home/runner/workspace/logs/application-2025-09-28.log",
             "hash": "d405a2f68fc0a44c3ce761c11157773c9c5d810918b74fb37cac6fb25805882c"
@@ -44,6 +14,11 @@
             "date": 1759108393227,
             "name": "/home/runner/workspace/logs/application-2025-09-29.log",
             "hash": "1d73b2b4db9e1adf577a785ffb6ca1fc65f428e89c2b794769f8b77a98237795"
+        },
+        {
+            "date": 1760085822663,
+            "name": "/home/runner/workspace/logs/application-2025-10-10.log",
+            "hash": "4fd5c137c3f154af8a8fdef4fbf2f84d4592be6b594b741a76e9e3f47ea1d2bb"
         }
     ],
     "hashType": "sha256"

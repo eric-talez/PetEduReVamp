@@ -6,21 +6,6 @@
     "auditLog": "/home/runner/workspace/logs/.096e1c15fa6b67cb89654e1d2c4090d3c7198205-audit.json",
     "files": [
         {
-            "date": 1756652302829,
-            "name": "/home/runner/workspace/logs/error-2025-08-31.log",
-            "hash": "cd7d4e97141e7d827c4c2b3edaf5268573641a798a05c55138591392734d5e72"
-        },
-        {
-            "date": 1757318287504,
-            "name": "/home/runner/workspace/logs/error-2025-09-08.log",
-            "hash": "09b953846b22f87366a3ea630b6748df8f65b5cc7314175e0e6d3237139fe2ea"
-        },
-        {
-            "date": 1757435185103,
-            "name": "/home/runner/workspace/logs/error-2025-09-09.log",
-            "hash": "774c0f8857245bc74d475b9af8568d48dcd6d3e921962df52b7d1279726d7064"
-        },
-        {
             "date": 1757957707757,
             "name": "/home/runner/workspace/logs/error-2025-09-15.log",
             "hash": "adadb471a0176688414bd06b064e6729f59fce8da3ad91842c7af11586d7e9c8"
@@ -59,6 +44,11 @@
             "date": 1759108393230,
             "name": "/home/runner/workspace/logs/error-2025-09-29.log",
             "hash": "7fa239f2ba03457e60011300f5ec61d1c158137f24a52b0402293dc5de8422eb"
+        },
+        {
+            "date": 1760085822682,
+            "name": "/home/runner/workspace/logs/error-2025-10-10.log",
+            "hash": "abb6924be71aadcedc6bea7abe59a29f99a38048dcc944f46d403af86aab7d68"
         }
     ],
     "hashType": "sha256"
