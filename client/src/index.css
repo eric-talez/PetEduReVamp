@@ -6,58 +6,94 @@
 @tailwind utilities;
 
 @layer base {
-  /* 색상 변수 정의 */
+  /* 색상 변수 정의 - 모던 팔레트 */
   :root {
+    /* 기본 배경 및 전경 색상 */
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 240 10% 10%;
+    
+    /* 카드 색상 */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 240 10% 10%;
+    
+    /* 팝오버 색상 */
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --popover-foreground: 240 10% 10%;
+    
+    /* 주 색상 - 모던 인디고 */
+    --primary: 250 70% 50%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* 보조 색상 - 따뜻한 코랄 */
+    --secondary: 10 80% 65%;
+    --secondary-foreground: 240 10% 10%;
+    
+    /* 뮤트 색상 */
+    --muted: 240 10% 96%;
+    --muted-foreground: 240 5% 45%;
+    
+    /* 액센트 색상 - 프레시 민트 */
+    --accent: 170 60% 45%;
+    --accent-foreground: 240 10% 10%;
+    
+    /* 파괴적 액션 색상 */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* 경계선 및 입력 */
+    --border: 240 10% 88%;
+    --input: 240 10% 96%;
+    --ring: 250 70% 60%;
+    
+    /* 모서리 둥글기 */
     --radius: 0.5rem;
     
-    /* 커스텀 TALEZ 색상 */
-    --talez-primary: 217 91% 60%;
-    --talez-secondary: 212 100% 47%;
-    --talez-accent: 43 96% 56%;
-    --talez-success: 142 76% 36%;
-    --talez-warning: 38 92% 50%;
-    --talez-error: 0 84% 60%;
+    /* TALEZ 브랜드 색상 */
+    --talez-primary: 250 70% 50%;
+    --talez-secondary: 10 80% 65%;
+    --talez-accent: 170 60% 45%;
+    --talez-success: 140 60% 30%;
+    --talez-warning: 40 90% 60%;
+    --talez-error: 0 70% 50%;
   }
   
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    /* 다크 모드 기본 색상 */
+    --background: 240 10% 8%;
+    --foreground: 0 0% 95%;
+    
+    /* 다크 모드 카드 */
+    --card: 240 10% 12%;
+    --card-foreground: 0 0% 95%;
+    
+    /* 다크 모드 팝오버 */
+    --popover: 240 10% 12%;
+    --popover-foreground: 0 0% 95%;
+    
+    /* 다크 모드 주 색상 - 밝은 인디고 */
+    --primary: 250 70% 70%;
+    --primary-foreground: 0 0% 10%;
+    
+    /* 다크 모드 보조 색상 - 밝은 코랄 */
+    --secondary: 10 80% 70%;
+    --secondary-foreground: 0 0% 10%;
+    
+    /* 다크 모드 뮤트 */
+    --muted: 240 10% 18%;
+    --muted-foreground: 240 5% 65%;
+    
+    /* 다크 모드 액센트 - 밝은 민트 */
+    --accent: 170 60% 60%;
+    --accent-foreground: 0 0% 10%;
+    
+    /* 다크 모드 파괴적 액션 */
+    --destructive: 0 70% 65%;
+    --destructive-foreground: 0 0% 10%;
+    
+    /* 다크 모드 경계선 및 입력 */
+    --border: 240 10% 20%;
+    --input: 240 10% 15%;
+    --ring: 250 70% 70%;
   }
 
   /* 기본 타이포그래피 설정 */
@@ -709,70 +745,30 @@
 
 @layer base {
   :root {
-    /* 기본 배경 및 텍스트 색상 - 높은 대비 */
-    --background: 0 0% 100%;
-    --foreground: 220 13% 9%;  /* 더 어두운 텍스트 */
-
-    /* 카드 관련 색상 - 향상된 대비 */
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 9%;
-
-    /* 팝오버 관련 색상 */
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 9%;
-
-    /* 주 색상 - TALEZ 브랜드 에메랄드 그린 */
-    --primary: 160 84% 39%;  /* 에메랄드 그린 #059669 */
-    --primary-foreground: 0 0% 100%;  /* 흰색으로 대비 향상 */
-
-    /* 보조 색상 - TALEZ 보조 색상 따뜻한 오렌지 */
-    --secondary: 30 100% 60%;  /* 따뜻한 오렌지 #FF8C42 */
-    --secondary-foreground: 0 0% 0%;  /* 검은색 텍스트 */
-
-    /* 상태 색상 - Figma 디자인 기준 */
-    --success: 142 61% 42%;  /* Primary와 동일 #2BAA61 */
+    /* 상태 색상 */
+    --success: 140 60% 30%;
     --success-foreground: 0 0% 100%;
 
-    --info: 198 86% 58%;    /* Information #29B5F6 */
+    --info: 200 80% 35%;
     --info-foreground: 0 0% 100%;
 
-    --warning: 36 100% 58%;  /* Secondary와 동일 #FFA726 */
-    --warning-foreground: 0 0% 0%;
+    --warning: 40 90% 60%;
+    --warning-foreground: 240 10% 10%;
 
-    --error: 4 78% 56%;     /* Danger #E74D3C */
+    --error: 0 70% 50%;
     --error-foreground: 0 0% 100%;
 
-    /* 뮤트 색상 - 가독성 향상 */
-    --muted: 210 40% 94%;
-    --muted-foreground: 215.4 16.3% 35%;  /* 더 어두운 뮤트 텍스트 */
+    /* 추가 상태 변수 */
+    --hover: 240 10% 94%;
+    --active: 240 10% 90%;
+    --disabled: 240 10% 96%;
+    --disabled-foreground: 240 5% 60%;
 
-    /* 액센트 색상 */
-    --accent: 210 30% 96%;
-    --accent-foreground: 220 13% 9%;
-
-    /* 파괴적 액션 색상 - Figma Danger */
-    --destructive: 4 78% 56%;  /* #E74D3C */
-    --destructive-foreground: 0 0% 100%;
-
-    /* 경계선 및 입력 필드 관련 - 더 명확한 경계 */
-    --border: 214.3 31.8% 85%;  /* 더 어두운 경계선 */
-    --input: 214.3 31.8% 96%;   /* 입력 필드 배경 */
-    --ring: 142 61% 42%;        /* 포커스 링 - Primary 색상 */
-
-    /* 추가 색상 변수 */
-    --hover: 210 30% 92%;       /* 호버 상태 */
-    --active: 210 30% 88%;      /* 활성 상태 */
-    --disabled: 210 30% 96%;    /* 비활성 상태 */
-    --disabled-foreground: 215.4 16.3% 60%;
-
-    /* 모서리 둥글기 */
-    --radius: 0.5rem;
-
-    /* 그림자 변수 - 더 명확한 그림자 */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.08);
-    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.15), 0 1px 2px -1px rgb(0 0 0 / 0.15);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.15), 0 2px 4px -2px rgb(0 0 0 / 0.15);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.15), 0 4px 6px -4px rgb(0 0 0 / 0.15);
+    /* 그림자 변수 */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 2px 4px 0 rgb(0 0 0 / 0.08);
+    --shadow-md: 0 4px 8px 0 rgb(0 0 0 / 0.12);
+    --shadow-lg: 0 8px 16px 0 rgb(0 0 0 / 0.15);
 
     /* 전환 효과 타이밍 */
     --transition-fast: 150ms;
@@ -781,67 +777,30 @@
   }
 
   .dark {
-    /* 다크 모드 기본 배경 및 텍스트 색상 - 높은 대비 */
-    --background: 220 13% 9%;     /* 더 어두운 배경 */
-    --foreground: 0 0% 95%;       /* 더 밝은 텍스트 */
+    /* 다크 모드 상태 색상 */
+    --success: 140 60% 60%;
+    --success-foreground: 0 0% 10%;
 
-    /* 다크 모드 카드 관련 색상 - 향상된 대비 */
-    --card: 220 13% 12%;          /* 카드 배경 */
-    --card-foreground: 0 0% 95%;
+    --info: 200 80% 65%;
+    --info-foreground: 0 0% 10%;
 
-    /* 다크 모드 팝오버 관련 색상 */
-    --popover: 220 13% 12%;
-    --popover-foreground: 0 0% 95%;
+    --warning: 40 90% 65%;
+    --warning-foreground: 0 0% 10%;
 
-    /* 다크 모드 브랜드 색상 - TALEZ 에메랄드 (밝게 조정) */
-    --primary: 160 84% 50%;       /* 밝은 에메랄드 그린 */
-    --primary-foreground: 220 13% 9%;  /* 어두운 텍스트 */
+    --error: 0 70% 65%;
+    --error-foreground: 0 0% 10%;
 
-    /* 다크 모드 보조 색상 - TALEZ 오렌지 (조정) */
-    --secondary: 30 85% 45%;
-    --secondary-foreground: 0 0% 95%;
+    /* 다크 모드 추가 상태 */
+    --hover: 240 10% 22%;
+    --active: 240 10% 26%;
+    --disabled: 240 10% 15%;
+    --disabled-foreground: 240 5% 50%;
 
-    /* 다크 모드 상태 색상 - Figma 색상 밝게 조정 */
-    --success: 142 61% 55%;       /* Primary 밝은 버전 */
-    --success-foreground: 220 13% 9%;
-
-    --info: 198 86% 70%;          /* Information 밝은 버전 */
-    --info-foreground: 220 13% 9%;
-
-    --warning: 36 100% 70%;       /* Secondary 밝은 버전 */
-    --warning-foreground: 220 13% 9%;
-
-    --error: 4 78% 70%;           /* Danger 밝은 버전 */
-    --error-foreground: 220 13% 9%;
-
-    /* 다크 모드 뮤트 색상 - 가독성 향상 */
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 75%;  /* 더 밝은 뮤트 텍스트 */
-
-    /* 다크 모드 액센트 색상 */
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 0 0% 95%;
-
-    /* 다크 모드 파괴적 액션 색상 - Figma Danger */
-    --destructive: 4 78% 70%;
-    --destructive-foreground: 220 13% 9%;
-
-    /* 다크 모드 경계선 및 입력 필드 - 더 명확한 경계 */
-    --border: 217.2 32.6% 20%;    /* 더 밝은 경계선 */
-    --input: 217.2 32.6% 15%;     /* 입력 필드 배경 */
-    --ring: 142 61% 55%;          /* 포커스 링 - Primary 색상 */
-
-    /* 다크 모드 추가 색상 */
-    --hover: 217.2 32.6% 20%;     /* 호버 상태 */
-    --active: 217.2 32.6% 25%;    /* 활성 상태 */
-    --disabled: 217.2 32.6% 15%;  /* 비활성 상태 */
-    --disabled-foreground: 215 20.2% 50%;
-
-    /* 다크 모드 그림자 - 더 강한 그림자 */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.25);
-    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.35), 0 1px 2px -1px rgb(0 0 0 / 0.35);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35), 0 2px 4px -2px rgb(0 0 0 / 0.35);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+    /* 다크 모드 그림자 */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow: 0 2px 4px 0 rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 8px 0 rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 8px 16px 0 rgb(0 0 0 / 0.6);
   }
 }
 
@@ -910,18 +869,18 @@
   @apply bg-primary/10;
 }
 
-/* TALEZ 디자인 토큰 시스템 - LabsPhone 스타일 적용 */
+/* TALEZ 디자인 토큰 시스템 - 모던 스타일 */
 @layer base {
   :root {
-    /* TALEZ 브랜드 색상 */
-    --talez-primary: 160 84% 39%;     /* 에메랄드 그린 #059669 */
-    --talez-primary-light: 160 84% 50%;
-    --talez-secondary: 30 100% 60%;   /* 따뜻한 오렌지 #FF8C42 */
-    --talez-accent: 198 86% 58%;      /* 포인트 블루 #29B5F6 */
+    /* TALEZ 브랜드 색상 - 모던 팔레트 */
+    --talez-primary: 250 70% 50%;     /* 모던 인디고 */
+    --talez-primary-light: 250 70% 70%;
+    --talez-secondary: 10 80% 65%;    /* 따뜻한 코랄 */
+    --talez-accent: 170 60% 45%;      /* 프레시 민트 */
     
     /* 타일 색상 시스템 */
-    --tile-emerald: #E6FFFA;          /* 에메랄드 틴트 */
-    --tile-orange: #FFF4E6;           /* 오렌지 틴트 */
+    --tile-primary: #F0EBFF;          /* 인디고 틴트 */
+    --tile-secondary: #FFE8E8;        /* 코랄 틴트 */
     --tile-blue: #E8F1FF;             /* 블루 틴트 */
     --tile-purple: #EEE7FF;           /* 퍼플 틴트 */
     --tile-yellow: #FFF6D6;           /* 옐로우 틴트 */
