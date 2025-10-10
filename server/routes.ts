@@ -745,7 +745,6 @@ function requireAuth(...allowedRoles: string[]) {
 
 // Stripe 초기화 - 환경 변수 선택적 로드 (없어도 서버 시작 가능)
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-console.log('🔑 Stripe Secret Key 확인:', stripeSecretKey ? `${stripeSecretKey.substring(0, 15)}...` : 'NOT SET');
 
 let stripe: Stripe | null = null;
 
