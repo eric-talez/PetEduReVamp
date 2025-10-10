@@ -38,13 +38,63 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
   const [isLocating, setIsLocating] = useState(false);
   const [myLocation, setMyLocation] = useState<{lat: number, lng: number} | null>(null);
   const [mapLoadError, setMapLoadError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 카카오맵 스크립트 동적 로드
+  useEffect(() => {
+    const KAKAO_MAP_APP_KEY = 'ce38e8a3c2b566aeb9faf4c60b0153d2';
+    
+    // 이미 로드되어 있는지 확인
+    if (window.kakao && window.kakao.maps) {
+      setIsLoading(false);
+      return;
+    }
+
+    // 스크립트 태그 생성 및 추가
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_APP_KEY}&libraries=services,clusterer,drawing&autoload=false`;
+    script.async = true;
+    
+    script.onload = () => {
+      // kakao.maps.load를 사용하여 지도 API 로드
+      if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(() => {
+          console.log('카카오맵 API 로드 완료');
+          setIsLoading(false);
+        });
+      }
+    };
+    
+    script.onerror = () => {
+      console.error('카카오맵 스크립트 로드 실패');
+      setMapLoadError(true);
+      setIsLoading(false);
+      toast({
+        title: "지도 로드 실패",
+        description: "카카오맵 서비스에 연결할 수 없습니다.",
+        variant: "destructive"
+      });
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      // cleanup - 스크립트 제거
+      const existingScript = document.querySelector(`script[src*="dapi.kakao.com"]`);
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, []);
 
   // 맵 초기화 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    if (!mapContainerRef.current || isLoading) return;
+    if (mapLoadError) return;
 
     const initializeMap = () => {
-      if (!window.kakao) {
+      if (!window.kakao || !window.kakao.maps) {
         console.error('카카오 맵 API가 로드되지 않았습니다.');
         setMapLoadError(true);
         return;
@@ -61,7 +111,7 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
 
         const newMap = new window.kakao.maps.Map(mapContainerRef.current, options);
         setMap(newMap);
-        setMapLoadError(false);
+        console.log('카카오맵 초기화 성공');
       } catch (error) {
         console.error('카카오 맵 초기화 실패:', error);
         setMapLoadError(true);
@@ -73,36 +123,8 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
       }
     };
 
-    // 카카오맵 스크립트 로드 확인 (최대 10초 대기)
-    if (window.kakao && window.kakao.maps) {
-      initializeMap();
-    } else {
-      console.log('카카오맵 로딩 중...');
-      let attempts = 0;
-      const maxAttempts = 33; // 약 10초 (300ms * 33)
-      
-      const checkKakaoMapInterval = setInterval(() => {
-        attempts++;
-        
-        if (window.kakao && window.kakao.maps) {
-          clearInterval(checkKakaoMapInterval);
-          initializeMap();
-        } else if (attempts >= maxAttempts) {
-          clearInterval(checkKakaoMapInterval);
-          console.error('카카오맵 로드 시간 초과');
-          setMapLoadError(true);
-          toast({
-            title: "지도 로드 시간 초과",
-            description: "카카오맵을 불러오는데 시간이 너무 오래 걸립니다. 페이지를 새로고침 해주세요.",
-            variant: "destructive"
-          });
-        }
-      }, 300);
-
-      // cleanup
-      return () => clearInterval(checkKakaoMapInterval);
-    }
-  }, []);
+    initializeMap();
+  }, [isLoading, mapLoadError]);
 
   // 위치 변경 시 지도 중심점 변경
   useEffect(() => {
@@ -282,6 +304,17 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
           ref={mapContainerRef} 
           className="h-[350px] w-full rounded-lg bg-gray-100 dark:bg-gray-800 mb-4"
         >
+          {/* 로딩 중 UI */}
+          {isLoading && !mapLoadError && (
+            <div className="flex flex-col items-center justify-center h-full text-center p-6">
+              <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+              <h3 className="text-lg font-semibold mb-2">지도를 불러오는 중...</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                카카오맵을 로드하고 있습니다.
+              </p>
+            </div>
+          )}
+          
           {/* 지도 로드 실패 시 fallback UI */}
           {mapLoadError && (
             <div className="flex flex-col items-center justify-center h-full text-center p-6">
