@@ -42,7 +42,7 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
 
   // 카카오맵 스크립트 동적 로드
   useEffect(() => {
-    const KAKAO_MAP_APP_KEY = 'ce38e8a3c2b566aeb9faf4c60b0153d2';
+    const KAKAO_MAP_APP_KEY = import.meta.env.VITE_KAKAO_MAP_APP_KEY;
     
     // 이미 로드되어 있는지 확인
     if (window.kakao && window.kakao.maps) {
