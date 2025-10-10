@@ -8,7 +8,7 @@ import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { RealTimePopularChart } from '@/components/RealTimePopularChart';
 import { useState, lazy, Suspense, useEffect, useMemo } from 'react';
-import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCircle } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCircle, MapPin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { useQuery } from '@tanstack/react-query';
