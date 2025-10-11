@@ -231,11 +231,20 @@ export default function Home() {
     },
     {
       id: 8,
-      title: "기관 및 훈련소 등록",
-      subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 Talez와 함께하세요",
+      title: "전문 훈련사로 활동하기",
+      subtitle: "전문 지식과 경험을 바탕으로 TALEZ 플랫폼에서 훈련사로 활동하세요",
+      features: ["훈련사 등록", "고객 매칭", "안정적 수익"],
+      image: "/attached_assets/stock_images/certified_dog_traine_a553a840.jpg",
+      primaryAction: { text: "훈련사 등록", path: "/registration/trainer" },
+      secondaryAction: { text: "혜택 보기", path: "/trainer/benefits" }
+    },
+    {
+      id: 9,
+      title: "교육 기관 및 훈련소 등록",
+      subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 TALEZ와 함께하세요",
       features: ["기관 등록", "코스 관리", "수익 창출"],
       image: "/attached_assets/stock_images/happy_healthy_dog_ge_afc0c66b.jpg",
-      primaryAction: { text: "기관 등록", path: "/institutes/register" },
+      primaryAction: { text: "기관 등록", path: "/registration/institute" },
       secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
   ];
