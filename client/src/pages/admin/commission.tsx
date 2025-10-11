@@ -13,16 +13,18 @@ import { Pencil, Trash2, Search, Plus, Save, X, FileText, BarChart3, Eye, Calend
 import { InvoiceGenerator } from '@/components/InvoiceGenerator';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryClient, apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
-// 임시 데이터 - 실제로는 API에서 가져와야 함
-const MOCK_PRODUCTS = [
-  { id: 1, name: '기초 사회화 훈련 코스', category: '강의', price: 128000, commissionRate: 10 },
-  { id: 2, name: '문제행동 교정 프로그램', category: '강의', price: 165000, commissionRate: 15 },
-  { id: 3, name: '어질리티 초급 과정', category: '강의', price: 185000, commissionRate: 12 },
-  { id: 4, name: '반려견 장난감 세트', category: '상품', price: 45000, commissionRate: 8 },
-  { id: 5, name: '프리미엄 사료 (3kg)', category: '상품', price: 59000, commissionRate: 5 },
-  { id: 6, name: '반려견 트레이닝 클리커', category: '상품', price: 12000, commissionRate: 7 },
-];
+// API Response Types
+interface ProductWithCommission {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  commissionRate: number;
+}
 
 // 구독 상품 데이터
 const MOCK_SUBSCRIPTION_PRODUCTS = [
@@ -72,17 +74,10 @@ const MOCK_SUBSCRIPTION_PRODUCTS = [
   }
 ];
 
-const MOCK_REFERRERS = [
-  { id: 1, name: '김지훈', role: '훈련사', referralCode: 'TRAINER001', earningsTotal: 1250000, status: '지급대기' },
-  { id: 2, name: '서울 애견훈련소', role: '기관', referralCode: 'INST002', earningsTotal: 2380000, status: '지급완료' },
-  { id: 3, name: '박서연', role: '훈련사', referralCode: 'TRAINER003', earningsTotal: 950000, status: '지급대기' },
-  { id: 4, name: '댕댕이 멍멍이', role: '제휴사', referralCode: 'AFFILIATE004', earningsTotal: 1650000, status: '지급완료' },
-];
 
 export default function CommissionManagement() {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const { toast } = useToast();
   const [subscriptionProducts, setSubscriptionProducts] = useState(MOCK_SUBSCRIPTION_PRODUCTS);
-  const [referrers, setReferrers] = useState(MOCK_REFERRERS);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editingSubscriptionId, setEditingSubscriptionId] = useState<number | null>(null);
   const [newCommissionRate, setNewCommissionRate] = useState<number>(0);
@@ -97,6 +92,19 @@ export default function CommissionManagement() {
   const [isRevenueDetailOpen, setIsRevenueDetailOpen] = useState(false);
   const [selectedRevenueType, setSelectedRevenueType] = useState<'lecture' | 'product' | 'other' | null>(null);
   const [generatedInvoices, setGeneratedInvoices] = useState<any[]>([]);
+
+  // Products Query
+  const { data: productsData, isLoading: isLoadingProducts } = useQuery<{ success: boolean; products: ProductWithCommission[] }>({
+    queryKey: ['/api/admin/commission/products'],
+  });
+
+  // Referrers Query
+  const { data: referrersData, isLoading: isLoadingReferrers } = useQuery<{ success: boolean; referrers: any[] }>({
+    queryKey: ['/api/admin/commission/referrers'],
+  });
+
+  const products = productsData?.products || [];
+  const referrers = referrersData?.referrers || [];
   
   // 상품 검색 및 필터링 기능
   const filteredProducts = products.filter(product => {
@@ -105,18 +113,40 @@ export default function CommissionManagement() {
     return matchesSearch && matchesCategory;
   });
 
+  // Commission Rate Update Mutation
+  const updateCommissionRateMutation = useMutation({
+    mutationFn: async ({ productId, commissionRate }: { productId: number; commissionRate: number }) => {
+      return apiRequest(`/api/admin/commission/products/${productId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ commissionRate }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/commission/products'] });
+      toast({
+        title: "수수료율 수정 완료",
+        description: "상품 수수료율이 성공적으로 수정되었습니다.",
+      });
+      setEditingProductId(null);
+    },
+    onError: () => {
+      toast({
+        title: "오류 발생",
+        description: "수수료율 수정 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // 수수료율 편집 시작
-  const handleEditStart = (product: typeof MOCK_PRODUCTS[0]) => {
+  const handleEditStart = (product: ProductWithCommission) => {
     setEditingProductId(product.id);
     setNewCommissionRate(product.commissionRate);
   };
 
   // 수수료율 저장
   const handleSaveCommissionRate = (productId: number) => {
-    setProducts(products.map(product => 
-      product.id === productId ? { ...product, commissionRate: newCommissionRate } : product
-    ));
-    setEditingProductId(null);
+    updateCommissionRateMutation.mutate({ productId, commissionRate: newCommissionRate });
   };
 
   // 편집 취소
@@ -124,81 +154,54 @@ export default function CommissionManagement() {
     setEditingProductId(null);
   };
 
+  // Settlement Approval Mutation
+  const approveSettlementMutation = useMutation({
+    mutationFn: async ({ referrerId, amount, period }: { referrerId: number; amount: number; period: string }) => {
+      return apiRequest(`/api/admin/commission/settlements/${referrerId}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({ amount, period }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/commission/referrers'] });
+      toast({
+        title: "정산 승인 완료",
+        description: "정산이 성공적으로 처리되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "오류 발생",
+        description: "정산 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // 정산승인 처리
   const handleSettlementApproval = async (referrer: any) => {
-    try {
-      // 로딩 상태 표시
-      setReferrers(prev => 
-        prev.map(r => 
-          r.id === referrer.id 
-            ? { ...r, status: '처리중' }
-            : r
-        )
-      );
-
-      // 실제 정산 처리 API 호출
-      const response = await fetch(`/api/commission/settlements/${referrer.id}/approve`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          referrerId: referrer.id,
-          amount: Math.round(referrer.earningsTotal * (referrer.role === '훈련사' ? 0.15 : referrer.role === '기관' ? 0.10 : 0.05)),
-          period: '2025.01.01 ~ 2025.01.31'
-        })
-      });
-
-      if (response.ok) {
-        // 정산 승인 성공 시 상태 업데이트
-        setReferrers(prev => 
-          prev.map(r => 
-            r.id === referrer.id 
-              ? { ...r, status: '지급완료' }
-              : r
-          )
-        );
-        
-        // 성공 메시지 표시
-        alert(`${referrer.name}님의 정산이 성공적으로 처리되었습니다.`);
-        
-        // 계산서 발행 다이얼로그 열기
-        setSelectedSettlement(referrer);
-        setIsInvoiceDialogOpen(true);
-      } else {
-        throw new Error('정산 처리 실패');
-      }
-    } catch (error) {
-      // 오류 발생 시 상태 되돌리기
-      setReferrers(prev => 
-        prev.map(r => 
-          r.id === referrer.id 
-            ? { ...r, status: '지급대기' }
-            : r
-        )
-      );
-      
-      console.error('정산 처리 오류:', error);
-      alert('정산 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
+    const amount = Math.round(referrer.earningsTotal * (referrer.role === '훈련사' ? 0.15 : referrer.role === '기관' ? 0.10 : 0.05));
+    approveSettlementMutation.mutate({
+      referrerId: referrer.id,
+      amount,
+      period: '2025.01.01 ~ 2025.01.31'
+    });
+    
+    // 계산서 발행 다이얼로그 열기
+    setSelectedSettlement(referrer);
+    setIsInvoiceDialogOpen(true);
   };
 
   // 계산서 발행 완료 처리
   const handleInvoiceGenerated = (invoiceData: any) => {
-    // 정산 상태를 '지급완료'로 변경
-    setReferrers(prev => 
-      prev.map(referrer => 
-        referrer.id === selectedSettlement.id 
-          ? { ...referrer, status: '지급완료' }
-          : referrer
-      )
-    );
-    
     // 생성된 계산서 저장
     setGeneratedInvoices(prev => [...prev, invoiceData]);
     
     // 성공 메시지 표시
-    alert(`${selectedSettlement.name}님의 정산이 완료되었습니다.\n계산서 번호: ${invoiceData.id}`);
+    toast({
+      title: "정산 완료",
+      description: `${selectedSettlement.name}님의 정산이 완료되었습니다. 계산서 번호: ${invoiceData.id}`,
+    });
   };
 
   // 계산서 다이얼로그 닫기
@@ -320,65 +323,80 @@ export default function CommissionManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map(product => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>
-                          <Badge variant={product.category === '강의' ? 'default' : 'secondary'}>
-                            {product.category}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{product.price.toLocaleString()}원</TableCell>
-                        <TableCell>
-                          {editingProductId === product.id ? (
-                            <div className="w-24">
-                              <Input
-                                type="number"
-                                min="0"
-                                max="100"
-                                value={newCommissionRate}
-                                onChange={(e) => setNewCommissionRate(Number(e.target.value))}
-                                className="h-8"
-                              />
-                            </div>
-                          ) : (
-                            <span>{product.commissionRate}%</span>
-                          )}
-                        </TableCell>
-                        <TableCell>{Math.round(product.price * (product.commissionRate / 100)).toLocaleString()}원</TableCell>
-                        <TableCell>
-                          {editingProductId === product.id ? (
-                            <div className="flex space-x-1">
-                              <Button
-                                onClick={() => handleSaveCommissionRate(product.id)}
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 w-8 p-0"
-                              >
-                                <Save className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                onClick={handleCancelEdit}
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 w-8 p-0"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              onClick={() => handleEditStart(product)}
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          )}
+                    {isLoadingProducts ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          로딩 중...
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : filteredProducts.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                          상품이 없습니다.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredProducts.map(product => (
+                        <TableRow key={product.id}>
+                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={product.category === '강의' ? 'default' : 'secondary'}>
+                              {product.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{product.price.toLocaleString()}원</TableCell>
+                          <TableCell>
+                            {editingProductId === product.id ? (
+                              <div className="w-24">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={newCommissionRate}
+                                  onChange={(e) => setNewCommissionRate(Number(e.target.value))}
+                                  className="h-8"
+                                />
+                              </div>
+                            ) : (
+                              <span>{product.commissionRate}%</span>
+                            )}
+                          </TableCell>
+                          <TableCell>{Math.round(product.price * (product.commissionRate / 100)).toLocaleString()}원</TableCell>
+                          <TableCell>
+                            {editingProductId === product.id ? (
+                              <div className="flex space-x-1">
+                                <Button
+                                  onClick={() => handleSaveCommissionRate(product.id)}
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                  disabled={updateCommissionRateMutation.isPending}
+                                >
+                                  <Save className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  onClick={handleCancelEdit}
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                onClick={() => handleEditStart(product)}
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
                 {filteredProducts.length === 0 && (
@@ -604,36 +622,50 @@ export default function CommissionManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {referrers.map(referrer => (
-                      <TableRow key={referrer.id}>
-                        <TableCell className="font-medium">{referrer.name}</TableCell>
-                        <TableCell>
-                          <Badge variant={referrer.role === '훈련사' ? 'default' : (referrer.role === '기관' ? 'secondary' : 'outline')}>
-                            {referrer.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono">{referrer.referralCode}</TableCell>
-                        <TableCell>{referrer.earningsTotal.toLocaleString()}원</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                    {isLoadingReferrers ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          로딩 중...
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : referrers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          추천인이 없습니다.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      referrers.map(referrer => (
+                        <TableRow key={referrer.id}>
+                          <TableCell className="font-medium">{referrer.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={referrer.role === '훈련사' ? 'default' : (referrer.role === '기관' ? 'secondary' : 'outline')}>
+                              {referrer.role}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono">{referrer.referralCode}</TableCell>
+                          <TableCell>{referrer.earningsTotal.toLocaleString()}원</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
