@@ -513,7 +513,11 @@ async function startServer() {
       await setupVite(app, server);
     } else {
       // 정적 파일 서빙 - MIME 타입 명시
-      app.use(express.static(path.join(process.cwd(), 'dist/public'), {
+      // 배포 시 server/public 디렉토리에서 정적 파일 제공
+      const staticPath = path.join(process.cwd(), 'server/public');
+      console.log(`[Production] Serving static files from: ${staticPath}`);
+      
+      app.use(express.static(staticPath, {
         setHeaders: (res, filePath) => {
           if (filePath.endsWith('.css')) {
             res.setHeader('Content-Type', 'text/css');
