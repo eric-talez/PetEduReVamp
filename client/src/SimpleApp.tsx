@@ -2548,20 +2548,6 @@ function SimpleApp() {
   // 디버깅: 현재 인증 상태 출력
   console.log('SimpleApp render - Auth state:', auth);
 
-  // 인트로 페이지 체크 - 로그인 여부와 관계없이 최초 방문 시 인트로 표시
-  const hasVisited = localStorage.getItem('talez_visited');
-  
-  // 인트로 페이지가 필요한 경우 레이아웃 없이 인트로만 렌더링
-  if (!hasVisited) {
-    return (
-      <ThemeProvider defaultTheme="light" storageKey="petedu-theme">
-        <ThemeManager>
-          <Intro />
-        </ThemeManager>
-      </ThemeProvider>
-    );
-  }
-
   return (
     <ThemeProvider defaultTheme="light" storageKey="petedu-theme">
       <ThemeManager>
