@@ -4,17 +4,34 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
 export function setupProductionSecurity(app: Express) {
-  // Helmet 보안 헤더 설정
+  // Helmet 보안 헤더 설정 - 배포 환경에 맞게 완화
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "https://dapi.kakao.com", "https://developers.kakao.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        scriptSrc: [
+          "'self'", 
+          "'unsafe-inline'", 
+          "'unsafe-eval'",
+          "https://dapi.kakao.com", 
+          "https://developers.kakao.com",
+          "https://replit.com",
+          "https://*.replit.app"
+        ],
+        styleSrc: [
+          "'self'", 
+          "'unsafe-inline'", 
+          "https://fonts.googleapis.com",
+          "https://cdn.jsdelivr.net"
+        ],
+        fontSrc: [
+          "'self'", 
+          "https://fonts.gstatic.com",
+          "https://cdn.jsdelivr.net"
+        ],
         imgSrc: ["'self'", "data:", "https:", "blob:"],
-        connectSrc: ["'self'", "https://dapi.kakao.com", "wss:", "ws:"],
-        frameSrc: ["'none'"],
+        connectSrc: ["'self'", "https://dapi.kakao.com", "wss:", "ws:", "https:"],
+        frameSrc: ["'self'", "https://replit.com"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
         workerSrc: ["'self'", "blob:"]

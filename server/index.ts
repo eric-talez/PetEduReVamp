@@ -20,6 +20,7 @@ import { registerPaymentIntegrationRoutes } from "./routes/payment-integration";
 import { setupAuth } from "./auth";
 import { extendResponse } from "./middleware/api-standards";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler";
+import path from 'path'; // path 모듈 추가
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
@@ -27,22 +28,25 @@ const PORT = parseInt(process.env.PORT || "5000", 10);
 // Production proxy compatibility - CRITICAL for production deployment
 app.set('trust proxy', 1);
 
-// Security middleware - 프로덕션에서 unsafe 제거
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: process.env.NODE_ENV === 'production' 
-        ? ["'self'", "https://fonts.googleapis.com"]
-        : ["'self'", "'unsafe-inline'"],
-      scriptSrc: process.env.NODE_ENV === 'production'
-        ? ["'self'", "https://dapi.kakao.com", "https://developers.kakao.com"]
-        : ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:"],
+// CSP 설정: 개발 환경에서는 비활성화, 프로덕션에서는 필요한 소스만 허용
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com"],
+        scriptSrc: ["'self'", "https://dapi.kakao.com", "https://developers.kakao.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "ws:", "wss:"],
+      },
     },
-  },
-}));
+  }));
+} else {
+  // 개발 환경: 기본 Helmet만 사용 (CSP 비활성화)
+  app.use(helmet({
+    contentSecurityPolicy: false
+  }));
+}
 
 // CORS 설정 개선
 const allowedOrigins = process.env.NODE_ENV === 'production'
@@ -508,6 +512,19 @@ async function startServer() {
     if (process.env.NODE_ENV === "development") {
       await setupVite(app, server);
     } else {
+      // 정적 파일 서빙 - MIME 타입 명시
+      app.use(express.static(path.join(process.cwd(), 'dist/public'), {
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+          } else if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+          } else if (filePath.endsWith('.json')) {
+            res.setHeader('Content-Type', 'application/json');
+          }
+        }
+      }));
+      app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
       serveStatic(app);
     }
 
