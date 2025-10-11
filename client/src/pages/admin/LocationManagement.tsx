@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,8 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 
 interface Location {
   id: number;
@@ -56,47 +59,8 @@ interface Location {
 }
 
 export default function LocationManagement() {
-  const [locations, setLocations] = useState<Location[]>([
-    {
-      id: 1,
-      name: '서울 펫 트레이닝 센터',
-      type: 'training',
-      address: '서울시 강남구 테헤란로 123',
-      phone: '02-123-4567',
-      rating: 4.8,
-      reviewCount: 156,
-      distance: 0.8,
-      operatingHours: { open: '09:00', close: '19:00' },
-      services: ['기본 순종 훈련', '행동 교정', '사회화 훈련'],
-      priceRange: '50,000원 - 150,000원',
-      isPartner: true,
-      description: '전문 반려견 훈련 및 행동 교정 전문 시설입니다.',
-      image: 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=400',
-      status: 'active',
-      createdAt: '2024-01-15',
-      updatedAt: '2024-06-20'
-    },
-    {
-      id: 2,
-      name: '프리미엄 펫 그루밍',
-      type: 'grooming',
-      address: '서울시 마포구 연남동 123-45',
-      phone: '02-567-8901',
-      rating: 4.6,
-      reviewCount: 178,
-      distance: 3.1,
-      operatingHours: { open: '09:30', close: '20:00' },
-      services: ['기본 미용', '스타일링', '스파', '네일 케어'],
-      priceRange: '25,000원 - 80,000원',
-      isPartner: true,
-      description: '전문 그루머가 제공하는 프리미엄 미용 서비스입니다.',
-      image: 'https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400',
-      status: 'active',
-      createdAt: '2024-02-10',
-      updatedAt: '2024-06-18'
-    }
-  ]);
-
+  const { toast } = useToast();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -113,6 +77,115 @@ export default function LocationManagement() {
     operatingHours: { open: '09:00', close: '18:00' },
     isPartner: false,
     image: ''
+  });
+
+  // Fetch locations from API
+  const { data: locationsData, isLoading, error } = useQuery<{ success: boolean; locations: Location[] }>({
+    queryKey: ['/api/admin/locations'],
+  });
+
+  const locations = locationsData?.locations || [];
+
+  // Create location mutation
+  const createLocationMutation = useMutation({
+    mutationFn: async (locationData: typeof newLocation) => {
+      const response = await apiRequest('POST', '/api/admin/locations', locationData);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/locations'] });
+      toast({
+        title: "성공",
+        description: "새 위치가 등록되었습니다.",
+      });
+      setIsAddModalOpen(false);
+      setNewLocation({
+        name: '',
+        type: 'training',
+        address: '',
+        phone: '',
+        description: '',
+        services: [],
+        priceRange: '',
+        operatingHours: { open: '09:00', close: '18:00' },
+        isPartner: false,
+        image: ''
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "오류",
+        description: error.message || "위치 등록에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update location mutation
+  const updateLocationMutation = useMutation({
+    mutationFn: async (locationData: Location) => {
+      const response = await apiRequest('PUT', `/api/admin/locations/${locationData.id}`, locationData);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/locations'] });
+      toast({
+        title: "성공",
+        description: "위치 정보가 수정되었습니다.",
+      });
+      setEditingLocation(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "오류",
+        description: error.message || "위치 수정에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete location mutation
+  const deleteLocationMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest('DELETE', `/api/admin/locations/${id}`);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/locations'] });
+      toast({
+        title: "성공",
+        description: "위치가 삭제되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "오류",
+        description: error.message || "위치 삭제에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Status change mutation
+  const statusChangeMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const response = await apiRequest('PATCH', `/api/admin/locations/${id}/status`, { status });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/locations'] });
+      toast({
+        title: "성공",
+        description: "위치 상태가 변경되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "오류",
+        description: error.message || "상태 변경에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
   });
 
   const filteredLocations = locations.filter(location => {
@@ -162,34 +235,7 @@ export default function LocationManagement() {
   };
 
   const handleAddLocation = () => {
-    const id = Math.max(...locations.map(l => l.id)) + 1;
-    const location: Location = {
-      ...newLocation,
-      id,
-      rating: 0,
-      reviewCount: 0,
-      distance: 0,
-      status: 'pending',
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0]
-    };
-
-    setLocations([...locations, location]);
-    setIsAddModalOpen(false);
-    setNewLocation({
-      name: '',
-      type: 'training',
-      address: '',
-      phone: '',
-      description: '',
-      services: [],
-      priceRange: '',
-      operatingHours: { open: '09:00', close: '18:00' },
-      isPartner: false,
-      image: ''
-    });
-
-    console.log('새 위치 등록:', location);
+    createLocationMutation.mutate(newLocation);
   };
 
   const handleEditLocation = (location: Location) => {
@@ -198,30 +244,17 @@ export default function LocationManagement() {
 
   const handleUpdateLocation = () => {
     if (!editingLocation) return;
-
-    setLocations(locations.map(loc => 
-      loc.id === editingLocation.id 
-        ? { ...editingLocation, updatedAt: new Date().toISOString().split('T')[0] }
-        : loc
-    ));
-    setEditingLocation(null);
-    console.log('위치 정보 업데이트:', editingLocation);
+    updateLocationMutation.mutate(editingLocation);
   };
 
   const handleDeleteLocation = (id: number) => {
     if (confirm('정말로 이 위치를 삭제하시겠습니까?')) {
-      setLocations(locations.filter(loc => loc.id !== id));
-      console.log('위치 삭제:', id);
+      deleteLocationMutation.mutate(id);
     }
   };
 
   const handleStatusChange = (id: number, status: string) => {
-    setLocations(locations.map(loc => 
-      loc.id === id 
-        ? { ...loc, status: status as 'active' | 'pending' | 'inactive', updatedAt: new Date().toISOString().split('T')[0] }
-        : loc
-    ));
-    console.log('위치 상태 변경:', id, status);
+    statusChangeMutation.mutate({ id, status });
   };
 
   return (
@@ -370,10 +403,10 @@ export default function LocationManagement() {
                 <Button
                   className="flex-1"
                   onClick={handleAddLocation}
-                  disabled={!newLocation.name || !newLocation.address}
+                  disabled={!newLocation.name || !newLocation.address || createLocationMutation.isPending}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  등록하기
+                  {createLocationMutation.isPending ? '등록 중...' : '등록하기'}
                 </Button>
               </div>
             </div>
@@ -480,8 +513,45 @@ export default function LocationManagement() {
       </Card>
 
       {/* Locations List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredLocations.map((location) => (
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <p className="text-gray-600">위치 데이터를 불러오는 중...</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : error ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              데이터를 불러오는 중 오류가 발생했습니다
+            </h3>
+            <p className="text-gray-500 mb-4">
+              {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."}
+            </p>
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/admin/locations'] })}>
+              다시 시도
+            </Button>
+          </CardContent>
+        </Card>
+      ) : filteredLocations.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              검색 결과가 없습니다
+            </h3>
+            <p className="text-gray-500">
+              다른 검색어나 필터를 시도해보세요.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredLocations.map((location) => (
           <Card key={location.id} className="overflow-hidden">
             <div className="relative h-48">
               <img
@@ -567,21 +637,8 @@ export default function LocationManagement() {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
-
-      {filteredLocations.length === 0 && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">
-              검색 결과가 없습니다
-            </h3>
-            <p className="text-gray-500">
-              다른 검색어나 필터를 시도해보세요.
-            </p>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       )}
 
       {/* Edit Modal */}
@@ -666,9 +723,10 @@ export default function LocationManagement() {
                 <Button
                   className="flex-1"
                   onClick={handleUpdateLocation}
+                  disabled={updateLocationMutation.isPending}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  저장하기
+                  {updateLocationMutation.isPending ? '저장 중...' : '저장하기'}
                 </Button>
               </div>
             </div>
