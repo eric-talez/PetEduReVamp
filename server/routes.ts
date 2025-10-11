@@ -2,6 +2,8 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
+import { sql } from "drizzle-orm";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -7509,6 +7511,157 @@ app.get('/api/search', async (req, res) => {
   // 상품 API 라우트 등록 (높은 우선순위)
   app.use('/api', productRoutes);
   app.use('/api', simpleProductRoutes);
+  
+  // 수수료 관리 API
+  app.get('/api/admin/commission/products', async (req, res) => {
+    try {
+      console.log('[Commission] 상품별 수수료율 조회 요청');
+      
+      const productsWithCommission = await db
+        .select({
+          id: products.id,
+          name: products.name,
+          category: products.category_id,
+          price: products.price,
+          commissionRate: productCommissions.commissionRate,
+        })
+        .from(products)
+        .leftJoin(
+          productCommissions,
+          sql`${products.id} = ${productCommissions.productId} AND ${productCommissions.isActive} = true`
+        )
+        .where(sql`${products.is_active} = true`);
+
+      const formattedProducts = productsWithCommission.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category === 1 ? '강의' : '상품',
+        price: Number(p.price) || 0,
+        commissionRate: Number(p.commissionRate) || 0,
+      }));
+
+      console.log(`[Commission] ${formattedProducts.length}개 상품 조회 완료`);
+      res.json({ success: true, products: formattedProducts });
+    } catch (error) {
+      console.error('[Commission] 상품 조회 오류:', error);
+      res.status(500).json({ success: false, error: '상품 조회 중 오류가 발생했습니다.' });
+    }
+  });
+
+  app.put('/api/admin/commission/products/:id', async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { commissionRate } = req.body;
+
+      console.log(`[Commission] 상품 ${productId} 수수료율 수정:`, commissionRate);
+
+      const existingCommission = await db
+        .select()
+        .from(productCommissions)
+        .where(sql`${productCommissions.productId} = ${productId} AND ${productCommissions.isActive} = true`)
+        .limit(1);
+
+      if (existingCommission.length > 0) {
+        await db
+          .update(productCommissions)
+          .set({ 
+            commissionRate: commissionRate.toString(),
+            updatedAt: new Date(),
+          })
+          .where(sql`${productCommissions.id} = ${existingCommission[0].id}`);
+      } else {
+        await db.insert(productCommissions).values({
+          productId,
+          commissionRate: commissionRate.toString(),
+          isActive: true,
+        });
+      }
+
+      console.log(`[Commission] 수수료율 수정 완료`);
+      res.json({ success: true, message: '수수료율이 수정되었습니다.' });
+    } catch (error) {
+      console.error('[Commission] 수수료율 수정 오류:', error);
+      res.status(500).json({ success: false, error: '수수료율 수정 중 오류가 발생했습니다.' });
+    }
+  });
+
+  app.get('/api/admin/commission/referrers', async (req, res) => {
+    try {
+      console.log('[Commission] 추천인 현황 조회 요청');
+      
+      const referrers = await db
+        .select({
+          id: referralProfiles.id,
+          name: referralProfiles.userId,
+          role: referralProfiles.profileType,
+          referralCode: referralProfiles.referralCode,
+          earningsTotal: referralProfiles.lifetimeEarnings,
+          status: referralProfiles.status,
+        })
+        .from(referralProfiles)
+        .where(sql`${referralProfiles.isActive} = true`)
+        .orderBy(sql`${referralProfiles.lifetimeEarnings} DESC`);
+
+      const formattedReferrers = referrers.map(r => ({
+        id: r.id,
+        name: r.name?.toString() || '미등록',
+        role: r.role === 'trainer' ? '훈련사' : r.role === 'institute' ? '기관' : '제휴사',
+        referralCode: r.referralCode,
+        earningsTotal: Number(r.earningsTotal) || 0,
+        status: r.status === 'active' ? '지급대기' : '지급완료',
+      }));
+
+      console.log(`[Commission] ${formattedReferrers.length}명 추천인 조회 완료`);
+      res.json({ success: true, referrers: formattedReferrers });
+    } catch (error) {
+      console.error('[Commission] 추천인 조회 오류:', error);
+      res.status(500).json({ success: false, error: '추천인 조회 중 오류가 발생했습니다.' });
+    }
+  });
+
+  app.post('/api/admin/commission/settlements/:id/approve', async (req, res) => {
+    try {
+      const referrerId = parseInt(req.params.id);
+      const { amount, period } = req.body;
+
+      console.log(`[Commission] 정산 승인 요청: 추천인 ${referrerId}`);
+
+      const referrer = await db
+        .select()
+        .from(referralProfiles)
+        .where(sql`${referralProfiles.id} = ${referrerId}`)
+        .limit(1);
+
+      if (referrer.length === 0) {
+        return res.status(404).json({ success: false, error: '추천인을 찾을 수 없습니다.' });
+      }
+
+      const newSettlement = await db.insert(settlements).values({
+        settlementType: 'referral',
+        targetId: referrer[0].userId,
+        targetName: '추천인',
+        referralProfileId: referrerId,
+        periodStart: new Date(period.split(' ~ ')[0]),
+        periodEnd: new Date(period.split(' ~ ')[1]),
+        totalGrossAmount: amount.toString(),
+        totalFeeAmount: '0',
+        totalNetAmount: amount.toString(),
+        transactionCount: 1,
+        status: 'completed',
+      }).returning();
+
+      await db
+        .update(referralProfiles)
+        .set({ status: 'inactive' })
+        .where(sql`${referralProfiles.id} = ${referrerId}`);
+
+      console.log(`[Commission] 정산 승인 완료: ${newSettlement[0].id}`);
+      res.json({ success: true, message: '정산이 승인되었습니다.', settlement: newSettlement[0] });
+    } catch (error) {
+      console.error('[Commission] 정산 승인 오류:', error);
+      res.status(500).json({ success: false, error: '정산 승인 중 오류가 발생했습니다.' });
+    }
+  });
   
   // API 라우트 직접 등록 (Vite 미들웨어보다 먼저 처리되도록)
   app.get('/api/test-products', async (req, res) => {

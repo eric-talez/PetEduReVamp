@@ -762,11 +762,10 @@ export default function CommissionManagement() {
                                   e.stopPropagation();
                                   handleSettlementApproval(referrer);
                                 }}
-                                disabled={referrer.status === '처리중'}
                                 style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                               >
                                 <FileText className="h-4 w-4 mr-1" />
-                                {referrer.status === '처리중' ? '처리 중...' : '정산 승인'}
+                                정산 승인
                               </Button>
                               <Button 
                                 size="sm" 
