@@ -362,10 +362,11 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center p-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 active:scale-95"
             aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
+            aria-expanded={sidebarOpen}
           >
-            <Menu className="h-5 w-5" aria-hidden="true" />
+            <Menu className="h-6 w-6" aria-hidden="true" />
           </button>
 
           {/* Search */}
