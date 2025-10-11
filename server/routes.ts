@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements } from "../shared/schema";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -9786,10 +9786,16 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 테스트 등록 데이터 생성 엔드포인트
+  // 테스트 등록 데이터 생성 엔드포인트 (데이터베이스 사용으로 비활성화)
   app.post("/api/test/create-sample-registrations", (req, res) => {
     try {
-      if (!global.registrationApplications) {
+      // 데이터베이스를 사용하므로 이 엔드포인트는 비활성화됨
+      return res.json({
+        success: false,
+        message: '이 기능은 데이터베이스 마이그레이션 후 비활성화되었습니다.'
+      });
+      
+      if (false && !global.registrationApplications) {
         global.registrationApplications = [];
       }
 
@@ -9958,16 +9964,16 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 등록 신청 데이터 상태 확인 (인증 없음 - 테스트용)
-  app.get("/api/test/registration-status", (req, res) => {
+  // 등록 신청 데이터 상태 확인 (데이터베이스 사용으로 비활성화)
+  app.get("/api/test/registration-status", async (req, res) => {
     try {
-      const total = global.registrationApplications ? global.registrationApplications.length : 0;
-      const pending = global.registrationApplications ? 
-        global.registrationApplications.filter(app => app.status === 'pending').length : 0;
-      const approved = global.registrationApplications ? 
-        global.registrationApplications.filter(app => app.status === 'approved').length : 0;
-      const rejected = global.registrationApplications ? 
-        global.registrationApplications.filter(app => app.status === 'rejected').length : 0;
+      // 데이터베이스에서 실제 통계 조회
+      const trainerApps = await db.select().from(trainerApplications);
+      const instituteApps = await db.select().from(instituteApplications);
+      const total = trainerApps.length + instituteApps.length;
+      const pending = [...trainerApps, ...instituteApps].filter(app => app.status === 'pending').length;
+      const approved = [...trainerApps, ...instituteApps].filter(app => app.status === 'approved').length;
+      const rejected = [...trainerApps, ...instituteApps].filter(app => app.status === 'rejected').length;
 
       res.json({
         success: true,
@@ -10082,6 +10088,7 @@ app.get('/api/search', async (req, res) => {
       const files = req.files as Express.Multer.File[];
       const processedFiles = {
         profileImage: null as string | null,
+        resume: null as string | null,
         certificationDocs: [] as string[],
         portfolioImages: [] as string[]
       };
@@ -10092,6 +10099,8 @@ app.get('/api/search', async (req, res) => {
           
           if (file.fieldname === 'profileImage') {
             processedFiles.profileImage = filePath;
+          } else if (file.fieldname === 'resume') {
+            processedFiles.resume = filePath;
           } else if (file.fieldname.startsWith('certificationDoc_')) {
             processedFiles.certificationDocs.push(filePath);
           } else if (file.fieldname.startsWith('portfolioImage_')) {
@@ -10100,26 +10109,23 @@ app.get('/api/search', async (req, res) => {
         });
       }
 
-      // 등록 신청 데이터 생성
-      const application = {
-        id: Date.now().toString(),
-        type: 'trainer',
-        applicantInfo: registrationData,
-        documents: processedFiles,
+      // 데이터베이스에 저장
+      const [application] = await db.insert(trainerApplications).values({
+        name: registrationData.name,
+        email: registrationData.email,
+        phone: registrationData.phone,
+        hasAffiliation: registrationData.hasAffiliation || false,
+        affiliationName: registrationData.affiliationName || null,
+        experience: registrationData.experience || null,
+        education: registrationData.education || null,
+        certifications: JSON.stringify(processedFiles.certificationDocs),
+        motivation: registrationData.motivation || null,
+        portfolioUrl: JSON.stringify(processedFiles.portfolioImages),
+        resume: processedFiles.resume || processedFiles.profileImage || null,
         status: 'pending',
-        submittedAt: new Date().toISOString(),
-        reviewerId: null,
-        reviewedAt: null,
-        notes: ''
-      };
+      }).returning();
 
-      // 메모리 저장소에 저장 (실제로는 데이터베이스)
-      if (!global.registrationApplications) {
-        global.registrationApplications = [];
-      }
-      global.registrationApplications.push(application);
-
-      console.log('훈련사 등록 신청:', application);
+      console.log('훈련사 등록 신청 저장 완료:', application.id);
 
       res.status(201).json({
         success: true,
@@ -10163,26 +10169,25 @@ app.get('/api/search', async (req, res) => {
         });
       }
 
-      // 등록 신청 데이터 생성
-      const application = {
-        id: Date.now().toString(),
-        type: 'institute',
-        applicantInfo: registrationData,
-        documents: processedFiles,
+      // 데이터베이스에 저장
+      const [application] = await db.insert(instituteApplications).values({
+        instituteName: registrationData.instituteName,
+        representativeName: registrationData.representativeName,
+        email: registrationData.email,
+        phone: registrationData.phone,
+        businessNumber: registrationData.businessNumber || null,
+        address: registrationData.address,
+        website: registrationData.website || null,
+        description: registrationData.description || null,
+        certificationDocuments: JSON.stringify(processedFiles.certificationDocs),
+        facilities: JSON.stringify(processedFiles.facilityImages),
+        trainerCount: registrationData.trainerCount || 0,
+        capacity: registrationData.capacity || 0,
+        programs: registrationData.programs || null,
         status: 'pending',
-        submittedAt: new Date().toISOString(),
-        reviewerId: null,
-        reviewedAt: null,
-        notes: ''
-      };
+      }).returning();
 
-      // 메모리 저장소에 저장
-      if (!global.registrationApplications) {
-        global.registrationApplications = [];
-      }
-      global.registrationApplications.push(application);
-
-      console.log('기관 등록 신청:', application);
+      console.log('기관 등록 신청 저장 완료:', application.id);
 
       res.status(201).json({
         success: true,
@@ -10204,18 +10209,69 @@ app.get('/api/search', async (req, res) => {
     try {
       const { type, status } = req.query;
       
-      if (!global.registrationApplications) {
-        global.registrationApplications = [];
+      let applications: any[] = [];
+
+      // 타입에 따라 다른 테이블에서 조회
+      if (!type || type === 'trainer') {
+        const trainerApps = await db
+          .select()
+          .from(trainerApplications)
+          .where(status ? eq(trainerApplications.status, status as string) : undefined)
+          .orderBy(desc(trainerApplications.submittedAt));
+        
+        applications.push(...trainerApps.map(app => ({
+          ...app,
+          type: 'trainer',
+          applicantInfo: {
+            name: app.name,
+            email: app.email,
+            phone: app.phone,
+            hasAffiliation: app.hasAffiliation,
+            affiliationName: app.affiliationName,
+            experience: app.experience,
+            education: app.education,
+            motivation: app.motivation,
+          },
+          documents: {
+            certificationDocs: app.certifications ? JSON.parse(app.certifications) : [],
+            portfolioImages: app.portfolioUrl ? JSON.parse(app.portfolioUrl) : [],
+            profileImage: app.resume,
+          },
+          reviewerId: app.reviewedBy,
+          notes: app.reviewNotes || '',
+        })));
       }
 
-      let applications = [...global.registrationApplications];
-
-      // 필터링
-      if (type) {
-        applications = applications.filter(app => app.type === type);
-      }
-      if (status) {
-        applications = applications.filter(app => app.status === status);
+      if (!type || type === 'institute') {
+        const instituteApps = await db
+          .select()
+          .from(instituteApplications)
+          .where(status ? eq(instituteApplications.status, status as string) : undefined)
+          .orderBy(desc(instituteApplications.submittedAt));
+        
+        applications.push(...instituteApps.map(app => ({
+          ...app,
+          type: 'institute',
+          applicantInfo: {
+            instituteName: app.instituteName,
+            representativeName: app.representativeName,
+            email: app.email,
+            phone: app.phone,
+            businessNumber: app.businessNumber,
+            address: app.address,
+            website: app.website,
+            description: app.description,
+            trainerCount: app.trainerCount,
+            capacity: app.capacity,
+            programs: app.programs,
+          },
+          documents: {
+            certificationDocs: app.certificationDocuments ? JSON.parse(app.certificationDocuments) : [],
+            facilityImages: app.facilities ? JSON.parse(app.facilities) : [],
+          },
+          reviewerId: app.reviewedBy,
+          notes: app.reviewNotes || '',
+        })));
       }
 
       // 최신순 정렬
@@ -10241,20 +10297,54 @@ app.get('/api/search', async (req, res) => {
   // 등록 신청 승인/거부 (관리자용)
   app.put('/api/admin/registrations/:id', async (req, res) => {
     try {
-      const applicationId = req.params.id;
-      const { status, notes } = req.body;
+      const applicationId = parseInt(req.params.id);
+      const { status, notes, type } = req.body;
 
-      console.log(`[등록 신청 처리] ID: ${applicationId}, Status: ${status}`);
+      console.log(`[등록 신청 처리] ID: ${applicationId}, Type: ${type}, Status: ${status}`);
 
-      if (!global.registrationApplications) {
-        global.registrationApplications = [];
+      let application: any = null;
+      let applicationType: string = type;
+
+      // type이 명시되지 않은 경우 두 테이블 모두 확인
+      if (!applicationType) {
+        const trainerApp = await db
+          .select()
+          .from(trainerApplications)
+          .where(eq(trainerApplications.id, applicationId))
+          .limit(1);
+        
+        if (trainerApp.length > 0) {
+          application = trainerApp[0];
+          applicationType = 'trainer';
+        } else {
+          const instituteApp = await db
+            .select()
+            .from(instituteApplications)
+            .where(eq(instituteApplications.id, applicationId))
+            .limit(1);
+          
+          if (instituteApp.length > 0) {
+            application = instituteApp[0];
+            applicationType = 'institute';
+          }
+        }
+      } else if (applicationType === 'trainer') {
+        const trainerApp = await db
+          .select()
+          .from(trainerApplications)
+          .where(eq(trainerApplications.id, applicationId))
+          .limit(1);
+        application = trainerApp[0];
+      } else if (applicationType === 'institute') {
+        const instituteApp = await db
+          .select()
+          .from(instituteApplications)
+          .where(eq(instituteApplications.id, applicationId))
+          .limit(1);
+        application = instituteApp[0];
       }
 
-      const applicationIndex = global.registrationApplications.findIndex(
-        app => app.id === applicationId
-      );
-
-      if (applicationIndex === -1) {
+      if (!application) {
         console.log(`[등록 신청 처리] 신청을 찾을 수 없음: ${applicationId}`);
         return res.status(404).json({
           success: false,
@@ -10262,31 +10352,49 @@ app.get('/api/search', async (req, res) => {
         });
       }
 
-      // 상태 업데이트
-      global.registrationApplications[applicationIndex].status = status;
-      global.registrationApplications[applicationIndex].notes = notes || '';
-      global.registrationApplications[applicationIndex].reviewerId = 'admin';
-      global.registrationApplications[applicationIndex].reviewedAt = new Date().toISOString();
+      // 데이터베이스에서 상태 업데이트
+      if (applicationType === 'trainer') {
+        await db
+          .update(trainerApplications)
+          .set({
+            status,
+            reviewNotes: notes || '',
+            reviewedBy: req.user?.id || null,
+            reviewedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(trainerApplications.id, applicationId));
+      } else if (applicationType === 'institute') {
+        await db
+          .update(instituteApplications)
+          .set({
+            status,
+            reviewNotes: notes || '',
+            reviewedBy: req.user?.id || null,
+            reviewedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(instituteApplications.id, applicationId));
+      }
 
-      const application = global.registrationApplications[applicationIndex];
+      console.log(`[등록 신청 처리] 데이터베이스 업데이트 완료: ${applicationId}`);
 
       // 승인된 경우 실제 훈련사/기관으로 등록
       if (status === 'approved') {
-        if (application.type === 'trainer') {
-          // 훈련사 데이터 생성
+        if (applicationType === 'trainer') {
           const trainerData = {
             id: Date.now(),
-            name: application.applicantInfo.personalInfo.name,
-            email: application.applicantInfo.personalInfo.email,
-            phone: application.applicantInfo.personalInfo.phone,
-            bio: application.applicantInfo.professionalInfo.bio,
-            specialties: application.applicantInfo.professionalInfo.specialties,
-            experience: application.applicantInfo.professionalInfo.experience,
-            certifications: application.applicantInfo.professionalInfo.certifications,
-            price: parseInt(application.applicantInfo.businessInfo.hourlyRate),
-            location: application.applicantInfo.professionalInfo.serviceArea,
-            address: application.applicantInfo.personalInfo.address,
-            profileImage: application.documents.profileImage,
+            name: application.name,
+            email: application.email,
+            phone: application.phone,
+            bio: application.motivation || '',
+            specialties: [],
+            experience: application.experience || '',
+            certifications: [],
+            price: 0,
+            location: '',
+            address: '',
+            profileImage: application.resume || '',
             rating: 0,
             reviewCount: 0,
             featured: false,
@@ -10294,70 +10402,34 @@ app.get('/api/search', async (req, res) => {
             createdAt: new Date().toISOString()
           };
 
-          // 훈련사 목록에 추가 (실제로는 데이터베이스)
           await storage.createTrainer(trainerData);
+          console.log('[훈련사 승인] 실제 서비스에 반영됨:', trainerData.name);
           
-        } else if (application.type === 'institute') {
-          // 기관 데이터 생성
+        } else if (applicationType === 'institute') {
           const instituteData = {
             id: Date.now(),
-            name: application.applicantInfo.basicInfo.instituteName,
-            email: application.applicantInfo.basicInfo.email,
-            phone: application.applicantInfo.basicInfo.phone,
-            address: application.applicantInfo.locationInfo.address,
-            description: application.applicantInfo.serviceInfo.description,
-            establishedYear: parseInt(application.applicantInfo.basicInfo.establishedYear),
-            capacity: parseInt(application.applicantInfo.facilityInfo.capacity),
-            facilities: application.applicantInfo.facilityInfo.facilities,
-            services: application.applicantInfo.serviceInfo.serviceTypes,
-            operatingHours: application.applicantInfo.serviceInfo.operatingHours,
+            name: application.instituteName,
+            email: application.email,
+            phone: application.phone,
+            address: application.address,
+            description: application.description || '',
+            establishedYear: 2024,
+            capacity: application.capacity || 0,
+            facilities: application.facilities ? JSON.parse(application.facilities) : [],
+            services: [],
+            operatingHours: '09:00-18:00',
             rating: 0,
             reviewCount: 0,
             isActive: true,
             createdAt: new Date().toISOString()
           };
 
-          // 기관 목록에 추가
-          if (!global.registeredInstitutes) {
-            global.registeredInstitutes = [];
-          }
-          global.registeredInstitutes.push(instituteData);
-        } else if (application.type === 'curriculum') {
-          // 커리큘럼을 실제 코스로 변환
-          const curriculumInfo = application.applicantInfo.curriculumInfo;
-          
-          const courseData = {
-            id: `course-${Date.now()}`,
-            title: curriculumInfo.title,
-            instructor: curriculumInfo.trainerName,
-            description: curriculumInfo.description,
-            category: curriculumInfo.category,
-            difficulty: curriculumInfo.difficulty,
-            price: curriculumInfo.price,
-            duration: curriculumInfo.duration,
-            modules: [], // 실제로는 원본 커리큘럼에서 모듈 데이터 가져와야 함
-            enrollmentCount: 0,
-            rating: 0,
-            reviewCount: 0,
-            isActive: true,
-            featured: false,
-            tags: [curriculumInfo.category],
-            createdAt: new Date().toISOString()
-          };
-
-          // 코스 목록에 추가 (실제로는 데이터베이스)
-          await storage.createCourse(courseData);
-          
-          console.log('[커리큘럼 승인] 실제 서비스에 코스로 반영됨:', courseData.title);
+          await storage.createInstitute(instituteData);
+          console.log('[기관 승인] 실제 서비스에 반영됨:', instituteData.name);
         }
       }
 
-      const applicationName = 
-        application.type === 'trainer' ? application.applicantInfo.personalInfo?.name :
-        application.type === 'institute' ? application.applicantInfo.basicInfo?.instituteName :
-        application.type === 'curriculum' ? application.applicantInfo.curriculumInfo?.title :
-        '알 수 없음';
-      
+      const applicationName = applicationType === 'trainer' ? application.name : application.instituteName;
       console.log(`[등록 신청 처리] ${status} 완료:`, applicationName);
 
       res.json({
@@ -10376,36 +10448,14 @@ app.get('/api/search', async (req, res) => {
   });
 
   // 처리 완료된 등록 신청 초기화 (관리자용)
+  // 데이터베이스에서는 데이터를 삭제하지 않고 보관하므로 이 API는 사용하지 않음
   app.delete('/api/admin/registrations/clear-processed', async (req, res) => {
     try {
-      if (!global.registrationApplications) {
-        global.registrationApplications = [];
-      }
-
-      // 처리 완료된 신청 (승인됨 또는 거부됨) 찾기
-      const processedApplications = global.registrationApplications.filter(
-        app => app.status === 'approved' || app.status === 'rejected'
-      );
-
-      if (processedApplications.length === 0) {
-        return res.json({
-          success: true,
-          message: '처리 완료된 신청이 없습니다.',
-          clearedCount: 0
-        });
-      }
-
-      // 처리 완료된 신청 제거 (pending 상태만 유지)
-      global.registrationApplications = global.registrationApplications.filter(
-        app => app.status === 'pending'
-      );
-
-      console.log(`[등록 신청 초기화] ${processedApplications.length}개의 처리 완료된 신청이 초기화되었습니다.`);
-
+      // 데이터베이스에서는 영구 보관을 권장하므로 이 기능은 비활성화
       res.json({
         success: true,
-        message: `${processedApplications.length}개의 처리 완료된 신청이 초기화되었습니다.`,
-        clearedCount: processedApplications.length
+        message: '데이터베이스에서는 모든 등록 신청이 영구 보관됩니다.',
+        clearedCount: 0
       });
 
     } catch (error) {
@@ -10820,18 +10870,34 @@ app.get('/api/search', async (req, res) => {
         submitterId: req.user?.id || 'admin'
       };
 
-      // 전역 등록신청 목록에 추가
-      if (!global.registrationApplications) {
-        global.registrationApplications = [];
-      }
-      global.registrationApplications.push(application);
-      
-      console.log('[커리큘럼 발행] 등록신청관리에 추가됨:', application.id);
+      // 커리큘럼 발행 - 데이터베이스 마이그레이션 필요
+      // 현재는 즉시 코스로 생성
+      const courseData = {
+        id: `course-${Date.now()}`,
+        title: curriculumData.title,
+        instructor: curriculumData.trainerName || '관리자',
+        description: curriculumData.description,
+        category: curriculumData.category,
+        difficulty: curriculumData.difficulty,
+        price: curriculumData.price,
+        duration: curriculumData.duration,
+        modules: curriculumData.modules || [],
+        enrollmentCount: 0,
+        rating: 0,
+        reviewCount: 0,
+        isActive: true,
+        featured: false,
+        tags: [curriculumData.category],
+        createdAt: new Date().toISOString()
+      };
+
+      await storage.createCourse(courseData);
+      console.log('[커리큘럼 발행] 즉시 코스로 생성됨:', courseData.title);
       
       res.json({ 
         success: true,
-        applicationId: application.id,
-        message: '커리큘럼 발행 신청이 등록신청관리에 추가되었습니다.' 
+        courseId: courseData.id,
+        message: '커리큘럼이 즉시 코스로 발행되었습니다.' 
       });
     } catch (error) {
       console.error('[커리큘럼 발행] 신청 실패:', error);

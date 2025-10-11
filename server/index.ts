@@ -475,8 +475,8 @@ function initializeMemoryData() {
 
 async function startServer() {
   try {
-    // 메모리 데이터 초기화
-    initializeMemoryData();
+    // 메모리 데이터 초기화 (데이터베이스 사용으로 비활성화)
+    // initializeMemoryData();
 
     console.log('🔧 개발 환경: PostgreSQL 연결 설정');
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');

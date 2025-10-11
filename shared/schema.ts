@@ -1155,6 +1155,31 @@ export const trainerApplications = pgTable("trainer_applications", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// 기관 등록 신청 테이블
+export const instituteApplications = pgTable("institute_applications", {
+  id: serial("id").primaryKey(),
+  instituteName: varchar("institute_name", { length: 200 }).notNull(),
+  representativeName: varchar("representative_name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  businessNumber: varchar("business_number", { length: 50 }),
+  address: text("address").notNull(),
+  website: text("website"),
+  description: text("description"),
+  certificationDocuments: text("certification_documents"),
+  facilities: text("facilities"),
+  trainerCount: integer("trainer_count").default(0),
+  capacity: integer("capacity").default(0),
+  programs: text("programs"),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected
+  submittedAt: timestamp("submitted_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewNotes: text("review_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // 훈련사 인증 기록 테이블
 export const trainerCertifications = pgTable("trainer_certifications", {
   id: serial("id").primaryKey(),
@@ -1208,6 +1233,9 @@ export const trainerProgramEnrollments = pgTable("trainer_program_enrollments", 
 // Insert/Select 타입 정의
 export type TrainerApplication = typeof trainerApplications.$inferSelect;
 export type InsertTrainerApplication = typeof trainerApplications.$inferInsert;
+
+export type InstituteApplication = typeof instituteApplications.$inferSelect;
+export type InsertInstituteApplication = typeof instituteApplications.$inferInsert;
 
 export type TrainerCertification = typeof trainerCertifications.$inferSelect;
 export type InsertTrainerCertification = typeof trainerCertifications.$inferInsert;
