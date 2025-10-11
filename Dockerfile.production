@@ -19,7 +19,9 @@ RUN npm ci
 COPY . .
 
 # TypeScript 컴파일 및 프론트엔드 빌드
-RUN npm run build
+RUN npm run build && \
+    rm -rf server/public && \
+    cp -r dist/public server/public
 
 # 운영 이미지
 FROM base AS runner
@@ -37,7 +39,7 @@ COPY --from=deps --chown=talez:nodejs /app/node_modules ./node_modules
 
 # 빌드된 애플리케이션 복사
 COPY --from=builder --chown=talez:nodejs /app/dist ./dist
-COPY --from=builder --chown=talez:nodejs /app/public ./public
+COPY --from=builder --chown=talez:nodejs /app/server/public ./server/public
 
 # 패키지 정보 복사
 COPY --chown=talez:nodejs package*.json ./
@@ -51,7 +53,7 @@ EXPOSE 5000
 
 # 헬스체크
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
+  CMD node -e "require('http').get('http://localhost:5000/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
 
 # dumb-init을 사용하여 안전한 프로세스 관리
 ENTRYPOINT ["dumb-init", "--"]

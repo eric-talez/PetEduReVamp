@@ -4,13 +4,14 @@
 
 이 문서는 TALEZ 플랫폼의 프로덕션 배포를 위한 완전한 가이드입니다.
 
-## ✅ 배포 준비 상태 (2025-07-13)
+## ✅ 배포 준비 상태 (2025-10-11 업데이트)
 - **컴파일 오류 해결**: 모든 TypeScript/JSX 컴파일 오류 수정 완료
 - **빌드 시스템**: dist/ 디렉토리에 production 빌드 생성 확인
 - **배포 스크립트**: deploy-immediate.sh 자동화 스크립트 준비 완료
 - **서버 보안**: production.ts 보안 설정 구문 오류 수정
 - **EC2 준비**: 서버 배포용 빌드 출력 검증 완료
 - **PM2 설정 수정**: ES 모듈 호환성 문제 해결 (ecosystem.config.cjs)
+- **🔧 정적 파일 경로 수정 (2025-10-11)**: Vite 빌드 경로와 서버 정적 파일 서빙 경로 일치 문제 해결
 
 ## 📋 사전 요구사항
 
@@ -487,4 +488,43 @@ pm2 start ecosystem.config.js --env production
 
 ---
 
+## 🔧 알려진 문제 및 해결 방법
+
+### ⚠️ 배포 버전에서 화면이 보이지 않는 문제
+
+**문제**: 프로덕션 배포 후 브라우저에서 화면이 표시되지 않음
+
+**원인**: Vite 빌드 출력 경로(`dist/public`)와 서버 정적 파일 서빙 경로(`server/public`) 불일치
+
+**해결 방법 1 - 빌드 스크립트 사용 (권장)**:
+```bash
+# 프로덕션 빌드 실행 (자동으로 파일 복사 포함)
+./build-production.sh
+```
+
+**해결 방법 2 - 수동 복사**:
+```bash
+# 빌드 후 파일 복사
+npm run build
+rm -rf server/public
+cp -r dist/public server/public
+```
+
+**해결 방법 3 - Docker 사용**:
+```bash
+# 업데이트된 Dockerfile.production 사용
+docker build -f Dockerfile.production -t talez:production .
+# Dockerfile에서 자동으로 파일 복사 처리됨
+```
+
+**영구적 해결**:
+- `build-production.sh` 스크립트가 모든 빌드 프로세스를 자동화합니다
+- `Dockerfile.production`도 업데이트되어 빌드 시 자동으로 파일을 복사합니다
+- CI/CD 파이프라인에 빌드 스크립트를 포함하세요
+
+---
+
 배포 관련 문의사항이 있으시면 DevOps 팀에 연락해주세요.
+
+**마지막 업데이트**: 2025-10-11  
+**주요 변경사항**: 정적 파일 서빙 경로 문제 해결
