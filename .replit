@@ -8,7 +8,7 @@ packages = ["maven", "openjdk17", "unzip"]
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
+build = ["sh", "-c", "npm run build && rm -rf server/public && cp -r dist/public server/public"]
 run = ["npm", "run", "start"]
 
 [[ports]]
