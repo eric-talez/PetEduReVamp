@@ -83,6 +83,8 @@ export const subscriptionPlans = pgTable("subscription_plans", {
   code: varchar("code", { length: 50 }).notNull().unique(),
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  discountRate: decimal("discount_rate", { precision: 5, scale: 2 }).default("0"), // 할인율 (%)
+  finalPrice: decimal("final_price", { precision: 10, scale: 2 }), // 최종 가격 (할인 적용 후)
   currency: varchar("currency", { length: 3 }).default("KRW"),
   billingPeriod: varchar("billing_period", { length: 20 }).default("monthly"),
   maxMembers: integer("max_members").notNull(),
@@ -657,6 +659,51 @@ export const settlementReports = pgTable("settlement_reports", {
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   status: varchar("status", { length: 50 }).default("draft"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 상품별 수수료율 테이블
+export const productCommissions = pgTable("product_commissions", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).notNull().default("0"),
+  effectiveFrom: timestamp("effective_from").defaultNow(),
+  effectiveTo: timestamp("effective_to"),
+  channelType: varchar("channel_type", { length: 50 }).default("all"), // 'all', 'direct', 'referral'
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 추천인 프로필 테이블
+export const referralProfiles = pgTable("referral_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  referralCode: varchar("referral_code", { length: 50 }).notNull().unique(),
+  profileType: varchar("profile_type", { length: 50 }).notNull(), // 'trainer', 'institute', 'affiliate'
+  defaultCommissionRate: decimal("default_commission_rate", { precision: 5, scale: 2 }).notNull().default("10"),
+  lifetimeEarnings: decimal("lifetime_earnings", { precision: 12, scale: 2 }).notNull().default("0"),
+  status: varchar("status", { length: 20 }).notNull().default("active"), // 'active', 'inactive', 'suspended'
+  bankAccount: jsonb("bank_account"), // 계좌 정보
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 추천인 수익 내역 테이블
+export const referralEarnings = pgTable("referral_earnings", {
+  id: serial("id").primaryKey(),
+  referralProfileId: integer("referral_profile_id").references(() => referralProfiles.id).notNull(),
+  sourceType: varchar("source_type", { length: 50 }).notNull(), // 'course', 'product', 'subscription'
+  sourceId: integer("source_id").notNull(),
+  sourceName: varchar("source_name", { length: 200 }),
+  grossAmount: decimal("gross_amount", { precision: 10, scale: 2 }).notNull(),
+  commissionAmount: decimal("commission_amount", { precision: 10, scale: 2 }).notNull(),
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 10 }).default("KRW"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // 'pending', 'locked', 'settled', 'paid'
+  settlementId: integer("settlement_id").references(() => settlements.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const shopCategories = pgTable("shop_categories", {
@@ -1453,9 +1500,10 @@ export const transactions = pgTable("transactions", {
 // 정산 내역 테이블
 export const settlements = pgTable("settlements", {
   id: serial("id").primaryKey(),
-  settlementType: varchar("settlement_type", { length: 50 }).notNull(), // 'trainer', 'institute'
+  settlementType: varchar("settlement_type", { length: 50 }).notNull(), // 'trainer', 'institute', 'referral'
   targetId: integer("target_id").notNull(), // 훈련사 또는 기관 ID
   targetName: varchar("target_name", { length: 200 }).notNull(),
+  referralProfileId: integer("referral_profile_id").references(() => referralProfiles.id), // 추천인 정산인 경우
   periodStart: timestamp("period_start").notNull(),
   periodEnd: timestamp("period_end").notNull(),
   totalGrossAmount: decimal("total_gross_amount", { precision: 12, scale: 2 }).notNull(),
@@ -1497,6 +1545,12 @@ export type Settlement = typeof settlements.$inferSelect;
 export type InsertSettlement = typeof settlements.$inferInsert;
 export type SettlementItem = typeof settlementItems.$inferSelect;
 export type InsertSettlementItem = typeof settlementItems.$inferInsert;
+export type ProductCommission = typeof productCommissions.$inferSelect;
+export type InsertProductCommission = typeof productCommissions.$inferInsert;
+export type ReferralProfile = typeof referralProfiles.$inferSelect;
+export type InsertReferralProfile = typeof referralProfiles.$inferInsert;
+export type ReferralEarning = typeof referralEarnings.$inferSelect;
+export type InsertReferralEarning = typeof referralEarnings.$inferInsert;
 
 // AI 사용량 추적 테이블
 export const aiUsageLog = pgTable("ai_usage_log", {
