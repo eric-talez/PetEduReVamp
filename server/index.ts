@@ -53,7 +53,11 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
     ]
   : [
       'http://localhost:3000',
+      'http://localhost:5000',
       'http://localhost:5173',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5000',
+      'http://127.0.0.1:5173',
       'https://localhost:3000',
       'https://localhost:5173',
       'https://*.replit.dev',
@@ -205,11 +209,10 @@ const sessionConfig = {
       domain: process.env.COOKIE_DOMAIN
     })
   },
-  // sessionStore는 setupAuth에서 정의되거나, 필요시 여기서 초기화
-  // 예: store: new (require('connect-redis'))(session)({ client: redisClient })
+  // 개발 환경에서는 메모리 세션 사용 (프로덕션에서는 Redis 등 영구 저장소 사용 권장)
 };
 // 세션 미들웨어를 먼저 설정
-app.use(session({ ...sessionConfig, store: storage.sessionStore }));
+app.use(session(sessionConfig));
 
 // Passport initialization
 app.use(passport.initialize());
@@ -471,10 +474,7 @@ async function startServer() {
     console.log('🔧 개발 환경: PostgreSQL 연결 설정');
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
 
-    // 기존 초기화 함수 실행 (if available)
-    if (storage.initializeData && typeof storage.initializeData === 'function') {
-      await storage.initializeData();
-    }
+    // Storage 생성자에서 자동으로 데이터 초기화됨
 
     // Register other API routes BEFORE Vite
     const server = await registerRoutes(app);
