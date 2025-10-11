@@ -283,7 +283,7 @@ function AppLayout({ children }: { children: ReactNode }) {
           {/* 사이드바 - 항상 고정된 너비를 가짐 */}
           <aside 
             className={`
-              shrink-0 h-screen fixed left-0 top-0 z-20
+              shrink-0 h-screen fixed left-0 top-0 z-30
               transition-all duration-300
               ${sidebarExpanded ? 'w-64' : 'w-[70px]'}
               ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
@@ -310,7 +310,7 @@ function AppLayout({ children }: { children: ReactNode }) {
           {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
           {sidebarOpen && !isDesktop && (
             <div 
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-10" 
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20" 
               onClick={() => setSidebarOpen(false)}
               aria-hidden="true"
             />

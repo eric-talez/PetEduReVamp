@@ -145,7 +145,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
             <a
               href={href}
               className={cn(
-                "sidebar-link flex items-center justify-center py-3 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out px-3 group",
+                "sidebar-link flex items-center justify-center min-h-[44px] py-3 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out px-3 group",
                 "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900",
                 active 
                   ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
@@ -164,7 +164,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
             </a>
           </TooltipTrigger>
           <TooltipContent side="right">
-            <p>{children}</p>
+            <p className="text-base">{children}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -176,7 +176,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center py-3 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out px-3 group",
+        "sidebar-link flex items-center min-h-[44px] py-3 text-base font-medium rounded-lg transition-all duration-200 ease-in-out px-3 group md:text-sm md:min-h-[40px]",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900",
         active 
           ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
@@ -188,7 +188,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
       role="button"
       aria-current={active ? "page" : undefined}
     >
-      <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3">
+      <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3 w-6 h-6 flex items-center justify-center">
         {icon}
       </div>
       <span className="transition-all duration-200 group-hover:translate-x-1">{children}</span>
@@ -563,7 +563,7 @@ export function Sidebar({
     <SidebarContext.Provider value={contextValue}>
       <div
         className={cn(
-          "fixed left-0 top-0 bottom-0 h-screen bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md z-20 flex flex-col",
+          "fixed left-0 top-0 bottom-0 h-screen bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-xl z-30 flex flex-col border-r border-gray-200 dark:border-gray-800",
           expanded ? "w-64" : "w-[70px]"
         )}
       >
