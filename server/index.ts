@@ -52,8 +52,10 @@ if (process.env.NODE_ENV === 'production') {
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
       'https://funnytalez.com',
-      'https://www.funnytalez.com'
-      // 프로덕션에서는 와일드카드 도메인 제거 (보안 강화)
+      'https://www.funnytalez.com',
+      'https://*.replit.app',
+      'https://*.replit.dev',
+      'https://*.repl.co'
     ]
   : [
       'http://localhost:3000',
@@ -65,7 +67,8 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
       'https://localhost:3000',
       'https://localhost:5173',
       'https://*.replit.dev',
-      'https://*.repl.co'
+      'https://*.repl.co',
+      'https://*.replit.app'
     ];
 
 app.use(cors({
