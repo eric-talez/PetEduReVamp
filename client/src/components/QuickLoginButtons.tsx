@@ -41,7 +41,7 @@ export function QuickLoginButtons() {
   };
 
   // QuickLogin 버튼 개발 환경에서만 표시
-  const isDevEnv = process.env.NODE_ENV === 'development';
+  const isDevEnv = import.meta.env.MODE === 'development';
   
   if (!isDevEnv) {
     return null; // 개발 모드가 아닌 경우 아무것도 렌더링하지 않음
