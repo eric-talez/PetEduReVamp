@@ -1602,7 +1602,7 @@ class Storage {
   initializeLogoSettings() {
     this.logoSettings = {
       id: 1,
-      logoUrl: 'https://via.placeholder.com/200x80/2563EB/FFFFFF?text=TALEZ',
+      logoUrl: '/attached_assets/Talez_심볼마크_1760329900053.png',
       logoPosition: 'left',
       logoSize: 'medium',
       altText: '테일즈 로고',
