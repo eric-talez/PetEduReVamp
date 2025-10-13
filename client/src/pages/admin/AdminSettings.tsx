@@ -155,8 +155,9 @@ export default function AdminSettings() {
       setUploadingLogo(null);
       // 로고 목록 다시 조회 (페이지 새로고침 없이)
       refetchLogos();
-      // 사이드바의 로고 쿼리도 무효화
+      // 사이드바의 로고 쿼리도 무효화 (두 엔드포인트 모두)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/logos'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/logo'] });
     },
     onError: (error: any) => {
       toast({
@@ -180,8 +181,9 @@ export default function AdminSettings() {
       });
       // 로고 목록 다시 조회 (페이지 새로고침 없이)
       refetchLogos();
-      // 사이드바의 로고 쿼리도 무효화
+      // 사이드바의 로고 쿼리도 무효화 (두 엔드포인트 모두)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/logos'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/logo'] });
     },
     onError: (error: any) => {
       toast({
@@ -209,10 +211,12 @@ export default function AdminSettings() {
         });
         // 로고 목록 다시 조회 (페이지 새로고침 없이)
         await refetchLogos();
-        // 사이드바의 로고 쿼리도 무효화 - await 추가
+        // 사이드바의 로고 쿼리도 무효화 (두 엔드포인트 모두)
         await queryClient.invalidateQueries({ queryKey: ['/api/admin/logos'] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/logo'] });
         // 강제로 쿼리 다시 실행
         await queryClient.refetchQueries({ queryKey: ['/api/admin/logos'] });
+        await queryClient.refetchQueries({ queryKey: ['/api/logo'] });
       } catch (error: any) {
         toast({
           title: '로고 저장 실패',
