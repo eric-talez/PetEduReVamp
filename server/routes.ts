@@ -13872,7 +13872,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
         }
 
         // 로고 설정 업데이트 수행
-        const updatedSettings = storage.updateLogoSettings(logoData);
+        const updatedSettings = await storage.updateLogoSettings(logoData);
         
         console.log('[Logo API] 로고 설정 업데이트 성공:', updatedSettings);
         
@@ -13909,7 +13909,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
         const { includeInactive = false } = req.query as LogoSettingsQuery;
 
         // 로고 설정 조회
-        const logoSettings = storage.getLogoSettings(includeInactive);
+        const logoSettings = await storage.getLogoSettings(includeInactive);
         
         if (!logoSettings) {
           console.log('[Logo API] 활성화된 로고 설정이 없음');

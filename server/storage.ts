@@ -1,3 +1,7 @@
+import { db } from './db/index';
+import { logoSettings } from '../shared/schema';
+import { eq } from 'drizzle-orm';
+
 class Storage {
   users: any[] = [];
   pets: any[] = [];
@@ -1598,11 +1602,19 @@ class Storage {
     return this.users?.find(user => user.id === id && user.role === 'trainer');
   }
 
-  // 로고 설정 관련 메서드들 - 표준화된 구현
-  initializeLogoSettings() {
-    this.logoSettings = {
-      id: 1,
-      logoUrl: '/logo.svg', // 임시 기본 로고 - 관리자 페이지에서 업로드하여 변경 가능
+  // 로고 설정 관련 메서드들 - 데이터베이스 사용
+  async initializeLogoSettings() {
+    // 데이터베이스에서 로고 설정 조회
+    const existingSettings = await db.select().from(logoSettings).limit(1);
+    
+    if (existingSettings.length > 0) {
+      console.log('[Storage] 데이터베이스에서 로고 설정 로드:', existingSettings[0]);
+      return existingSettings[0];
+    }
+
+    // 없으면 기본 로고 설정 생성
+    const defaultSettings = {
+      logoUrl: '/logo.svg',
       logoPosition: 'left',
       logoSize: 'medium',
       altText: '테일즈 로고',
@@ -1611,11 +1623,12 @@ class Storage {
       maxHeight: 80,
       showOnMobile: true,
       showOnDesktop: true,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      isActive: true
     };
-    console.log('[Storage] 로고 설정 초기화 완료:', this.logoSettings);
+
+    const [newSettings] = await db.insert(logoSettings).values(defaultSettings).returning();
+    console.log('[Storage] 로고 설정 초기화 완료 (DB):', newSettings);
+    return newSettings;
   }
 
   /**
@@ -1623,22 +1636,26 @@ class Storage {
    * @param includeInactive - 비활성화된 설정 포함 여부
    * @returns 로고 설정 객체
    */
-  getLogoSettings(includeInactive: boolean = false) {
-    console.log('[Storage] 로고 설정 조회 - includeInactive:', includeInactive);
+  async getLogoSettings(includeInactive: boolean = false) {
+    console.log('[Storage] 로고 설정 조회 (DB) - includeInactive:', includeInactive);
 
-    if (!this.logoSettings || Object.keys(this.logoSettings).length === 0) {
+    const settings = await db.select().from(logoSettings).limit(1);
+
+    if (settings.length === 0) {
       console.log('[Storage] 로고 설정이 없어서 초기화 실행');
-      this.initializeLogoSettings();
+      return await this.initializeLogoSettings();
     }
 
+    const currentSettings = settings[0];
+
     // 비활성화 설정 제외 로직
-    if (!includeInactive && !this.logoSettings.isActive) {
+    if (!includeInactive && !currentSettings.isActive) {
       console.log('[Storage] 비활성화된 로고 설정으로 인해 기본값 반환');
       return null;
     }
 
-    console.log('[Storage] 로고 설정 조회 결과:', this.logoSettings);
-    return this.logoSettings;
+    console.log('[Storage] 로고 설정 조회 결과 (DB):', currentSettings);
+    return currentSettings;
   }
 
   /**
@@ -1646,28 +1663,27 @@ class Storage {
    * @param settings - 업데이트할 설정 객체
    * @returns 업데이트된 로고 설정
    */
-  updateLogoSettings(settings: any) {
-    console.log('[Storage] 로고 설정 업데이트 요청:', settings);
+  async updateLogoSettings(settings: any) {
+    console.log('[Storage] 로고 설정 업데이트 요청 (DB):', settings);
 
-    if (!this.logoSettings || Object.keys(this.logoSettings).length === 0) {
-      console.log('[Storage] 기존 로고 설정이 없어서 초기화 후 업데이트');
-      this.initializeLogoSettings();
+    // 기존 설정 조회
+    const existingSettings = await db.select().from(logoSettings).limit(1);
+
+    if (existingSettings.length === 0) {
+      console.log('[Storage] 기존 로고 설정이 없어서 생성');
+      const [newSettings] = await db.insert(logoSettings).values(settings).returning();
+      return newSettings;
     }
 
-    // 업데이트할 데이터 검증 및 정리
-    const updateData = {
-      ...settings,
-      updatedAt: new Date().toISOString()
-    };
+    // 업데이트
+    const [updatedSettings] = await db
+      .update(logoSettings)
+      .set(settings)
+      .where(eq(logoSettings.id, existingSettings[0].id))
+      .returning();
 
-    // 기존 설정과 병합
-    this.logoSettings = {
-      ...this.logoSettings,
-      ...updateData
-    };
-
-    console.log('[Storage] 로고 설정 업데이트 완료:', this.logoSettings);
-    return this.logoSettings;
+    console.log('[Storage] 로고 설정 업데이트 완료 (DB):', updatedSettings);
+    return updatedSettings;
   }
 
   /**
