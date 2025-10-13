@@ -1602,7 +1602,7 @@ class Storage {
   initializeLogoSettings() {
     this.logoSettings = {
       id: 1,
-      logoUrl: '/attached_assets/Talez_심볼마크_1760329900053.png',
+      logoUrl: '/logo.svg', // 임시 기본 로고 - 관리자 페이지에서 업로드하여 변경 가능
       logoPosition: 'left',
       logoSize: 'medium',
       altText: '테일즈 로고',

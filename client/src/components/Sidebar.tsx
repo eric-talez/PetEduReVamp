@@ -537,7 +537,7 @@ export function Sidebar({
       return logos.logoLight || logos.logoUrl || TalezLogoType;
     } else {
       // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
-      return logos.logoSymbolLight || logos.compactLogoUrl || TalezSymbol;
+      return logos.logoSymbolLight || logos.compactLogoUrl || logos.logoUrl || TalezSymbol;
     }
   };
 
