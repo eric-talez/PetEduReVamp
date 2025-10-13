@@ -516,7 +516,7 @@ export function Sidebar({
 
   // 동적 로고 로딩
   const { data: logoData } = useQuery({
-    queryKey: ['/api/admin/logos'],
+    queryKey: ['/api/logo'],
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: 30000 // 30초
@@ -524,21 +524,22 @@ export function Sidebar({
 
   // 로고 URL 결정
   const getLogoUrl = (type: 'expanded' | 'collapsed') => {
-
+    // API 응답 구조: { success: true, data: { logoUrl: string, ... }, message: string }
     if (!logoData || typeof logoData !== 'object') {
       // 기본 로고 사용
       return type === 'expanded' ? TalezLogoType : TalezSymbol;
     }
 
-    const logos = logoData as any;
+    const response = logoData as any;
+    const settings = response.data || response;
 
-    if (type === 'expanded') {
-      // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
-      return logos.logoLight || logos.logoUrl || TalezLogoType;
-    } else {
-      // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
-      return logos.logoSymbolLight || logos.compactLogoUrl || logos.logoUrl || TalezSymbol;
+    // 데이터베이스에 저장된 logoUrl 사용
+    if (settings.logoUrl) {
+      return settings.logoUrl;
     }
+
+    // 기본 로고 사용
+    return type === 'expanded' ? TalezLogoType : TalezSymbol;
   };
 
   const contextValue = {
