@@ -3,6 +3,11 @@
 ## Overview
 TALEZ is a comprehensive pet education and e-commerce platform that combines AI-powered pet training services with an online shopping experience for pet supplies. It serves pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry by offering integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
+## Recent Changes
+- **2025-01-23**: Migrated from Kakao Maps to Naver Maps API for all location-based services. Created unified NaverMapView component replacing KakaoMapView across all pages (LocationFinder, facilities, institutes, events).
+- **2025-01-23**: TopBar mobile optimization complete - all header buttons now meet WCAG AA standards with 44px minimum touch targets and responsive spacing.
+- **2025-01-23**: Logo system migrated to PostgreSQL with database-backed settings management via /api/logo (public) and /api/admin/logo (admin) endpoints.
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 UI/UX Preferences: Enhanced font sizes and accessibility-focused design with improved touch targets and typography.
@@ -42,7 +47,7 @@ TALEZ is built with a strong emphasis on modularity, scalability, and performanc
 - **Communication Features**: Email services (SendGrid), real-time chat, notifications.
 - **AI Features**: AI-powered pet training services, content crawling for news, multi-model AI fusion (OpenAI, Gemini) for behavior, training, health, and sentiment analysis, automatic subtitle generation for videos.
 - **Admin Dashboard**: Comprehensive management for users, trainers, institutes, content, curriculum, revenue, and registrations. Enhanced visual analytics with circular progress bars.
-- **Location Services**: Naver Maps integration for pet-related facilities with reservation functionality.
+- **Location Services**: Naver Maps API integration for pet-related facilities with interactive map display, location markers, and facility information. Replaced Kakao Maps completely with NaverMapView component.
 - **Design System**: Consistent UI/UX with enhanced typography system, improved font sizes (16px base), accessibility-focused design with 44px minimum touch targets, unified button styles, and enhanced visual elements including an AI-focused design for experience sections. Color scheme adheres to Figma specifications: Primary: #2BAA61, Secondary: #FFA726, Information: #29B5F6, Danger: #E74D3C.
 - **Deployment Strategy**: Production-ready Docker containerization with multi-stage builds, PM2 cluster mode for high availability, Nginx reverse proxy with SSL termination, automated backup system, comprehensive monitoring scripts, and one-click deployment automation. GitHub Actions CI/CD pipeline for AWS EC2 deployment with automated backup and rollback capabilities. Fully configured for immediate commercial launch.
 
@@ -50,7 +55,7 @@ TALEZ is built with a strong emphasis on modularity, scalability, and performanc
 - **Database**: PostgreSQL (via Neon serverless)
 - **Email**: SendGrid
 - **Payments**: Stripe
-- **Maps**: Naver Maps API, Kakao Maps API
+- **Maps**: Naver Maps API (replaced Kakao Maps)
 - **AI Services**: OpenAI, Google Gemini
 - **Monitoring**: Sentry
 - **Authentication**: Kakao, Naver, Google (OAuth providers)

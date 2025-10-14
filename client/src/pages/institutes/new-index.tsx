@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { KakaoMapView } from "@/components/KakaoMapView";
+import { NaverMapView } from "@/components/NaverMapView";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
@@ -757,11 +757,19 @@ export default function LocationServices() {
             
             <div className="p-4">
               {/* Map & Weather Component */}
-              <KakaoMapView 
-                selectedLocation={selectedInstitute ? getLocationFromInstitute(selectedInstitute) : null}
-              />
-              
-              {!selectedInstitute && (
+              {selectedInstitute ? (
+                <NaverMapView 
+                  locations={[{
+                    id: selectedInstitute.id,
+                    name: selectedInstitute.name,
+                    address: selectedInstitute.location,
+                    coordinates: getLocationFromInstitute(selectedInstitute)
+                  }]}
+                  center={getLocationFromInstitute(selectedInstitute)}
+                  height="400px"
+                  zoom={15}
+                />
+              ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <MapPin className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
                   <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">위치 정보 없음</h3>

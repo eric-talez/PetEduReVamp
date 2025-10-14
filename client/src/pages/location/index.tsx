@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { apiRequest } from '@/lib/queryClient';
-import KakaoMapImproved from '@/components/KakaoMapImproved';
+import { NaverMapView } from '@/components/NaverMapView';
 
 /**
  * 위치 마커 컴포넌트
@@ -1193,23 +1193,35 @@ function LocationPageContent() {
 
       <Card>
         <CardHeader>
-          <CardTitle>카카오맵 보기</CardTitle>
+          <CardTitle>네이버 지도 보기</CardTitle>
           <CardDescription>
             주변 지역의 지도와 검색된 장소들을 확인하세요
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <KakaoMapImproved 
-            center={currentLocation || { latitude: 37.5665, longitude: 126.978 }}
-            places={nearbyPlaces}
-            onPlaceSelect={setSelectedPlace}
+          <NaverMapView 
+            center={{
+              lat: currentLocation?.latitude || 37.5665,
+              lng: currentLocation?.longitude || 126.978
+            }}
+            locations={nearbyPlaces.map((place: any) => ({
+              id: place.id,
+              name: place.name,
+              address: place.location?.address || '',
+              coordinates: {
+                lat: place.location?.latitude || 0,
+                lng: place.location?.longitude || 0
+              }
+            }))}
+            onLocationSelect={(location) => {
+              const place = nearbyPlaces.find(p => p.id === location.id);
+              if (place) setSelectedPlace(place);
+            }}
             height="500px"
-            showControls={true}
-            className="border rounded-lg"
           />
           <div className="mt-4 text-sm text-muted-foreground flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            카카오맵 API를 통해 실시간 지도 서비스를 제공합니다.
+            네이버 지도 API를 통해 실시간 지도 서비스를 제공합니다.
             {currentLocation && (
               <span className="text-primary">
                 현재 위치: {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}

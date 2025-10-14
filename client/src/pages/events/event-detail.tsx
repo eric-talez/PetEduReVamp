@@ -19,7 +19,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/SimpleApp';
 import { useToast } from '@/hooks/use-toast';
-import { KakaoMapView } from '@/components/KakaoMapView';
+import { NaverMapView } from '@/components/NaverMapView';
 
 // 임시 데이터 타입 정의
 interface EventLocation {
@@ -379,7 +379,23 @@ export default function EventDetailPage() {
                 </div>
               </div>
               <div className="h-[300px] rounded-lg overflow-hidden">
-                <KakaoMapView selectedLocation={event.location} />
+                <NaverMapView
+                  locations={[{
+                    id: event.location.id,
+                    name: event.location.name,
+                    address: event.location.address,
+                    coordinates: {
+                      lat: event.location.lat,
+                      lng: event.location.lng
+                    }
+                  }]}
+                  center={{
+                    lat: event.location.lat,
+                    lng: event.location.lng
+                  }}
+                  height="300px"
+                  zoom={15}
+                />
               </div>
             </Card>
           </div>

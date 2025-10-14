@@ -26,6 +26,7 @@ import {
   Hospital
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { NaverMapView } from '@/components/NaverMapView';
 
 interface Facility {
   id: number;
@@ -697,19 +698,28 @@ export default function FacilitiesPage() {
             <div className="lg:col-span-2">
               <Card>
                 <CardContent className="p-0">
-                  <div
-                    ref={mapRef}
-                    className="w-full h-[600px] rounded-lg"
-                    style={{ background: '#f0f0f0' }}
-                  >
-                    {!isMapReady && (
-                      <div className="w-full h-full flex items-center justify-center flex-col bg-gray-50 rounded-lg">
-                        <div className="text-2xl mb-4">🗺️</div>
-                        <div className="text-base text-gray-600 mb-2">지도를 준비하는 중...</div>
-                        <div className="text-sm text-gray-500">잠시만 기다려주세요</div>
-                      </div>
-                    )}
-                  </div>
+                  <NaverMapView
+                    locations={filteredFacilities.map(f => ({
+                      id: f.id,
+                      name: f.name,
+                      address: f.address,
+                      coordinates: {
+                        lat: f.coordinates.lat,
+                        lng: f.coordinates.lng
+                      }
+                    }))}
+                    center={
+                      userLocation
+                        ? { lat: userLocation.lat, lng: userLocation.lng }
+                        : { lat: 37.5665, lng: 126.9780 }
+                    }
+                    onLocationSelect={(location) => {
+                      const facility = facilities.find(f => f.id === location.id);
+                      if (facility) setSelectedFacility(facility);
+                    }}
+                    height="600px"
+                    zoom={13}
+                  />
                 </CardContent>
               </Card>
             </div>

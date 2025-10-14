@@ -25,7 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { KakaoMapView } from '@/components/KakaoMapView';
+import { NaverMapView } from '@/components/NaverMapView';
 
 // 임시 데이터 타입 정의
 interface EventLocation {
@@ -761,9 +761,29 @@ export default function EventsPage() {
             <div className="sticky top-20">
               <Card className="overflow-hidden">
                 <div className="h-[calc(100vh-180px)] min-h-[400px]">
-                  <KakaoMapView 
-                    selectedLocation={selectedLocation}
-                  />
+                  {selectedLocation ? (
+                    <NaverMapView 
+                      locations={[{
+                        id: selectedLocation.id,
+                        name: selectedLocation.name,
+                        address: selectedLocation.address,
+                        coordinates: {
+                          lat: selectedLocation.lat,
+                          lng: selectedLocation.lng
+                        }
+                      }]}
+                      center={{
+                        lat: selectedLocation.lat,
+                        lng: selectedLocation.lng
+                      }}
+                      height="100%"
+                      zoom={15}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-500">이벤트를 선택하면 위치가 표시됩니다</p>
+                    </div>
+                  )}
                 </div>
               </Card>
             </div>

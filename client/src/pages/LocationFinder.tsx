@@ -36,7 +36,7 @@ import {
 import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { KakaoMapView } from '@/components/KakaoMapView';
+import { NaverMapView } from '@/components/NaverMapView';
 import { LocationDetailModal } from '@/components/LocationDetailModal';
 import LocationServiceBannerImage from '@assets/image_1758608093240.png';
 
