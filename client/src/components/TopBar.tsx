@@ -357,12 +357,12 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-emerald-100/50 bg-gradient-to-r from-white via-emerald-50/30 to-white dark:from-gray-950 dark:via-emerald-950/20 dark:to-gray-950 backdrop-blur-lg supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-gray-950/80 shadow-sm">
-      <div className="container flex h-16 items-center px-4 sm:px-6 lg:px-8">
-          {/* Mobile Menu Button */}
+      <div className="container flex h-16 items-center px-2 sm:px-4 lg:px-8">
+          {/* Mobile Menu Button - 터치 최적화 */}
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center p-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 active:scale-95"
+            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center p-2 sm:p-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 active:scale-95"
             aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
             aria-expanded={sidebarOpen}
           >
@@ -430,15 +430,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </div>
           </div>
 
-          {/* Action buttons - Grouped together for better layout */}
-          <div className="flex items-center space-x-2">
-            {/* Group message, notification and theme toggle together as requested */}
-            <div className="flex items-center space-x-2 border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
-              {/* Messages Button & Popup */}
+          {/* Action buttons - 모바일 터치 최적화 */}
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* 메시지, 알림, 테마 토글 그룹 */}
+            <div className="flex items-center space-x-1 sm:space-x-2 border-r border-gray-200 dark:border-gray-700 pr-1 sm:pr-2 mr-1 sm:mr-2">
+              {/* Messages Button & Popup - 44px 터치 타겟 */}
               <div className="relative" ref={messagePopupRef}>
                 <Button 
                   variant="ghost" 
                   size="icon"
+                  className="min-w-[44px] min-h-[44px] w-11 h-11"
                   onClick={() => {
                     if (isAuthenticated) {
                       setMessagePopupOpen(!messagePopupOpen);
@@ -557,12 +558,13 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 )}
               </div>
 
-              {/* Real-time Notification Bell */}
+              {/* Real-time Notification Bell - 44px 터치 타겟 */}
               {isAuthenticated && (
                 <div className="relative">
                   <Button 
                     variant="ghost" 
                     size="icon"
+                    className="min-w-[44px] min-h-[44px] w-11 h-11"
                     onClick={() => {
                       setNotificationPopupOpen(!notificationPopupOpen);
                       setMessagePopupOpen(false);
@@ -682,12 +684,12 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
 
             {isAuthenticated ? (
               <>
-                {/* Shopping Cart Button & Popup */}
+                {/* Shopping Cart Button & Popup - 44px 터치 타겟 */}
                 <div className="relative" ref={cartPopupRef}>
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="relative transition-all duration-200 hover:scale-110 hover:text-primary focus:ring-2 focus:ring-primary focus:ring-offset-1 dark:focus:ring-offset-gray-900"
+                    className="min-w-[44px] min-h-[44px] w-11 h-11 relative transition-all duration-200 hover:scale-110 hover:text-primary focus:ring-2 focus:ring-primary focus:ring-offset-1 dark:focus:ring-offset-gray-900"
                     onClick={() => {
                       setCartPopupOpen(!cartPopupOpen);
                       setMessagePopupOpen(false);
@@ -891,10 +893,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   )}
                 </div>
 
-                {/* User menu */}
+                {/* User menu - 44px 터치 타겟 */}
                 <div className="relative" ref={userMenuRef}>
                   <button 
-                    className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1"
+                    className="min-w-[44px] min-h-[44px] flex items-center space-x-1 sm:space-x-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1"
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     onKeyDown={(e) => {
                       if (e.key === 'Escape' && userMenuOpen) {
@@ -906,7 +908,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     aria-controls="user-menu"
                     aria-haspopup="menu"
                   >
-                    <Avatar className="h-6 w-6">
+                    <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
                       {userRole && (
                         <AvatarImage 
                           src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || '')}&background=random&color=fff`} 
@@ -915,8 +917,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       )}
                       <AvatarFallback>{userName ? userName.substring(0, 1).toUpperCase() : "U"}</AvatarFallback>
                     </Avatar>
-                    <span className="hidden lg:flex items-center space-x-1">
-                      <span className="text-xs font-medium">{userName}</span>
+                    <span className="hidden sm:flex items-center space-x-1">
+                      <span className="text-xs sm:text-sm font-medium">{userName}</span>
                       <ChevronDown className="h-3 w-3" />
                     </span>
                   </button>
@@ -993,15 +995,15 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 </div>
               </>
             ) : (
-              <div className="flex space-x-2">
+              <div className="flex space-x-1 sm:space-x-2">
                 <Link href="/auth">
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     aria-label="로그인 페이지로 이동"
-                    className="transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="min-w-[44px] min-h-[44px] px-3 sm:px-4 transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   >
-                    로그인
+                    <span className="text-sm sm:text-base">로그인</span>
                   </Button>
                 </Link>
                 <Link href="/auth?tab=register">
@@ -1009,9 +1011,9 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     variant="default" 
                     size="sm" 
                     aria-label="회원가입 페이지로 이동"
-                    className="transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="min-w-[44px] min-h-[44px] px-3 sm:px-4 transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   >
-                    회원가입
+                    <span className="text-sm sm:text-base">회원가입</span>
                   </Button>
                 </Link>
               </div>
