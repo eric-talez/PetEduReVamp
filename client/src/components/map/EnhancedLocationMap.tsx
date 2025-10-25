@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -19,7 +18,8 @@ import {
   RefreshCw,
   Route,
   Eye,
-  EyeOff
+  EyeOff,
+  CheckCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -52,6 +52,8 @@ interface LocationData {
   services?: string[];
   priceRange?: string;
   images?: string[];
+  isCertified?: boolean;
+  talezCertificationStatus?: 'pending' | 'verified' | 'rejected';
 }
 
 interface EnhancedLocationMapProps {
@@ -84,7 +86,7 @@ export function EnhancedLocationMap({
   const markersRef = useRef<L.Marker[]>([]);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const watchIdRef = useRef<number | null>(null);
-  
+
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
@@ -95,7 +97,7 @@ export function EnhancedLocationMap({
   const [sortBy, setSortBy] = useState<'distance' | 'rating' | 'name'>('distance');
   const [showMap, setShowMap] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   const { toast } = useToast();
 
   // 위치 타입별 아이콘 생성
@@ -191,7 +193,7 @@ export function EnhancedLocationMap({
 
         // 기본 타일 레이어
         const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions);
-        
+
         // 백업 타일 레이어들
         const backupLayers = [
           L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions),
@@ -248,23 +250,23 @@ export function EnhancedLocationMap({
           position.coords.longitude
         ];
         setUserLocation(coords);
-        
+
         if (mapInstanceRef.current) {
           mapInstanceRef.current.setView(coords, 15);
-          
+
           // 기존 사용자 마커 제거
           if (userMarkerRef.current) {
             userMarkerRef.current.remove();
           }
-          
+
           // 새 사용자 마커 추가
           userMarkerRef.current = L.marker(coords, {
             icon: getUserLocationIcon()
           }).addTo(mapInstanceRef.current);
-          
+
           userMarkerRef.current.bindPopup('현재 위치');
         }
-        
+
         setIsLoadingLocation(false);
         toast({
           title: "위치 확인 완료",
@@ -274,7 +276,7 @@ export function EnhancedLocationMap({
       (error) => {
         setIsLoadingLocation(false);
         let errorMessage = "위치 정보를 가져올 수 없습니다.";
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = "위치 접근 권한이 거부되었습니다.";
@@ -286,7 +288,7 @@ export function EnhancedLocationMap({
             errorMessage = "위치 정보 요청 시간이 초과되었습니다.";
             break;
         }
-        
+
         toast({
           title: "위치 확인 실패",
           description: errorMessage,
@@ -332,18 +334,18 @@ export function EnhancedLocationMap({
             position.coords.longitude
           ];
           setUserLocation(coords);
-          
+
           if (mapInstanceRef.current) {
             // 기존 사용자 마커 제거
             if (userMarkerRef.current) {
               userMarkerRef.current.remove();
             }
-            
+
             // 새 사용자 마커 추가
             userMarkerRef.current = L.marker(coords, {
               icon: getUserLocationIcon()
             }).addTo(mapInstanceRef.current);
-            
+
             userMarkerRef.current.bindPopup('현재 위치 (실시간)');
           }
         },
@@ -361,7 +363,7 @@ export function EnhancedLocationMap({
           maximumAge: 10000 // 10초
         }
       );
-      
+
       setIsTrackingLocation(true);
       toast({
         title: "위치 추적 시작",
@@ -466,7 +468,7 @@ export function EnhancedLocationMap({
             <span style="display: inline-block; padding: 2px 8px; background: #e5e7eb; border-radius: 12px; font-size: 11px; color: #374151;">
               ${getLocationTypeLabel(location.type)}
             </span>
-            ${location.certificationStatus === 'verified' ? `
+            ${location.certificationStatus === 'verified' || location.talezCertificationStatus === 'verified' ? `
               <span style="display: inline-block; padding: 2px 8px; background: #dcfce7; border-radius: 12px; font-size: 11px; color: #166534;">
                 TALEZ 인증
               </span>
@@ -534,7 +536,7 @@ export function EnhancedLocationMap({
     if (filteredAndSortedLocations.length > 0) {
       const group = new L.FeatureGroup(markersRef.current);
       const bounds = group.getBounds();
-      
+
       if (bounds.isValid()) {
         mapInstanceRef.current.fitBounds(bounds.pad(0.1));
       }
@@ -707,7 +709,7 @@ export function EnhancedLocationMap({
                   <Navigation className="w-4 h-4" />
                 )}
               </Button>
-              
+
               {enableRealTimeTracking && (
                 <Button
                   onClick={toggleLocationTracking}
@@ -771,7 +773,7 @@ export function EnhancedLocationMap({
             }}
             className="border-2 border-gray-200 shadow-lg"
           />
-          
+
           {/* 로딩 표시 */}
           {!mapInstanceRef.current && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg">
@@ -804,7 +806,7 @@ export function EnhancedLocationMap({
                     onClick={() => {
                       setSelectedLocation(location);
                       onLocationSelect?.(location);
-                      
+
                       if (mapInstanceRef.current) {
                         mapInstanceRef.current.setView([location.lat, location.lng], 16);
                       }
@@ -812,33 +814,39 @@ export function EnhancedLocationMap({
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <h4 className="font-semibold text-lg">{location.name}</h4>
                           <Badge className={getLocationTypeBadgeColor(location.type)}>
                             {getLocationTypeLabel(location.type)}
                           </Badge>
+                          {(location.isCertified || location.talezCertificationStatus === 'verified') && (
+                            <Badge className="bg-gradient-to-r from-[#2BAA61] to-[#229954] text-white border-none">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              TALEZ 인증
+                            </Badge>
+                          )}
                         </div>
-                        
+
                         <div className="space-y-1 text-sm text-gray-600">
                           <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4" />
                             <span>{location.address}</span>
                           </div>
-                          
+
                           {location.phone && (
                             <div className="flex items-center gap-2">
                               <Phone className="w-4 h-4" />
                               <span>{location.phone}</span>
                             </div>
                           )}
-                          
+
                           {location.hours && (
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
                               <span>{location.hours}</span>
                             </div>
                           )}
-                          
+
                           {location.rating && (
                             <div className="flex items-center gap-2">
                               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -850,7 +858,7 @@ export function EnhancedLocationMap({
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="text-right">
                         {location.distance && (
                           <div className="text-sm font-medium text-blue-600 mb-2">
@@ -860,7 +868,7 @@ export function EnhancedLocationMap({
                             }
                           </div>
                         )}
-                        
+
                         <div className="flex flex-col gap-2">
                           <Button
                             size="sm"
@@ -873,7 +881,7 @@ export function EnhancedLocationMap({
                           >
                             상세보기
                           </Button>
-                          
+
                           {(location.type === 'training-center' || location.type === 'training' || location.type === 'hospital' || location.type === 'veterinary') && (
                             <Button
                               size="sm"
@@ -888,7 +896,7 @@ export function EnhancedLocationMap({
                         </div>
                       </div>
                     </div>
-                    
+
                     {location.description && (
                       <p className="text-sm text-gray-700 mt-2 line-clamp-2">
                         {location.description}
