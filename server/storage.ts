@@ -1606,7 +1606,7 @@ class Storage {
   async initializeLogoSettings() {
     // 데이터베이스에서 로고 설정 조회
     const existingSettings = await db.select().from(logoSettings).limit(1);
-    
+
     if (existingSettings.length > 0) {
       console.log('[Storage] 데이터베이스에서 로고 설정 로드:', existingSettings[0]);
       return existingSettings[0];
@@ -2682,7 +2682,7 @@ class Storage {
     // 커뮤니티 게시글 중 이벤트 관련 게시글을 이벤트 형태로 변환하여 반환
     const communityPosts = this.posts || [];
     const eventKeywords = ['축제', '이벤트', '박람회', '대회', '행사', '펫페어', '문화축제'];
-    
+
     const eventPosts = communityPosts.filter((post: any) => {
       return eventKeywords.some(keyword => 
         post.title.includes(keyword) || 
@@ -3127,21 +3127,21 @@ class Storage {
 
   getCommunityPosts(options: any = {}): any {
     const { page = 1, limit = 12, category, sort = 'latest', searchQuery } = options;
-    
+
     let filteredPosts = this.posts?.filter(post => {
       // 숨김 처리된 게시글 제외
       if (post.hidden) return false;
-      
+
       // 카테고리 필터링
       if (category && post.tag !== category) return false;
-      
+
       // 검색어 필터링
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return post.title?.toLowerCase().includes(query) || 
                post.content?.toLowerCase().includes(query);
       }
-      
+
       return true;
     }) || [];
 
@@ -3534,7 +3534,7 @@ class Storage {
     }
   }
 
-  // 강의 구매 관련 메소드
+  // 강의 구매 관련 메소
   async purchaseCourse(userId: number, courseId: number, purchaseAmount: number, paymentMethod: string) {
     try {
       const purchase = {
@@ -3854,7 +3854,6 @@ class Storage {
     // 포인트 재계산 로직
     console.log('[Storage] 포인트 재계산 시작');
 
-    // 여기서 실제로는 복잡한 포인트 재계산 로직이 들어가야 함
     // 현재는 단순히 로그를 출력하고 성공 반환
     this.trainerActivityLogs.forEach(log => {
       log.pointsEarned = this.calculatePoints(log.activityType, log.metadata);
@@ -3904,7 +3903,7 @@ class Storage {
     // 훈련사 정보 포함
     posts = posts.map(post => ({
       ...post,
-      trainer: this.trainers.find(t => t.id === post.trainerId)
+      trainer: this.trainers.find(t => t.id === post.trainerId),
     }));
 
     // 페이지네이션 적용
@@ -4213,6 +4212,24 @@ class Storage {
         instituteId: 3,
         isActive: true,
         createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        name: "우하나",
+        email: "whn0525@naver.com",
+        phone: "010-2447-4900",
+        specialty: "행동교정 및 사회화",
+        certifications: ["인천광역시고등학교 - 순천부", "서울중앙고등학교 - 반려동물관리학과 졸업", "서울문화예술대학교 - 반려동물관리 전공", "경기대학교 - 대학원 박사과정 중", "서울소방학습관리센터 - 애견미용사 자격증 취득", "서울문화예술대학 - 반려동물관리 전공", "서울문화예술대학교 - 펫 테라피스트 강사", "바이츠콘설팅훈련도서 - 강의교수", "애견전산업체 - 조종군 직원장 강사"],
+        experience: "20년",
+        rating: 4.9,
+        reviews: 215,
+        institute: "이화목",
+        instituteId: 2,
+        bio: "20년 경력의 행동교정 및 사회화 전문 훈련사입니다. 서울중앙고등학교와 서울문화예술대학교에서 반려동물관리를 전공하였으며, 현재 경기대학교 대학원 박사과정 중입니다.",
+        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=우하나&backgroundColor=ffd1dc",
+        status: "active",
+        coursesCount: 18,
+        studentsCount: 142
       }
     ];
 
@@ -5110,7 +5127,7 @@ class HybridStorage extends Storage {
     if (index === -1) {
       throw new Error('Care log not found');
     }
-    
+
     this.careLogs[index] = {
       ...this.careLogs[index],
       ...updateData,
@@ -5154,7 +5171,7 @@ class HybridStorage extends Storage {
   // Care logs를 날짜별로 그룹화하여 반환
   async getCareLogsGroupedByDate(petId: number, startDate?: string, endDate?: string): Promise<{dates: string[], logsByDate: Record<string, any[]>, counts: Record<string, number>}> {
     let logs = this.careLogs.filter(log => log.petId === petId);
-    
+
     if (startDate && endDate) {
       logs = logs.filter(log => log.date >= startDate && log.date <= endDate);
     }
@@ -5162,7 +5179,7 @@ class HybridStorage extends Storage {
     // 날짜별로 그룹화
     const logsByDate: Record<string, any[]> = {};
     const counts: Record<string, number> = {};
-    
+
     logs.forEach(log => {
       const date = log.date;
       if (!logsByDate[date]) {
@@ -5174,7 +5191,7 @@ class HybridStorage extends Storage {
     });
 
     const dates = Object.keys(logsByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-    
+
     return { dates, logsByDate, counts };
   }
 }
