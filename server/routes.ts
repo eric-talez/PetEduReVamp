@@ -9469,14 +9469,14 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 결제 상태 확인 및 강의 등록
+  // 결제 상태 확인 및 강의/상품 등록
   app.post('/api/confirm-payment', async (req, res) => {
     try {
-      const { paymentIntentId, courseId } = req.body;
+      const { paymentIntentId } = req.body;
       const userId = req.user?.id;
 
-      if (!userId) {
-        return res.status(401).json({ error: '로그인이 필요합니다.' });
+      if (!paymentIntentId) {
+        return res.status(400).json({ error: 'paymentIntentId가 필요합니다.' });
       }
 
       // Stripe에서 결제 상태 확인
@@ -9487,28 +9487,68 @@ app.get('/api/search', async (req, res) => {
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       
       if (paymentIntent.status === 'succeeded') {
-        // 강의 등록 처리
-        const enrollment = {
-          id: Date.now().toString(),
-          userId: userId,
-          courseId: courseId,
-          paymentIntentId: paymentIntentId,
-          amount: paymentIntent.amount / 100, // 원 단위로 변환
-          status: 'enrolled',
-          enrolledAt: new Date(),
-          progress: 0
-        };
+        // metadata에서 구매 정보 추출
+        const metadata = paymentIntent.metadata;
+        const itemType = metadata.type || 'course';
+        const itemId = metadata.courseId || metadata.productId;
+        const itemName = metadata.courseTitle || metadata.productName;
 
-        // 실제 구현에서는 storage에 저장
-        console.log('[강의 등록] 결제 완료 후 강의 등록:', enrollment);
+        if (itemType === 'course') {
+          // 강의 등록 처리
+          const enrollment = {
+            id: Date.now().toString(),
+            userId: userId || 'guest',
+            courseId: itemId,
+            paymentIntentId: paymentIntentId,
+            amount: paymentIntent.amount / 100, // 원 단위로 변환
+            status: 'enrolled',
+            enrolledAt: new Date(),
+            progress: 0,
+            courseTitle: itemName
+          };
 
-        res.json({
-          success: true,
-          message: '결제가 완료되어 강의에 등록되었습니다.',
-          enrollment: enrollment
-        });
+          console.log('[강의 등록] 결제 완료 후 강의 등록:', enrollment);
+
+          res.json({
+            success: true,
+            message: '결제가 완료되어 강의에 등록되었습니다.',
+            enrollment: enrollment,
+            type: 'course'
+          });
+        } else if (itemType === 'product') {
+          // 상품 주문 처리
+          const order = {
+            id: Date.now().toString(),
+            userId: userId || 'guest',
+            productId: itemId,
+            paymentIntentId: paymentIntentId,
+            amount: paymentIntent.amount / 100,
+            status: 'completed',
+            orderedAt: new Date(),
+            productName: itemName
+          };
+
+          console.log('[상품 주문] 결제 완료 후 주문 생성:', order);
+
+          res.json({
+            success: true,
+            message: '결제가 완료되어 주문이 생성되었습니다.',
+            order: order,
+            type: 'product'
+          });
+        } else {
+          res.json({
+            success: true,
+            message: '결제가 완료되었습니다.',
+            payment: {
+              id: paymentIntentId,
+              amount: paymentIntent.amount / 100,
+              status: 'succeeded'
+            }
+          });
+        }
       } else {
-        res.status(400).json({ error: '결제가 완료되지 않았습니다.' });
+        res.status(400).json({ error: '결제가 완료되지 않았습니다.', status: paymentIntent.status });
       }
     } catch (error) {
       console.error('결제 확인 오류:', error);

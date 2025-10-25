@@ -49,6 +49,8 @@ import AdminCurriculum from "./pages/admin/AdminCurriculum";
 import AdminRegistrations from "./pages/admin/AdminRegistrations";
 import TrainerRegistration from "./pages/registration/TrainerRegistration";
 import InstituteRegistration from "./pages/registration/InstituteRegistration";
+import PaymentSuccess from "./pages/payment-success";
+import PaymentFailed from "./pages/payment-failed";
 
 // 관리자 페이지 직접 import
 import AdminHome from "./pages/admin/AdminHome";
@@ -453,6 +455,8 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/payment-success" component={PaymentSuccess} />
+                  <Route path="/payment-failed" component={PaymentFailed} />
 
                   <Route path="/course/:id" component={CourseDetail} />
                   <Route path="/courses/:id">

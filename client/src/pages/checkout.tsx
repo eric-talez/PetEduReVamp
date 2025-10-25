@@ -53,29 +53,15 @@ const CheckoutForm: React.FC<{
       });
 
       if (error) {
-        toast({
-          title: "결제 실패",
-          description: error.message || "결제 중 오류가 발생했습니다.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "결제 완료",
-          description: itemType === 'course' ? "강의 구매가 완료되었습니다!" : "상품 구매가 완료되었습니다!",
-        });
-        if (itemType === 'course') {
-          navigate(`/course/${itemInfo.id}`);
-        } else {
-          navigate(`/shop/order-complete?productId=${itemInfo.id}`);
-        }
+        // 결제 실패 시 payment-failed 페이지로 리다이렉트
+        const errorMessage = encodeURIComponent(error.message || "결제 중 오류가 발생했습니다.");
+        navigate(`/payment-failed?error_message=${errorMessage}`);
       }
+      // 성공 시 Stripe가 자동으로 return_url로 리다이렉트
     } catch (error) {
       console.error('Payment error:', error);
-      toast({
-        title: "결제 오류",
-        description: "결제 처리 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : "결제 처리 중 오류가 발생했습니다.";
+      navigate(`/payment-failed?error_message=${encodeURIComponent(errorMessage)}`);
     } finally {
       setIsProcessing(false);
     }
