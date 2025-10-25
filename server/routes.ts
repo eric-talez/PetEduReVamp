@@ -14402,6 +14402,149 @@ export function registerTrainerCertificationRoutes(app: Express) {
   console.log('  - DELETE /api/admin/courses/:id (관리자/기관 전용, 소유권 검증)');
   console.log('  - POST /api/admin/courses/:id/publish (관리자/기관 전용, CSRF 보호)');
 
+  // ==========================================
+  // 토스페이먼츠 API 엔드포인트
+  // ==========================================
+  
+  /**
+   * POST /api/toss/confirm - 토스페이먼츠 결제 승인
+   * 
+   * 결제 성공 콜백에서 호출되는 API
+   * 프론트엔드에서 paymentKey, orderId, amount를 받아 최종 승인 처리
+   */
+  app.post('/api/toss/confirm', requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const { paymentKey, orderId, amount } = req.body;
+
+      if (!paymentKey || !orderId || !amount) {
+        return res.status(400).json({
+          success: false,
+          message: '필수 파라미터가 누락되었습니다. (paymentKey, orderId, amount)'
+        });
+      }
+
+      console.log('[Toss] 결제 승인 요청:', { paymentKey, orderId, amount });
+
+      const { confirmTossPayment } = await import('./payment/toss');
+      
+      // 토스페이먼츠 API 호출
+      const paymentResult = await confirmTossPayment({
+        paymentKey,
+        orderId,
+        amount: parseInt(amount)
+      });
+
+      console.log('[Toss] 결제 승인 성공:', paymentResult.orderId);
+
+      // 결제 정보를 스토리지에 저장 (필요한 경우)
+      // await storage.createOrder({
+      //   userId: req.user?.id,
+      //   orderId: paymentResult.orderId,
+      //   amount: paymentResult.totalAmount,
+      //   status: 'completed',
+      //   paymentKey: paymentResult.paymentKey,
+      //   method: paymentResult.method
+      // });
+
+      res.json({
+        success: true,
+        message: '결제가 성공적으로 완료되었습니다.',
+        payment: paymentResult
+      });
+    } catch (error: any) {
+      console.error('[Toss] 결제 승인 오류:', error.response?.data || error.message);
+      res.status(400).json({
+        success: false,
+        message: '결제 승인에 실패했습니다.',
+        error: error.response?.data || error.message
+      });
+    }
+  });
+
+  /**
+   * GET /api/toss/payment/:paymentKey - 토스페이먼츠 결제 조회
+   * 
+   * paymentKey로 결제 정보 조회
+   */
+  app.get('/api/toss/payment/:paymentKey', requireAuth(), async (req, res) => {
+    try {
+      const { paymentKey } = req.params;
+
+      if (!paymentKey) {
+        return res.status(400).json({
+          success: false,
+          message: 'paymentKey가 필요합니다.'
+        });
+      }
+
+      console.log('[Toss] 결제 조회 요청:', paymentKey);
+
+      const { getTossPayment } = await import('./payment/toss');
+      
+      const payment = await getTossPayment(paymentKey);
+
+      res.json({
+        success: true,
+        payment
+      });
+    } catch (error: any) {
+      console.error('[Toss] 결제 조회 오류:', error.response?.data || error.message);
+      res.status(400).json({
+        success: false,
+        message: '결제 정보를 조회할 수 없습니다.',
+        error: error.response?.data || error.message
+      });
+    }
+  });
+
+  /**
+   * POST /api/toss/cancel - 토스페이먼츠 결제 취소
+   * 
+   * 결제 취소 (전체 취소 또는 부분 취소)
+   */
+  app.post('/api/toss/cancel', requireAuth(), csrfProtection, async (req, res) => {
+    try {
+      const { paymentKey, cancelReason, cancelAmount } = req.body;
+
+      if (!paymentKey || !cancelReason) {
+        return res.status(400).json({
+          success: false,
+          message: '필수 파라미터가 누락되었습니다. (paymentKey, cancelReason)'
+        });
+      }
+
+      console.log('[Toss] 결제 취소 요청:', { paymentKey, cancelReason, cancelAmount });
+
+      const { cancelTossPayment } = await import('./payment/toss');
+      
+      const cancelResult = await cancelTossPayment({
+        paymentKey,
+        cancelReason,
+        ...(cancelAmount && { cancelAmount: parseInt(cancelAmount) })
+      });
+
+      console.log('[Toss] 결제 취소 성공:', paymentKey);
+
+      res.json({
+        success: true,
+        message: '결제가 성공적으로 취소되었습니다.',
+        cancel: cancelResult
+      });
+    } catch (error: any) {
+      console.error('[Toss] 결제 취소 오류:', error.response?.data || error.message);
+      res.status(400).json({
+        success: false,
+        message: '결제 취소에 실패했습니다.',
+        error: error.response?.data || error.message
+      });
+    }
+  });
+
+  console.log('[Toss Payments] 토스페이먼츠 API 엔드포인트가 등록되었습니다.');
+  console.log('  - POST /api/toss/confirm (결제 승인)');
+  console.log('  - GET /api/toss/payment/:paymentKey (결제 조회)');
+  console.log('  - POST /api/toss/cancel (결제 취소)');
+
   // Database test routes
   import('./routes/database-test').then(({ databaseTestRoutes }) => {
     app.use('/api/test', databaseTestRoutes);

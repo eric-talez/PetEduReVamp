@@ -15,31 +15,38 @@ export default function PaymentSuccess() {
   useEffect(() => {
     const verifyPayment = async () => {
       try {
-        // URL에서 payment_intent 파라미터 추출
+        // URL에서 토스페이먼츠 파라미터 추출
         const urlParams = new URLSearchParams(window.location.search);
-        const paymentIntentId = urlParams.get('payment_intent');
-        const clientSecret = urlParams.get('payment_intent_client_secret');
+        const paymentKey = urlParams.get('paymentKey');
+        const orderId = urlParams.get('orderId');
+        const amount = urlParams.get('amount');
 
-        if (!paymentIntentId) {
+        if (!paymentKey || !orderId || !amount) {
           setError('결제 정보를 찾을 수 없습니다.');
           setIsVerifying(false);
           return;
         }
 
-        // 결제 상태 확인 (Stripe에서 redirect된 경우 이미 성공한 상태)
-        const response = await fetch('/api/confirm-payment', {
+        console.log('[Payment Success] 결제 승인 요청:', { paymentKey, orderId, amount });
+
+        // 토스페이먼츠 결제 승인 API 호출
+        const response = await fetch('/api/toss/confirm', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            paymentIntentId,
+            paymentKey,
+            orderId,
+            amount: parseInt(amount),
           }),
         });
 
         if (response.ok) {
           const data = await response.json();
-          setPaymentInfo(data);
+          setPaymentInfo(data.payment);
+          
+          console.log('[Payment Success] 결제 승인 성공:', data);
           
           toast({
             title: "결제 성공",
@@ -47,10 +54,11 @@ export default function PaymentSuccess() {
           });
         } else {
           const errorData = await response.json();
-          setError(errorData.error || '결제 확인 중 오류가 발생했습니다.');
+          console.error('[Payment Success] 결제 승인 실패:', errorData);
+          setError(errorData.message || '결제 확인 중 오류가 발생했습니다.');
         }
       } catch (err) {
-        console.error('Payment verification error:', err);
+        console.error('[Payment Success] 오류:', err);
         setError('결제 확인 중 오류가 발생했습니다.');
       } finally {
         setIsVerifying(false);
@@ -91,11 +99,11 @@ export default function PaymentSuccess() {
               결제 처리 중 문제가 발생했습니다. 아래 버튼을 눌러 홈으로 돌아가거나 고객센터에 문의해주세요.
             </p>
             <div className="flex gap-4">
-              <Button onClick={() => navigate('/')} className="flex-1">
+              <Button onClick={() => navigate('/')} className="flex-1" data-testid="button-home-error">
                 <Home className="h-4 w-4 mr-2" />
                 홈으로 돌아가기
               </Button>
-              <Button variant="outline" onClick={() => navigate('/help')} className="flex-1">
+              <Button variant="outline" onClick={() => navigate('/help')} className="flex-1" data-testid="button-help">
                 고객센터
               </Button>
             </div>
@@ -121,21 +129,29 @@ export default function PaymentSuccess() {
           {paymentInfo && (
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 space-y-3">
               <h3 className="font-semibold text-lg mb-4">결제 정보</h3>
-              {paymentInfo.enrollment && (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">결제 ID</span>
-                    <span className="font-medium">{paymentInfo.enrollment.paymentIntentId}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">결제 금액</span>
-                    <span className="font-medium">{paymentInfo.enrollment.amount.toLocaleString()}원</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">결제 상태</span>
-                    <span className="font-medium text-green-600 dark:text-green-400">완료</span>
-                  </div>
-                </>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">주문번호</span>
+                <span className="font-medium" data-testid="text-order-id">{paymentInfo.orderId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">결제 금액</span>
+                <span className="font-medium" data-testid="text-payment-amount">{paymentInfo.totalAmount?.toLocaleString()}원</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">결제 방법</span>
+                <span className="font-medium">{paymentInfo.method}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">결제 상태</span>
+                <span className="font-medium text-green-600 dark:text-green-400">완료</span>
+              </div>
+              {paymentInfo.approvedAt && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">승인 시간</span>
+                  <span className="font-medium text-sm">
+                    {new Date(paymentInfo.approvedAt).toLocaleString('ko-KR')}
+                  </span>
+                </div>
               )}
             </div>
           )}
@@ -181,6 +197,10 @@ export default function PaymentSuccess() {
               💡 <strong>안내</strong>: 결제 영수증은 이메일로 발송되었습니다. 
               영수증이 도착하지 않은 경우 스팸 메일함을 확인해주세요.
             </p>
+          </div>
+
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            <p>토스페이먼츠 안전결제 시스템</p>
           </div>
         </CardContent>
       </Card>

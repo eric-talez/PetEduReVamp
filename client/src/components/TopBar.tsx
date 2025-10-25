@@ -454,7 +454,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       setMessagePopupOpen(false);
                     }
                   }}
-                  className="relative"
                   aria-label="메시지"
                   aria-expanded={messagePopupOpen}
                   aria-controls="messages-popup"
@@ -575,7 +574,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                         setNotificationPopupOpen(false);
                       }
                     }}
-                    className="relative"
                     aria-label="알림"
                     aria-expanded={notificationPopupOpen}
                     aria-controls="notifications-popup"

@@ -4,6 +4,8 @@
 TALEZ is a comprehensive pet education and e-commerce platform that combines AI-powered pet training services with an online shopping experience for pet supplies. It serves pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry by offering integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
 ## Recent Changes
+- **2025-10-25**: Payment system migrated to Toss Payments (토스페이먼츠) for Korean market optimization. Stripe kept as optional global payment alternative. Implemented /api/toss/confirm, /api/toss/payment/:paymentKey, and /api/toss/cancel endpoints. Updated checkout.tsx, payment-success.tsx, and payment-failed.tsx for Toss Payments SDK integration.
+- **2025-10-25**: Fixed TopBar.tsx duplicate className warnings on message and notification buttons for cleaner console output.
 - **2025-01-23**: Migrated from Kakao Maps to Naver Maps API for all location-based services. Created unified NaverMapView component replacing KakaoMapView across all pages (LocationFinder, facilities, institutes, events).
 - **2025-01-23**: TopBar mobile optimization complete - all header buttons now meet WCAG AA standards with 44px minimum touch targets and responsive spacing.
 - **2025-01-23**: Logo system migrated to PostgreSQL with database-backed settings management via /api/logo (public) and /api/admin/logo (admin) endpoints.
@@ -42,7 +44,7 @@ TALEZ is built with a strong emphasis on modularity, scalability, and performanc
 
 ### Key Features
 - **Authentication System**: Multi-provider support (Native, Kakao, Naver, Google OAuth), secure session management, role-based access, identity verification.
-- **E-commerce Platform**: Product catalog, shopping cart, Stripe integration for payments, order management.
+- **E-commerce Platform**: Product catalog, shopping cart, Toss Payments integration (primary) with Stripe as optional alternative for payments, order management.
 - **Educational Services**: Course management, trainer profiles, pet profiles, AI-powered recommendations, curriculum creation with Excel integration and video management.
 - **Communication Features**: Email services (SendGrid), real-time chat, notifications.
 - **AI Features**: AI-powered pet training services, content crawling for news, multi-model AI fusion (OpenAI, Gemini) for behavior, training, health, and sentiment analysis, automatic subtitle generation for videos.
@@ -54,7 +56,7 @@ TALEZ is built with a strong emphasis on modularity, scalability, and performanc
 ## External Dependencies
 - **Database**: PostgreSQL (via Neon serverless)
 - **Email**: SendGrid
-- **Payments**: Stripe
+- **Payments**: Toss Payments (primary, Korean market), Stripe (optional, global)
 - **Maps**: Naver Maps API (replaced Kakao Maps)
 - **AI Services**: OpenAI, Google Gemini
 - **Monitoring**: Sentry

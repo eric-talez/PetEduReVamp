@@ -7,10 +7,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export default function PaymentFailed() {
   const [, navigate] = useLocation();
 
-  // URL에서 에러 정보 추출
+  // URL에서 토스페이먼츠 에러 정보 추출
   const urlParams = new URLSearchParams(window.location.search);
-  const errorMessage = urlParams.get('error_message') || '결제 처리 중 오류가 발생했습니다.';
-  const paymentIntentId = urlParams.get('payment_intent');
+  const errorCode = urlParams.get('code');
+  const errorMessage = urlParams.get('message') || '결제 처리 중 오류가 발생했습니다.';
+  const orderId = urlParams.get('orderId');
 
   return (
     <div className="container mx-auto py-12 px-4">
@@ -31,13 +32,21 @@ export default function PaymentFailed() {
             </AlertDescription>
           </Alert>
 
-          {paymentIntentId && (
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+          {(errorCode || orderId) && (
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 space-y-3">
               <h3 className="font-semibold mb-3">결제 정보</h3>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">결제 ID</span>
-                <span className="font-mono">{paymentIntentId}</span>
-              </div>
+              {orderId && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">주문번호</span>
+                  <span className="font-mono" data-testid="text-order-id">{orderId}</span>
+                </div>
+              )}
+              {errorCode && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">오류 코드</span>
+                  <span className="font-mono" data-testid="text-error-code">{errorCode}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -48,6 +57,7 @@ export default function PaymentFailed() {
               <li>• 카드 정보 입력 오류</li>
               <li>• 네트워크 연결 문제</li>
               <li>• 결제 승인 거부</li>
+              <li>• 사용자 결제 취소</li>
             </ul>
           </div>
 
@@ -55,7 +65,7 @@ export default function PaymentFailed() {
             <h3 className="font-semibold text-lg">해결 방법</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Button 
-                onClick={() => navigate('/checkout')} 
+                onClick={() => window.history.back()} 
                 className="w-full"
                 data-testid="button-retry-payment"
               >
@@ -103,6 +113,10 @@ export default function PaymentFailed() {
                 은행에 따라 1-3영업일 내에 환불됩니다.
               </p>
             </details>
+          </div>
+
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            <p>토스페이먼츠 안전결제 시스템</p>
           </div>
         </CardContent>
       </Card>

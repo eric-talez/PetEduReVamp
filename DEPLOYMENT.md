@@ -24,9 +24,19 @@ DATABASE_URL=postgresql://user:password@host:port/dbname
 OPENAI_API_KEY=sk-...
 GEMINI_API_KEY=...
 
-# 결제 서비스
+# 결제 서비스 - 토스페이먼츠 (권장, 한국 시장 최적화)
+VITE_TOSS_CLIENT_KEY=live_ck_...  # 프론트엔드용 (테스트: test_gck_docs_...)
+TOSS_SECRET_KEY=live_sk_...       # 서버용 (테스트: test_gsk_docs_...)
+
+# 결제 서비스 - Stripe (선택사항, 글로벌 결제)
 STRIPE_SECRET_KEY=sk_live_...
 VITE_STRIPE_PUBLIC_KEY=pk_live_...
+
+# 지도/위치 서비스
+VITE_NAVER_CLIENT_ID=...          # 네이버 맵 프론트엔드용
+NAVER_CLIENT_ID=...                # 네이버 맵 서버용
+NAVER_CLIENT_SECRET=...
+VITE_KAKAO_MAP_APP_KEY=...
 
 # 이메일 서비스
 SENDGRID_API_KEY=SG....
@@ -35,6 +45,7 @@ SENDGRID_API_KEY=SG....
 KAKAO_CLIENT_ID=...
 NAVER_CLIENT_ID=...
 GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
 
 # 보안
 JWT_SECRET=...
@@ -44,6 +55,29 @@ SESSION_SECRET=...
 NODE_ENV=production
 PORT=5000
 ```
+
+**토스페이먼츠 키 발급 방법:**
+1. https://developers.tosspayments.com/ 회원가입
+2. 개발자센터 > 결제 연동 > API 키 발급
+3. 테스트용 키는 즉시 사용 가능 (사업자 등록 불필요)
+4. 실 운영용 키는 사업자 등록 후 발급
+
+**테스트 환경 설정 (필수):**
+```bash
+# .env 파일에 테스트 키 추가
+VITE_TOSS_CLIENT_KEY=test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm
+TOSS_SECRET_KEY=test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+```
+
+**⚠️ 중요 보안 사항:**
+- 환경 변수 미설정 시 결제 기능이 작동하지 않습니다 (보안상 하드코딩 제거)
+- 테스트 키는 반드시 환경 변수로 설정하세요
+- 실 운영 시 테스트 키를 실제 키로 교체해야 합니다
+
+**현재 상태:**
+- 토스페이먼츠 통합 완료 ✅
+- 환경 변수 필수 설정으로 보안 강화 ✅
+- 상용화 시 실제 키로 교체 필요 ⚠️
 
 ### 2. 시스템 요구사항
 - Node.js 20.x LTS
