@@ -2472,30 +2472,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return 'shop';
   }
 
-  // Google Places Nearby Search API - 주변 장소 검색
+  // TALEZ 데이터베이스에서 훈련사/기관 검색하는 함수
+  async function searchTalezPlaces(type: string, lat: number, lng: number, radiusKm: number): Promise<any[]> {
+    try {
+      if (type === 'trainer') {
+        // 훈련사 검색 (role = 'trainer'이고 latitude/longitude가 있는 사용자)
+        const trainers = await db
+          .select()
+          .from(users)
+          .where(
+            sql`${users.role} = 'trainer' 
+                AND ${users.latitude} IS NOT NULL 
+                AND ${users.longitude} IS NOT NULL
+                AND ${users.isActive} = true`
+          );
+
+        return trainers.map((trainer: any) => ({
+          id: `trainer-${trainer.id}`,
+          name: trainer.name || trainer.username,
+          type: 'trainer',
+          latitude: parseFloat(trainer.latitude),
+          longitude: parseFloat(trainer.longitude),
+          address: trainer.address || '',
+          phone: trainer.phone || '',
+          rating: 4.5,
+          description: '전문 반려동물 훈련사',
+          certification: true,
+          contact: trainer.phone,
+          photo: trainer.profileImage,
+        }));
+      } else if (type === 'institute') {
+        // 기관 검색
+        const institutions = await db
+          .select()
+          .from(institutes)
+          .where(
+            sql`${institutes.latitude} IS NOT NULL 
+                AND ${institutes.longitude} IS NOT NULL
+                AND ${institutes.isActive} = true`
+          );
+
+        return institutions.map((inst: any) => ({
+          id: `institute-${inst.id}`,
+          name: inst.name,
+          type: 'institute',
+          latitude: parseFloat(inst.latitude),
+          longitude: parseFloat(inst.longitude),
+          address: inst.address || '',
+          phone: inst.phone || '',
+          rating: inst.rating ? parseFloat(inst.rating) : 4.5,
+          description: inst.description || '반려동물 훈련 기관',
+          certification: true,
+          contact: inst.phone,
+          photo: inst.logo,
+          website: inst.website,
+        }));
+      }
+      
+      return [];
+    } catch (error) {
+      console.error(`TALEZ ${type} 검색 오류:`, error);
+      return [];
+    }
+  }
+
+  // TALEZ 주변 장소 검색 API - 훈련사/기관은 DB, 나머지는 Google Places
   app.get('/api/locations/nearby', async (req, res) => {
     const { type, lat, lng, radius } = req.query;
-    const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
     
-    console.log(`[Nearby Search API] 요청받음 - type: "${type}", lat: ${lat}, lng: ${lng}, radius: ${radius}, API 키 존재: ${!!GOOGLE_MAPS_API_KEY}`);
+    console.log(`[Nearby Search API] 요청받음 - type: "${type}", lat: ${lat}, lng: ${lng}, radius: ${radius}`);
     
     if (!lat || !lng) {
       return res.status(400).json({ error: '위도와 경도가 필요합니다.' });
     }
 
-    if (!GOOGLE_MAPS_API_KEY) {
-      console.error('VITE_GOOGLE_MAPS_API_KEY가 설정되지 않음');
-      return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
-    }
-
     try {
-      const searchRadius = radius ? parseInt(radius as string) : 3000;
+      const searchRadius = radius ? parseFloat(radius as string) / 1000 : 3; // km 단위로 변환
+      const latitude = parseFloat(lat as string);
+      const longitude = parseFloat(lng as string);
+
+      // 훈련사/기관은 데이터베이스에서 검색
+      if (type === 'trainer' || type === 'institute') {
+        const places = await searchTalezPlaces(type, latitude, longitude, searchRadius);
+        console.log(`[Nearby Search API] TALEZ ${type} 검색 완료: ${places.length}개`);
+        return res.json(places);
+      }
+
+      // 동물병원/용품점/카페는 Google Places API 사용
+      const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
       
-      // 타입에 따른 검색 쿼리 매핑
+      if (!GOOGLE_MAPS_API_KEY) {
+        console.error('VITE_GOOGLE_MAPS_API_KEY가 설정되지 않음');
+        return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
+      }
+
+      const searchRadiusMeters = searchRadius * 1000;
+      
+      // 타입에 따른 검색 쿼리 매핑 (훈련사/기관은 DB에서 검색)
       const typeQueries: Record<string, string> = {
         'clinic': '동물병원',
-        'trainer': '애견 훈련',
-        'institute': '애견 학원',
         'shop': '반려동물 용품',
         'cafe': '강아지 카페',
         'pension': '애견 펜션',
@@ -2505,12 +2580,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const searchQuery = typeQueries[type as string] || '반려동물';
       
-      console.log(`[Google Places Nearby API] 검색: "${searchQuery}", 위치: (${lat}, ${lng}), 반경: ${searchRadius}m`);
+      console.log(`[Google Places Nearby API] 검색: "${searchQuery}", 위치: (${latitude}, ${longitude}), 반경: ${searchRadiusMeters}m`);
       
       // Google Places Nearby Search API 사용
       const params = new URLSearchParams({
-        location: `${lat},${lng}`,
-        radius: searchRadius.toString(),
+        location: `${latitude},${longitude}`,
+        radius: searchRadiusMeters.toString(),
         keyword: searchQuery,
         key: GOOGLE_MAPS_API_KEY,
         language: 'ko'

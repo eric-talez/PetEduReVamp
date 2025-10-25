@@ -34,6 +34,11 @@ export const users = pgTable("users", {
   zoomPMIPassword: varchar("zoom_pmi_password", { length: 50 }), // PMI 비밀번호
   zoomHostKey: varchar("zoom_host_key", { length: 20 }), // 호스트 키 (선택사항)
   videoCallPreference: varchar("video_call_preference", { length: 50 }).default("zoom"), // zoom, teams, webex 등
+  // 위치 정보 (훈련사/기관용)
+  address: text("address"), // 주소
+  latitude: text("latitude"), // 위도
+  longitude: text("longitude"), // 경도
+  workingArea: text("working_area"), // 활동 지역
 });
 
 // 강의 테이블
@@ -70,6 +75,9 @@ export const institutes = pgTable("institutes", {
   businessNumber: text("business_number"),
   capacity: integer("capacity"),
   code: text("code"),
+  latitude: text("latitude"), // 위도
+  longitude: text("longitude"), // 경도
+  rating: decimal("rating", { precision: 3, scale: 2 }), // 평점
   isActive: boolean("is_active").default(true),
   featuresEnabled: jsonb("features_enabled"),
   createdAt: timestamp("created_at").defaultNow(),
