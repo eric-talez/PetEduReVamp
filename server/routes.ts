@@ -2494,12 +2494,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           latitude: parseFloat(trainer.latitude),
           longitude: parseFloat(trainer.longitude),
           address: trainer.address || '',
-          phone: trainer.phone || '',
+          phone: trainer.verification_phone || '',
           rating: 4.5,
           description: '전문 반려동물 훈련사',
           certification: true,
-          contact: trainer.phone,
-          photo: trainer.profileImage,
+          contact: trainer.verification_phone,
+          photo: trainer.avatar,
         }));
       } else if (type === 'institute') {
         // 기관 검색
@@ -2569,11 +2569,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const searchRadiusMeters = searchRadius * 1000;
       
       // 타입에 따른 검색 쿼리 매핑 (훈련사/기관은 DB에서 검색)
+      // 반려견/반려동물 키워드를 포함하여 더 정확한 검색 결과 제공
       const typeQueries: Record<string, string> = {
-        'clinic': '동물병원',
-        'shop': '반려동물 용품',
-        'cafe': '강아지 카페',
-        'pension': '애견 펜션',
+        'clinic': '반려견 동물병원',
+        'shop': '반려동물 용품점',
+        'cafe': '반려견 카페',
+        'pension': '반려견 펜션',
         'event': '반려동물 공원',
         'park': '반려동물 공원'
       };
