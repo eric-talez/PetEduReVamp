@@ -2472,6 +2472,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return 'shop';
   }
 
+  // Google Places Nearby Search API - 주변 장소 검색
+  app.get('/api/locations/nearby', async (req, res) => {
+    const { type, lat, lng, radius } = req.query;
+    const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
+    
+    console.log(`[Nearby Search API] 요청받음 - type: "${type}", lat: ${lat}, lng: ${lng}, radius: ${radius}, API 키 존재: ${!!GOOGLE_MAPS_API_KEY}`);
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ error: '위도와 경도가 필요합니다.' });
+    }
+
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('VITE_GOOGLE_MAPS_API_KEY가 설정되지 않음');
+      return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
+    }
+
+    try {
+      const searchRadius = radius ? parseInt(radius as string) : 3000;
+      
+      // 타입에 따른 검색 쿼리 매핑
+      const typeQueries: Record<string, string> = {
+        'clinic': '동물병원',
+        'trainer': '애견 훈련',
+        'institute': '애견 학원',
+        'shop': '반려동물 용품',
+        'cafe': '강아지 카페',
+        'pension': '애견 펜션',
+        'event': '반려동물 공원',
+        'park': '반려동물 공원'
+      };
+      
+      const searchQuery = typeQueries[type as string] || '반려동물';
+      
+      console.log(`[Google Places Nearby API] 검색: "${searchQuery}", 위치: (${lat}, ${lng}), 반경: ${searchRadius}m`);
+      
+      // Google Places Nearby Search API 사용
+      const params = new URLSearchParams({
+        location: `${lat},${lng}`,
+        radius: searchRadius.toString(),
+        keyword: searchQuery,
+        key: GOOGLE_MAPS_API_KEY,
+        language: 'ko'
+      });
+
+      const response = await fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?${params}`);
+
+      console.log(`[Google Places Nearby API] 응답 상태: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Google Places Nearby API 오류: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(`Google Places Nearby API 오류: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Google Places Nearby API] 응답 데이터 results 길이: ${data.results?.length}, status: ${data.status}`);
+      
+      if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+        console.error(`Google Places Nearby API 상태 오류: ${data.status} - ${data.error_message || ''}`);
+        throw new Error(`Google Places Nearby API 오류: ${data.status}`);
+      }
+      
+      // Google Places 데이터를 앱 형식으로 변환
+      const places = (data.results || []).map((place: any, index: number) => ({
+        id: place.place_id || `google-nearby-${index}`,
+        name: place.name,
+        type: type || getGooglePlaceType(place.types),
+        latitude: place.geometry?.location?.lat || 0,
+        longitude: place.geometry?.location?.lng || 0,
+        address: place.vicinity || '',
+        phone: '',
+        rating: place.rating || Math.round((Math.random() * 2 + 3) * 10) / 10,
+        description: place.types?.[0]?.replace(/_/g, ' ') || '',
+        certification: Math.random() > 0.7,
+        distance: undefined,
+        sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
+        photo: place.photos?.[0] ? 
+          `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}` : 
+          undefined,
+        openingHours: place.opening_hours?.open_now !== undefined ? 
+          (place.opening_hours.open_now ? '영업 중' : '영업 종료') : 
+          undefined
+      }));
+
+      console.log(`[Nearby Search API] 최종 응답: ${places.length}개 장소`);
+      res.json(places);
+      
+    } catch (error) {
+      console.error('주변 장소 검색 오류:', error);
+      res.status(500).json({ 
+        error: '주변 장소를 검색하는데 실패했습니다.',
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // Google Places Details API - 장소 상세 정보 조회
   app.get('/api/places/:placeId', async (req, res) => {
     const { placeId } = req.params;
