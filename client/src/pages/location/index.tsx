@@ -29,9 +29,8 @@ function LocationMarker() {
  */
 function PlaceSearch() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Place[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const mapService = useMapService();
+  const { nearbyPlaces, setNearbyPlaces } = useMapService();
   const { toast } = useToast();
 
   const handleSearch = async () => {

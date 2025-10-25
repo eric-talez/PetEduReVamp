@@ -53,6 +53,7 @@ interface MapServiceContextType {
   setSelectedPlace: (place: Place | null) => void;
   setSearchRadius: (radius: number) => void;
   setFilterOptions: (options: FilterOptions) => void;
+  setNearbyPlaces: (places: Place[]) => void;
 }
 
 // 기본값
@@ -71,6 +72,7 @@ const defaultContext: MapServiceContextType = {
   setSelectedPlace: () => {},
   setSearchRadius: () => {},
   setFilterOptions: () => {},
+  setNearbyPlaces: () => {},
 };
 
 // 컨텍스트 생성
@@ -218,6 +220,7 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
     setSelectedPlace,
     setSearchRadius,
     setFilterOptions,
+    setNearbyPlaces,
   };
 
   return (
