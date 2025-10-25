@@ -81,9 +81,14 @@ function PlaceSearch() {
         features: item.features || []
       }));
       
-      setSearchResults(places);
+      setNearbyPlaces(places);
       
       console.log(`[위치 검색] 검색어: "${searchTerm}", 결과: ${results.length}개`);
+      
+      toast({
+        title: "검색 완료",
+        description: `${results.length}개의 장소를 찾았습니다.`,
+      });
     } catch (error) {
       console.error("검색 오류:", error);
       toast({
@@ -120,9 +125,9 @@ function PlaceSearch() {
         <div className="py-8 flex justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : searchResults.length > 0 ? (
+      ) : nearbyPlaces.length > 0 ? (
         <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-          {searchResults.map(place => (
+          {nearbyPlaces.map(place => (
             <PlaceCard key={place.id} place={place} />
           ))}
         </div>
