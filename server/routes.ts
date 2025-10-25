@@ -2472,6 +2472,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return 'shop';
   }
 
+  // Google Places Details API - 장소 상세 정보 조회
+  app.get('/api/places/:placeId', async (req, res) => {
+    const { placeId } = req.params;
+    const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
+    
+    console.log(`[Places Details API] 요청받음 - placeId: "${placeId}", API 키 존재: ${!!GOOGLE_MAPS_API_KEY}`);
+    
+    if (!placeId) {
+      return res.status(400).json({ error: '장소 ID가 필요합니다.' });
+    }
+
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('VITE_GOOGLE_MAPS_API_KEY가 설정되지 않음');
+      return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
+    }
+
+    try {
+      console.log(`[Google Places Details API] 장소 ID: "${placeId}"`);
+      
+      // Google Places Details API 사용
+      const params = new URLSearchParams({
+        place_id: placeId,
+        key: GOOGLE_MAPS_API_KEY,
+        language: 'ko',
+        fields: 'name,formatted_address,formatted_phone_number,opening_hours,rating,reviews,website,photos,geometry,types,price_level,url'
+      });
+
+      const response = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?${params}`);
+
+      console.log(`[Google Places Details API] 응답 상태: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Google Places Details API 오류: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(`Google Places Details API 오류: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Google Places Details API] 응답 status: ${data.status}`);
+      
+      if (data.status !== 'OK') {
+        console.error(`Google Places Details API 상태 오류: ${data.status} - ${data.error_message || ''}`);
+        throw new Error(`Google Places Details API 오류: ${data.status}`);
+      }
+      
+      const place = data.result;
+      
+      // 응답 데이터 포맷팅
+      const placeDetails = {
+        id: placeId,
+        name: place.name,
+        address: place.formatted_address || '',
+        phone: place.formatted_phone_number || '',
+        website: place.website || '',
+        googleMapsUrl: place.url || '',
+        rating: place.rating || 0,
+        priceLevel: place.price_level || 0,
+        openingHours: place.opening_hours ? {
+          isOpen: place.opening_hours.open_now,
+          weekdayText: place.opening_hours.weekday_text || []
+        } : null,
+        reviews: (place.reviews || []).slice(0, 5).map((review: any) => ({
+          author: review.author_name,
+          rating: review.rating,
+          text: review.text,
+          time: review.time,
+          relativeTime: review.relative_time_description
+        })),
+        photos: (place.photos || []).slice(0, 5).map((photo: any) => {
+          const photoReference = photo.photo_reference;
+          return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
+        }),
+        coordinates: {
+          lat: place.geometry?.location?.lat || 0,
+          lng: place.geometry?.location?.lng || 0
+        },
+        types: place.types || []
+      };
+
+      console.log(`[Places Details API] 최종 응답 - 리뷰: ${placeDetails.reviews.length}개, 사진: ${placeDetails.photos.length}개`);
+      res.json(placeDetails);
+      
+    } catch (error) {
+      console.error('장소 상세 정보 조회 오류:', error);
+      res.status(500).json({ 
+        error: '장소 상세 정보를 불러오는데 실패했습니다.',
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // 이벤트 문의 API
   app.post("/api/events/:id/inquiry", async (req, res) => {
     try {

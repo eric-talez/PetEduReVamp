@@ -1073,40 +1073,85 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
 }
 
 /**
+ * 두 지점 사이의 거리 계산 (Haversine formula)
+ */
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // 지구 반경 (km)
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c;
+  return Math.round(distance * 10) / 10; // 소수점 1자리
+}
+
+/**
  * 장소 카드 컴포넌트
  */
 function PlaceCard({ place }: { place: Place }) {
-  const mapService = useMapService();
+  const { currentLocation, setSelectedPlace } = useMapService();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [placeDetails, setPlaceDetails] = useState<any>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
-  const handleGetDirections = async () => {
-    setIsLoading(true);
+  // 거리 계산
+  const distance = currentLocation ? 
+    calculateDistance(
+      currentLocation.latitude, 
+      currentLocation.longitude,
+      place.location.latitude,
+      place.location.longitude
+    ) : null;
+
+  const handleGetDirections = () => {
+    // Google Maps로 길찾기
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${place.location.latitude},${place.location.longitude}`;
+    window.open(url, '_blank');
+    
+    toast({
+      title: "길찾기",
+      description: "Google Maps에서 길찾기를 시작합니다.",
+    });
+  };
+
+  const handleCardClick = async () => {
+    if (showDetails && placeDetails) {
+      setShowDetails(false);
+      return;
+    }
+
+    setIsLoadingDetails(true);
     try {
-      // 길찾기 기능 (임시로 비활성화)
-      console.log('길찾기 요청:', place.location);
-      const directions = null;
-      
-      if (directions) {
-        toast({
-          title: "길찾기 완료",
-          description: `예상 소요 시간: ${directions.duration.text}, 거리: ${directions.distance.text}`,
-        });
+      const response = await fetch(`/api/places/${place.id}`);
+      if (!response.ok) {
+        throw new Error('장소 정보를 불러오는데 실패했습니다.');
       }
+      const data = await response.json();
+      setPlaceDetails(data);
+      setShowDetails(true);
+      setSelectedPlace(place);
     } catch (error) {
-      console.error("길찾기 오류:", error);
+      console.error('장소 상세 정보 조회 오류:', error);
       toast({
-        title: "길찾기 실패",
-        description: "길찾기 정보를 가져오는데 실패했습니다.",
+        title: "오류",
+        description: "장소 정보를 불러오는데 실패했습니다.",
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setIsLoadingDetails(false);
     }
   };
 
   return (
-    <Card>
+    <Card 
+      className="cursor-pointer hover:shadow-md transition-shadow" 
+      onClick={handleCardClick}
+      data-testid={`place-card-${place.id}`}
+    >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
@@ -1117,7 +1162,7 @@ function PlaceCard({ place }: { place: Place }) {
           </div>
           <div className="flex items-center text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 mr-1" />
-            {place.distance ? `${(place.distance / 1000).toFixed(1)}km` : "거리 정보 없음"}
+            {distance ? `${distance}km` : "거리 정보 없음"}
           </div>
         </div>
       </CardHeader>
@@ -1130,21 +1175,135 @@ function PlaceCard({ place }: { place: Place }) {
                 {place.contact}
               </div>
             )}
+            {place.rating && (
+              <div className="flex items-center mt-1">
+                <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mr-1" />
+                <span className="text-xs font-medium">{place.rating.toFixed(1)}</span>
+              </div>
+            )}
           </div>
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={handleGetDirections}
-            disabled={isLoading}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleGetDirections();
+            }}
+            data-testid="button-directions"
           >
-            {isLoading ? (
-              <Loader2 className="h-3 w-3 animate-spin mr-1" />
-            ) : (
-              <Navigation className="h-3 w-3 mr-1" />
-            )}
+            <Navigation className="h-3 w-3 mr-1" />
             길찾기
           </Button>
         </div>
+
+        {/* 상세 정보 표시 */}
+        {isLoadingDetails && (
+          <div className="mt-4 flex justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        )}
+
+        {showDetails && placeDetails && (
+          <div className="mt-4 pt-4 border-t space-y-3">
+            {/* 영업 시간 */}
+            {placeDetails.openingHours && (
+              <div>
+                <h4 className="text-sm font-semibold mb-1">영업 시간</h4>
+                <div className="text-xs space-y-0.5">
+                  {placeDetails.openingHours.isOpen !== undefined && (
+                    <Badge variant={placeDetails.openingHours.isOpen ? "default" : "secondary"} className="text-xs mb-2">
+                      {placeDetails.openingHours.isOpen ? "영업 중" : "영업 종료"}
+                    </Badge>
+                  )}
+                  {placeDetails.openingHours.weekdayText?.map((text: string, idx: number) => (
+                    <div key={idx} className="text-muted-foreground">{text}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 전화번호 */}
+            {placeDetails.phone && (
+              <div>
+                <h4 className="text-sm font-semibold mb-1">전화</h4>
+                <a href={`tel:${placeDetails.phone}`} className="text-sm text-primary hover:underline">
+                  {placeDetails.phone}
+                </a>
+              </div>
+            )}
+
+            {/* 웹사이트 */}
+            {placeDetails.website && (
+              <div>
+                <h4 className="text-sm font-semibold mb-1">웹사이트</h4>
+                <a 
+                  href={placeDetails.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline flex items-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  방문하기 <ExternalLink className="h-3 w-3 ml-1" />
+                </a>
+              </div>
+            )}
+
+            {/* 사진 */}
+            {placeDetails.photos && placeDetails.photos.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold mb-2">사진</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {placeDetails.photos.slice(0, 3).map((photo: string, idx: number) => (
+                    <img 
+                      key={idx}
+                      src={photo} 
+                      alt={`${place.name} 사진 ${idx + 1}`}
+                      className="w-full h-20 object-cover rounded"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 리뷰 */}
+            {placeDetails.reviews && placeDetails.reviews.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold mb-2">리뷰</h4>
+                <div className="space-y-2">
+                  {placeDetails.reviews.slice(0, 2).map((review: any, idx: number) => (
+                    <div key={idx} className="text-xs bg-muted p-2 rounded">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium">{review.author}</span>
+                        <div className="flex items-center">
+                          <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mr-1" />
+                          <span>{review.rating}</span>
+                        </div>
+                      </div>
+                      <p className="text-muted-foreground line-clamp-2">{review.text}</p>
+                      <span className="text-xs text-muted-foreground mt-1">{review.relativeTime}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Google Maps 링크 */}
+            {placeDetails.googleMapsUrl && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(placeDetails.googleMapsUrl, '_blank');
+                }}
+              >
+                <ExternalLink className="h-3 w-3 mr-2" />
+                Google Maps에서 보기
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
