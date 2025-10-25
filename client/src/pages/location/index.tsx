@@ -358,7 +358,7 @@ function NearbyPlaces() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : nearbyPlaces.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
                   {nearbyPlaces.map(place => (
                     <PlaceCard key={place.id} place={place} />
                   ))}
@@ -385,7 +385,7 @@ function NearbyPlaces() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : nearbyPlaces.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
                   {nearbyPlaces.map(place => (
                     <PlaceCard key={place.id} place={place} />
                   ))}
@@ -412,7 +412,7 @@ function NearbyPlaces() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : nearbyPlaces.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
                   {nearbyPlaces.map(place => (
                     <PlaceCard key={place.id} place={place} />
                   ))}
@@ -439,7 +439,7 @@ function NearbyPlaces() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : nearbyPlaces.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
                   {nearbyPlaces.map(place => (
                     <PlaceCard key={place.id} place={place} />
                   ))}
@@ -466,7 +466,7 @@ function NearbyPlaces() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : nearbyPlaces.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
                   {nearbyPlaces.map(place => (
                     <PlaceCard key={place.id} place={place} />
                   ))}
@@ -493,7 +493,7 @@ function NearbyPlaces() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : nearbyPlaces.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
                   {nearbyPlaces.map(place => (
                     <PlaceCard key={place.id} place={place} />
                   ))}
@@ -520,7 +520,7 @@ function NearbyPlaces() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : nearbyPlaces.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
                   {nearbyPlaces.map(place => (
                     <PlaceCard key={place.id} place={place} />
                   ))}
@@ -1426,90 +1426,95 @@ function getTypeLabel(type: string): string {
 }
 
 /**
- * 메인 위치 검색 페이지 컨텐츠
+ * 메인 위치 검색 페이지 컨텐츠 (네이버 지도 스타일 레이아웃)
  */
 function LocationPageContent() {
   const { currentLocation, nearbyPlaces, selectedPlace, setSelectedPlace } = useMapService();
   
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>위치 기반 서비스</CardTitle>
-          <CardDescription>
-            위치 기반으로 주변 훈련사, 훈련소, 동물병원, 용품점, 카페, 펜션, 공원 등을 찾아보세요
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="nearby">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="nearby">주변 검색</TabsTrigger>
-              <TabsTrigger value="search">키워드 검색</TabsTrigger>
-            </TabsList>
-            <TabsContent value="nearby" className="pt-4">
-              <NearbyPlaces />
-            </TabsContent>
-            <TabsContent value="search" className="pt-4">
-              <PlaceSearch />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-12rem)]">
+      {/* 왼쪽: 검색 컨트롤 및 결과 목록 */}
+      <div className="w-full lg:w-2/5 flex flex-col space-y-4 overflow-hidden">
+        <Card className="flex-shrink-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">위치 기반 서비스</CardTitle>
+            <CardDescription className="text-sm">
+              주변 훈련사, 훈련소, 동물병원, 용품점 등을 찾아보세요
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="nearby">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="nearby">주변 검색</TabsTrigger>
+                <TabsTrigger value="search">키워드 검색</TabsTrigger>
+              </TabsList>
+              <TabsContent value="nearby" className="pt-4 overflow-y-auto max-h-[calc(100vh-28rem)]">
+                <NearbyPlaces />
+              </TabsContent>
+              <TabsContent value="search" className="pt-4 overflow-y-auto max-h-[calc(100vh-28rem)]">
+                <PlaceSearch />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>지도 보기</CardTitle>
-          <CardDescription>
-            주변 지역의 지도와 검색된 장소들을 확인하세요
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <GoogleMapView 
-            center={{
-              lat: currentLocation?.latitude || 37.5665,
-              lng: currentLocation?.longitude || 126.978
-            }}
-            locations={nearbyPlaces.map((place: any) => ({
-              id: place.id,
-              name: place.name,
-              address: place.location?.address || '',
-              type: place.type,
-              coordinates: {
-                lat: place.location?.latitude || 0,
-                lng: place.location?.longitude || 0
-              }
-            }))}
-            onLocationSelect={(location) => {
-              const place = nearbyPlaces.find(p => p.id === location.id);
-              if (place) setSelectedPlace(place);
-            }}
-            height="500px"
-          />
-          <div className="mt-4 text-sm text-muted-foreground flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Google Maps API를 통해 실시간 지도 서비스를 제공합니다.
-            {currentLocation && (
-              <span className="text-primary">
-                현재 위치: {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}
-              </span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* 오른쪽: 지도 */}
+      <div className="w-full lg:w-3/5 flex-shrink-0">
+        <Card className="h-full">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">지도</CardTitle>
+              {currentLocation && (
+                <div className="text-xs text-muted-foreground">
+                  현재 위치: {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="h-[calc(100%-5rem)]">
+            <GoogleMapView 
+              center={{
+                lat: currentLocation?.latitude || 37.5665,
+                lng: currentLocation?.longitude || 126.978
+              }}
+              locations={nearbyPlaces.map((place: any) => ({
+                id: place.id,
+                name: place.name,
+                address: place.location?.address || '',
+                type: place.type,
+                coordinates: {
+                  lat: place.location?.latitude || 0,
+                  lng: place.location?.longitude || 0
+                }
+              }))}
+              onLocationSelect={(location) => {
+                const place = nearbyPlaces.find(p => p.id === location.id);
+                if (place) setSelectedPlace(place);
+              }}
+              height="100%"
+            />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
 
 /**
- * 위치 검색 페이지
+ * 위치 검색 페이지 (네이버 지도 스타일 - 전체 화면 활용)
  */
 export default function LocationPage() {
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">위치 서비스</h1>
-      <MapServiceProvider>
-        <LocationPageContent />
-      </MapServiceProvider>
+    <div className="w-full h-screen overflow-hidden">
+      <div className="px-4 lg:px-6 py-4">
+        <h1 className="text-2xl lg:text-3xl font-bold mb-4">위치 서비스</h1>
+      </div>
+      <div className="px-4 lg:px-6 pb-4">
+        <MapServiceProvider>
+          <LocationPageContent />
+        </MapServiceProvider>
+      </div>
     </div>
   );
 }
