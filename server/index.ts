@@ -21,6 +21,9 @@ import { setupAuth } from "./auth";
 import { extendResponse } from "./middleware/api-standards";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 import path from 'path'; // path 모듈 추가
+import locationRoutes from './location/routes';
+import eventRoutes from './events/routes';
+import aiLocationCrawlerRoutes from './routes/ai-location-crawler';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
@@ -510,6 +513,9 @@ async function startServer() {
     // 결제연동 관리 라우트 등록
     registerPaymentIntegrationRoutes(app);
 
+    // AI 위치 크롤러 라우트 등록
+    app.use(aiLocationCrawlerRoutes);
+
     // Setup Vite for development or serve static files for production
     // This MUST come AFTER API routes to prevent catch-all from intercepting API calls
     if (process.env.NODE_ENV === "development") {
@@ -519,7 +525,7 @@ async function startServer() {
       // 배포 시 server/public 디렉토리에서 정적 파일 제공
       const staticPath = path.join(process.cwd(), 'server/public');
       console.log(`[Production] Serving static files from: ${staticPath}`);
-      
+
       app.use(express.static(staticPath, {
         setHeaders: (res, filePath) => {
           if (filePath.endsWith('.css')) {
