@@ -33,11 +33,7 @@ STRIPE_SECRET_KEY=sk_live_...
 VITE_STRIPE_PUBLIC_KEY=pk_live_...
 
 # 지도/위치 서비스
-VITE_NAVER_CLIENT_ID=...          # 네이버 맵 프론트엔드용
-NAVER_CLIENT_ID=...                # 네이버 맵 서버용
-NAVER_CLIENT_SECRET=...
-VITE_KAKAO_MAP_APP_KEY=...        # 카카오 맵 API 키
-VITE_GOOGLE_MAPS_API_KEY=...      # 구글 맵 API 키 (선택사항)
+VITE_GOOGLE_MAPS_API_KEY=...      # 구글 맵 API 키 (필수)
 
 # 이메일 서비스
 SENDGRID_API_KEY=SG....
@@ -79,15 +75,15 @@ TOSS_SECRET_KEY=test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
 6. 생성된 API 키를 `VITE_GOOGLE_MAPS_API_KEY`에 설정
 
 **⚠️ 중요 보안 사항:**
-- 환경 변수 미설정 시 결제 기능이 작동하지 않습니다 (보안상 하드코딩 제거)
+- 환경 변수 미설정 시 결제 및 지도 기능이 작동하지 않습니다 (보안상 하드코딩 제거)
 - 테스트 키는 반드시 환경 변수로 설정하세요
 - 실 운영 시 테스트 키를 실제 키로 교체해야 합니다
-- Google Maps API 키는 선택사항이며, 미설정 시 네이버 맵만 사용 가능
+- Google Maps API 키는 필수이며, 미설정 시 지도가 표시되지 않습니다
 
 **현재 상태:**
 - 토스페이먼츠 통합 완료 ✅
 - 환경 변수 필수 설정으로 보안 강화 ✅
-- 지도 서비스: 네이버 맵 + 구글 맵 (선택 가능) ✅
+- 지도 서비스: 구글 맵 (Google Maps) ✅
 - 상용화 시 실제 키로 교체 필요 ⚠️
 
 ### 2. 시스템 요구사항
