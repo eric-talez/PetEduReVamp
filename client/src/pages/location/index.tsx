@@ -148,7 +148,7 @@ function PlaceSearch() {
  * 근처 장소 찾기 컴포넌트
  */
 function NearbyPlaces() {
-  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop' | 'event'>('trainer');
+  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop' | 'event' | 'cafe' | 'pension' | 'park'>('trainer');
   const { 
     currentLocation, 
     nearbyPlaces, 
@@ -298,7 +298,13 @@ function NearbyPlaces() {
   // 탭 변경 시 자동 검색 (축제/이벤트 탭 제외)
   useEffect(() => {
     if (currentLocation && activeTab !== 'event') {
-      searchNearbyPlaces(activeTab as any);
+      // 유효한 Place 타입만 검색
+      const validPlaceTypes: Array<'trainer' | 'institute' | 'clinic' | 'shop' | 'cafe' | 'pension' | 'park'> = 
+        ['trainer', 'institute', 'clinic', 'shop', 'cafe', 'pension', 'park'];
+      
+      if (validPlaceTypes.includes(activeTab as any)) {
+        searchNearbyPlaces(activeTab as any);
+      }
     }
   }, [activeTab, currentLocation, searchNearbyPlaces]);
 
@@ -330,12 +336,15 @@ function NearbyPlaces() {
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
         <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">카테고리 선택</h3>
         <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-          <TabsList className="grid grid-cols-5 w-full">
-            <TabsTrigger value="trainer" className="text-sm">훈련사</TabsTrigger>
-            <TabsTrigger value="institute" className="text-sm">훈련소</TabsTrigger>
-            <TabsTrigger value="clinic" className="text-sm">동물병원</TabsTrigger>
-            <TabsTrigger value="shop" className="text-sm">용품점</TabsTrigger>
-            <TabsTrigger value="event" className="text-sm">축제/이벤트</TabsTrigger>
+          <TabsList className="grid grid-cols-4 md:grid-cols-8 gap-1 w-full h-auto">
+            <TabsTrigger value="trainer" className="text-xs md:text-sm">훈련사</TabsTrigger>
+            <TabsTrigger value="institute" className="text-xs md:text-sm">훈련소</TabsTrigger>
+            <TabsTrigger value="clinic" className="text-xs md:text-sm">동물병원</TabsTrigger>
+            <TabsTrigger value="shop" className="text-xs md:text-sm">용품점</TabsTrigger>
+            <TabsTrigger value="cafe" className="text-xs md:text-sm">강아지카페</TabsTrigger>
+            <TabsTrigger value="pension" className="text-xs md:text-sm">펜션</TabsTrigger>
+            <TabsTrigger value="park" className="text-xs md:text-sm">공원</TabsTrigger>
+            <TabsTrigger value="event" className="text-xs md:text-sm">축제</TabsTrigger>
           </TabsList>
           
           {/* 탭 컨텐츠 */}
@@ -424,6 +433,87 @@ function NearbyPlaces() {
             <div className="space-y-4">
               <div className="text-sm text-muted-foreground">
                 주변 반려동물 용품점을 찾아보세요. 사료, 간식, 장난감 등 다양한 용품을 만나보세요.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="cafe" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 강아지 카페를 찾아보세요. 반려견과 함께 즐거운 시간을 보낼 수 있는 공간입니다.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="pension" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 애견 펜션을 찾아보세요. 반려견과 함께 숙박할 수 있는 펜션입니다.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="park" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 반려동물 공원을 찾아보세요. 반려견이 자유롭게 뛰어놀 수 있는 공간입니다.
               </div>
               {isSearching ? (
                 <div className="py-8 flex justify-center">
@@ -1154,8 +1244,17 @@ function PlaceCard({ place }: { place: Place }) {
     >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-base">{place.name}</CardTitle>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <CardTitle className="text-base">{place.name}</CardTitle>
+              {/* 테일즈 인증 배지 */}
+              {place.isCertified && (place.type === 'trainer' || place.type === 'institute') && (
+                <Badge className="bg-primary/10 text-primary border-primary hover:bg-primary/20 flex items-center gap-1">
+                  <Trophy className="h-3 w-3" />
+                  <span className="text-xs font-semibold">테일즈 인증</span>
+                </Badge>
+              )}
+            </div>
             <CardDescription>
               {place.location.address || "주소 정보 없음"}
             </CardDescription>
@@ -1318,6 +1417,9 @@ function getTypeLabel(type: string): string {
     case 'trainer': return '훈련사';
     case 'clinic': return '동물병원';
     case 'shop': return '용품점';
+    case 'cafe': return '강아지 카페';
+    case 'pension': return '애견 펜션';
+    case 'park': return '반려동물 공원';
     case 'event': return '축제/이벤트';
     default: return '장소';
   }
@@ -1335,7 +1437,7 @@ function LocationPageContent() {
         <CardHeader>
           <CardTitle>위치 기반 서비스</CardTitle>
           <CardDescription>
-            위치 기반으로 주변 훈련사, 훈련소, 동물병원, 용품점을 찾아보세요
+            위치 기반으로 주변 훈련사, 훈련소, 동물병원, 용품점, 카페, 펜션, 공원 등을 찾아보세요
           </CardDescription>
         </CardHeader>
         <CardContent>
