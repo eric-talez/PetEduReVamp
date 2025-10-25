@@ -2382,64 +2382,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Location/Places search API (Kakao Maps integration) - 활성화된 버전
+  // Location/Places search API (Google Places integration)
   app.get('/api/locations', async (req, res) => {
     const { search } = req.query;
-    const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
+    const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
     
-    console.log(`[Location API] 요청받음 - search: "${search}", API 키 존재: ${!!KAKAO_REST_API_KEY}`);
+    console.log(`[Location API] 요청받음 - search: "${search}", API 키 존재: ${!!GOOGLE_MAPS_API_KEY}`);
     
     if (!search || typeof search !== 'string') {
       console.log('[Location API] 검색어 누락 - 400 응답');
       return res.status(400).json({ error: '검색어가 필요합니다.' });
     }
 
-    if (!KAKAO_REST_API_KEY) {
-      console.error('KAKAO_REST_API_KEY가 설정되지 않음');
-      return res.status(500).json({ error: '카카오 API 키가 설정되지 않았습니다.' });
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('VITE_GOOGLE_MAPS_API_KEY가 설정되지 않음');
+      return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
     }
 
     try {
-      console.log(`[Kakao API] 검색어: "${search}", API 키: ${KAKAO_REST_API_KEY.substring(0, 8)}...`);
+      console.log(`[Google Places API] 검색어: "${search}", API 키: ${GOOGLE_MAPS_API_KEY.substring(0, 8)}...`);
       
+      // Google Places Text Search API 사용
       const params = new URLSearchParams({
         query: search,
-        page: '1',
-        size: '15',
-        sort: 'accuracy'
+        key: GOOGLE_MAPS_API_KEY,
+        language: 'ko',
+        region: 'KR'
       });
 
-      const response = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?${params}`, {
-        headers: {
-          'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`,
-        },
-      });
+      const response = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?${params}`);
 
-      console.log(`[Kakao API] 응답 상태: ${response.status}`);
+      console.log(`[Google Places API] 응답 상태: ${response.status}`);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`카카오 API 오류: ${response.status} ${response.statusText} - ${errorText}`);
-        throw new Error(`카카오 API 오류: ${response.status} ${response.statusText}`);
+        console.error(`Google Places API 오류: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(`Google Places API 오류: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log(`[Kakao API] 응답 데이터 documents 길이: ${data.documents?.length}`);
+      console.log(`[Google Places API] 응답 데이터 results 길이: ${data.results?.length}, status: ${data.status}`);
       
-      // 카카오 장소 데이터를 앱 형식으로 변환
-      const places = data.documents.map((place: any) => ({
-        id: place.id,
-        name: place.place_name,
-        type: getCategoryType(place.category_group_code, place.category_name),
-        latitude: parseFloat(place.y),
-        longitude: parseFloat(place.x),
-        address: place.road_address_name || place.address_name,
-        phone: place.phone || '',
-        rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0-5.0 랜덤 평점
-        description: place.category_name,
-        certification: Math.random() > 0.7, // 30% 확률로 인증
-        distance: place.distance ? parseInt(place.distance) : undefined,
-        sourceUrl: place.place_url
+      if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+        console.error(`Google Places API 상태 오류: ${data.status} - ${data.error_message || ''}`);
+        throw new Error(`Google Places API 오류: ${data.status}`);
+      }
+      
+      // Google Places 데이터를 앱 형식으로 변환
+      const places = (data.results || []).map((place: any, index: number) => ({
+        id: place.place_id || `google-${index}`,
+        name: place.name,
+        type: getGooglePlaceType(place.types),
+        latitude: place.geometry?.location?.lat || 0,
+        longitude: place.geometry?.location?.lng || 0,
+        address: place.formatted_address || '',
+        phone: '',
+        rating: place.rating || Math.round((Math.random() * 2 + 3) * 10) / 10,
+        description: place.types?.[0]?.replace(/_/g, ' ') || '',
+        certification: Math.random() > 0.7,
+        distance: undefined,
+        sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
       }));
 
       console.log(`[Location API] 최종 응답: ${places.length}개 장소`);
@@ -2454,24 +2456,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 카카오 카테고리를 앱 타입으로 매핑하는 함수
-  function getCategoryType(groupCode: string, categoryName: string): string {
-    switch (groupCode) {
-      case 'HP8': return 'clinic'; // 병원
-      case 'MT1': case 'CS2': return 'shop'; // 대형마트, 편의점
-      case 'AD5': return 'pension'; // 숙박
-      case 'FD6': 
-        return categoryName?.includes('카페') || categoryName?.includes('커피') ? 'cafe' : 'shop';
-      case 'CE7': return 'cafe'; // 카페
-      case 'AT4': return 'event'; // 관광명소
-      default:
-        if (categoryName?.includes('동물병원') || categoryName?.includes('수의')) return 'clinic';
-        if (categoryName?.includes('훈련') || categoryName?.includes('애견')) return 'trainer';
-        if (categoryName?.includes('펜션') || categoryName?.includes('호텔')) return 'pension';
-        if (categoryName?.includes('카페') || categoryName?.includes('커피')) return 'cafe';
-        if (categoryName?.includes('공원')) return 'event';
-        return 'shop';
-    }
+  // Google Places 타입을 앱 타입으로 매핑하는 함수
+  function getGooglePlaceType(types: string[]): string {
+    if (!types || types.length === 0) return 'shop';
+    
+    const typeStr = types.join(',').toLowerCase();
+    
+    if (typeStr.includes('veterinary_care') || typeStr.includes('hospital')) return 'clinic';
+    if (typeStr.includes('pet') || typeStr.includes('dog') || typeStr.includes('training')) return 'trainer';
+    if (typeStr.includes('lodging') || typeStr.includes('hotel')) return 'pension';
+    if (typeStr.includes('cafe') || typeStr.includes('coffee')) return 'cafe';
+    if (typeStr.includes('park') || typeStr.includes('campground')) return 'event';
+    if (typeStr.includes('store') || typeStr.includes('shopping')) return 'shop';
+    
+    return 'shop';
   }
 
   // 이벤트 문의 API
