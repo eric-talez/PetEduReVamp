@@ -279,6 +279,7 @@ export default function LocationServices() {
       }));
       
       setSearchResults(formattedResults);
+      setHasSearched(true); // 검색 수행 표시
       
       toast({
         title: "검색 완료",
