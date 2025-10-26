@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { NaverMapView } from "@/components/NaverMapView";
+import { GoogleMapView } from "@/components/GoogleMapView";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
@@ -781,7 +781,7 @@ export default function LocationServices() {
             <div className="p-4">
               {/* Map & Weather Component */}
               {selectedInstitute ? (
-                <NaverMapView 
+                <GoogleMapView 
                   locations={[{
                     id: selectedInstitute.id,
                     name: selectedInstitute.name,
