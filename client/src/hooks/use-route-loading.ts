@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import NProgress from 'nprogress';
 
 interface RouteLoadingState {
   isLoading: boolean;
@@ -7,6 +8,15 @@ interface RouteLoadingState {
   currentRoute: string;
   loadingMessage: string;
 }
+
+// NProgress 설정
+NProgress.configure({ 
+  showSpinner: false,
+  trickleSpeed: 200,
+  minimum: 0.08,
+  easing: 'ease',
+  speed: 400
+});
 
 // 글로벌 로딩 상태 관리
 let globalLoadingState: RouteLoadingState = {
@@ -28,33 +38,21 @@ export const setRouteLoading = (loading: boolean, route?: string, message?: stri
     progress: loading ? 30 : 100
   };
   
+  // NProgress 제어
+  if (loading) {
+    NProgress.start();
+  } else {
+    NProgress.done();
+  }
+  
   // 모든 리스너에게 상태 변경 알림
   listeners.forEach(listener => listener(globalLoadingState));
-  
-  // 진행률 애니메이션
-  if (loading) {
-    simulateProgressAnimation();
-  }
-};
-
-// 진행률 애니메이션 시뮬레이션
-const simulateProgressAnimation = () => {
-  let currentProgress = 30;
-  const interval = setInterval(() => {
-    currentProgress += Math.random() * 15;
-    if (currentProgress >= 90) {
-      currentProgress = 90;
-      clearInterval(interval);
-    }
-    
-    globalLoadingState.progress = currentProgress;
-    listeners.forEach(listener => listener(globalLoadingState));
-  }, 150);
 };
 
 // 로딩 상태 완료 처리
 export const completeRouteLoading = () => {
   globalLoadingState.progress = 100;
+  NProgress.done();
   listeners.forEach(listener => listener(globalLoadingState));
   
   setTimeout(() => {
