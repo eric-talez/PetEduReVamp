@@ -13087,6 +13087,120 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // AI 업체/훈련사 매칭 API
+  app.post("/api/ai/match-institutes", async (req, res) => {
+    try {
+      const { petId } = req.body;
+      
+      if (!petId) {
+        return res.status(400).json({ error: "반려견 ID가 필요합니다." });
+      }
+
+      console.log('[AI 매칭] 매칭 요청 - petId:', petId);
+
+      // 반려견 정보 조회
+      const pet = await db.select().from(pets).where(eq(pets.id, petId)).limit(1);
+      
+      if (pet.length === 0) {
+        return res.status(404).json({ error: "반려견 정보를 찾을 수 없습니다." });
+      }
+
+      const petInfo = pet[0];
+      
+      // 모든 활성 기관 조회
+      const activeInstitutes = await db.select().from(institutes).where(eq(institutes.isActive, true));
+      
+      // AI 프롬프트 생성
+      const prompt = `다음은 반려견의 정보입니다:
+- 이름: ${petInfo.name}
+- 품종: ${petInfo.breed || '정보 없음'}
+- 나이: ${petInfo.age || '정보 없음'}세
+- 성별: ${petInfo.gender === 'male' ? '수컷' : petInfo.gender === 'female' ? '암컷' : '정보 없음'}
+- 체중: ${petInfo.weight || '정보 없음'}kg
+- 성격: ${petInfo.personality || '정보 없음'}
+- 훈련 상태: ${petInfo.trainingStatus || 'not_assigned'}
+- 훈련 종류: ${petInfo.trainingType || '정보 없음'}
+- 의료 기록: ${petInfo.medicalHistory || '정보 없음'}
+- 특이 사항: ${petInfo.specialNotes || '정보 없음'}
+
+다음은 등록된 교육 기관 목록입니다:
+${activeInstitutes.map((inst, idx) => `${idx + 1}. ${inst.name} (ID: ${inst.id})
+   - 설명: ${inst.description || '설명 없음'}
+   - 주소: ${inst.address || '주소 정보 없음'}
+   - 평점: ${inst.rating || '평점 없음'}
+   ${inst.name === '아틀리독' || inst.name === '왕짱스쿨' ? '   - **테일즈 공식 인증 기관**' : ''}
+`).join('\n')}
+
+위 반려견의 특성(품종, 나이, 성격, 체중, 훈련 상태)을 분석하여 가장 적합한 교육 기관을 3개 추천해주세요.
+
+추천 이유는:
+1. 반려견의 품종과 크기에 적합한지
+2. 나이와 훈련 상태에 맞는 프로그램을 제공할 수 있는지
+3. 성격에 맞는 교육 방식을 사용하는지
+4. 의료 기록이나 특이 사항을 고려한 특별 케어가 가능한지
+
+JSON 형식으로 다음과 같이 응답해주세요:
+{
+  "recommendations": [
+    {
+      "instituteId": 기관ID,
+      "instituteName": "기관명",
+      "matchScore": 0-100 점수,
+      "reason": "추천 이유를 1-2문장으로",
+      "strengths": ["강점1", "강점2", "강점3"],
+      "considerations": "고려사항이나 주의점 (선택사항)"
+    }
+  ],
+  "summary": "전체 추천 요약 (1-2문장)"
+}`;
+
+      // AI 분석 수행 (GPT-4o 사용)
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "당신은 반려동물 교육 전문가입니다. 반려견의 특성을 분석하여 최적의 교육 기관을 추천하는 역할을 합니다."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" }
+      });
+
+      const aiResult = JSON.parse(response.choices[0].message.content || '{}');
+      
+      console.log('[AI 매칭] 분석 완료:', {
+        petName: petInfo.name,
+        recommendationsCount: aiResult.recommendations?.length || 0
+      });
+
+      res.json({
+        success: true,
+        pet: {
+          id: petInfo.id,
+          name: petInfo.name,
+          breed: petInfo.breed,
+          age: petInfo.age
+        },
+        recommendations: aiResult.recommendations || [],
+        summary: aiResult.summary || '',
+        model: "gpt-4o",
+        tokensUsed: response.usage
+      });
+
+    } catch (error) {
+      console.error('[AI 매칭] 오류:', error);
+      res.status(500).json({ 
+        error: "AI 매칭 중 오류가 발생했습니다.",
+        message: error instanceof Error ? error.message : '알 수 없는 오류'
+      });
+    }
+  });
+
   // 관리자 승인/거부/삭제 API
   app.post("/api/admin/approvals/:action", async (req, res) => {
     try {

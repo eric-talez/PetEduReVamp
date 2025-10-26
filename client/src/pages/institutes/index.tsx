@@ -12,7 +12,7 @@ import {
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart, Loader2, Award, X,
   ChevronLeft, ChevronRight, ExternalLink, Phone, Clock,
-  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit
+  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit, Bot
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -159,6 +159,10 @@ export default function LocationServices() {
   const [selectedInstituteForTrainers, setSelectedInstituteForTrainers] = useState<any | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingInstitute, setEditingInstitute] = useState<any | null>(null);
+  const [aiMatchDialogOpen, setAiMatchDialogOpen] = useState(false);
+  const [aiMatchingPet, setAiMatchingPet] = useState<any | null>(null);
+  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
+  const [isAiMatching, setIsAiMatching] = useState(false);
   const { toast} = useToast();
   
   // 로그인 사용자 정보 가져오기
@@ -209,6 +213,55 @@ export default function LocationServices() {
     setTimeout(() => {
       window.location.href = "/auth";
     }, 3000);
+  };
+
+  // AI 매칭 핸들러
+  const handleAiMatch = async (petId: number) => {
+    setIsAiMatching(true);
+    setAiRecommendations([]);
+    
+    try {
+      const response = await apiRequest('POST', '/api/ai/match-institutes', { petId });
+      
+      if (response.success) {
+        setAiMatchingPet(response.pet);
+        setAiRecommendations(response.recommendations || []);
+        
+        toast({
+          title: "AI 분석 완료",
+          description: `${response.pet.name}에게 적합한 기관을 찾았습니다.`,
+          variant: "default",
+        });
+      } else {
+        throw new Error(response.error || 'AI 매칭 실패');
+      }
+    } catch (error) {
+      console.error('AI 매칭 오류:', error);
+      toast({
+        title: "AI 매칭 실패",
+        description: error instanceof Error ? error.message : "잠시 후 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAiMatching(false);
+    }
+  };
+
+  // 추천 기관 상세보기
+  const handleViewRecommendedInstitute = (instituteId: number) => {
+    const allInstitutes = [...(dbInstitutes || []), ...searchResults];
+    const institute = allInstitutes.find(inst => Number(inst.id) === Number(instituteId));
+    
+    if (institute) {
+      setDetailInstitute(institute);
+      setDetailDialogOpen(true);
+    } else {
+      toast({
+        title: "기관을 찾을 수 없습니다",
+        description: "해당 기관 정보를 불러올 수 없습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   // 검색 처리 함수 - Google Maps 기반 검색
@@ -743,6 +796,24 @@ export default function LocationServices() {
           >
             <Sparkles className="h-3 w-3 mr-1" />
             프리미엄 기관
+          </Button>
+          
+          {/* AI 추천 버튼 */}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => {
+              if (!isAuthenticated()) {
+                promptLogin();
+                return;
+              }
+              setAiMatchDialogOpen(true);
+            }}
+            className="text-xs bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            data-testid="button-ai-match"
+          >
+            <Bot className="h-3 w-3 mr-1" />
+            AI 추천
           </Button>
         </div>
       </div>
@@ -1526,6 +1597,55 @@ export default function LocationServices() {
           });
         }}
       />
+
+      {/* AI 매칭 반려견 선택 다이얼로그 */}
+      <AiMatchDialog
+        open={aiMatchDialogOpen}
+        onOpenChange={(open) => {
+          setAiMatchDialogOpen(open);
+          if (!open) {
+            // 다이얼로그가 닫히면서 AI 결과가 있으면 결과 다이얼로그 열기
+            if (aiRecommendations.length > 0) {
+              setAiMatchDialogOpen(false);
+              // 약간의 딜레이 후 결과 다이얼로그 열기
+              setTimeout(() => {
+                // AI 결과 다이얼로그는 handleAiMatch에서 자동으로 열림
+              }, 100);
+            }
+          }
+        }}
+        onPetSelected={(petId) => {
+          handleAiMatch(petId);
+          // 매칭이 시작되면 로딩 다이얼로그를 표시하기 위해 상태 변경
+          setAiMatchDialogOpen(false);
+          setTimeout(() => {
+            // AI 매칭 중임을 표시
+            if (isAiMatching) {
+              toast({
+                title: "AI 분석 시작",
+                description: "반려견에게 최적의 기관을 찾고 있습니다...",
+              });
+            }
+          }, 100);
+        }}
+      />
+
+      {/* AI 추천 결과 다이얼로그 */}
+      <AiRecommendationsDialog
+        open={aiRecommendations.length > 0 || isAiMatching}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAiRecommendations([]);
+            setAiMatchingPet(null);
+            setIsAiMatching(false);
+          }
+        }}
+        pet={aiMatchingPet}
+        recommendations={aiRecommendations}
+        summary={aiRecommendations.length > 0 ? `${aiMatchingPet?.name}의 특성에 맞는 ${aiRecommendations.length}개의 기관을 추천합니다.` : ''}
+        isLoading={isAiMatching}
+        onViewInstitute={handleViewRecommendedInstitute}
+      />
     </div>
   );
 }
@@ -1686,6 +1806,224 @@ function InstituteEditDialog({
             )}
           </Button>
         </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// AI 매칭 다이얼로그 컴포넌트
+function AiMatchDialog({ 
+  open, 
+  onOpenChange,
+  onPetSelected
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void;
+  onPetSelected: (petId: number) => void;
+}) {
+  const { data: petsData, isLoading } = useQuery({
+    queryKey: ['/api/pets'],
+    enabled: open,
+  });
+
+  const pets = Array.isArray((petsData as any)?.data) ? (petsData as any).data : [];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            <Bot className="h-6 w-6 text-purple-600" />
+            AI 업체 매칭
+          </DialogTitle>
+          <DialogDescription>
+            반려견 프로필을 기반으로 AI가 최적의 교육 기관을 추천해드립니다.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="mt-4">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">반려견 정보를 불러오는 중...</span>
+            </div>
+          ) : pets.length === 0 ? (
+            <div className="text-center py-12">
+              <PawPrint className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+              <p className="text-gray-600 dark:text-gray-400 mb-4">등록된 반려견이 없습니다.</p>
+              <Button 
+                onClick={() => window.location.href = '/pets'}
+                variant="outline"
+              >
+                반려견 등록하기
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {pets.map((pet: any) => (
+                <Card 
+                  key={pet.id}
+                  className="p-4 cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary"
+                  onClick={() => {
+                    onPetSelected(pet.id);
+                    onOpenChange(false);
+                  }}
+                  data-testid={`pet-card-${pet.id}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+                      {pet.profileImage || pet.imageUrl ? (
+                        <img 
+                          src={pet.profileImage || pet.imageUrl} 
+                          alt={pet.name}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <PawPrint className="h-8 w-8 text-primary" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg mb-1">{pet.name}</h3>
+                      <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex flex-wrap gap-2">
+                          {pet.breed && (
+                            <Badge variant="outline" className="text-xs">{pet.breed}</Badge>
+                          )}
+                          {pet.age && (
+                            <Badge variant="outline" className="text-xs">{pet.age}세</Badge>
+                          )}
+                          {pet.weight && (
+                            <Badge variant="outline" className="text-xs">{pet.weight}kg</Badge>
+                          )}
+                        </div>
+                        {pet.personality && (
+                          <p className="text-xs line-clamp-1">성격: {pet.personality}</p>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// AI 추천 결과 다이얼로그
+function AiRecommendationsDialog({
+  open,
+  onOpenChange,
+  pet,
+  recommendations,
+  summary,
+  isLoading,
+  onViewInstitute
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  pet: any;
+  recommendations: any[];
+  summary: string;
+  isLoading: boolean;
+  onViewInstitute: (instituteId: number) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            <Bot className="h-6 w-6 text-purple-600" />
+            AI 추천 결과
+          </DialogTitle>
+          <DialogDescription>
+            {pet && `${pet.name}에게 최적화된 교육 기관을 추천합니다.`}
+          </DialogDescription>
+        </DialogHeader>
+
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-12 w-12 animate-spin text-purple-600 mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">AI가 최적의 기관을 분석하고 있습니다...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">잠시만 기다려주세요</p>
+          </div>
+        ) : (
+          <div className="space-y-6 mt-4">
+            {/* 요약 */}
+            {summary && (
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+                <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  AI 분석 요약
+                </h3>
+                <p className="text-sm text-purple-800 dark:text-purple-200">{summary}</p>
+              </div>
+            )}
+
+            {/* 추천 목록 */}
+            {recommendations.length > 0 ? (
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">추천 기관</h3>
+                {recommendations.map((rec: any, index: number) => (
+                  <Card key={index} className="p-5 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white font-bold text-sm">
+                          {index + 1}
+                        </div>
+                        <h4 className="font-bold text-lg">{rec.instituteName}</h4>
+                      </div>
+                      <div className="flex items-center gap-1 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 px-3 py-1 rounded-full">
+                        <Star className="h-4 w-4 text-purple-600 dark:text-purple-400 fill-purple-600 dark:fill-purple-400" />
+                        <span className="font-bold text-purple-900 dark:text-purple-100">{rec.matchScore}점</span>
+                      </div>
+                    </div>
+
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">{rec.reason}</p>
+
+                    {rec.strengths && rec.strengths.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">주요 강점:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {rec.strengths.map((strength: string, idx: number) => (
+                            <Badge key={idx} variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700">
+                              {strength}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {rec.considerations && (
+                      <div className="text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 rounded border border-amber-200 dark:border-amber-700 mb-3">
+                        <p className="font-semibold mb-1">고려사항:</p>
+                        <p>{rec.considerations}</p>
+                      </div>
+                    )}
+
+                    <Button 
+                      onClick={() => {
+                        onViewInstitute(rec.instituteId);
+                        onOpenChange(false);
+                      }}
+                      className="w-full mt-2"
+                      data-testid={`button-view-institute-${rec.instituteId}`}
+                    >
+                      자세히 보기
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600 dark:text-gray-400">추천 결과가 없습니다.</p>
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
