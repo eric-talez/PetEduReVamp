@@ -1,6 +1,9 @@
 /* Leaflet CSS for maps */
 @import 'leaflet/dist/leaflet.css';
 
+/* NProgress - 페이지 로딩 바 */
+@import 'nprogress/nprogress.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -1272,4 +1275,59 @@ html:not(.dark) * {
 
 .animate-shimmer {
   animation: shimmer 1.5s infinite;
+}
+
+/* ================================================== */
+/* NProgress 커스텀 스타일 - TALEZ 브랜드 색상 적용 */
+/* ================================================== */
+
+/* NProgress 진행률 바 */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: linear-gradient(90deg, #2BAA61 0%, #FFA726 50%, #29B5F6 100%) !important;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  box-shadow: 0 0 10px rgba(43, 170, 97, 0.5), 0 0 5px rgba(43, 170, 97, 0.3);
+}
+
+/* NProgress peg (진행 중 표시) */
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 15px #2BAA61, 0 0 8px #2BAA61;
+  opacity: 1.0;
+  transform: rotate(3deg) translate(0px, -4px);
+}
+
+/* 다크 모드 NProgress */
+.dark #nprogress .bar {
+  box-shadow: 0 0 10px rgba(43, 170, 97, 0.7), 0 0 5px rgba(43, 170, 97, 0.5);
+}
+
+.dark #nprogress .peg {
+  box-shadow: 0 0 15px #2BAA61, 0 0 8px #2BAA61;
+}
+
+/* 애니메이션 효과 개선 */
+#nprogress .bar {
+  animation: nprogress-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes nprogress-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(43, 170, 97, 0.5), 0 0 5px rgba(43, 170, 97, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(43, 170, 97, 0.7), 0 0 10px rgba(43, 170, 97, 0.5);
+  }
 }
