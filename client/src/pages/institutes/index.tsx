@@ -6,11 +6,13 @@ import { GoogleMapView } from "@/components/GoogleMapView";
 import { WeatherInfo } from "@/components/WeatherInfo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart, Loader2, Award, X,
-  ChevronLeft, ChevronRight, ExternalLink, Phone, Clock
+  ChevronLeft, ChevronRight, ExternalLink, Phone, Clock,
+  Image as ImageIcon, MessageSquare, Info
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -1041,18 +1043,58 @@ export default function LocationServices() {
           )}
         </div>
         
-        {/* 오른쪽 열 - 지도 & 날씨 */}
+        {/* 오른쪽 열 - 탭 구조 */}
         <div className="w-full lg:w-1/3 sticky top-24 h-fit">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white">위치 및 날씨 정보</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">위치 서비스를 선택하면 지도와 현재 날씨를 확인할 수 있습니다.</p>
-            </div>
-            
-            <div className="p-4 space-y-4">
-              {/* Map Component */}
-              {selectedInstitute ? (
-                <>
+            {selectedInstitute ? (
+              <Tabs defaultValue="location" className="w-full">
+                <div className="border-b border-gray-100 dark:border-gray-700">
+                  <TabsList className="w-full grid grid-cols-5 h-auto p-0 bg-transparent">
+                    <TabsTrigger 
+                      value="location" 
+                      className="flex flex-col items-center gap-1 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                      data-testid="tab-location"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      <span className="text-xs">위치</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="weather" 
+                      className="flex flex-col items-center gap-1 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                      data-testid="tab-weather"
+                    >
+                      <Cloud className="h-4 w-4" />
+                      <span className="text-xs">날씨</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="reviews" 
+                      className="flex flex-col items-center gap-1 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                      data-testid="tab-reviews"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      <span className="text-xs">리뷰</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="info" 
+                      className="flex flex-col items-center gap-1 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                      data-testid="tab-info"
+                    >
+                      <Info className="h-4 w-4" />
+                      <span className="text-xs">정보</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="images" 
+                      className="flex flex-col items-center gap-1 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                      data-testid="tab-images"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      <span className="text-xs">이미지</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                
+                {/* 위치 탭 */}
+                <TabsContent value="location" className="p-4 m-0">
                   <GoogleMapView 
                     locations={[{
                       id: selectedInstitute.id,
@@ -1061,27 +1103,171 @@ export default function LocationServices() {
                       coordinates: getLocationFromInstitute(selectedInstitute)
                     }]}
                     center={getLocationFromInstitute(selectedInstitute)}
-                    height="300px"
+                    height="400px"
                     zoom={15}
                   />
-                  
-                  {/* Weather Component */}
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-start gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
+                      <span className="text-gray-700 dark:text-gray-300">{selectedInstitute.location}</span>
+                    </div>
+                    {selectedInstitute.sourceUrl && (
+                      <Button 
+                        variant="outline"
+                        className="w-full"
+                        size="sm"
+                        onClick={() => window.open(selectedInstitute.sourceUrl, '_blank')}
+                        data-testid="button-open-maps"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-2" />
+                        구글 맵에서 보기
+                      </Button>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                {/* 날씨 탭 */}
+                <TabsContent value="weather" className="p-4 m-0">
                   <WeatherInfo 
                     latitude={getLocationFromInstitute(selectedInstitute).lat}
                     longitude={getLocationFromInstitute(selectedInstitute).lng}
                     locationName={selectedInstitute.name}
                   />
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <MapPin className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
-                  <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">위치 정보 없음</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    왼쪽 목록에서 위치 서비스를 선택하면<br />지도와 날씨 정보가 표시됩니다.
-                  </p>
-                </div>
-              )}
-            </div>
+                </TabsContent>
+                
+                {/* 리뷰 탭 */}
+                <TabsContent value="reviews" className="p-4 m-0">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                        <span className="text-2xl font-bold">{selectedInstitute.rating}</span>
+                        <span className="text-gray-500">({selectedInstitute.reviews} 후기)</span>
+                      </div>
+                    </div>
+                    
+                    {/* 리뷰 목록 (데모) */}
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((i) => (
+                        <Card key={i} className="p-3">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700" />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium text-sm">사용자 {i}</span>
+                                <div className="flex">
+                                  {[...Array(5)].map((_, j) => (
+                                    <Star key={j} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                훌륭한 훈련 프로그램과 친절한 강사진입니다. 우리 강아지가 많이 발전했어요!
+                              </p>
+                              <span className="text-xs text-gray-400 mt-1">2024.10.{20 + i}</span>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* 업체 정보 탭 */}
+                <TabsContent value="info" className="p-4 m-0">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-2">기본 정보</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Building className="h-4 w-4 text-gray-500" />
+                          <span className="text-gray-700 dark:text-gray-300">설립: {selectedInstitute.established}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-gray-500" />
+                          <span className="text-gray-700 dark:text-gray-300">{selectedInstitute.openingHours}</span>
+                        </div>
+                        {selectedInstitute.phone && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-gray-500" />
+                            <span className="text-gray-700 dark:text-gray-300">{selectedInstitute.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-2">소개</h4>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{selectedInstitute.description}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-2">시설</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedInstitute.facilities.map((facility: string, idx: number) => (
+                          <Badge key={idx} variant="outline">{facility}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-2">서비스</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        {selectedInstitute.trainers > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-gray-500" />
+                            <span>훈련사 {selectedInstitute.trainers}명</span>
+                          </div>
+                        )}
+                        {selectedInstitute.courses > 0 && (
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-gray-500" />
+                            <span>강의 {selectedInstitute.courses}개</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* 이미지 탭 */}
+                <TabsContent value="images" className="p-4 m-0">
+                  <div className="space-y-3">
+                    {(() => {
+                      const images = selectedInstitute.images || [selectedInstitute.image];
+                      return images.map((img: string, idx: number) => (
+                        <div key={idx} className="relative rounded-lg overflow-hidden">
+                          <img 
+                            src={img} 
+                            alt={`${selectedInstitute.name} - 이미지 ${idx + 1}`}
+                            className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => {
+                              setImageIndices(prev => ({ ...prev, [selectedInstitute.id]: idx }));
+                              setDetailInstitute(selectedInstitute);
+                              setDetailDialogOpen(true);
+                            }}
+                            onError={(e) => {
+                              e.currentTarget.src = '/images/institutes/default-institute.png';
+                            }}
+                          />
+                          <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                            {idx + 1} / {images.length}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center p-4">
+                <MapPin className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">위치 정보 없음</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  왼쪽 목록에서 위치 서비스를 선택하면<br />상세 정보가 표시됩니다.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
