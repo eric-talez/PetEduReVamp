@@ -36,6 +36,27 @@ export default function VideoTraining() {
   const [editFormData, setEditFormData] = useState<Partial<Course>>({});
   const { toast } = useToast();
 
+  // 사용자 역할 확인
+  const getUserRole = (): string | null => {
+    const authData = localStorage.getItem('petedu_auth');
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        return parsed.role || null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const isAdmin = getUserRole() === 'admin' || getUserRole() === 'institute' || getUserRole() === 'trainer';
+
+  // 역할에 따라 표시할 강의 필터링
+  const displayedCourses = isAdmin 
+    ? courses 
+    : courses.filter(course => course.status === 'published');
+
   // 강의 목록 조회
   const fetchCourses = async () => {
     try {
@@ -255,41 +276,47 @@ export default function VideoTraining() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">전체 강의</p>
-                <p className="text-2xl font-bold">{courses.length}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {isAdmin ? '전체 강의' : '이용 가능한 강의'}
+                </p>
+                <p className="text-2xl font-bold">{displayedCourses.length}</p>
               </div>
               <BookOpen className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">발행된 강의</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {courses.filter(c => c.status === 'published').length}
-                </p>
-              </div>
-              <Eye className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
+        {isAdmin && (
+          <>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">발행된 강의</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {courses.filter(c => c.status === 'published').length}
+                    </p>
+                  </div>
+                  <Eye className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">초안 강의</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {courses.filter(c => c.status === 'draft').length}
-                </p>
-              </div>
-              <Edit className="w-8 h-8 text-orange-600" />
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">초안 강의</p>
+                    <p className="text-2xl font-bold text-orange-600">
+                      {courses.filter(c => c.status === 'draft').length}
+                    </p>
+                  </div>
+                  <Edit className="w-8 h-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
 
         <Card>
           <CardContent className="p-4">
@@ -297,7 +324,7 @@ export default function VideoTraining() {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">총 수강생</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {courses.reduce((sum, c) => sum + (c.enrollmentCount || 0), 0)}
+                  {displayedCourses.reduce((sum, c) => sum + (c.enrollmentCount || 0), 0)}
                 </p>
               </div>
               <Users className="w-8 h-8 text-purple-600" />
@@ -308,7 +335,7 @@ export default function VideoTraining() {
 
       {/* 강의 목록 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {courses.map((course) => (
+        {displayedCourses.map((course) => (
           <Card key={course.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -353,65 +380,82 @@ export default function VideoTraining() {
                 </span>
               </div>
 
-              <div className="flex gap-2 mt-4">
-                <Button
-                  size="sm"
-                  onClick={() => openEditDialog(course)}
-                  className="flex-1"
-                >
-                  <Edit className="w-4 h-4 mr-1" />
-                  수정
-                </Button>
-                
-                <Select
-                  value={course.status}
-                  onValueChange={(value) => handleStatusChange(course.id, value)}
-                >
-                  <SelectTrigger className="w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">초안</SelectItem>
-                    <SelectItem value="published">발행</SelectItem>
-                    <SelectItem value="archived">보관</SelectItem>
-                  </SelectContent>
-                </Select>
+              {isAdmin ? (
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    size="sm"
+                    onClick={() => openEditDialog(course)}
+                    className="flex-1"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    수정
+                  </Button>
+                  
+                  <Select
+                    value={course.status}
+                    onValueChange={(value) => handleStatusChange(course.id, value)}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">초안</SelectItem>
+                      <SelectItem value="published">발행</SelectItem>
+                      <SelectItem value="archived">보관</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>강의 삭제</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        정말로 이 강의를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>취소</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDeleteCourse(course.id)}
-                        className="bg-red-600 hover:bg-red-700"
-                      >
-                        삭제
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>강의 삭제</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          정말로 이 강의를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>취소</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteCourse(course.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          삭제
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              ) : (
+                <div className="mt-4">
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    onClick={() => window.location.href = `/courses/${course.id}`}
+                  >
+                    <BookOpen className="w-4 h-4 mr-1" />
+                    강의 상세보기
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {courses.length === 0 && (
+      {displayedCourses.length === 0 && (
         <div className="text-center py-12">
           <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 mb-2">등록된 강의가 없습니다.</p>
-          <p className="text-gray-400 text-sm">커리큘럼을 먼저 등록해주세요.</p>
+          <p className="text-gray-500 mb-2">
+            {isAdmin ? '등록된 강의가 없습니다.' : '현재 이용 가능한 강의가 없습니다.'}
+          </p>
+          <p className="text-gray-400 text-sm">
+            {isAdmin ? '커리큘럼을 먼저 등록해주세요.' : '곧 새로운 강의가 추가될 예정입니다.'}
+          </p>
         </div>
       )}
 
