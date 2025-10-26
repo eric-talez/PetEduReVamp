@@ -630,7 +630,6 @@ export default function LocationServices() {
             {finalFilteredInstitutes.map((institute) => (
               <Card 
                 key={institute.id} 
-                hover 
                 className={`overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer transition-all ${selectedInstitute?.id === institute.id ? 'ring-2 ring-primary' : ''}`}
                 onClick={() => setSelectedInstitute(institute)}
               >
