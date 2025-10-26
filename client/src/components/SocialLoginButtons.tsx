@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 
 interface SocialLoginButtonProps {
   provider: 'kakao' | 'naver' | 'google';
@@ -18,7 +17,7 @@ export function SocialLoginButton({ provider, onClick, className = '' }: SocialL
       hoverColor: '#F6DC00',
       textColor: '#000000',
       borderColor: 'transparent',
-      borderRadius: '12px', // 카카오 가이드: 12px
+      borderRadius: '12px',
       fontSize: '15px',
       height: '48px',
       logo: (
@@ -76,18 +75,23 @@ export function SocialLoginButton({ provider, onClick, className = '' }: SocialL
       ),
       text: 'Google 계정으로 로그인',
       fontFamily: '"Roboto", system-ui, -apple-system, sans-serif',
-      gap: '24px', // 구글 가이드: 로고-텍스트 간격 24dp
+      gap: '24px',
     }
   };
 
   const config = providerConfig[provider];
+  const [isHovered, setIsHovered] = React.useState(false);
 
   return (
-    <Button
+    <button
       type="button"
-      className={`w-full flex items-center justify-center font-medium transition-all ${className}`}
+      className={className}
       style={{
-        backgroundColor: config.backgroundColor,
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: isHovered ? config.hoverColor : config.backgroundColor,
         color: config.textColor,
         border: `1px solid ${config.borderColor}`,
         fontFamily: config.fontFamily,
@@ -97,22 +101,20 @@ export function SocialLoginButton({ provider, onClick, className = '' }: SocialL
         padding: '0 16px',
         gap: config.gap,
         fontWeight: 500,
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
         boxShadow: provider === 'google' ? '0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15)' : 'none',
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = config.hoverColor;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = config.backgroundColor;
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
       data-testid={`button-${provider}-login`}
     >
-      <span className="flex items-center justify-center shrink-0">
+      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         {config.logo}
       </span>
-      <span className="whitespace-nowrap">{config.text}</span>
-    </Button>
+      <span style={{ whiteSpace: 'nowrap' }}>{config.text}</span>
+    </button>
   );
 }
 
@@ -122,25 +124,22 @@ export function SocialLoginButton({ provider, onClick, className = '' }: SocialL
  */
 export function SocialLoginButtons() {
   const handleKakaoLogin = () => {
-    // 카카오 로그인 API 엔드포인트로 리다이렉트
     window.location.href = '/api/auth/kakao';
   };
 
   const handleNaverLogin = () => {
-    // 네이버 로그인 API 엔드포인트로 리다이렉트
     window.location.href = '/api/auth/naver';
   };
 
   const handleGoogleLogin = () => {
-    // 구글 로그인 API 엔드포인트로 리다이렉트
     window.location.href = '/api/auth/google';
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full">
-      <SocialLoginButton provider="kakao" onClick={handleKakaoLogin} className="w-full" />
-      <SocialLoginButton provider="naver" onClick={handleNaverLogin} className="w-full" />
-      <SocialLoginButton provider="google" onClick={handleGoogleLogin} className="w-full" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+      <SocialLoginButton provider="kakao" onClick={handleKakaoLogin} />
+      <SocialLoginButton provider="naver" onClick={handleNaverLogin} />
+      <SocialLoginButton provider="google" onClick={handleGoogleLogin} />
     </div>
   );
 }
