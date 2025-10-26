@@ -336,15 +336,15 @@ function NearbyPlaces() {
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
         <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">카테고리 선택</h3>
         <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-          <TabsList className="grid grid-cols-4 md:grid-cols-8 gap-1 w-full h-auto">
-            <TabsTrigger value="trainer" className="text-xs md:text-sm">훈련사</TabsTrigger>
-            <TabsTrigger value="institute" className="text-xs md:text-sm">훈련소</TabsTrigger>
-            <TabsTrigger value="clinic" className="text-xs md:text-sm">동물병원</TabsTrigger>
-            <TabsTrigger value="shop" className="text-xs md:text-sm">용품점</TabsTrigger>
-            <TabsTrigger value="cafe" className="text-xs md:text-sm">강아지카페</TabsTrigger>
-            <TabsTrigger value="pension" className="text-xs md:text-sm">펜션</TabsTrigger>
-            <TabsTrigger value="park" className="text-xs md:text-sm">공원</TabsTrigger>
-            <TabsTrigger value="event" className="text-xs md:text-sm">축제</TabsTrigger>
+          <TabsList className="inline-flex w-full overflow-x-auto h-auto p-1 gap-1">
+            <TabsTrigger value="trainer" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">훈련사</TabsTrigger>
+            <TabsTrigger value="institute" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">훈련소</TabsTrigger>
+            <TabsTrigger value="clinic" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">동물병원</TabsTrigger>
+            <TabsTrigger value="shop" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">용품점</TabsTrigger>
+            <TabsTrigger value="cafe" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">강아지카페</TabsTrigger>
+            <TabsTrigger value="pension" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">펜션</TabsTrigger>
+            <TabsTrigger value="park" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">공원</TabsTrigger>
+            <TabsTrigger value="event" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">축제</TabsTrigger>
           </TabsList>
           
           {/* 탭 컨텐츠 */}
