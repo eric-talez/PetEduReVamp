@@ -2651,9 +2651,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/locations/search', async (req, res) => {
     const { query, lat, lng } = req.query;
     
-    console.log(`[Places Search API] 검색어: "${query}", 위치: ${lat}, ${lng}`);
+    // query를 string으로 변환
+    const searchQuery = typeof query === 'string' ? query : String(query || '');
     
-    if (!query) {
+    console.log(`[Places Search API] 검색어: "${searchQuery}", 위치: ${lat}, ${lng}`);
+    
+    if (!searchQuery) {
       return res.status(400).json({ error: '검색어가 필요합니다.' });
     }
 
@@ -2670,8 +2673,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select()
         .from(institutes)
         .where(
-          sql`${institutes.name} LIKE ${`%${query}%`} 
-              OR ${institutes.address} LIKE ${`%${query}%`}
+          sql`${institutes.name} LIKE ${`%${searchQuery}%`} 
+              OR ${institutes.address} LIKE ${`%${searchQuery}%`}
               AND ${institutes.isActive} = true
               AND ${institutes.latitude} IS NOT NULL 
               AND ${institutes.longitude} IS NOT NULL`
@@ -2699,9 +2702,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
 
       // Google Places Text Search API 호출
-      const searchQuery = `${query} 반려견 애견`;
+      // 검색어가 짧으면 (3글자 이하) 카테고리 키워드 추가, 길면 정확도 우선
+      const isShortQuery = searchQuery.length <= 3;
+      const googleQuery = isShortQuery ? `${searchQuery} 강아지 훈련` : searchQuery;
+      
       const params = new URLSearchParams({
-        query: searchQuery,
+        query: googleQuery,
         key: GOOGLE_MAPS_API_KEY,
         language: 'ko',
         fields: 'formatted_address,geometry,name,photos,place_id,types,rating,opening_hours,user_ratings_total'
@@ -2723,36 +2729,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`[Google Places API] status: ${data.status}, results: ${data.results?.length || 0}`);
       
-      const googlePlaces = (data.results || []).slice(0, 20).map((place: any, index: number) => {
-        const placeData = {
-          id: place.place_id || `google-search-${index}`,
-          name: place.name,
-          type: getGooglePlaceType(place.types),
-          latitude: place.geometry?.location?.lat || 0,
-          longitude: place.geometry?.location?.lng || 0,
-          address: place.formatted_address || place.vicinity || '',
-          phone: '',
-          rating: place.rating || 4.0,
-          reviews: place.user_ratings_total || 0,
-          description: place.types?.[0]?.replace(/_/g, ' ') || '반려견 관련 시설',
-          certification: false,
-          isTalez: false,
-          sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
-          photo: place.photos?.[0] ? 
-            `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}` : 
-            undefined,
-          openingHours: place.opening_hours?.open_now !== undefined ? 
-            (place.opening_hours.open_now ? '영업 중' : '영업 종료') : 
-            undefined,
-          established: '2020',
-          facilities: ['반려견 시설'],
-          trainers: Math.floor(Math.random() * 5) + 1,
-          courses: Math.floor(Math.random() * 10) + 1,
-        };
-        
-        console.log(`[Place ${index}] ${placeData.name} - ${placeData.address} (${placeData.latitude}, ${placeData.longitude})`);
-        return placeData;
-      });
+      const googlePlaces = (data.results || [])
+        .filter((place: any) => {
+          // 검색어가 장소 이름에 포함되어 있는지 확인 (관련성 필터)
+          const placeName = place.name?.toLowerCase() || '';
+          const searchTermLower = searchQuery.toLowerCase();
+          
+          // 검색어가 4글자 이상이면 정확한 매칭 요구
+          if (searchQuery.length >= 4) {
+            return placeName.includes(searchTermLower) || 
+                   place.formatted_address?.toLowerCase().includes(searchTermLower);
+          }
+          
+          // 짧은 검색어는 더 넓게 허용
+          return true;
+        })
+        .slice(0, 10)
+        .map((place: any, index: number) => {
+          const placeData = {
+            id: place.place_id || `google-search-${index}`,
+            name: place.name,
+            type: getGooglePlaceType(place.types),
+            latitude: place.geometry?.location?.lat || 0,
+            longitude: place.geometry?.location?.lng || 0,
+            address: place.formatted_address || place.vicinity || '',
+            phone: '',
+            rating: place.rating || 4.0,
+            reviews: place.user_ratings_total || 0,
+            description: place.types?.[0]?.replace(/_/g, ' ') || '반려견 관련 시설',
+            certification: false,
+            isTalez: false,
+            sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
+            photo: place.photos?.[0] ? 
+              `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}` : 
+              undefined,
+            openingHours: place.opening_hours?.open_now !== undefined ? 
+              (place.opening_hours.open_now ? '영업 중' : '영업 종료') : 
+              undefined,
+            established: '2020',
+            facilities: ['반려견 시설'],
+            trainers: Math.floor(Math.random() * 5) + 1,
+            courses: Math.floor(Math.random() * 10) + 1,
+          };
+          
+          console.log(`[Place ${index}] ${placeData.name} - ${placeData.address} (${placeData.latitude}, ${placeData.longitude})`);
+          return placeData;
+        });
 
       // TALEZ 결과를 우선순위로 병합
       const combinedResults = [...talezPlaces, ...googlePlaces];
