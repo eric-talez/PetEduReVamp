@@ -2450,6 +2450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Location/Places search API (Google Places integration)
+  console.log('[Location Routes] Registering /api/locations endpoint...');
   app.get('/api/locations', async (req, res) => {
     const { search } = req.query;
     const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -2607,6 +2608,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // TALEZ 주변 장소 검색 API - 훈련사/기관은 DB, 나머지는 Google Places
+  console.log('[Location Routes] Registering /api/locations/nearby endpoint...');
   app.get('/api/locations/nearby', async (req, res) => {
     const { type, lat, lng, radius } = req.query;
     
@@ -2715,6 +2717,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Google Places Text Search API - 검색어로 장소 검색
+  console.log('[Location Routes] Registering /api/locations/search endpoint...');
   app.get('/api/locations/search', async (req, res) => {
     const { query, lat, lng } = req.query;
     
