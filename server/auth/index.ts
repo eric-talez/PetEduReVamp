@@ -247,13 +247,24 @@ function setupAuthRoutes(app: Express) {
   // 회원가입 API (표준화 적용)
   router.post('/register', csrfProtection, async (req, res) => {
     try {
-      const { username, password, email, name } = req.body;
+      const { username, password, email, name, phoneNumber, birthDate, gender, role } = req.body;
+      
+      // 소셜 로그인 정보 확인
+      const socialSignup = req.session.socialSignup;
       
       // 필수 필드 검증
-      if (!username || !password || !email || !name) {
+      if (!username || !email || !name) {
         return res.error(
           ApiErrorCode.MISSING_REQUIRED_FIELD,
           '모든 필수 정보를 입력해주세요'
+        );
+      }
+      
+      // 소셜 로그인이 아닌 경우 비밀번호 필수
+      if (!socialSignup && !password) {
+        return res.error(
+          ApiErrorCode.MISSING_REQUIRED_FIELD,
+          '비밀번호를 입력해주세요'
         );
       }
       
@@ -266,8 +277,15 @@ function setupAuthRoutes(app: Express) {
         );
       }
       
-      // 비밀번호 해싱
-      const hashedPassword = await hashPassword(password);
+      // 비밀번호 처리
+      let hashedPassword: string;
+      if (socialSignup) {
+        // 소셜 로그인: 랜덤 비밀번호 생성
+        hashedPassword = await hashPassword(Math.random().toString(36).slice(2) + Date.now().toString(36));
+      } else {
+        // 일반 회원가입: 입력된 비밀번호 해싱
+        hashedPassword = await hashPassword(password);
+      }
       
       // 사용자 생성
       const user = await storage.createUser({
@@ -275,9 +293,20 @@ function setupAuthRoutes(app: Express) {
         password: hashedPassword,
         email,
         name,
-        role: 'pet-owner' as UserRole,
-        verified: false // 이메일 인증 등을 통해 나중에 true로 설정
+        phoneNumber: phoneNumber || undefined,
+        birthDate: birthDate || undefined,
+        gender: gender || undefined,
+        role: (role as UserRole) || 'pet-owner',
+        provider: socialSignup?.provider,
+        socialId: socialSignup?.socialId,
+        verified: socialSignup ? true : false, // 소셜 로그인은 기본 인증됨
+        verifiedAt: socialSignup ? new Date() : undefined
       });
+      
+      // 세션에서 소셜 가입 정보 제거
+      if (socialSignup) {
+        delete req.session.socialSignup;
+      }
       
       // 자동 로그인
       req.login(user, (err) => {
@@ -297,6 +326,25 @@ function setupAuthRoutes(app: Express) {
       return res.error(
         ApiErrorCode.INTERNAL_SERVER_ERROR,
         '회원가입 처리 중 오류가 발생했습니다'
+      );
+    }
+  });
+  
+  // 소셜 로그인 가입 정보 조회 API
+  router.get('/social-signup', (req, res) => {
+    try {
+      const socialSignup = req.session.socialSignup;
+      
+      if (!socialSignup) {
+        return res.success(null, '소셜 로그인 가입 정보가 없습니다.');
+      }
+      
+      return res.success(socialSignup, '소셜 로그인 가입 정보를 성공적으로 조회했습니다.');
+    } catch (error) {
+      console.error('소셜 가입 정보 조회 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        '소셜 가입 정보 조회 중 오류가 발생했습니다'
       );
     }
   });

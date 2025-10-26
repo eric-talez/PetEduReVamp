@@ -8,7 +8,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: varchar("username", { length: 100 }).notNull().unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password"), // nullable for social login users
   role: varchar("role", { length: 50 }).notNull().default("pet-owner"),
   name: varchar("name", { length: 100 }),
   phone: varchar("phone", { length: 20 }),
@@ -39,6 +39,11 @@ export const users = pgTable("users", {
   latitude: text("latitude"), // 위도
   longitude: text("longitude"), // 경도
   workingArea: text("working_area"), // 활동 지역
+  // 소셜 로그인 관련 필드
+  provider: varchar("provider", { length: 20 }), // kakao, naver, google
+  socialId: varchar("social_id", { length: 255 }), // 소셜 플랫폼에서 제공하는 고유 ID
+  verified: boolean("verified").default(false), // 인증 여부
+  verifiedAt: timestamp("verified_at"), // 인증 완료 시각
 });
 
 // 강의 테이블

@@ -12,5 +12,15 @@ declare module 'express-session' {
       instituteId?: number;
       [key: string]: any;
     };
+    socialSignup?: {
+      provider: string;
+      socialId: string;
+      email: string;
+      name: string;
+      mobile?: string;
+      birthyear?: string;
+      birthday?: string;
+      gender?: string;
+    };
   }
 }

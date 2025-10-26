@@ -1367,6 +1367,10 @@ class Storage {
     return this.users?.find(user => user.username === username);
   }
 
+  getUserBySocialId(provider: string, socialId: string) {
+    return this.users?.find(user => user.provider === provider && user.socialId === socialId);
+  }
+
   createUser(userData: any) {
     const newUser = {
       id: (this.users?.length || 0) + 1,

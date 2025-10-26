@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,46 @@ export default function Register() {
   const [instituteCode, setInstituteCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSocialSignup, setIsSocialSignup] = useState(false);
+  const [socialProvider, setSocialProvider] = useState<string>("");
+  
+  // 소셜 로그인 정보 가져오기
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const social = urlParams.get('social');
+    
+    if (social) {
+      setIsSocialSignup(true);
+      setSocialProvider(social);
+      
+      // API에서 소셜 로그인 정보 가져오기
+      fetch('/api/auth/social-signup')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            const socialData = data.data;
+            setEmail(socialData.email || "");
+            setName(socialData.name || "");
+            setPhoneNumber(socialData.mobile || "");
+            setGender(socialData.gender || "");
+            
+            // 생년월일 처리
+            if (socialData.birthyear && socialData.birthday) {
+              const [month, day] = socialData.birthday.split('-');
+              setBirthDate(`${socialData.birthyear}-${month}-${day}`);
+            }
+            
+            toast({
+              title: "소셜 로그인 정보 불러오기 성공",
+              description: `${social} 계정 정보를 불러왔습니다. 추가 정보를 입력해주세요.`,
+            });
+          }
+        })
+        .catch(error => {
+          console.error('소셜 가입 정보 조회 오류:', error);
+        });
+    }
+  }, [toast]);
   
   // 이미 인증된 경우 대시보드로 리다이렉트
   if (auth.isAuthenticated) {
@@ -80,12 +120,12 @@ export default function Register() {
   };
 
   // 회원가입 처리 함수
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // 입력 검증
-    if (!username || !password || !confirmPassword || !email || !name || !phoneNumber || !birthDate || !gender) {
+    // 기본 필수 필드 검증
+    if (!username || !email || !name || !phoneNumber || !birthDate || !gender) {
       toast({
         title: "입력 오류",
         description: "모든 필수 필드를 입력해주세요.",
@@ -93,6 +133,29 @@ export default function Register() {
       });
       setIsLoading(false);
       return;
+    }
+    
+    // 소셜 로그인이 아닌 경우 비밀번호 검증
+    if (!isSocialSignup) {
+      if (!password || !confirmPassword) {
+        toast({
+          title: "입력 오류",
+          description: "비밀번호를 입력해주세요.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        toast({
+          title: "비밀번호 불일치",
+          description: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
     }
 
     // 생년월일 유효성 검증
@@ -122,26 +185,60 @@ export default function Register() {
       return;
     }
     
-    if (password !== confirmPassword) {
+    try {
+      // CSRF 토큰 가져오기
+      const csrfResponse = await fetch('/api/auth/csrf');
+      const csrfData = await csrfResponse.json();
+      const csrfToken = csrfData.token;
+      
+      // 회원가입 API 호출
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: JSON.stringify({
+          username,
+          password: isSocialSignup ? undefined : password,
+          email,
+          name,
+          phoneNumber,
+          birthDate,
+          gender,
+          role: userRole,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "회원가입 성공",
+          description: "회원가입이 완료되었습니다. 대시보드로 이동합니다.",
+        });
+        
+        // 대시보드로 리다이렉트
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      } else {
+        toast({
+          title: "회원가입 실패",
+          description: data.message || "회원가입 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('회원가입 오류:', error);
       toast({
-        title: "비밀번호 불일치",
-        description: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+        title: "회원가입 오류",
+        description: "서버와의 통신 중 오류가 발생했습니다.",
         variant: "destructive",
       });
       setIsLoading(false);
-      return;
     }
-    
-    // 서버에 회원가입 요청을 보내는 대신
-    // 소셜 로그인을 권장하는 메시지 표시
-    setTimeout(() => {
-      toast({
-        title: "소셜 로그인 권장",
-        description: "현재 Talez는 카카오와 네이버 소셜 로그인만 지원합니다.",
-        variant: "default",
-      });
-      setIsLoading(false);
-    }, 1000);
   };
 
   return (
@@ -261,38 +358,52 @@ export default function Register() {
               </Select>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password">비밀번호</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="비밀번호를 입력하세요"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
+            {/* 소셜 로그인이 아닌 경우에만 비밀번호 필드 표시 */}
+            {!isSocialSignup && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="password">비밀번호</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="비밀번호를 입력하세요"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">비밀번호 확인</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="비밀번호를 다시 입력하세요"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
             
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">비밀번호 확인</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                placeholder="비밀번호를 다시 입력하세요"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
+            {/* 소셜 로그인인 경우 안내 메시지 표시 */}
+            {isSocialSignup && (
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  {socialProvider === 'naver' ? '네이버' : socialProvider === 'kakao' ? '카카오' : '구글'} 계정으로 로그인하므로 비밀번호 설정이 필요하지 않습니다.
+                </p>
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="user-role">사용자 유형</Label>

@@ -97,32 +97,34 @@ export function setupSocialAuth(app: Express) {
             const naverId = profile.id;
             const email = profile._json?.email || '';
             const nickname = profile.displayName || profile._json?.nickname || '';
+            const mobile = profile._json?.mobile || '';
+            const birthyear = profile._json?.birthyear || '';
+            const birthday = profile._json?.birthday || '';
+            const gender = profile._json?.gender || '';
             
-            console.log('네이버 로그인 정보:', { naverId, email, nickname });
+            console.log('네이버 로그인 정보:', { naverId, email, nickname, mobile });
             
             // 기존 사용자 확인 (소셜 ID로)
             let user = await storage.getUserBySocialId('naver', naverId);
             
             if (!user) {
-              // 신규 사용자 생성
-              user = await storage.createUser({
-                username: `naver_${naverId}`,
-                password: Math.random().toString(36).slice(2) + Date.now().toString(36), // 랜덤 비밀번호
-                email: email,
-                name: nickname,
+              // 신규 사용자 - 회원가입 페이지로 리다이렉트하기 위해 정보만 반환
+              console.log('신규 네이버 사용자 - 회원가입 페이지로 이동');
+              return done(null, {
+                isNewUser: true,
                 provider: 'naver',
                 socialId: naverId,
-                role: 'pet-owner', // 기본 역할은 반려인
-                verified: true, // 소셜 로그인은 기본적으로 인증됨
-                verifiedAt: new Date()
-              });
-              
-              console.log('새 사용자 생성 완료:', user.id);
+                email: email,
+                name: nickname,
+                mobile: mobile,
+                birthyear: birthyear,
+                birthday: birthday,
+                gender: gender === 'M' ? 'male' : gender === 'F' ? 'female' : ''
+              } as any);
             } else {
               console.log('기존 사용자 확인:', user.id);
+              return done(null, user);
             }
-            
-            return done(null, user);
           } catch (error) {
             console.error('네이버 로그인 오류:', error);
             return done(error as Error);
@@ -141,7 +143,29 @@ export function setupSocialAuth(app: Express) {
         failureRedirect: '/auth?error=social-login-failed',
       }),
       (req, res) => {
-        // 성공 시 대시보드로 리다이렉트
+        const user = req.user as any;
+        
+        // 신규 사용자인 경우 회원가입 페이지로 리다이렉트
+        if (user && user.isNewUser) {
+          // 소셜 로그인 정보를 세션에 저장
+          req.session.socialSignup = {
+            provider: user.provider,
+            socialId: user.socialId,
+            email: user.email,
+            name: user.name,
+            mobile: user.mobile,
+            birthyear: user.birthyear,
+            birthday: user.birthday,
+            gender: user.gender
+          };
+          
+          console.log('세션에 소셜 가입 정보 저장:', req.session.socialSignup);
+          
+          // 회원가입 페이지로 리다이렉트
+          return res.redirect('/auth/register?social=naver');
+        }
+        
+        // 기존 사용자는 대시보드로 리다이렉트
         res.redirect('/dashboard');
       }
     );
