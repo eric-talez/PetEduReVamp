@@ -12,6 +12,7 @@ import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCir
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { setRouteLoading } from '@/hooks/use-route-loading';
 // Banner 타입을 local로 정의
 interface Banner {
@@ -88,7 +89,7 @@ export default function Home() {
 
   // TALEZ 체험 서비스 상태
   const [showExperience, setShowExperience] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [videoDescription, setVideoDescription] = useState<string>('');
   const [analysisStep, setAnalysisStep] = useState<'upload' | 'analyzing' | 'result'>('upload');
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [uploadError, setUploadError] = useState<string>('');
@@ -105,61 +106,34 @@ export default function Home() {
     }
   });
 
-  // 파일 업로드 핸들러
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // 파일 검증
-    const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/quicktime'];
-    const maxSize = 50 * 1024 * 1024; // 50MB
-
-    if (!allowedTypes.includes(file.type)) {
-      setUploadError('MP4, AVI, MOV 형식의 영상만 업로드 가능합니다.');
-      return;
-    }
-
-    if (file.size > maxSize) {
-      setUploadError('파일 크기는 50MB 이하여야 합니다.');
-      return;
-    }
-
-    setUploadError('');
-    setSelectedFile(file);
-  };
-
   // 영상 분석 시작
   const startAnalysis = async () => {
-    if (!selectedFile) return;
+    if (!videoDescription || videoDescription.trim().length < 20) {
+      setUploadError('강아지의 행동을 더 자세히 설명해주세요 (최소 20자).');
+      return;
+    }
 
     setAnalysisStep('analyzing');
-    const formData = new FormData();
-    formData.append('video', selectedFile);
+    setUploadError('');
 
     try {
-      const response = await fetch('/api/experience/analyze-video', {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await apiRequest('POST', '/api/ai/analyze-video', {
+        videoDescription: videoDescription.trim()
+      }) as any;
 
-      const result = await response.json();
-
-      if (response.ok) {
-        setAnalysisResult(result);
-        setAnalysisStep('result');
-      } else {
-        setUploadError(result.error || '분석 중 오류가 발생했습니다.');
-        setAnalysisStep('upload');
-      }
+      // apiRequest가 성공하면 JSON 데이터를 직접 반환함
+      setAnalysisResult(response);
+      setAnalysisStep('result');
     } catch (error) {
-      setUploadError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+      setUploadError('AI 분석 중 오류가 발생했습니다. 다시 시도해주세요.');
       setAnalysisStep('upload');
+      console.error('분석 오류:', error);
     }
   };
 
   // 체험 서비스 초기화
   const resetExperience = () => {
-    setSelectedFile(null);
+    setVideoDescription('');
     setAnalysisStep('upload');
     setAnalysisResult(null);
     setUploadError('');
@@ -1228,51 +1202,45 @@ export default function Home() {
 
                 {analysisStep === 'upload' && (
                   <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold mb-4">강아지 영상 업로드</h3>
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                      <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <div className="space-y-2">
-                        <label htmlFor="video-upload" className="cursor-pointer">
-                          <span className="text-blue-600 hover:text-blue-500 font-medium">
-                            파일을 선택하거나 여기로 드래그하세요
-                          </span>
-                          <input
-                            id="video-upload"
-                            type="file"
-                            accept="video/mp4,video/avi,video/mov,video/quicktime"
-                            onChange={handleFileSelect}
-                            className="hidden"
-                          />
+                    <h3 className="text-lg font-semibold mb-4">강아지 행동 분석</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      강아지의 행동을 자세히 설명해주세요. AI가 행동 패턴을 분석하고 맞춤형 훈련 프로그램을 추천합니다.
+                    </p>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          강아지의 행동 설명
                         </label>
-                        <p className="text-sm text-gray-500">
-                          MP4, AVI, MOV 형식 / 최대 50MB
+                        <textarea
+                          value={videoDescription}
+                          onChange={(e) => setVideoDescription(e.target.value)}
+                          rows={6}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="예시: 저희 강아지는 다른 강아지를 보면 꼬리를 흔들며 다가가지만, 낯선 사람이 오면 짖으면서 뒤로 물러납니다. 산책할 때는 줄을 많이 당기고, 집에서는 혼자 있을 때 불안해하는 모습을 보입니다. 간식을 주면 '앉아'는 잘 따르지만 '기다려'는 아직 어려워합니다."
+                        />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          💡 팁: 산책 시 행동, 다른 강아지/사람과의 상호작용, 명령 반응도, 집에서의 행동 등을 자세히 적어주세요.
                         </p>
                       </div>
-                    </div>
 
-                    {selectedFile && (
-                      <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-green-800 dark:text-green-200">
-                              {selectedFile.name}
-                            </p>
-                            <p className="text-sm text-green-600 dark:text-green-400">
-                              {(selectedFile.size / 1024 / 1024).toFixed(2)}MB
-                            </p>
-                          </div>
-                          <Button onClick={startAnalysis} className="bg-green-600 hover:bg-green-700">
-                            분석 시작
-                          </Button>
+                      <Button 
+                        onClick={startAnalysis} 
+                        disabled={!videoDescription || videoDescription.trim().length < 20}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
+                      >
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        AI 분석 시작
+                      </Button>
+
+                      {uploadError && (
+                        <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                          <p className="text-red-600 dark:text-red-400 text-sm">{uploadError}</p>
                         </div>
-                      </div>
-                    )}
-
-                    {uploadError && (
-                      <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                        <p className="text-red-600 dark:text-red-400">{uploadError}</p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -1287,38 +1255,171 @@ export default function Home() {
                 )}
 
                 {analysisStep === 'result' && analysisResult && (
-                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
-                      분석 완료
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm max-w-3xl mx-auto">
+                    <h3 className="text-2xl font-bold mb-6 flex items-center">
+                      <CheckCircle className="mr-2 h-6 w-6 text-green-500" />
+                      AI 종합 분석 완료
                     </h3>
 
-                    <div className="space-y-4">
-                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
-                          행동 분석 결과
+                    <div className="space-y-6">
+                      {/* 전체 요약 */}
+                      <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                        <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-2 flex items-center">
+                          <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                            <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                          </svg>
+                          분석 요약
                         </h4>
-                        <p className="text-sm text-blue-700 dark:text-blue-300">
-                          {analysisResult.analysis || '강아지의 행동을 분석했습니다.'}
+                        <p className="text-sm text-purple-800 dark:text-purple-200">
+                          {analysisResult.behaviorAnalysis?.summary || '강아지의 행동과 특성을 종합적으로 분석했습니다.'}
                         </p>
                       </div>
 
-                      <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">
-                          추천사항
+                      {/* 훈련 수준 점수 */}
+                      <div className="p-5 bg-white dark:bg-gray-700 rounded-lg border-2 border-blue-200 dark:border-blue-700">
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                          <svg className="h-5 w-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          훈련 수준 평가
                         </h4>
-                        <p className="text-sm text-green-700 dark:text-green-300">
-                          {analysisResult.recommendations || '맞춤형 훈련 프로그램을 추천드립니다.'}
-                        </p>
+                        
+                        <div className="text-center mb-4">
+                          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg mb-2">
+                            <span className="text-3xl font-bold">{analysisResult.trainingAssessment?.overallScore || 0}</span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">전반적 훈련 점수</p>
+                          <p className="text-lg font-semibold text-blue-600 dark:text-blue-400 mt-1">
+                            {analysisResult.trainingAssessment?.level || '중급'} 수준
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          {analysisResult.trainingAssessment?.scores && Object.entries(analysisResult.trainingAssessment.scores).map(([key, value]: [string, any]) => (
+                            <div key={key} className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{value}/10</div>
+                              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                {key === 'commandResponse' ? '명령 반응' : key === 'focus' ? '집중력' : '학습 능력'}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
 
-                      <div className="flex space-x-3">
+                      {/* 성격 프로필 */}
+                      <div className="p-5 bg-white dark:bg-gray-700 rounded-lg border-2 border-green-200 dark:border-green-700">
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                          <svg className="h-5 w-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          </svg>
+                          성격 프로필
+                        </h4>
+                        
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                          {analysisResult.personalityProfile?.description}
+                        </p>
+
+                        {analysisResult.personalityProfile?.scores && (
+                          <div className="space-y-3">
+                            {Object.entries(analysisResult.personalityProfile.scores).map(([key, value]: [string, any]) => (
+                              <div key={key}>
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                                    {key === 'activeness' ? '활동성' : 
+                                     key === 'sociability' ? '사교성' : 
+                                     key === 'obedience' ? '순응성' : '불안 수준'}
+                                  </span>
+                                  <span className="text-gray-600 dark:text-gray-400">{value}/10</span>
+                                </div>
+                                <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
+                                  <div 
+                                    className={`h-2.5 rounded-full ${
+                                      key === 'anxiety' ? 'bg-orange-500' : 'bg-green-500'
+                                    }`}
+                                    style={{ width: `${(value / 10) * 100}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 행동 패턴 */}
+                      {analysisResult.behaviorAnalysis?.patterns && (
+                        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700">
+                          <h4 className="font-semibold text-amber-900 dark:text-amber-100 mb-3">
+                            관찰된 행동 패턴
+                          </h4>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {analysisResult.behaviorAnalysis.patterns.mainBehaviors?.map((behavior: string, idx: number) => (
+                              <span key={idx} className="px-3 py-1 bg-amber-100 dark:bg-amber-800 text-amber-800 dark:text-amber-100 rounded-full text-sm font-medium">
+                                {behavior}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="text-sm text-amber-800 dark:text-amber-200">
+                            {analysisResult.behaviorAnalysis.patterns.meaning}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* 맞춤형 추천 */}
+                      <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                        <h4 className="font-semibold text-green-900 dark:text-green-100 mb-3 flex items-center">
+                          <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          맞춤형 훈련 추천
+                        </h4>
+                        
+                        <div className="space-y-2 mb-4">
+                          <p className="text-sm font-medium text-green-800 dark:text-green-200">우선 훈련 항목:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {analysisResult.recommendations?.priorities?.map((priority: string, idx: number) => (
+                              <li key={idx} className="text-sm text-green-700 dark:text-green-300">{priority}</li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-green-800 dark:text-green-200">훈련 팁:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {analysisResult.recommendations?.tips?.map((tip: string, idx: number) => (
+                              <li key={idx} className="text-sm text-green-700 dark:text-green-300">{tip}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      {/* 액션 버튼 */}
+                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
                         <Button onClick={resetExperience} variant="outline" size="default" className="flex-1">
+                          <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
                           다시 분석하기
                         </Button>
-                        <Button onClick={() => setLocation('/auth')} variant="default" size="default" className="flex-1">
+                        <Button onClick={() => setLocation('/institutes')} variant="default" size="default" className="flex-1">
+                          <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          최적의 훈련소 찾기
+                        </Button>
+                        <Button onClick={() => setLocation('/auth')} className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                          <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
                           전문가 상담 받기
                         </Button>
+                      </div>
+
+                      {/* AI 모델 정보 */}
+                      <div className="text-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          ⚡ {analysisResult.modelInfo?.behaviorAnalysis} + {analysisResult.modelInfo?.trainingRecommendation?.split('(')[1]?.replace(')', '')} 멀티모델 AI 분석
+                        </p>
                       </div>
                     </div>
                   </div>

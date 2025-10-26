@@ -13087,6 +13087,189 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 고도화된 비디오 분석 API
+  app.post("/api/ai/analyze-video", async (req, res) => {
+    try {
+      const { videoDescription } = req.body;
+      
+      if (!videoDescription) {
+        return res.status(400).json({ error: "비디오 설명이 필요합니다." });
+      }
+
+      console.log('[AI 비디오 분석] 분석 요청 - 설명:', videoDescription);
+
+      // GPT-4o로 초기 행동 분석
+      const behaviorAnalysisPrompt = `다음은 강아지 행동 비디오에 대한 설명입니다:
+"${videoDescription}"
+
+전문 애견 훈련사의 관점에서 다음 항목을 상세히 분석해주세요:
+
+1. **행동 패턴 분석**
+   - 관찰된 주요 행동
+   - 행동의 의미와 원인
+   - 행동 빈도와 강도
+
+2. **성격 평가**
+   - 활동성 수준 (1-10점)
+   - 사교성 (1-10점)
+   - 순응성 (1-10점)
+   - 불안 수준 (1-10점)
+
+3. **훈련 수준 평가**
+   - 기본 명령 반응도 (1-10점)
+   - 집중력 (1-10점)
+   - 학습 능력 (1-10점)
+   - 전반적 훈련 점수 (1-100점)
+
+4. **건강 상태 관찰**
+   - 신체 활동성
+   - 관절 움직임
+   - 전반적 컨디션
+   - 특이사항
+
+JSON 형식으로 응답해주세요:
+{
+  "behaviorPatterns": {
+    "mainBehaviors": ["행동1", "행동2", "행동3"],
+    "meaning": "행동의 의미와 원인",
+    "intensity": "강도 설명"
+  },
+  "personalityScores": {
+    "activeness": 점수,
+    "sociability": 점수,
+    "obedience": 점수,
+    "anxiety": 점수
+  },
+  "trainingLevel": {
+    "commandResponse": 점수,
+    "focus": 점수,
+    "learningAbility": 점수,
+    "overallScore": 점수,
+    "level": "초급|중급|고급|전문가급"
+  },
+  "healthObservation": {
+    "physicalActivity": "평가",
+    "jointMovement": "평가",
+    "overallCondition": "평가",
+    "notes": "특이사항"
+  },
+  "summary": "전체 분석 요약 (2-3문장)"
+}`;
+
+      const openaiResponse = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "당신은 20년 경력의 전문 애견 훈련사입니다. 강아지의 행동을 관찰하고 전문적으로 분석하여 맞춤형 교육 방향을 제시합니다."
+          },
+          {
+            role: "user",
+            content: behaviorAnalysisPrompt
+          }
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" }
+      });
+
+      const behaviorAnalysis = JSON.parse(openaiResponse.choices[0].message.content || '{}');
+
+      // Gemini로 추천 훈련 프로그램 생성
+      const trainingRecommendationPrompt = `다음은 강아지 행동 분석 결과입니다:
+
+훈련 수준: ${behaviorAnalysis.trainingLevel?.level || '중급'}
+전반적 점수: ${behaviorAnalysis.trainingLevel?.overallScore || 50}점
+성격 특성:
+- 활동성: ${behaviorAnalysis.personalityScores?.activeness || 5}/10
+- 사교성: ${behaviorAnalysis.personalityScores?.sociability || 5}/10
+- 순응성: ${behaviorAnalysis.personalityScores?.obedience || 5}/10
+- 불안 수준: ${behaviorAnalysis.personalityScores?.anxiety || 5}/10
+
+주요 행동: ${behaviorAnalysis.behaviorPatterns?.mainBehaviors?.join(', ') || '정보 없음'}
+
+이 강아지에게 최적화된 훈련 프로그램을 추천해주세요:
+
+JSON 형식으로 응답해주세요:
+{
+  "recommendedPrograms": [
+    {
+      "title": "프로그램명",
+      "duration": "기간",
+      "focus": "집중 항목",
+      "description": "설명"
+    }
+  ],
+  "priorityTraining": ["우선순위1", "우선순위2", "우선순위3"],
+  "tips": ["팁1", "팁2", "팁3"],
+  "expectedOutcome": "기대 효과"
+}`;
+
+      const trainingRecommendation = await fusedTrainingPlan({
+        petName: '분석 대상 강아지',
+        breed: '정보 없음',
+        age: 0,
+        personality: behaviorAnalysis.behaviorPatterns?.meaning || '분석 중',
+        trainingGoal: trainingRecommendationPrompt
+      });
+
+      // 종합 분석 결과 구성
+      const comprehensiveAnalysis = {
+        success: true,
+        behaviorAnalysis: {
+          patterns: behaviorAnalysis.behaviorPatterns,
+          summary: behaviorAnalysis.summary
+        },
+        personalityProfile: {
+          scores: behaviorAnalysis.personalityScores,
+          description: `이 강아지는 활동성 ${behaviorAnalysis.personalityScores?.activeness || 5}/10, 사교성 ${behaviorAnalysis.personalityScores?.sociability || 5}/10의 성향을 보입니다.`
+        },
+        trainingAssessment: {
+          level: behaviorAnalysis.trainingLevel?.level || '중급',
+          scores: {
+            commandResponse: behaviorAnalysis.trainingLevel?.commandResponse || 5,
+            focus: behaviorAnalysis.trainingLevel?.focus || 5,
+            learningAbility: behaviorAnalysis.trainingLevel?.learningAbility || 5
+          },
+          overallScore: behaviorAnalysis.trainingLevel?.overallScore || 50,
+          feedback: `전반적인 훈련 점수는 ${behaviorAnalysis.trainingLevel?.overallScore || 50}점으로, ${behaviorAnalysis.trainingLevel?.level || '중급'} 수준입니다.`
+        },
+        healthStatus: behaviorAnalysis.healthObservation,
+        recommendations: {
+          programs: trainingRecommendation.weeklyPlan?.slice(0, 3) || [],
+          priorities: [
+            behaviorAnalysis.behaviorPatterns?.mainBehaviors?.[0] || '기본 복종 훈련',
+            behaviorAnalysis.behaviorPatterns?.mainBehaviors?.[1] || '사회화 훈련',
+            '긍정 강화 훈련'
+          ],
+          tips: trainingRecommendation.tips || [
+            '일관된 명령어 사용',
+            '긍정적 보상 체계 구축',
+            '점진적 난이도 증가'
+          ]
+        },
+        modelInfo: {
+          behaviorAnalysis: 'GPT-4o',
+          trainingRecommendation: 'Multi-model (GPT-4o + Gemini)',
+          tokensUsed: openaiResponse.usage
+        }
+      };
+
+      console.log('[AI 비디오 분석] 분석 완료:', {
+        overallScore: comprehensiveAnalysis.trainingAssessment.overallScore,
+        level: comprehensiveAnalysis.trainingAssessment.level
+      });
+
+      res.json(comprehensiveAnalysis);
+
+    } catch (error) {
+      console.error('[AI 비디오 분석] 오류:', error);
+      res.status(500).json({ 
+        error: "AI 비디오 분석 중 오류가 발생했습니다.",
+        message: error instanceof Error ? error.message : '알 수 없는 오류'
+      });
+    }
+  });
+
   // AI 업체/훈련사 매칭 API
   app.post("/api/ai/match-institutes", async (req, res) => {
     try {
