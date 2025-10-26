@@ -245,10 +245,10 @@ export function Sidebar({
     return () => window.removeEventListener('resize', handleResize);
   }, [onToggleExpand]);
 
-  // 모든 메뉴 그룹이 기본적으로 닫힌 상태로 시작
+  // 메인 메뉴는 기본적으로 열린 상태, 나머지는 닫힌 상태로 시작
   const [menuGroups, setMenuGroups] = useState(() => {
     return {
-      main: false,        // 메인 메뉴
+      main: true,         // 메인 메뉴 - 기본 열림
       learning: false,    // 학습 메뉴
       management: false,  // 운영 관리 메뉴
       tools: false,       // 도구 메뉴
@@ -276,9 +276,9 @@ export function Sidebar({
 
     // 로그인 상태가 변경되면 메뉴 그룹 상태 업데이트
     setMenuGroups((prevGroups) => {
-      // 권한에 따른 값 업데이트 - 모든 메뉴 그룹은 닫힌 상태 유지
+      // 권한에 따른 값 업데이트 - 메인 메뉴는 항상 열린 상태 유지
       const updatedMenuGroups = {
-        main: false,
+        main: true,       // 메인 메뉴는 항상 열림
         learning: false,
         management: false,
         tools: false,
