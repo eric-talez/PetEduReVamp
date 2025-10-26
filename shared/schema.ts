@@ -553,6 +553,22 @@ export const eventLocations = pgTable("event_locations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 반려견 시설 테이블
+export const petFacilities = pgTable("pet_facilities", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // hospital, cafe, restaurant, park, grooming, hotel, training
+  latitude: text("latitude").notNull(),
+  longitude: text("longitude").notNull(),
+  address: text("address").notNull(),
+  city: varchar("city", { length: 100 }),
+  district: varchar("district", { length: 100 }),
+  phone: varchar("phone", { length: 20 }),
+  rating: decimal("rating", { precision: 3, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const eventAttendances = pgTable("event_attendances", {
   id: serial("id").primaryKey(),
   eventId: integer("event_id").references(() => events.id),

@@ -16,7 +16,7 @@ export interface Place {
   id: string;
   name: string;
   location: Location;
-  type: 'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel';
+  type: 'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel' | 'grooming' | 'restaurant';
   rating?: number;
   distance?: number;
   photo?: string;
@@ -181,16 +181,92 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
     setSearchError(null);
     
     try {
-      const response = await fetch(
-        `/api/locations/nearby?type=${type}&lat=${currentLocation.latitude}&lng=${currentLocation.longitude}&radius=${radius}`
-      );
-      
-      if (!response.ok) {
-        throw new Error('장소 검색 실패');
+      // 타입별 Pet Facilities API 필터 매핑
+      const petFacilityTypeMap: Record<string, string | null> = {
+        'clinic': 'hospital',
+        'cafe': 'cafe',
+        'park': 'park',
+        'pethotel': 'hotel',
+        'institute': 'training',
+        'grooming': 'grooming',
+        'restaurant': 'restaurant',
+        'shop': null, // shop은 Pet Facilities에 없음
+        'trainer': null, // trainer는 TALEZ 전용
+        'pension': null, // pension은 Pet Facilities에 없음
+      };
+
+      // 병렬로 두 API 호출
+      const [talezResponse, petFacilitiesResponse] = await Promise.all([
+        // TALEZ 데이터 (trainers, institutes)
+        fetch(
+          `/api/locations/nearby?type=${type}&lat=${currentLocation.latitude}&lng=${currentLocation.longitude}&radius=${radius}`
+        ).catch(() => null),
+        
+        // Pet Facilities 데이터
+        petFacilityTypeMap[type] 
+          ? fetch(`/api/pet-facilities?type=${petFacilityTypeMap[type]}`).catch(() => null)
+          : null
+      ]);
+
+      let allPlaces: Place[] = [];
+
+      // TALEZ 데이터 처리
+      if (talezResponse && talezResponse.ok) {
+        const talezPlaces = await talezResponse.json();
+        allPlaces = talezPlaces;
       }
-      
-      const places = await response.json();
-      setNearbyPlaces(places);
+
+      // Pet Facilities 데이터 처리 및 병합
+      if (petFacilitiesResponse && petFacilitiesResponse.ok) {
+        const petFacilitiesData = await petFacilitiesResponse.json();
+        
+        if (petFacilitiesData.success && Array.isArray(petFacilitiesData.facilities)) {
+          const petFacilityPlaces: Place[] = petFacilitiesData.facilities.map((facility: any) => {
+            // 거리 계산 (Haversine formula)
+            const R = 6371e3; // 지구 반지름 (미터)
+            const φ1 = currentLocation.latitude * Math.PI / 180;
+            const φ2 = parseFloat(facility.latitude) * Math.PI / 180;
+            const Δφ = (parseFloat(facility.latitude) - currentLocation.latitude) * Math.PI / 180;
+            const Δλ = (parseFloat(facility.longitude) - currentLocation.longitude) * Math.PI / 180;
+            
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+
+            return {
+              id: `pet-facility-${facility.id}`,
+              name: facility.name,
+              location: {
+                latitude: parseFloat(facility.latitude),
+                longitude: parseFloat(facility.longitude),
+                address: facility.address
+              },
+              type: type,
+              rating: facility.rating ? parseFloat(facility.rating) : undefined,
+              distance: Math.round(distance),
+              contact: facility.phone,
+              description: facility.district ? `${facility.city} ${facility.district}` : facility.city,
+              isCertified: false,
+              petFriendlyLevel: 'high' as const,
+              features: []
+            };
+          });
+
+          // 반경 내의 시설만 필터링
+          const nearbyPetFacilities = petFacilityPlaces.filter(place => 
+            place.distance && place.distance <= radius
+          );
+
+          allPlaces = [...allPlaces, ...nearbyPetFacilities];
+        }
+      }
+
+      // 거리순 정렬
+      allPlaces.sort((a, b) => (a.distance || 999999) - (b.distance || 999999));
+
+      setNearbyPlaces(allPlaces);
       setIsSearching(false);
     } catch (error) {
       console.error('주변 장소 검색 실패:', error);

@@ -299,8 +299,8 @@ function NearbyPlaces() {
   useEffect(() => {
     if (currentLocation && activeTab !== 'event') {
       // 유효한 Place 타입만 검색
-      const validPlaceTypes: Array<'trainer' | 'institute' | 'clinic' | 'shop' | 'cafe' | 'pension' | 'park'> = 
-        ['trainer', 'institute', 'clinic', 'shop', 'cafe', 'pension', 'park'];
+      const validPlaceTypes: Array<'trainer' | 'institute' | 'clinic' | 'shop' | 'cafe' | 'pension' | 'park' | 'grooming' | 'restaurant' | 'pethotel'> = 
+        ['trainer', 'institute', 'clinic', 'shop', 'cafe', 'pension', 'park', 'grooming', 'restaurant', 'pethotel'];
       
       if (validPlaceTypes.includes(activeTab as any)) {
         searchNearbyPlaces(activeTab as any);
@@ -340,8 +340,11 @@ function NearbyPlaces() {
             <TabsTrigger value="trainer" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">훈련사</TabsTrigger>
             <TabsTrigger value="institute" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">훈련소</TabsTrigger>
             <TabsTrigger value="clinic" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">동물병원</TabsTrigger>
+            <TabsTrigger value="grooming" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">미용실</TabsTrigger>
             <TabsTrigger value="shop" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">용품점</TabsTrigger>
             <TabsTrigger value="cafe" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">강아지카페</TabsTrigger>
+            <TabsTrigger value="restaurant" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">애견식당</TabsTrigger>
+            <TabsTrigger value="pethotel" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">애견호텔</TabsTrigger>
             <TabsTrigger value="pension" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">펜션</TabsTrigger>
             <TabsTrigger value="park" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">공원</TabsTrigger>
             <TabsTrigger value="event" className="text-sm whitespace-nowrap px-3 py-2 flex-shrink-0">축제</TabsTrigger>
@@ -514,6 +517,87 @@ function NearbyPlaces() {
             <div className="space-y-4">
               <div className="text-sm text-muted-foreground">
                 주변 반려동물 공원을 찾아보세요. 반려견이 자유롭게 뛰어놀 수 있는 공간입니다.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="grooming" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 반려동물 미용실을 찾아보세요. 전문적인 그루밍 서비스를 제공합니다.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="restaurant" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 애견 동반 식당을 찾아보세요. 반려견과 함께 식사할 수 있는 곳입니다.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 32rem)' }}>
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="pethotel" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 애견 호텔을 찾아보세요. 반려견을 안전하게 맡길 수 있는 곳입니다.
               </div>
               {isSearching ? (
                 <div className="py-8 flex justify-center">
@@ -1416,8 +1500,11 @@ function getTypeLabel(type: string): string {
     case 'institute': return '훈련소';
     case 'trainer': return '훈련사';
     case 'clinic': return '동물병원';
+    case 'grooming': return '미용실';
     case 'shop': return '용품점';
     case 'cafe': return '강아지 카페';
+    case 'restaurant': return '애견식당';
+    case 'pethotel': return '애견호텔';
     case 'pension': return '애견 펜션';
     case 'park': return '반려동물 공원';
     case 'event': return '축제/이벤트';

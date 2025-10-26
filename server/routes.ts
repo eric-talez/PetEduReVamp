@@ -14806,6 +14806,65 @@ export function registerTrainerCertificationRoutes(app: Express) {
   console.log('  - GET /api/toss/payment/:paymentKey (결제 조회)');
   console.log('  - POST /api/toss/cancel (결제 취소)');
 
+  // =============================================================================
+  // 반려견 시설 API (Pet Facilities)
+  // =============================================================================
+  
+  /**
+   * GET /api/pet-facilities - 반려견 시설 목록 조회
+   * 
+   * Query Parameters:
+   * - type: 시설 타입 (hospital, cafe, restaurant, park, grooming, hotel, training)
+   * - city: 도시명
+   * - district: 구/군
+   */
+  app.get('/api/pet-facilities', async (req, res) => {
+    try {
+      const { type, city, district } = req.query;
+      
+      const { petFacilities } = await import('../shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+
+      let query = db.select().from(petFacilities);
+      
+      const conditions = [];
+      
+      if (type && typeof type === 'string') {
+        conditions.push(eq(petFacilities.type, type));
+      }
+      
+      if (city && typeof city === 'string') {
+        conditions.push(eq(petFacilities.city, city));
+      }
+      
+      if (district && typeof district === 'string') {
+        conditions.push(eq(petFacilities.district, district));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      const facilities = await query;
+
+      res.json({
+        success: true,
+        facilities,
+        count: facilities.length
+      });
+    } catch (error: any) {
+      console.error('[Pet Facilities] 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '시설 정보를 조회할 수 없습니다.',
+        error: error.message
+      });
+    }
+  });
+
+  console.log('[Pet Facilities] 반려견 시설 API 엔드포인트가 등록되었습니다.');
+  console.log('  - GET /api/pet-facilities (시설 목록 조회)');
+
   // Database test routes
   import('./routes/database-test').then(({ databaseTestRoutes }) => {
     app.use('/api/test', databaseTestRoutes);

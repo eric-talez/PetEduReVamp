@@ -1,0 +1,819 @@
+{
+  "metadata": {
+    "title": "전국 반려견 시설 정보",
+    "description": "동물병원, 애견카페, 애견식당, 애견놀이터, 미용실, 애견호텔, 훈련소 정보",
+    "total_count": 50,
+    "last_updated": "2025-01-26"
+  },
+  "categories": {
+    "hospital": "동물병원",
+    "cafe": "애견카페",
+    "restaurant": "애견식당",
+    "park": "애견놀이터",
+    "grooming": "미용실",
+    "hotel": "애견호텔",
+    "training": "훈련소"
+  },
+  "facilities": [
+    {
+      "id": 1,
+      "name": "서울 중앙동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 37.5665,
+        "lng": 126.9780,
+        "address": "서울시 중구 세종대로 110",
+        "city": "서울",
+        "district": "중구"
+      },
+      "contact": {
+        "phone": "02-1234-5678"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 2,
+      "name": "강남 애견카페 멍멍",
+      "type": "cafe",
+      "location": {
+        "lat": 37.4979,
+        "lng": 127.0276,
+        "address": "서울시 강남구 강남대로 123",
+        "city": "서울",
+        "district": "강남구"
+      },
+      "contact": {
+        "phone": "02-2345-6789"
+      },
+      "rating": 4.7
+    },
+    {
+      "id": 3,
+      "name": "홍대 펫프렌즈 식당",
+      "type": "restaurant",
+      "location": {
+        "lat": 37.5563,
+        "lng": 126.9245,
+        "address": "서울시 마포구 홍익로 94",
+        "city": "서울",
+        "district": "마포구"
+      },
+      "contact": {
+        "phone": "02-3456-7890"
+      },
+      "rating": 4.3
+    },
+    {
+      "id": 4,
+      "name": "한강 애견놀이터",
+      "type": "park",
+      "location": {
+        "lat": 37.5219,
+        "lng": 127.0411,
+        "address": "서울시 강남구 압구정로 123",
+        "city": "서울",
+        "district": "강남구"
+      },
+      "contact": {
+        "phone": "02-4567-8901"
+      },
+      "rating": 4.8
+    },
+    {
+      "id": 5,
+      "name": "신사동 강아지미용실",
+      "type": "grooming",
+      "location": {
+        "lat": 37.5240,
+        "lng": 127.0202,
+        "address": "서울시 강남구 논현로 456",
+        "city": "서울",
+        "district": "강남구"
+      },
+      "contact": {
+        "phone": "02-5678-9012"
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 6,
+      "name": "이태원 반려동물클리닉",
+      "type": "hospital",
+      "location": {
+        "lat": 37.5346,
+        "lng": 126.9946,
+        "address": "서울시 용산구 이태원로 123",
+        "city": "서울",
+        "district": "용산구"
+      },
+      "contact": {
+        "phone": "02-6789-0123"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 7,
+      "name": "잠실 애견카페 도그파크",
+      "type": "cafe",
+      "location": {
+        "lat": 37.5133,
+        "lng": 127.1028,
+        "address": "서울시 송파구 올림픽로 240",
+        "city": "서울",
+        "district": "송파구"
+      },
+      "contact": {
+        "phone": "02-7890-1234"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 8,
+      "name": "해운대 동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 35.1631,
+        "lng": 129.1639,
+        "address": "부산시 해운대구 해운대해변로 264",
+        "city": "부산",
+        "district": "해운대구"
+      },
+      "contact": {
+        "phone": "051-1234-5678"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 9,
+      "name": "광안리 애견카페 바다",
+      "type": "cafe",
+      "location": {
+        "lat": 35.1532,
+        "lng": 129.1184,
+        "address": "부산시 수영구 광안해변로 200",
+        "city": "부산",
+        "district": "수영구"
+      },
+      "contact": {
+        "phone": "051-2345-6789"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 10,
+      "name": "센텀 애견호텔",
+      "type": "hotel",
+      "location": {
+        "lat": 35.1689,
+        "lng": 129.1311,
+        "address": "부산시 해운대구 센텀중앙로 78",
+        "city": "부산",
+        "district": "해운대구"
+      },
+      "contact": {
+        "phone": "051-3456-7890"
+      },
+      "rating": 4.7
+    },
+    {
+      "id": 11,
+      "name": "서면 반려동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 35.1580,
+        "lng": 129.0595,
+        "address": "부산시 부산진구 중앙대로 123",
+        "city": "부산",
+        "district": "부산진구"
+      },
+      "contact": {
+        "phone": "051-4567-8901"
+      },
+      "rating": 4.3
+    },
+    {
+      "id": 12,
+      "name": "송도 반려동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 37.3894,
+        "lng": 126.6506,
+        "address": "인천시 연수구 센트럴로 123",
+        "city": "인천",
+        "district": "연수구"
+      },
+      "contact": {
+        "phone": "032-1234-5678"
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 13,
+      "name": "월미도 애견놀이터",
+      "type": "park",
+      "location": {
+        "lat": 37.4769,
+        "lng": 126.5933,
+        "address": "인천시 중구 월미문화로 36",
+        "city": "인천",
+        "district": "중구"
+      },
+      "contact": {
+        "phone": "032-2345-6789"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 14,
+      "name": "부평 애견카페",
+      "type": "cafe",
+      "location": {
+        "lat": 37.5070,
+        "lng": 126.7225,
+        "address": "인천시 부평구 부평대로 123",
+        "city": "인천",
+        "district": "부평구"
+      },
+      "contact": {
+        "phone": "032-3456-7890"
+      },
+      "rating": 4.2
+    },
+    {
+      "id": 15,
+      "name": "동성로 동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 35.8686,
+        "lng": 128.5936,
+        "address": "대구시 중구 동성로2가 123",
+        "city": "대구",
+        "district": "중구"
+      },
+      "contact": {
+        "phone": "053-1234-5678"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 16,
+      "name": "수성못 애견카페",
+      "type": "cafe",
+      "location": {
+        "lat": 35.8254,
+        "lng": 128.6301,
+        "address": "대구시 수성구 두산동 123",
+        "city": "대구",
+        "district": "수성구"
+      },
+      "contact": {
+        "phone": "053-2345-6789"
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 17,
+      "name": "범어 애견미용실",
+      "type": "grooming",
+      "location": {
+        "lat": 35.8589,
+        "lng": 128.6311,
+        "address": "대구시 수성구 범어동 456",
+        "city": "대구",
+        "district": "수성구"
+      },
+      "contact": {
+        "phone": "053-3456-7890"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 18,
+      "name": "둔산동 반려동물클리닉",
+      "type": "hospital",
+      "location": {
+        "lat": 36.3504,
+        "lng": 127.3845,
+        "address": "대전시 서구 둔산로 123",
+        "city": "대전",
+        "district": "서구"
+      },
+      "contact": {
+        "phone": "042-1234-5678"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 19,
+      "name": "유성 애견훈련소",
+      "type": "training",
+      "location": {
+        "lat": 36.3621,
+        "lng": 127.3560,
+        "address": "대전시 유성구 봉명동 456",
+        "city": "대전",
+        "district": "유성구"
+      },
+      "contact": {
+        "phone": "042-2345-6789"
+      },
+      "rating": 4.7
+    },
+    {
+      "id": 20,
+      "name": "은행동 애견카페",
+      "type": "cafe",
+      "location": {
+        "lat": 36.3277,
+        "lng": 127.4253,
+        "address": "대전시 중구 은행동 789",
+        "city": "대전",
+        "district": "중구"
+      },
+      "contact": {
+        "phone": "042-3456-7890"
+      },
+      "rating": 4.3
+    },
+    {
+      "id": 21,
+      "name": "상무지구 동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 35.1520,
+        "lng": 126.8897,
+        "address": "광주시 서구 상무중앙로 123",
+        "city": "광주",
+        "district": "서구"
+      },
+      "contact": {
+        "phone": "062-1234-5678"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 22,
+      "name": "첨단 애견미용실",
+      "type": "grooming",
+      "location": {
+        "lat": 35.2260,
+        "lng": 126.8443,
+        "address": "광주시 광산구 첨단중앙로 123",
+        "city": "광주",
+        "district": "광산구"
+      },
+      "contact": {
+        "phone": "062-2345-6789"
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 23,
+      "name": "충장로 애견식당",
+      "type": "restaurant",
+      "location": {
+        "lat": 35.1471,
+        "lng": 126.9178,
+        "address": "광주시 동구 충장로 456",
+        "city": "광주",
+        "district": "동구"
+      },
+      "contact": {
+        "phone": "062-3456-7890"
+      },
+      "rating": 4.2
+    },
+    {
+      "id": 24,
+      "name": "울산 중앙동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 35.5384,
+        "lng": 129.3114,
+        "address": "울산시 남구 삼산로 123",
+        "city": "울산",
+        "district": "남구"
+      },
+      "contact": {
+        "phone": "052-1234-5678"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 25,
+      "name": "태화강 애견놀이터",
+      "type": "park",
+      "location": {
+        "lat": 35.5461,
+        "lng": 129.3322,
+        "address": "울산시 중구 태화동 456",
+        "city": "울산",
+        "district": "중구"
+      },
+      "contact": {
+        "phone": "052-2345-6789"
+      },
+      "rating": 4.7
+    },
+    {
+      "id": 26,
+      "name": "수원 화성 애견카페",
+      "type": "cafe",
+      "location": {
+        "lat": 37.2636,
+        "lng": 127.0286,
+        "address": "경기도 수원시 팔달구 정조로 123",
+        "city": "수원",
+        "district": "팔달구"
+      },
+      "contact": {
+        "phone": "031-1234-5678"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 27,
+      "name": "성남 판교 동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 37.3949,
+        "lng": 127.1107,
+        "address": "경기도 성남시 분당구 판교역로 123",
+        "city": "성남",
+        "district": "분당구"
+      },
+      "contact": {
+        "phone": "031-2345-6789"
+      },
+      "rating": 4.7
+    },
+    {
+      "id": 28,
+      "name": "용인 애견놀이터",
+      "type": "park",
+      "location": {
+        "lat": 37.2410,
+        "lng": 127.1775,
+        "address": "경기도 용인시 기흥구 용구대로 123",
+        "city": "용인",
+        "district": "기흥구"
+      },
+      "contact": {
+        "phone": "031-3456-7890"
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 29,
+      "name": "일산 호수공원 애견놀이터",
+      "type": "park",
+      "location": {
+        "lat": 37.6688,
+        "lng": 126.7606,
+        "address": "경기도 고양시 일산동구 호수로 595",
+        "city": "고양",
+        "district": "일산동구"
+      },
+      "contact": {
+        "phone": "031-4567-8901"
+      },
+      "rating": 4.7
+    },
+    {
+      "id": 30,
+      "name": "평택 반려동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 36.9922,
+        "lng": 127.1125,
+        "address": "경기도 평택시 평택로 123",
+        "city": "평택",
+        "district": "평택시"
+      },
+      "contact": {
+        "phone": "031-5678-9012"
+      },
+      "rating": 4.3
+    },
+    {
+      "id": 31,
+      "name": "부천 애견호텔",
+      "type": "hotel",
+      "location": {
+        "lat": 37.5034,
+        "lng": 126.7660,
+        "address": "경기도 부천시 부천로 456",
+        "city": "부천",
+        "district": "부천시"
+      },
+      "contact": {
+        "phone": "032-6789-0123"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 32,
+      "name": "안양 애견미용실",
+      "type": "grooming",
+      "location": {
+        "lat": 37.3943,
+        "lng": 126.9568,
+        "address": "경기도 안양시 만안구 안양로 789",
+        "city": "안양",
+        "district": "만안구"
+      },
+      "contact": {
+        "phone": "031-7890-1234"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 33,
+      "name": "춘천 애견카페 숲속",
+      "type": "cafe",
+      "location": {
+        "lat": 37.8813,
+        "lng": 127.7298,
+        "address": "강원도 춘천시 춘천로 123",
+        "city": "춘천",
+        "district": "춘천시"
+      },
+      "contact": {
+        "phone": "033-1234-5678"
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 34,
+      "name": "강릉 바다 애견식당",
+      "type": "restaurant",
+      "location": {
+        "lat": 37.7519,
+        "lng": 128.8761,
+        "address": "강원도 강릉시 창해로 123",
+        "city": "강릉",
+        "district": "강릉시"
+      },
+      "contact": {
+        "phone": "033-2345-6789"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 35,
+      "name": "속초 반려동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 38.2070,
+        "lng": 128.5918,
+        "address": "강원도 속초시 중앙로 456",
+        "city": "속초",
+        "district": "속초시"
+      },
+      "contact": {
+        "phone": "033-3456-7890"
+      },
+      "rating": 4.3
+    },
+    {
+      "id": 36,
+      "name": "청주 상당 동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 36.6356,
+        "lng": 127.4913,
+        "address": "충북 청주시 상당구 상당로 123",
+        "city": "청주",
+        "district": "상당구"
+      },
+      "contact": {
+        "phone": "043-1234-5678"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 37,
+      "name": "천안 애견호텔 펫파라다이스",
+      "type": "hotel",
+      "location": {
+        "lat": 36.8151,
+        "lng": 127.1139,
+        "address": "충남 천안시 동남구 천안대로 456",
+        "city": "천안",
+        "district": "동남구"
+      },
+      "contact": {
+        "phone": "041-1234-5678"
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 38,
+      "name": "충주 애견놀이터",
+      "type": "park",
+      "location": {
+        "lat": 37.0079,
+        "lng": 127.9258,
+        "address": "충북 충주시 중앙탑면 탑평리",
+        "city": "충주",
+        "district": "중앙탑면"
+      },
+      "contact": {
+        "phone": "043-2345-6789"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 39,
+      "name": "전주 한옥마을 애견카페",
+      "type": "cafe",
+      "location": {
+        "lat": 35.8142,
+        "lng": 127.1530,
+        "address": "전북 전주시 완산구 태조로 123",
+        "city": "전주",
+        "district": "완산구"
+      },
+      "contact": {
+        "phone": "063-1234-5678"
+      },
+      "rating": 4.8
+    },
+    {
+      "id": 40,
+      "name": "여수 해안 애견놀이터",
+      "type": "park",
+      "location": {
+        "lat": 34.7604,
+        "lng": 127.6622,
+        "address": "전남 여수시 돌산읍 돌산로 123",
+        "city": "여수",
+        "district": "돌산읍"
+      },
+      "contact": {
+        "phone": "061-1234-5678"
+      },
+      "rating": 4.7
+    },
+    {
+      "id": 41,
+      "name": "목포 반려동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 34.8118,
+        "lng": 126.3922,
+        "address": "전남 목포시 평화로 456",
+        "city": "목포",
+        "district": "목포시"
+      },
+      "contact": {
+        "phone": "061-2345-6789"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 42,
+      "name": "군산 애견미용실",
+      "type": "grooming",
+      "location": {
+        "lat": 35.9676,
+        "lng": 126.7369,
+        "address": "전북 군산시 해망로 789",
+        "city": "군산",
+        "district": "군산시"
+      },
+      "contact": {
+        "phone": "063-2345-6789"
+      },
+      "rating": 4.3
+    },
+    {
+      "id": 43,
+      "name": "포항 동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 36.0190,
+        "lng": 129.3435,
+        "address": "경북 포항시 북구 중앙로 123",
+        "city": "포항",
+        "district": "북구"
+      },
+      "contact": {
+        "phone": "054-1234-5678"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 44,
+      "name": "창원 반려동물미용실",
+      "type": "grooming",
+      "location": {
+        "lat": 35.2280,
+        "lng": 128.6811,
+        "address": "경남 창원시 의창구 중앙대로 123",
+        "city": "창원",
+        "district": "의창구"
+      },
+      "contact": {
+        "phone": "055-1234-5678"
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 45,
+      "name": "진주 애견카페",
+      "type": "cafe",
+      "location": {
+        "lat": 35.1798,
+        "lng": 128.1076,
+        "address": "경남 진주시 진주대로 456",
+        "city": "진주",
+        "district": "진주시"
+      },
+      "contact": {
+        "phone": "055-2345-6789"
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 46,
+      "name": "안동 반려동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 36.5684,
+        "lng": 128.7294,
+        "address": "경북 안동시 경동로 789",
+        "city": "안동",
+        "district": "안동시"
+      },
+      "contact": {
+        "phone": "054-2345-6789"
+      },
+      "rating": 4.3
+    },
+    {
+      "id": 47,
+      "name": "제주시 애견카페 오션뷰",
+      "type": "cafe",
+      "location": {
+        "lat": 33.4996,
+        "lng": 126.5312,
+        "address": "제주시 제주도 노형동 123",
+        "city": "제주",
+        "district": "제주시"
+      },
+      "contact": {
+        "phone": "064-1234-5678"
+      },
+      "rating": 4.9
+    },
+    {
+      "id": 48,
+      "name": "서귀포 애견놀이터",
+      "type": "park",
+      "location": {
+        "lat": 33.2541,
+        "lng": 126.5601,
+        "address": "제주 서귀포시 중앙로 123",
+        "city": "서귀포",
+        "district": "서귀포시"
+      },
+      "contact": {
+        "phone": "064-2345-6789"
+      },
+      "rating": 4.8
+    },
+    {
+      "id": 49,
+      "name": "제주 중문 반려동물병원",
+      "type": "hospital",
+      "location": {
+        "lat": 33.2541,
+        "lng": 126.4122,
+        "address": "제주 서귀포시 중문관광로 456",
+        "city": "서귀포",
+        "district": "서귀포시"
+      },
+      "contact": {
+        "phone": "064-3456-7890"
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 50,
+      "name": "애월 애견호텔",
+      "type": "hotel",
+      "location": {
+        "lat": 33.4615,
+        "lng": 126.3194,
+        "address": "제주시 애월읍 애월로 789",
+        "city": "제주",
+        "district": "애월읍"
+      },
+      "contact": {
+        "phone": "064-4567-8901"
+      },
+      "rating": 4.7
+    }
+  ]
+}

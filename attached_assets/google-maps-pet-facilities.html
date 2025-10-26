@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>반려견 시설 지도 - Google Maps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .sidebar {
+            width: 360px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .api-notice {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 16px;
+            margin: 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .api-notice strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #856404;
+        }
+        
+        .api-input-section {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .api-input-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .api-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .api-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        
+        .api-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .load-map-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .load-map-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .load-map-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .search-box {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .filters {
+            padding: 16px;
+        }
+        
+        .filter-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .stats {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .facilities-list {
+            padding: 16px;
+        }
+        
+        .facility-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .facility-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .facility-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .facility-type {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .facility-address {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .facility-phone {
+            font-size: 13px;
+            color: #667eea;
+        }
+        
+        .facility-rating {
+            font-size: 13px;
+            color: #ff9800;
+            margin-top: 4px;
+        }
+        
+        #map {
+            flex: 1;
+            height: 100vh;
+        }
+        
+        .info-window {
+            padding: 8px 0;
+        }
+        
+        .info-window-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .info-window-type {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .info-window-info {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 50vh;
+            }
+            
+            #map {
+                height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <h1>🐕 반려견 시설 찾기</h1>
+                <p>Google Maps 기반 전국 반려견 시설 정보</p>
+            </div>
+            
+            <div class="api-notice">
+                <strong>📌 API 키 발급 안내</strong>
+                Google Maps를 사용하려면 API 키가 필요합니다.<br>
+                <a href="https://console.cloud.google.com/google/maps-apis" target="_blank" style="color: #667eea;">Google Cloud Console</a>에서 무료로 발급받으세요.
+            </div>
+            
+            <div class="api-input-section">
+                <div class="api-input-label">Google Maps API 키</div>
+                <div class="api-input-wrapper">
+                    <input type="text" class="api-input" id="apiKeyInput" placeholder="여기에 API 키를 입력하세요">
+                    <button class="load-map-btn" onclick="loadGoogleMaps()">지도 로드</button>
+                </div>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="지역, 시설명으로 검색..." disabled>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-title">카테고리</div>
+                <div class="filter-buttons" id="filterButtons">
+                    <button class="filter-btn active" data-type="all">전체</button>
+                    <button class="filter-btn" data-type="hospital">동물병원</button>
+                    <button class="filter-btn" data-type="cafe">애견카페</button>
+                    <button class="filter-btn" data-type="restaurant">애견식당</button>
+                    <button class="filter-btn" data-type="park">애견놀이터</button>
+                    <button class="filter-btn" data-type="grooming">미용실</button>
+                    <button class="filter-btn" data-type="hotel">애견호텔</button>
+                    <button class="filter-btn" data-type="training">훈련소</button>
+                </div>
+            </div>
+            
+            <div class="stats" id="stats">지도를 로드하려면 API 키를 입력하세요</div>
+            
+            <div class="facilities-list" id="facilitiesList">
+                <div style="padding: 40px 24px; text-align: center; color: #999;">
+                    Google Maps API 키를 입력하고<br>지도 로드 버튼을 클릭하세요
+                </div>
+            </div>
+        </div>
+        
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // 전국 반려견 시설 데이터
+        const facilities = [
+            // 서울
+            { id: 1, name: "서울 중앙동물병원", type: "hospital", lat: 37.5665, lng: 126.9780, address: "서울시 중구 세종대로 110", phone: "02-1234-5678", rating: 4.5 },
+            { id: 2, name: "강남 애견카페 멍멍", type: "cafe", lat: 37.4979, lng: 127.0276, address: "서울시 강남구 강남대로 123", phone: "02-2345-6789", rating: 4.7 },
+            { id: 3, name: "홍대 펫프렌즈 식당", type: "restaurant", lat: 37.5563, lng: 126.9245, address: "서울시 마포구 홍익로 94", phone: "02-3456-7890", rating: 4.3 },
+            { id: 4, name: "한강 애견놀이터", type: "park", lat: 37.5219, lng: 127.0411, address: "서울시 강남구 압구정로 123", phone: "02-4567-8901", rating: 4.8 },
+            { id: 5, name: "신사동 강아지미용실", type: "grooming", lat: 37.5240, lng: 127.0202, address: "서울시 강남구 논현로 456", phone: "02-5678-9012", rating: 4.6 },
+            { id: 6, name: "이태원 반려동물클리닉", type: "hospital", lat: 37.5346, lng: 126.9946, address: "서울시 용산구 이태원로 123", phone: "02-6789-0123", rating: 4.4 },
+            { id: 7, name: "잠실 애견카페 도그파크", type: "cafe", lat: 37.5133, lng: 127.1028, address: "서울시 송파구 올림픽로 240", phone: "02-7890-1234", rating: 4.5 },
+            
+            // 부산
+            { id: 8, name: "해운대 동물병원", type: "hospital", lat: 35.1631, lng: 129.1639, address: "부산시 해운대구 해운대해변로 264", phone: "051-1234-5678", rating: 4.4 },
+            { id: 9, name: "광안리 애견카페 바다", type: "cafe", lat: 35.1532, lng: 129.1184, address: "부산시 수영구 광안해변로 200", phone: "051-2345-6789", rating: 4.5 },
+            { id: 10, name: "센텀 애견호텔", type: "hotel", lat: 35.1689, lng: 129.1311, address: "부산시 해운대구 센텀중앙로 78", phone: "051-3456-7890", rating: 4.7 },
+            { id: 11, name: "서면 반려동물병원", type: "hospital", lat: 35.1580, lng: 129.0595, address: "부산시 부산진구 중앙대로 123", phone: "051-4567-8901", rating: 4.3 },
+            
+            // 인천
+            { id: 12, name: "송도 반려동물병원", type: "hospital", lat: 37.3894, lng: 126.6506, address: "인천시 연수구 센트럴로 123", phone: "032-1234-5678", rating: 4.6 },
+            { id: 13, name: "월미도 애견놀이터", type: "park", lat: 37.4769, lng: 126.5933, address: "인천시 중구 월미문화로 36", phone: "032-2345-6789", rating: 4.4 },
+            { id: 14, name: "부평 애견카페", type: "cafe", lat: 37.5070, lng: 126.7225, address: "인천시 부평구 부평대로 123", phone: "032-3456-7890", rating: 4.2 },
+            
+            // 대구
+            { id: 15, name: "동성로 동물병원", type: "hospital", lat: 35.8686, lng: 128.5936, address: "대구시 중구 동성로2가 123", phone: "053-1234-5678", rating: 4.5 },
+            { id: 16, name: "수성못 애견카페", type: "cafe", lat: 35.8254, lng: 128.6301, address: "대구시 수성구 두산동 123", phone: "053-2345-6789", rating: 4.6 },
+            { id: 17, name: "범어 애견미용실", type: "grooming", lat: 35.8589, lng: 128.6311, address: "대구시 수성구 범어동 456", phone: "053-3456-7890", rating: 4.4 },
+            
+            // 대전
+            { id: 18, name: "둔산동 반려동물클리닉", type: "hospital", lat: 36.3504, lng: 127.3845, address: "대전시 서구 둔산로 123", phone: "042-1234-5678", rating: 4.4 },
+            { id: 19, name: "유성 애견훈련소", type: "training", lat: 36.3621, lng: 127.3560, address: "대전시 유성구 봉명동 456", phone: "042-2345-6789", rating: 4.7 },
+            { id: 20, name: "은행동 애견카페", type: "cafe", lat: 36.3277, lng: 127.4253, address: "대전시 중구 은행동 789", phone: "042-3456-7890", rating: 4.3 },
+            
+            // 광주
+            { id: 21, name: "상무지구 동물병원", type: "hospital", lat: 35.1520, lng: 126.8897, address: "광주시 서구 상무중앙로 123", phone: "062-1234-5678", rating: 4.5 },
+            { id: 22, name: "첨단 애견미용실", type: "grooming", lat: 35.2260, lng: 126.8443, address: "광주시 광산구 첨단중앙로 123", phone: "062-2345-6789", rating: 4.6 },
+            { id: 23, name: "충장로 애견식당", type: "restaurant", lat: 35.1471, lng: 126.9178, address: "광주시 동구 충장로 456", phone: "062-3456-7890", rating: 4.2 },
+            
+            // 울산
+            { id: 24, name: "울산 중앙동물병원", type: "hospital", lat: 35.5384, lng: 129.3114, address: "울산시 남구 삼산로 123", phone: "052-1234-5678", rating: 4.4 },
+            { id: 25, name: "태화강 애견놀이터", type: "park", lat: 35.5461, lng: 129.3322, address: "울산시 중구 태화동 456", phone: "052-2345-6789", rating: 4.7 },
+            
+            // 경기도
+            { id: 26, name: "수원 화성 애견카페", type: "cafe", lat: 37.2636, lng: 127.0286, address: "경기도 수원시 팔달구 정조로 123", phone: "031-1234-5678", rating: 4.5 },
+            { id: 27, name: "성남 판교 동물병원", type: "hospital", lat: 37.3949, lng: 127.1107, address: "경기도 성남시 분당구 판교역로 123", phone: "031-2345-6789", rating: 4.7 },
+            { id: 28, name: "용인 애견놀이터", type: "park", lat: 37.2410, lng: 127.1775, address: "경기도 용인시 기흥구 용구대로 123", phone: "031-3456-7890", rating: 4.6 },
+            { id: 29, name: "일산 호수공원 애견놀이터", type: "park", lat: 37.6688, lng: 126.7606, address: "경기도 고양시 일산동구 호수로 595", phone: "031-4567-8901", rating: 4.7 },
+            { id: 30, name: "평택 반려동물병원", type: "hospital", lat: 36.9922, lng: 127.1125, address: "경기도 평택시 평택로 123", phone: "031-5678-9012", rating: 4.3 },
+            { id: 31, name: "부천 애견호텔", type: "hotel", lat: 37.5034, lng: 126.7660, address: "경기도 부천시 부천로 456", phone: "032-6789-0123", rating: 4.5 },
+            { id: 32, name: "안양 애견미용실", type: "grooming", lat: 37.3943, lng: 126.9568, address: "경기도 안양시 만안구 안양로 789", phone: "031-7890-1234", rating: 4.4 },
+            
+            // 강원도
+            { id: 33, name: "춘천 애견카페 숲속", type: "cafe", lat: 37.8813, lng: 127.7298, address: "강원도 춘천시 춘천로 123", phone: "033-1234-5678", rating: 4.6 },
+            { id: 34, name: "강릉 바다 애견식당", type: "restaurant", lat: 37.7519, lng: 128.8761, address: "강원도 강릉시 창해로 123", phone: "033-2345-6789", rating: 4.5 },
+            { id: 35, name: "속초 반려동물병원", type: "hospital", lat: 38.2070, lng: 128.5918, address: "강원도 속초시 중앙로 456", phone: "033-3456-7890", rating: 4.3 },
+            
+            // 충청도
+            { id: 36, name: "청주 상당 동물병원", type: "hospital", lat: 36.6356, lng: 127.4913, address: "충북 청주시 상당구 상당로 123", phone: "043-1234-5678", rating: 4.4 },
+            { id: 37, name: "천안 애견호텔 펫파라다이스", type: "hotel", lat: 36.8151, lng: 127.1139, address: "충남 천안시 동남구 천안대로 456", phone: "041-1234-5678", rating: 4.6 },
+            { id: 38, name: "충주 애견놀이터", type: "park", lat: 37.0079, lng: 127.9258, address: "충북 충주시 중앙탑면 탑평리", phone: "043-2345-6789", rating: 4.5 },
+            
+            // 전라도
+            { id: 39, name: "전주 한옥마을 애견카페", type: "cafe", lat: 35.8142, lng: 127.1530, address: "전북 전주시 완산구 태조로 123", phone: "063-1234-5678", rating: 4.8 },
+            { id: 40, name: "여수 해안 애견놀이터", type: "park", lat: 34.7604, lng: 127.6622, address: "전남 여수시 돌산읍 돌산로 123", phone: "061-1234-5678", rating: 4.7 },
+            { id: 41, name: "목포 반려동물병원", type: "hospital", lat: 34.8118, lng: 126.3922, address: "전남 목포시 평화로 456", phone: "061-2345-6789", rating: 4.4 },
+            { id: 42, name: "군산 애견미용실", type: "grooming", lat: 35.9676, lng: 126.7369, address: "전북 군산시 해망로 789", phone: "063-2345-6789", rating: 4.3 },
+            
+            // 경상도
+            { id: 43, name: "포항 동물병원", type: "hospital", lat: 36.0190, lng: 129.3435, address: "경북 포항시 북구 중앙로 123", phone: "054-1234-5678", rating: 4.5 },
+            { id: 44, name: "창원 반려동물미용실", type: "grooming", lat: 35.2280, lng: 128.6811, address: "경남 창원시 의창구 중앙대로 123", phone: "055-1234-5678", rating: 4.4 },
+            { id: 45, name: "진주 애견카페", type: "cafe", lat: 35.1798, lng: 128.1076, address: "경남 진주시 진주대로 456", phone: "055-2345-6789", rating: 4.5 },
+            { id: 46, name: "안동 반려동물병원", type: "hospital", lat: 36.5684, lng: 128.7294, address: "경북 안동시 경동로 789", phone: "054-2345-6789", rating: 4.3 },
+            
+            // 제주도
+            { id: 47, name: "제주시 애견카페 오션뷰", type: "cafe", lat: 33.4996, lng: 126.5312, address: "제주시 제주도 노형동 123", phone: "064-1234-5678", rating: 4.9 },
+            { id: 48, name: "서귀포 애견놀이터", type: "park", lat: 33.2541, lng: 126.5601, address: "제주 서귀포시 중앙로 123", phone: "064-2345-6789", rating: 4.8 },
+            { id: 49, name: "제주 중문 반려동물병원", type: "hospital", lat: 33.2541, lng: 126.4122, address: "제주 서귀포시 중문관광로 456", phone: "064-3456-7890", rating: 4.6 },
+            { id: 50, name: "애월 애견호텔", type: "hotel", lat: 33.4615, lng: 126.3194, address: "제주시 애월읍 애월로 789", phone: "064-4567-8901", rating: 4.7 },
+        ];
+
+        let map;
+        let markers = [];
+        let infoWindows = [];
+        let currentFilter = 'all';
+        let searchTerm = '';
+        let isMapLoaded = false;
+
+        const typeNames = {
+            hospital: '동물병원',
+            cafe: '애견카페',
+            restaurant: '애견식당',
+            park: '애견놀이터',
+            grooming: '미용실',
+            hotel: '애견호텔',
+            training: '훈련소'
+        };
+
+        const markerIcons = {
+            hospital: '🏥',
+            cafe: '☕',
+            restaurant: '🍽️',
+            park: '🌳',
+            grooming: '✂️',
+            hotel: '🏨',
+            training: '🎓'
+        };
+
+        // Google Maps 로드
+        function loadGoogleMaps() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            
+            if (!apiKey) {
+                alert('API 키를 입력해주세요!');
+                return;
+            }
+            
+            // 이미 로드된 경우
+            if (isMapLoaded) {
+                alert('지도가 이미 로드되었습니다!');
+                return;
+            }
+            
+            // 버튼 비활성화
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '로딩중...';
+            
+            // Google Maps API 스크립트 로드
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
+            script.async = true;
+            script.defer = true;
+            script.onerror = () => {
+                alert('Google Maps API 로드 실패! API 키를 확인해주세요.');
+                btn.disabled = false;
+                btn.textContent = '지도 로드';
+            };
+            document.head.appendChild(script);
+        }
+
+        // 지도 초기화 (Google Maps API 콜백)
+        window.initMap = function() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 36.5, lng: 127.8 },
+                zoom: 7,
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true
+            });
+
+            isMapLoaded = true;
+            document.getElementById('searchInput').disabled = false;
+            document.querySelector('.load-map-btn').textContent = '✓ 로드 완료';
+            
+            renderFacilities();
+        };
+
+        // 마커 생성
+        function createMarker(facility) {
+            const marker = new google.maps.Marker({
+                position: { lat: facility.lat, lng: facility.lng },
+                map: map,
+                title: facility.name,
+                label: {
+                    text: markerIcons[facility.type],
+                    fontSize: '20px'
+                }
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div class="info-window">
+                        <div class="info-window-title">${facility.name}</div>
+                        <div class="info-window-type">${typeNames[facility.type]}</div>
+                        <div class="info-window-info">
+                            📍 ${facility.address}<br>
+                            📞 ${facility.phone}<br>
+                            ⭐ ${facility.rating}
+                        </div>
+                    </div>
+                `
+            });
+
+            marker.addListener('click', () => {
+                // 다른 인포윈도우 닫기
+                infoWindows.forEach(iw => iw.close());
+                infoWindow.open(map, marker);
+            });
+
+            infoWindows.push(infoWindow);
+            return marker;
+        }
+
+        // 시설 목록 렌더링
+        function renderFacilities() {
+            if (!isMapLoaded) return;
+
+            const filteredFacilities = facilities.filter(f => {
+                const matchesType = currentFilter === 'all' || f.type === currentFilter;
+                const matchesSearch = searchTerm === '' || 
+                    f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    f.address.toLowerCase().includes(searchTerm.toLowerCase());
+                return matchesType && matchesSearch;
+            });
+
+            // 통계 업데이트
+            document.getElementById('stats').textContent = 
+                `총 ${filteredFacilities.length}개 시설`;
+
+            // 목록 렌더링
+            const listHTML = filteredFacilities.map(f => `
+                <div class="facility-card" onclick="focusOnFacility(${f.id})">
+                    <div class="facility-name">${markerIcons[f.type]} ${f.name}</div>
+                    <div class="facility-type">${typeNames[f.type]}</div>
+                    <div class="facility-address">📍 ${f.address}</div>
+                    <div class="facility-phone">📞 ${f.phone}</div>
+                    <div class="facility-rating">⭐ ${f.rating}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('facilitiesList').innerHTML = listHTML || 
+                '<div style="padding: 24px; text-align: center; color: #999;">검색 결과가 없습니다</div>';
+
+            // 마커 업데이트
+            markers.forEach(m => m.setMap(null));
+            markers = filteredFacilities.map(f => createMarker(f));
+        }
+
+        // 시설 포커스
+        window.focusOnFacility = function(id) {
+            const facility = facilities.find(f => f.id === id);
+            if (facility && isMapLoaded) {
+                map.setCenter({ lat: facility.lat, lng: facility.lng });
+                map.setZoom(15);
+                
+                const marker = markers.find(m => m.getTitle() === facility.name);
+                if (marker) {
+                    google.maps.event.trigger(marker, 'click');
+                }
+            }
+        };
+
+        // 필터 버튼 이벤트
+        document.getElementById('filterButtons').addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn')) {
+                document.querySelectorAll('.filter-btn').forEach(btn => 
+                    btn.classList.remove('active')
+                );
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.type;
+                renderFacilities();
+            }
+        });
+
+        // 검색 이벤트
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            renderFacilities();
+        });
+    </script>
+</body>
+</html>
