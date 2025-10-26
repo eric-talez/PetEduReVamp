@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GoogleMapView } from "@/components/GoogleMapView";
+import { WeatherInfo } from "@/components/WeatherInfo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
@@ -864,20 +865,29 @@ export default function LocationServices() {
               <p className="text-sm text-gray-500 dark:text-gray-400">위치 서비스를 선택하면 지도와 현재 날씨를 확인할 수 있습니다.</p>
             </div>
             
-            <div className="p-4">
-              {/* Map & Weather Component */}
+            <div className="p-4 space-y-4">
+              {/* Map Component */}
               {selectedInstitute ? (
-                <GoogleMapView 
-                  locations={[{
-                    id: selectedInstitute.id,
-                    name: selectedInstitute.name,
-                    address: selectedInstitute.location,
-                    coordinates: getLocationFromInstitute(selectedInstitute)
-                  }]}
-                  center={getLocationFromInstitute(selectedInstitute)}
-                  height="400px"
-                  zoom={15}
-                />
+                <>
+                  <GoogleMapView 
+                    locations={[{
+                      id: selectedInstitute.id,
+                      name: selectedInstitute.name,
+                      address: selectedInstitute.location,
+                      coordinates: getLocationFromInstitute(selectedInstitute)
+                    }]}
+                    center={getLocationFromInstitute(selectedInstitute)}
+                    height="300px"
+                    zoom={15}
+                  />
+                  
+                  {/* Weather Component */}
+                  <WeatherInfo 
+                    latitude={getLocationFromInstitute(selectedInstitute).lat}
+                    longitude={getLocationFromInstitute(selectedInstitute).lng}
+                    locationName={selectedInstitute.name}
+                  />
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <MapPin className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
