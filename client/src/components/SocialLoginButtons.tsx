@@ -16,30 +16,35 @@ export function SocialLoginButton({ provider, onClick, className = '' }: SocialL
       backgroundColor: '#FEE500',
       hoverColor: '#F6DC00',
       textColor: '#000000',
+      borderColor: 'transparent',
       logo: (
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
           <path d="M12 3C7.03 3 3 6.16 3 10c0 2.38 1.56 4.48 3.93 5.67.28.13.48.4.55.71l.35 1.39c.11.45.61.63.98.37l1.59-1.12c.27-.19.6-.26.92-.2.96.17 1.96.26 2.99.26 4.97 0 9-3.16 9-7s-4.03-7-9-7z"/>
         </svg>
       ),
       text: '카카오 로그인',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
     },
     naver: {
       backgroundColor: '#03C75A',
       hoverColor: '#02B150',
       textColor: '#FFFFFF',
+      borderColor: 'transparent',
       logo: (
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
           <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727v12.845z"/>
         </svg>
       ),
       text: '네이버 로그인',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
     },
     google: {
       backgroundColor: '#FFFFFF',
-      hoverColor: '#F5F5F5',
-      textColor: '#333333',
+      hoverColor: '#F8F8F8',
+      textColor: '#3c4043',
+      borderColor: '#dadce0',
       logo: (
-        <svg viewBox="0 0 24 24" width="24" height="24">
+        <svg viewBox="0 0 24 24" width="18" height="18">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -47,6 +52,7 @@ export function SocialLoginButton({ provider, onClick, className = '' }: SocialL
         </svg>
       ),
       text: '구글 로그인',
+      fontFamily: '"Roboto", system-ui, -apple-system, sans-serif',
     }
   };
 
@@ -55,15 +61,29 @@ export function SocialLoginButton({ provider, onClick, className = '' }: SocialL
   return (
     <Button
       type="button"
-      className={`w-full flex items-center justify-center gap-2 font-medium ${className}`}
+      className={`w-full flex items-center justify-center gap-3 font-medium transition-colors ${className}`}
       style={{
         backgroundColor: config.backgroundColor,
         color: config.textColor,
+        border: `1px solid ${config.borderColor}`,
+        fontFamily: config.fontFamily,
+        fontSize: '14px',
+        height: '44px',
+        borderRadius: '6px',
+        padding: '0 16px',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = config.hoverColor;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = config.backgroundColor;
       }}
       onClick={onClick}
     >
-      <span className="w-5 h-5">{config.logo}</span>
-      <span>{config.text}</span>
+      <span className="flex items-center justify-center" style={{ minWidth: '20px' }}>
+        {config.logo}
+      </span>
+      <span style={{ fontWeight: 500 }}>{config.text}</span>
     </Button>
   );
 }
