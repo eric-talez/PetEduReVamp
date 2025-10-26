@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { GoogleMapView } from "@/components/GoogleMapView";
 import { WeatherInfo } from "@/components/WeatherInfo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart, Loader2, Award, X,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, ExternalLink, Phone, Clock
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -57,6 +58,8 @@ export default function LocationServices() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [detailInstitute, setDetailInstitute] = useState<any | null>(null);
   const { toast} = useToast();
   
   // 실제 기관 데이터 가져오기
@@ -147,6 +150,8 @@ export default function LocationServices() {
         certification: place.certification || false,
         premium: false,
         isTalez: place.isTalez || false,
+        sourceUrl: place.sourceUrl || null, // Google Maps URL
+        phone: place.phone || '',
       }));
       
       setSearchResults(formattedResults);
@@ -982,16 +987,16 @@ export default function LocationServices() {
                     </div>
                     
                     <div className="flex gap-3">
-                      {/* 상세 정보 버튼 - 비회원도 이용 가능 */}
+                      {/* 상세 정보 버튼 - 팝업으로 표시 */}
                       <Button 
                         variant="default"
                         className="flex-1"
                         onClick={(e) => {
-                          e.stopPropagation(); // 부모 클릭 이벤트 전파 중지
-                          console.log("위치 서비스 상세 페이지 이동: ", institute.id);
-                          // 비회원도 상세 정보를 볼 수 있도록 수정
-                          window.location.href = `/institutes/${institute.id}`;
+                          e.stopPropagation();
+                          setDetailInstitute(institute);
+                          setDetailDialogOpen(true);
                         }}
+                        data-testid={`button-detail-${institute.id}`}
                       >
                         상세 정보
                       </Button>
@@ -1000,9 +1005,10 @@ export default function LocationServices() {
                       <Button 
                         variant="outline"
                         onClick={(e) => {
-                          e.stopPropagation(); // 부모 클릭 이벤트 전파 중지
+                          e.stopPropagation();
                           setSelectedInstitute(institute);
                         }}
+                        data-testid={`button-location-${institute.id}`}
                       >
                         위치 보기
                       </Button>
@@ -1113,6 +1119,210 @@ export default function LocationServices() {
           </Button>
         </div>
       </div>
+      
+      {/* 상세 정보 팝업 다이얼로그 */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {detailInstitute && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                  {detailInstitute.name}
+                  {detailInstitute.certification && (
+                    <div className="inline-flex items-center px-2 py-1 rounded-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 shadow-md">
+                      <Award className="h-3 w-3 mr-1 text-white" />
+                      <span className="text-xs font-bold text-white">테일즈 공식인증</span>
+                    </div>
+                  )}
+                </DialogTitle>
+                <DialogDescription>
+                  {detailInstitute.category} · {detailInstitute.location}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 mt-4">
+                {/* 이미지 슬라이더 */}
+                <div className="relative group rounded-lg overflow-hidden">
+                  {(() => {
+                    const images = detailInstitute.images || [detailInstitute.image];
+                    const currentIndex = imageIndices[detailInstitute.id] || 0;
+                    
+                    return (
+                      <>
+                        <img 
+                          src={images[currentIndex]} 
+                          alt={`${detailInstitute.name} - 이미지 ${currentIndex + 1}`}
+                          className="w-full h-[400px] object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/institutes/default-institute.png';
+                          }}
+                        />
+                        
+                        {images.length > 1 && (
+                          <>
+                            <button
+                              onClick={() => {
+                                const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+                                setImageIndices(prev => ({ ...prev, [detailInstitute.id]: newIndex }));
+                              }}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <ChevronLeft className="h-5 w-5" />
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+                                setImageIndices(prev => ({ ...prev, [detailInstitute.id]: newIndex }));
+                              }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <ChevronRight className="h-5 w-5" />
+                            </button>
+                            
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                              {images.map((_: any, idx: number) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => {
+                                    setImageIndices(prev => ({ ...prev, [detailInstitute.id]: idx }));
+                                  }}
+                                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                                    idx === currentIndex 
+                                      ? 'bg-white w-6' 
+                                      : 'bg-white/50 hover:bg-white/75'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            
+                            <div className="absolute top-4 left-4 bg-black/60 text-white text-sm px-3 py-1.5 rounded-lg">
+                              {currentIndex + 1} / {images.length}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+                
+                {/* 기본 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                      <span className="font-medium">{detailInstitute.rating}</span>
+                      <span className="text-gray-500">({detailInstitute.reviews} 후기)</span>
+                    </div>
+                    
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-5 w-5 text-gray-500 mt-0.5" />
+                      <span className="text-gray-700 dark:text-gray-300">{detailInstitute.location}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-gray-500" />
+                      <span className="text-gray-700 dark:text-gray-300">{detailInstitute.openingHours}</span>
+                    </div>
+                    
+                    {detailInstitute.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-5 w-5 text-gray-500" />
+                        <span className="text-gray-700 dark:text-gray-300">{detailInstitute.phone}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Building className="h-5 w-5 text-gray-500" />
+                      <span className="text-gray-700 dark:text-gray-300">설립: {detailInstitute.established}</span>
+                    </div>
+                    
+                    {detailInstitute.trainers > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-gray-500" />
+                        <span className="text-gray-700 dark:text-gray-300">훈련사 {detailInstitute.trainers}명</span>
+                      </div>
+                    )}
+                    
+                    {detailInstitute.courses > 0 && (
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-gray-500" />
+                        <span className="text-gray-700 dark:text-gray-300">강의 {detailInstitute.courses}개</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-start gap-2">
+                      <Building className="h-5 w-5 text-gray-500 mt-0.5" />
+                      <span className="text-gray-700 dark:text-gray-300">
+                        시설: {detailInstitute.facilities.join(", ")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 설명 */}
+                <div>
+                  <h3 className="font-semibold mb-2">소개</h3>
+                  <p className="text-gray-700 dark:text-gray-300">{detailInstitute.description}</p>
+                </div>
+                
+                {/* 카테고리 배지 */}
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="bg-primary/10 dark:bg-primary/5 text-primary-foreground">
+                    {getCategoryIcon(detailInstitute.category)}
+                    {detailInstitute.category}
+                  </Badge>
+                  {detailInstitute.premium && (
+                    <Badge variant="warning">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      프리미엄
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* 구글 맵 */}
+                <div>
+                  <h3 className="font-semibold mb-3">위치 정보</h3>
+                  <GoogleMapView 
+                    locations={[{
+                      id: detailInstitute.id,
+                      name: detailInstitute.name,
+                      address: detailInstitute.location,
+                      coordinates: getLocationFromInstitute(detailInstitute)
+                    }]}
+                    center={getLocationFromInstitute(detailInstitute)}
+                    height="400px"
+                    zoom={15}
+                  />
+                </div>
+                
+                {/* 날씨 정보 */}
+                <WeatherInfo 
+                  latitude={getLocationFromInstitute(detailInstitute).lat}
+                  longitude={getLocationFromInstitute(detailInstitute).lng}
+                  locationName={detailInstitute.name}
+                />
+                
+                {/* 구글 맵에서 보기 버튼 */}
+                {detailInstitute.sourceUrl && (
+                  <Button 
+                    className="w-full"
+                    onClick={() => {
+                      window.open(detailInstitute.sourceUrl, '_blank');
+                    }}
+                    data-testid="button-open-google-maps"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    구글 맵에서 보기
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
