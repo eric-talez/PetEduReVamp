@@ -40,7 +40,7 @@ const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }
   return (
     <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => onClick(post)}>
       {/* 영상 썸네일 영역 */}
-      {post.videoUrl && (
+      {post.videoUrl ? (
         <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-black">
           {post.videoThumbnail ? (
             <img 
@@ -75,10 +75,8 @@ const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }
             </Badge>
           </div>
         </div>
-      )}
-      
-      {/* 일반 링크 썸네일 영역 */}
-      {!post.videoUrl && post.linkInfo?.image && (
+      ) : post.linkInfo?.image ? (
+        /* 일반 링크 썸네일 영역 */
         <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
           <img 
             src={post.linkInfo.image} 
@@ -88,6 +86,28 @@ const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }
               e.currentTarget.style.display = 'none';
             }}
           />
+        </div>
+      ) : (
+        /* 썸네일이 없는 경우 기본 플레이스홀더 */
+        <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
+          <div className="w-full h-full flex items-center justify-center">
+            {post.tag === '설문' ? (
+              <BarChart3 className="h-16 w-16 text-gray-400 dark:text-gray-500" />
+            ) : post.tag === '법률정보' ? (
+              <svg className="h-16 w-16 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            ) : (
+              <MessageSquare className="h-16 w-16 text-gray-400 dark:text-gray-500" />
+            )}
+          </div>
+          {post.tag && (
+            <div className="absolute top-2 left-2">
+              <Badge variant="secondary" className="bg-white/90 dark:bg-gray-800/90">
+                {post.tag}
+              </Badge>
+            </div>
+          )}
         </div>
       )}
       
