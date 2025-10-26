@@ -584,7 +584,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/locations" component={LocationsPage} />
                   <Route path="/location-finder">
                     {() => {
-                      const LocationsPage = lazy(() => import('./pages/institutes/index'));
+                      const LocationsPage = lazy(() => import('./pages/location/index'));
                       return (
                         <Suspense fallback={<SimpleLoading />}>
                           <LocationsPage />
@@ -1072,7 +1072,7 @@ function AppLayout({ children }: { children: ReactNode }) {
 
                   <Route path="/location-finder">
           {() => {
-            const LocationsPage = lazy(() => import('./pages/institutes/index'));
+            const LocationsPage = lazy(() => import('./pages/location/index'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
