@@ -207,27 +207,36 @@ export default function LocationServices() {
   
   const institutes = institutesArray
     .filter((inst: any) => inst.latitude && inst.longitude)
-    .map((inst: any) => ({
-      id: inst.id,
-      name: inst.name,
-      description: inst.description || '반려동물 교육 기관',
-      image: inst.logo || "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
-      location: inst.address || '위치 정보 없음',
-      rating: inst.rating ? parseFloat(inst.rating) : 4.5,
-      reviews: 0,
-      trainers: 0,
-      courses: 0,
-      facilities: [],
-      openingHours: "평일 10:00 - 18:00",
-      category: "훈련소",
-      region: inst.address?.includes('서울') ? '서울' : inst.address?.includes('경기') ? '경기' : inst.address?.includes('부산') ? '경상' : '기타',
-      breedSupport: ["소형견", "중형견", "대형견"],
-      certification: true,
-      premium: false,
-      established: "2020년",
-      latitude: inst.latitude,
-      longitude: inst.longitude
-    }));
+    .map((inst: any) => {
+      const defaultImage = "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450";
+      const mainImage = inst.logo || defaultImage;
+      
+      return {
+        id: inst.id,
+        name: inst.name,
+        description: inst.description || '반려동물 교육 기관',
+        image: mainImage,
+        images: [mainImage], // 이미지 배열 추가
+        location: inst.address || '위치 정보 없음',
+        rating: inst.rating ? parseFloat(inst.rating) : 4.5,
+        reviews: 0,
+        trainers: 0,
+        courses: 0,
+        facilities: [],
+        openingHours: "평일 10:00 - 18:00",
+        category: "훈련소",
+        region: inst.address?.includes('서울') ? '서울' : inst.address?.includes('경기') ? '경기' : inst.address?.includes('부산') ? '경상' : '기타',
+        breedSupport: ["소형견", "중형견", "대형견"],
+        certification: true,
+        premium: false,
+        established: "2020년",
+        latitude: inst.latitude,
+        longitude: inst.longitude,
+        isTalez: true, // DB 기관은 TALEZ 등록 기관
+        sourceUrl: null,
+        phone: inst.phone || '',
+      };
+    });
 
   // 지역, 견종, 카테고리, 검색어를 모두 고려한 필터링
   const filteredInstitutes = institutes

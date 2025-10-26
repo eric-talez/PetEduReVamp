@@ -2057,14 +2057,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (key) {
         // 특정 키의 설정 조회
-        const setting = await storage.db.select().from(systemSettings).where(sql`${systemSettings.key} = ${key}`).limit(1);
+        const setting = await db.select().from(systemSettings).where(sql`${systemSettings.key} = ${key}`).limit(1);
         if (setting.length === 0) {
           return res.status(404).json({ error: '설정을 찾을 수 없습니다' });
         }
         res.json({ success: true, data: setting[0] });
       } else {
         // 모든 설정 조회
-        const settings = await storage.db.select().from(systemSettings).where(sql`${systemSettings.isActive} = true`);
+        const settings = await db.select().from(systemSettings).where(sql`${systemSettings.isActive} = true`);
         res.json({ success: true, data: settings });
       }
     } catch (error) {
@@ -2080,11 +2080,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { value, description, category } = req.body;
       
       // 기존 설정 확인
-      const existing = await storage.db.select().from(systemSettings).where(sql`${systemSettings.key} = ${key}`).limit(1);
+      const existing = await db.select().from(systemSettings).where(sql`${systemSettings.key} = ${key}`).limit(1);
       
       if (existing.length === 0) {
         // 새 설정 생성
-        const newSetting = await storage.db.insert(systemSettings).values({
+        const newSetting = await db.insert(systemSettings).values({
           key,
           value,
           description,
@@ -2096,7 +2096,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ success: true, data: newSetting[0] });
       } else {
         // 기존 설정 업데이트
-        const updated = await storage.db.update(systemSettings)
+        const updated = await db.update(systemSettings)
           .set({
             value,
             description,
