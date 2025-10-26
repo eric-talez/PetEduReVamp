@@ -582,16 +582,6 @@ function AppLayout({ children }: { children: ReactNode }) {
 
                   {/* 위치 및 이벤트 */}
                   <Route path="/locations" component={LocationsPage} />
-                  <Route path="/location-finder">
-                    {() => {
-                      const LocationsPage = lazy(() => import('./pages/location/index'));
-                      return (
-                        <Suspense fallback={<SimpleLoading />}>
-                          <LocationsPage />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
                   <Route path="/events">
                     {() => {
                       const EventsPageLazy = lazy(() => import('./pages/events'));
@@ -1069,19 +1059,6 @@ function AppLayout({ children }: { children: ReactNode }) {
 
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
-
-                  <Route path="/location-finder">
-          {() => {
-            const LocationsPage = lazy(() => import('./pages/location/index'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <LocationsPage />
-              </Suspense>
-            );
-          }}
-        </Route>
 
         <Route path="/alerts">
           {() => {

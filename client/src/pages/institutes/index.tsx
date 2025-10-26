@@ -338,20 +338,21 @@ export default function LocationServices() {
       // 지역 필터링
       const regionMatch = regionFilter === "all" || institute.region === regionFilter;
       
-      // 견종 필터링 (배열에 포함 여부)
+      // 견종 필터링 (배열에 포함 여부) - 옵셔널 체이닝 사용
       const breedMatch = breedFilter === "all" || 
-        institute.breedSupport.includes(breedFilter) || 
-        institute.breedSupport.includes("반려견 전체");
+        institute.breedSupport?.includes(breedFilter) || 
+        institute.breedSupport?.includes("반려견 전체") ||
+        false;
       
       // 모든 조건을 만족해야 함
       return categoryMatch && regionMatch && breedMatch;
     });
   
-  // 추가 필터링 (인증, 프리미엄)
+  // 추가 필터링 (인증, 프리미엄) - 옵셔널 체이닝 사용
   const finalFilteredInstitutes = specialFilter === "certification" 
-    ? filteredInstitutes.filter(institute => institute.certification)
+    ? filteredInstitutes.filter(institute => institute.certification === true)
     : specialFilter === "premium"
-      ? filteredInstitutes.filter(institute => institute.premium)
+      ? filteredInstitutes.filter(institute => institute.premium === true)
       : filteredInstitutes;
 
   // 위치 데이터를 지도용 형식으로 변환하는 함수

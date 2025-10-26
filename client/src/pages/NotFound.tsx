@@ -42,12 +42,12 @@ export default function NotFound() {
               </Button>
             </Link>
 
-            <Link href="/location-finder">
+            <Link href="/institutes">
               <Button variant="outline" className="w-full h-16 flex items-center justify-center gap-3">
                 <MapPin className="w-5 h-5" />
                 <div className="text-left">
-                  <div className="font-medium">위치 찾기</div>
-                  <div className="text-xs text-gray-500">주변 업체 검색</div>
+                  <div className="font-medium">훈련소 찾기</div>
+                  <div className="text-xs text-gray-500">주변 훈련소 검색</div>
                 </div>
               </Button>
             </Link>

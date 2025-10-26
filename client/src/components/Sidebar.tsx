@@ -338,7 +338,7 @@ export function Sidebar({
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
       "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop", "/locations",
-      "/consultation", "/location-finder", "/facilities"
+      "/consultation", "/facilities"
     ];
 
     // 로그인 필요한 페이지 접근 시
@@ -648,13 +648,13 @@ export function Sidebar({
                       show={true}
                     >전문가 찾기</AccessibleNavItem>
                     <AccessibleNavItem 
-                      href="/location-finder" 
+                      href="/institutes" 
                       icon={<MapPin className="w-5 h-5 mr-2" />}
                       hoverIcon={<Navigation className="w-5 h-5 mr-2 text-primary" />}
-                      active={isActive("/location-finder")} 
+                      active={isActive("/institutes")} 
                       onClick={handleItemClick} 
                       show={true}
-                    >위치 찾기</AccessibleNavItem>
+                    >근처 훈련소 찾기</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />}
@@ -766,7 +766,7 @@ export function Sidebar({
                     <AccessibleNavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의 찾기</AccessibleNavItem>
                     <AccessibleNavItem href="/video-call" icon={<VideoIcon className="w-5 h-5 mr-2" />} hoverIcon={<Video className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-call")} onClick={handleItemClick} show={true}>화상 강의</AccessibleNavItem>
                     <AccessibleNavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>전문가 찾기</AccessibleNavItem>
-                    <AccessibleNavItem href="/location-finder" icon={<MapPin className="w-5 h-5 mr-2" />} hoverIcon={<Navigation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/location-finder")} onClick={handleItemClick} show={true}>근처 훈련소 찾기</AccessibleNavItem>
+                    <AccessibleNavItem href="/institutes" icon={<MapPin className="w-5 h-5 mr-2" />} hoverIcon={<Navigation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institutes")} onClick={handleItemClick} show={true}>근처 훈련소 찾기</AccessibleNavItem>
                     <AccessibleNavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</AccessibleNavItem>
                     <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
                   </>
