@@ -30,7 +30,7 @@ function LocationMarker() {
 function PlaceSearch() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const { nearbyPlaces, setNearbyPlaces } = useMapService();
+  const { nearbyPlaces, setNearbyPlaces, currentLocation, getUserLocation } = useMapService();
   const { toast } = useToast();
 
   const handleSearch = async () => {
@@ -44,38 +44,52 @@ function PlaceSearch() {
 
     setIsSearching(true);
     try {
-      // 실제 카카오맵 API 호출
-      const response = await fetch(`/api/locations?search=${encodeURIComponent(searchTerm)}`);
+      // 현재 위치 가져오기
+      let location = currentLocation;
+      if (!location) {
+        location = await getUserLocation();
+        if (!location) {
+          toast({
+            title: "위치 정보 필요",
+            description: "검색을 위해 위치 정보를 허용해주세요.",
+            variant: "destructive"
+          });
+          setIsSearching(false);
+          return;
+        }
+      }
+
+      console.log(`[위치 검색] 검색어: "${searchTerm}", 위치: ${location.latitude}, ${location.longitude}`);
+
+      // Google Places Text Search API 호출 (TALEZ DB + Google Places 통합)
+      const response = await fetch(
+        `/api/locations/search?query=${encodeURIComponent(searchTerm)}&lat=${location.latitude}&lng=${location.longitude}`
+      );
+      
       if (!response.ok) {
         throw new Error(`검색 요청 실패: ${response.status}`);
       }
       
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('JSON이 아닌 응답:', text.substring(0, 200));
-        throw new Error('잘못된 응답 형식');
-      }
-      
       const results = await response.json();
+      console.log('[위치 검색] API 응답:', results);
       
       // API 응답을 Place 형태로 변환
       const places: Place[] = results.map((item: any) => ({
-        id: item.id,
+        id: item.id || item.place_id,
         name: item.name,
         location: {
-          latitude: item.latitude,
-          longitude: item.longitude,
-          address: item.address
+          latitude: item.latitude || item.lat,
+          longitude: item.longitude || item.lng,
+          address: item.address || item.formatted_address || ''
         },
         type: item.type || 'shop',
         rating: item.rating,
         distance: item.distance,
-        photo: item.photo,
-        contact: item.phone,
-        openingHours: item.openingHours,
-        description: item.description || item.category_name,
-        isCertified: item.certification || false,
+        photo: item.photo || item.photos?.[0],
+        contact: item.phone || item.contact,
+        openingHours: item.openingHours || item.opening_hours,
+        description: item.description || item.editorial_summary?.overview || '',
+        isCertified: item.certification || item.isCertified || false,
         certificationLevel: item.certificationLevel || 'standard',
         petFriendlyLevel: 'medium',
         features: item.features || []
@@ -83,11 +97,11 @@ function PlaceSearch() {
       
       setNearbyPlaces(places);
       
-      console.log(`[위치 검색] 검색어: "${searchTerm}", 결과: ${results.length}개`);
+      console.log(`[위치 검색] 검색어: "${searchTerm}", 결과: ${places.length}개`);
       
       toast({
         title: "검색 완료",
-        description: `${results.length}개의 장소를 찾았습니다.`,
+        description: `${places.length}개의 장소를 찾았습니다.`,
       });
     } catch (error) {
       console.error("검색 오류:", error);
