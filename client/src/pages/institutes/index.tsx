@@ -227,7 +227,7 @@ export default function LocationServices() {
         category: "훈련소",
         region: inst.address?.includes('서울') ? '서울' : inst.address?.includes('경기') ? '경기' : inst.address?.includes('부산') ? '경상' : '기타',
         breedSupport: ["소형견", "중형견", "대형견"],
-        certification: true,
+        certification: inst.name === '아틀리독' || inst.name === '왕짱스쿨', // 공식 인증 업체만
         premium: false,
         established: "2020년",
         latitude: inst.latitude,
