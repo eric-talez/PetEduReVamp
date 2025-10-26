@@ -4493,7 +4493,8 @@ import {
   users,
   contentApprovals,
   trainerApplications,
-  curriculums
+  curriculums,
+  institutes
 } from "../shared/schema";
 
 class HybridStorage extends Storage {
@@ -4621,6 +4622,18 @@ class HybridStorage extends Storage {
       return super.getAllCurriculums();
     } catch (error) {
       console.error('[DB] 커리큘럼 조회 오류:', error);
+      return [];
+    }
+  }
+
+  // 기관 관련 - 데이터베이스에서 조회
+  async getInstitutes(): Promise<any[]> {
+    try {
+      const result = await db.select().from(institutes);
+      console.log('[DB] 기관 조회:', result.length + '개');
+      return result;
+    } catch (error) {
+      console.error('[DB] 기관 조회 오류:', error);
       return [];
     }
   }

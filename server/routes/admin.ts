@@ -449,7 +449,7 @@ export function registerAdminRoutes(app: Express) {
     console.log('[Admin] 기관 목록 조회 요청');
 
     try {
-      const institutes = storage.getInstitutes();
+      const institutes = await storage.getInstitutes();
 
       const institutesWithDetails = institutes.map(institute => ({
         ...institute,
