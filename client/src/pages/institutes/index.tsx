@@ -80,6 +80,11 @@ export default function LocationServices() {
   
   // 위치 정보가 있는 기관만 필터링하고 표시 데이터 매핑
   const institutesArray = Array.isArray(institutesData?.data) ? institutesData.data : [];
+  
+  console.log('API Response:', institutesData);
+  console.log('Institutes Array:', institutesArray);
+  console.log('Institutes with location:', institutesArray.filter((inst: any) => inst.latitude && inst.longitude));
+  
   const institutes = institutesArray
     .filter((inst: any) => inst.latitude && inst.longitude)
     .map((inst: any) => ({
@@ -94,7 +99,7 @@ export default function LocationServices() {
       courses: 0,
       facilities: [],
       openingHours: "평일 10:00 - 18:00",
-      category: "교육 센터",
+      category: "훈련소",
       region: inst.address?.includes('서울') ? '서울' : inst.address?.includes('경기') ? '경기' : inst.address?.includes('부산') ? '경상' : '기타',
       breedSupport: ["소형견", "중형견", "대형견"],
       certification: true,
@@ -103,6 +108,8 @@ export default function LocationServices() {
       latitude: inst.latitude,
       longitude: inst.longitude
     }));
+  
+  console.log('Final institutes array:', institutes);
   
   // 업데이트된 데이터: 교육 시설 + 다양한 반려견 서비스 위치 포함
   const mockInstitutes = [
