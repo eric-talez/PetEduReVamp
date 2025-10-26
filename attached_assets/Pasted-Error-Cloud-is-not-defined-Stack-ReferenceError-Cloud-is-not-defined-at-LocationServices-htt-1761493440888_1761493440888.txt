@@ -1,0 +1,39 @@
+Error: Cloud is not defined
+Stack:
+ReferenceError: Cloud is not defined
+    at LocationServices (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/pages/institutes/index.tsx?t=1761493028533:1810:40)
+    at renderWithHooks (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:11548:26)
+    at updateFunctionComponent (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:14582:28)
+    at beginWork (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:15924:22)
+    at beginWork$1 (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:19753:22)
+    at performUnitOfWork (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:19198:20)
+    at workLoopSync (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:19137:13)
+    at renderRootSync (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:19116:15)
+    at recoverFromConcurrentError (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:18736:28)
+    at performSyncWorkOnRoot (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=fb0d62f8:18879:28)
+Component Stack:
+
+    at LocationServices (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/pages/institutes/index.tsx?t=1761493028533:61:31)
+    at Route (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=fb0d62f8:338:16)
+    at Switch (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=fb0d62f8:394:17)
+    at ErrorBoundary (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at main
+    at div
+    at div
+    at div
+    at ErrorBoundary (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at AppLayout (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?t=1761493028533&v=5BkAvlz-IsuLCI9ns63Gp:157:22)
+    at UnauthenticatedRoutes
+    at KeyboardShortcutsManager (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?t=1761493028533&v=5BkAvlz-IsuLCI9ns63Gp:4817:37)
+    at NotificationProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/use-notifications.tsx:23:40)
+    at NotificationsProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/NotificationsProvider.tsx?t=1761493028533:21:41)
+    at AchievementsProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/useAchievements.tsx?t=1761493028533:120:40)
+    at UserPreferencesProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/use-user-preferences.tsx:28:43)
+    at ThemeManager (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ThemeManager.tsx:24:32)
+    at ThemeProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/context/theme-context.tsx:33:3)
+    at SimpleApp (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?t=1761493028533&v=5BkAvlz-IsuLCI9ns63Gp:4832:16)
+    at AuthProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/useAuth.tsx?v=5BkAvlz-IsuLCI9ns63Gp:42:32)
+    at Provider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=fb0d62f8:38:15)
+    at TooltipProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=fb0d62f8:67:5)
+    at ThemeProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/context/theme-context.tsx?v=5BkAvlz-IsuLCI9ns63Gp:33:3)
+    at QueryClientProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=fb0d62f8:2875:3)
