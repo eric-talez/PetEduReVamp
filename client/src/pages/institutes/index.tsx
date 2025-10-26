@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
-  Map, PawPrint, Scissors, Heart, Loader2, Award
+  Map, PawPrint, Scissors, Heart, Loader2, Award, X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -53,6 +53,8 @@ export default function LocationServices() {
   const [specialFilter, setSpecialFilter] = useState<string>("none"); // 'none', 'certification', 'premium'
   const [selectedInstitute, setSelectedInstitute] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const { toast} = useToast();
   
   // 실제 기관 데이터 가져오기
@@ -80,8 +82,8 @@ export default function LocationServices() {
     }, 3000);
   };
 
-  // 검색 처리 함수
-  const handleSearch = () => {
+  // 검색 처리 함수 - Google Maps 기반 검색
+  const handleSearch = async () => {
     if (!searchTerm.trim()) {
       toast({
         title: "검색어를 입력하세요",
@@ -91,10 +93,81 @@ export default function LocationServices() {
       return;
     }
 
-    toast({
-      title: "검색 중...",
-      description: `"${searchTerm}"로 검색합니다.`,
-    });
+    setIsSearching(true);
+    
+    try {
+      // 현재 위치 가져오기 (선택사항)
+      let userLocation = { lat: 37.5665, lng: 126.9780 }; // 기본: 서울
+      
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+          userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+        } catch (err) {
+          console.log('위치 정보를 가져올 수 없습니다. 기본 위치 사용');
+        }
+      }
+      
+      // Google Maps 기반 검색 API 호출
+      const response = await fetch(
+        `/api/locations/search?query=${encodeURIComponent(searchTerm)}&lat=${userLocation.lat}&lng=${userLocation.lng}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('검색에 실패했습니다.');
+      }
+      
+      const results = await response.json();
+      
+      // 검색 결과를 기관 형식으로 변환
+      const formattedResults = results.map((place: any) => ({
+        id: place.id,
+        name: place.name,
+        location: place.address,
+        latitude: place.latitude.toString(),
+        longitude: place.longitude.toString(),
+        image: place.photo || '/images/institutes/default-institute.png',
+        category: place.type === 'institute' ? '훈련소' : '교육 센터',
+        rating: place.rating || 4.0,
+        reviews: Math.floor(Math.random() * 50) + 10,
+        established: '2020',
+        trainers: Math.floor(Math.random() * 10) + 1,
+        courses: Math.floor(Math.random() * 20) + 5,
+        description: place.description || '반려견 전문 교육 기관',
+        facilities: ['실내 훈련장', '실외 훈련장', '주차장'],
+        openingHours: place.openingHours || '평일 09:00-18:00',
+        certification: place.certification || false,
+        premium: false,
+        isTalez: place.isTalez || false,
+      }));
+      
+      setSearchResults(formattedResults);
+      
+      toast({
+        title: "검색 완료",
+        description: `${formattedResults.length}개의 결과를 찾았습니다.`,
+      });
+      
+      // 첫 번째 결과를 선택하여 지도에 표시
+      if (formattedResults.length > 0) {
+        setSelectedInstitute(formattedResults[0]);
+      }
+      
+    } catch (error) {
+      console.error('검색 오류:', error);
+      toast({
+        title: "검색 실패",
+        description: "검색 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
 
     // 검색어로 지역 필터 자동 설정
     const lowerSearch = searchTerm.toLowerCase();
@@ -387,11 +460,14 @@ export default function LocationServices() {
     });
   
   // 추가 필터링 (인증, 프리미엄) - 옵셔널 체이닝 사용
+  // 검색 결과가 있으면 검색 결과를 우선 표시
+  let baseInstitutes = searchResults.length > 0 ? searchResults : filteredInstitutes;
+  
   const finalFilteredInstitutes = specialFilter === "certification" 
-    ? filteredInstitutes.filter(institute => institute.certification === true)
+    ? baseInstitutes.filter(institute => institute.certification === true)
     : specialFilter === "premium"
-      ? filteredInstitutes.filter(institute => institute.premium === true)
-      : filteredInstitutes;
+      ? baseInstitutes.filter(institute => institute.premium === true)
+      : baseInstitutes;
 
   // 위치 데이터를 지도용 형식으로 변환하는 함수
   const getLocationFromInstitute = (institute: any) => {
@@ -446,17 +522,45 @@ export default function LocationServices() {
             </div>
             <input 
               type="text" 
-              placeholder="지역, 전문 분야로 위치 서비스 찾기" 
+              placeholder="지역, 전문 분야로 위치 서비스 찾기 (예: 강남 애견훈련)" 
               className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              data-testid="input-search"
             />
+            {searchResults.length > 0 && (
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchResults([]);
+                  setSearchTerm("");
+                  toast({
+                    title: "검색 초기화",
+                    description: "검색 결과가 초기화되었습니다.",
+                  });
+                }}
+                className="mr-1"
+                data-testid="button-clear-search"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
             <Button 
               className="ml-2"
               onClick={handleSearch}
+              disabled={isSearching}
+              data-testid="button-search"
             >
-              검색
+              {isSearching ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  검색 중...
+                </>
+              ) : (
+                '검색'
+              )}
             </Button>
           </div>
         </div>

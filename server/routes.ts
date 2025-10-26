@@ -2647,6 +2647,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Google Places Text Search API - 검색어로 장소 검색
+  app.get('/api/locations/search', async (req, res) => {
+    const { query, lat, lng } = req.query;
+    
+    console.log(`[Places Search API] 검색어: "${query}", 위치: ${lat}, ${lng}`);
+    
+    if (!query) {
+      return res.status(400).json({ error: '검색어가 필요합니다.' });
+    }
+
+    const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
+    
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('VITE_GOOGLE_MAPS_API_KEY가 설정되지 않음');
+      return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
+    }
+
+    try {
+      // TALEZ 데이터베이스에서도 검색
+      const talezResults = await db
+        .select()
+        .from(institutes)
+        .where(
+          sql`${institutes.name} LIKE ${`%${query}%`} 
+              OR ${institutes.address} LIKE ${`%${query}%`}
+              AND ${institutes.isActive} = true
+              AND ${institutes.latitude} IS NOT NULL 
+              AND ${institutes.longitude} IS NOT NULL`
+        )
+        .limit(20);
+
+      const talezPlaces = talezResults.map((inst: any) => ({
+        id: `talez-institute-${inst.id}`,
+        name: inst.name,
+        type: 'institute',
+        latitude: parseFloat(inst.latitude),
+        longitude: parseFloat(inst.longitude),
+        address: inst.address || '',
+        phone: inst.phone || '',
+        rating: inst.rating ? parseFloat(inst.rating) : 4.5,
+        description: inst.description || '반려동물 훈련 기관',
+        certification: inst.certification || false,
+        isTalez: true,
+        photo: inst.logo,
+        website: inst.website,
+      }));
+
+      // Google Places Text Search API 호출
+      const searchQuery = `${query} 반려견 애견`;
+      const params = new URLSearchParams({
+        query: searchQuery,
+        key: GOOGLE_MAPS_API_KEY,
+        language: 'ko'
+      });
+
+      // 위치가 제공된 경우 location 파라미터 추가
+      if (lat && lng) {
+        params.append('location', `${lat},${lng}`);
+        params.append('radius', '50000'); // 50km
+      }
+
+      const response = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?${params}`);
+
+      if (!response.ok) {
+        throw new Error(`Google Places API 오류: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      const googlePlaces = (data.results || []).slice(0, 20).map((place: any, index: number) => ({
+        id: place.place_id || `google-search-${index}`,
+        name: place.name,
+        type: getGooglePlaceType(place.types),
+        latitude: place.geometry?.location?.lat || 0,
+        longitude: place.geometry?.location?.lng || 0,
+        address: place.formatted_address || '',
+        phone: '',
+        rating: place.rating || 4.0,
+        description: place.types?.[0]?.replace(/_/g, ' ') || '',
+        certification: false,
+        isTalez: false,
+        sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
+        photo: place.photos?.[0] ? 
+          `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}` : 
+          undefined,
+        openingHours: place.opening_hours?.open_now !== undefined ? 
+          (place.opening_hours.open_now ? '영업 중' : '영업 종료') : 
+          undefined
+      }));
+
+      // TALEZ 결과를 우선순위로 병합
+      const combinedResults = [...talezPlaces, ...googlePlaces];
+      
+      console.log(`[Places Search API] TALEZ: ${talezPlaces.length}개, Google: ${googlePlaces.length}개, 총: ${combinedResults.length}개`);
+      res.json(combinedResults);
+      
+    } catch (error) {
+      console.error('장소 검색 오류:', error);
+      res.status(500).json({ 
+        error: '장소를 검색하는데 실패했습니다.',
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // Google Places Details API - 장소 상세 정보 조회
   app.get('/api/places/:placeId', async (req, res) => {
     const { placeId } = req.params;
