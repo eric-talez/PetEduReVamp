@@ -993,25 +993,25 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 </div>
               </>
             ) : (
-              <div className="flex space-x-1 sm:space-x-2">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Link href="/auth">
                   <Button 
                     variant="ghost" 
-                    size="sm" 
+                    size="default"
                     aria-label="로그인 페이지로 이동"
-                    className="min-w-[44px] min-h-[44px] px-3 sm:px-4 transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="min-w-[44px] min-h-[44px] h-10 px-4 sm:px-5 text-sm sm:text-base font-medium transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   >
-                    <span className="text-sm sm:text-base">로그인</span>
+                    로그인
                   </Button>
                 </Link>
                 <Link href="/auth?tab=register">
                   <Button 
                     variant="default" 
-                    size="sm" 
+                    size="default"
                     aria-label="회원가입 페이지로 이동"
-                    className="min-w-[44px] min-h-[44px] px-3 sm:px-4 transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="min-w-[44px] min-h-[44px] h-10 px-4 sm:px-6 text-sm sm:text-base font-medium transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-md hover:shadow-lg"
                   >
-                    <span className="text-sm sm:text-base">회원가입</span>
+                    회원가입
                   </Button>
                 </Link>
               </div>
