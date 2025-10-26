@@ -83,6 +83,7 @@ export const institutes = pgTable("institutes", {
   latitude: text("latitude"), // 위도
   longitude: text("longitude"), // 경도
   rating: decimal("rating", { precision: 3, scale: 2 }), // 평점
+  certification: boolean("certification").default(false), // 테일즈 인증 여부
   isActive: boolean("is_active").default(true),
   featuresEnabled: jsonb("features_enabled"),
   createdAt: timestamp("created_at").defaultNow(),

@@ -2502,14 +2502,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           photo: trainer.avatar,
         }));
       } else if (type === 'institute') {
-        // 기관 검색
+        // 기관 검색 - 인증 기관만 표시
         const institutions = await db
           .select()
           .from(institutes)
           .where(
             sql`${institutes.latitude} IS NOT NULL 
                 AND ${institutes.longitude} IS NOT NULL
-                AND ${institutes.isActive} = true`
+                AND ${institutes.isActive} = true
+                AND ${institutes.certification} = true`
           );
 
         return institutions.map((inst: any) => ({
@@ -2522,7 +2523,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: inst.phone || '',
           rating: inst.rating ? parseFloat(inst.rating) : 4.5,
           description: inst.description || '반려동물 훈련 기관',
-          certification: true,
+          certification: inst.certification || false,
+          certificationLevel: inst.certification ? 'standard' : undefined,
+          isCertified: inst.certification || false,
           contact: inst.phone,
           photo: inst.logo,
           website: inst.website,
