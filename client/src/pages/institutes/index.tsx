@@ -254,29 +254,45 @@ export default function LocationServices() {
       const results = await response.json();
       
       // 검색 결과를 기관 형식으로 변환
-      const formattedResults = results.map((place: any) => ({
-        id: place.id,
-        name: place.name,
-        location: place.address,
-        latitude: place.latitude.toString(),
-        longitude: place.longitude.toString(),
-        image: place.photo || '/images/institutes/default-institute.png',
-        images: place.photos || (place.photo ? [place.photo] : ['/images/institutes/default-institute.png']), // 이미지 배열
-        category: place.type === 'institute' ? '훈련소' : '교육 센터',
-        rating: place.rating || 4.0,
-        reviews: place.reviews || Math.floor(Math.random() * 50) + 10,
-        established: place.established || '2020',
-        trainers: place.trainers || Math.floor(Math.random() * 10) + 1,
-        courses: place.courses || Math.floor(Math.random() * 20) + 5,
-        description: place.description || '반려견 전문 교육 기관',
-        facilities: place.facilities || ['실내 훈련장', '실외 훈련장', '주차장'],
-        openingHours: place.openingHours || '평일 09:00-18:00',
-        certification: place.certification || false,
-        premium: false,
-        isTalez: place.isTalez || false,
-        sourceUrl: place.sourceUrl || null, // Google Maps URL
-        phone: place.phone || '',
-      }));
+      const formattedResults = results.map((place: any) => {
+        // 주소에서 지역 추출
+        const address = place.address || '';
+        let region = '기타';
+        if (address.includes('서울')) region = '서울';
+        else if (address.includes('경기')) region = '경기';
+        else if (address.includes('인천')) region = '인천';
+        else if (address.includes('강원')) region = '강원';
+        else if (address.includes('충청') || address.includes('충남') || address.includes('충북') || address.includes('대전') || address.includes('세종')) region = '충청';
+        else if (address.includes('전라') || address.includes('전남') || address.includes('전북') || address.includes('광주')) region = '전라';
+        else if (address.includes('경상') || address.includes('경남') || address.includes('경북') || address.includes('부산') || address.includes('대구') || address.includes('울산')) region = '경상';
+        else if (address.includes('제주')) region = '제주';
+        
+        return {
+          id: place.id,
+          name: place.name,
+          location: place.address,
+          latitude: place.latitude.toString(),
+          longitude: place.longitude.toString(),
+          image: place.photo || '/images/institutes/default-institute.png',
+          images: place.photos || (place.photo ? [place.photo] : ['/images/institutes/default-institute.png']), // 이미지 배열
+          category: place.type === 'institute' ? '훈련소' : '교육 센터',
+          rating: place.rating || 4.0,
+          reviews: place.reviews || Math.floor(Math.random() * 50) + 10,
+          established: place.established || '2020',
+          trainers: place.trainers || Math.floor(Math.random() * 10) + 1,
+          courses: place.courses || Math.floor(Math.random() * 20) + 5,
+          description: place.description || '반려견 전문 교육 기관',
+          facilities: place.facilities || ['실내 훈련장', '실외 훈련장', '주차장'],
+          openingHours: place.openingHours || '평일 09:00-18:00',
+          certification: place.certification || false,
+          premium: false,
+          isTalez: place.isTalez || false,
+          sourceUrl: place.sourceUrl || null, // Google Maps URL
+          phone: place.phone || '',
+          region: region,
+          breedSupport: ["소형견", "중형견", "대형견", "반려견 전체"], // 기본값: 모든 견종 지원
+        };
+      });
       
       setSearchResults(formattedResults);
       setHasSearched(true); // 검색 수행 표시
@@ -350,9 +366,9 @@ export default function LocationServices() {
       };
     });
 
-  // 지역, 견종, 카테고리, 검색어를 모두 고려한 필터링
-  const filteredInstitutes = institutes
-    .filter(institute => {
+  // 공통 필터 함수
+  const applyFilters = (instituteList: any[]) => {
+    return instituteList.filter(institute => {
       // 서비스 타입 필터링
       const categoryMatch = filter === "all" || institute.category === filter;
       
@@ -365,25 +381,20 @@ export default function LocationServices() {
         institute.breedSupport?.includes("반려견 전체") ||
         false;
       
-      // 검색어 필터링 (기관명, 주소, 설명에서 검색)
-      const searchMatch = !searchTerm.trim() || 
-        institute.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        institute.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        institute.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      // 특수 필터 (인증, 프리미엄)
+      const specialMatch = specialFilter === "none" ||
+        (specialFilter === "certification" && institute.certification === true) ||
+        (specialFilter === "premium" && institute.premium === true);
       
       // 모든 조건을 만족해야 함
-      return categoryMatch && regionMatch && breedMatch && searchMatch;
+      return categoryMatch && regionMatch && breedMatch && specialMatch;
     });
+  };
   
-  // 추가 필터링 (인증, 프리미엄) - 옵셔널 체이닝 사용
-  // 검색 결과가 있으면 검색 결과를 우선 표시
-  let baseInstitutes = searchResults.length > 0 ? searchResults : filteredInstitutes;
-  
-  const finalFilteredInstitutes = specialFilter === "certification" 
-    ? baseInstitutes.filter(institute => institute.certification === true)
-    : specialFilter === "premium"
-      ? baseInstitutes.filter(institute => institute.premium === true)
-      : baseInstitutes;
+  // 검색 결과가 있으면 검색 결과에 필터 적용, 없으면 DB 데이터에 필터 적용
+  const finalFilteredInstitutes = searchResults.length > 0 
+    ? applyFilters(searchResults)
+    : applyFilters(institutes);
 
   // 위치 데이터를 지도용 형식으로 변환하는 함수
   const getLocationFromInstitute = (institute: any) => {
@@ -1559,13 +1570,14 @@ function InstituteEditDialog({
     
     setIsSaving(true);
     try {
-      await apiRequest(`/api/institutes/${institute.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(formData),
-      });
+      await apiRequest('PUT', `/api/institutes/${institute.id}`, formData);
 
       onSuccess();
       onOpenChange(false);
+      toast({
+        title: "수정 완료",
+        description: "업체 정보가 성공적으로 수정되었습니다.",
+      });
     } catch (error) {
       console.error('업체 정보 수정 실패:', error);
       toast({
