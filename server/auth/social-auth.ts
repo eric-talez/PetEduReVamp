@@ -33,25 +33,19 @@ export function setupSocialAuth(app: Express) {
             let user = await storage.getUserBySocialId('kakao', kakaoId);
             
             if (!user) {
-              // 신규 사용자 생성
-              user = await storage.createUser({
-                username: `kakao_${kakaoId}`,
-                password: Math.random().toString(36).slice(2) + Date.now().toString(36), // 랜덤 비밀번호
-                email: email,
-                name: nickname,
+              // 신규 사용자: 회원가입 페이지로 리다이렉트하기 위해 빈 객체 반환
+              console.log('[SocialAuth] 신규 카카오 사용자 - 회원가입 페이지로 리다이렉트');
+              return done(null, {
+                isNewUser: true,
                 provider: 'kakao',
                 socialId: kakaoId,
-                role: 'pet-owner', // 기본 역할은 반려인
-                verified: true, // 소셜 로그인은 기본적으로 인증됨
-                verifiedAt: new Date()
-              });
-              
-              console.log('새 사용자 생성 완료:', user.id);
+                email: email,
+                name: nickname
+              } as any);
             } else {
               console.log('기존 사용자 확인:', user.id);
+              return done(null, user);
             }
-            
-            return done(null, user);
           } catch (error) {
             console.error('카카오 로그인 오류:', error);
             return done(error as Error);
@@ -70,7 +64,25 @@ export function setupSocialAuth(app: Express) {
         failureRedirect: '/auth?error=social-login-failed',
       }),
       (req, res) => {
-        // 성공 시 대시보드로 리다이렉트
+        const user = req.user as any;
+        
+        // 신규 사용자인 경우 회원가입 페이지로 리다이렉트
+        if (user && user.isNewUser) {
+          // 소셜 로그인 정보를 세션에 저장
+          req.session.socialSignup = {
+            provider: user.provider,
+            socialId: user.socialId,
+            email: user.email,
+            name: user.name
+          };
+          
+          console.log('세션에 카카오 가입 정보 저장:', req.session.socialSignup);
+          
+          // 회원가입 페이지로 리다이렉트
+          return res.redirect('/auth/register?social=kakao');
+        }
+        
+        // 기존 사용자는 대시보드로 리다이렉트
         res.redirect('/dashboard');
       }
     );
@@ -199,25 +211,19 @@ export function setupSocialAuth(app: Express) {
             let user = await storage.getUserBySocialId('google', googleId);
             
             if (!user) {
-              // 신규 사용자 생성
-              user = await storage.createUser({
-                username: `google_${googleId}`,
-                password: Math.random().toString(36).slice(2) + Date.now().toString(36), // 랜덤 비밀번호
-                email: email,
-                name: name,
+              // 신규 사용자: 회원가입 페이지로 리다이렉트하기 위해 빈 객체 반환
+              console.log('[SocialAuth] 신규 구글 사용자 - 회원가입 페이지로 리다이렉트');
+              return done(null, {
+                isNewUser: true,
                 provider: 'google',
                 socialId: googleId,
-                role: 'pet-owner', // 기본 역할은 반려인
-                verified: true, // 소셜 로그인은 기본적으로 인증됨
-                verifiedAt: new Date()
-              });
-              
-              console.log('새 사용자 생성 완료:', user.id);
+                email: email,
+                name: name
+              } as any);
             } else {
               console.log('기존 사용자 확인:', user.id);
+              return done(null, user);
             }
-            
-            return done(null, user);
           } catch (error) {
             console.error('구글 로그인 오류:', error);
             return done(error as Error);
@@ -238,7 +244,25 @@ export function setupSocialAuth(app: Express) {
         failureRedirect: '/auth?error=social-login-failed',
       }),
       (req, res) => {
-        // 성공 시 대시보드로 리다이렉트
+        const user = req.user as any;
+        
+        // 신규 사용자인 경우 회원가입 페이지로 리다이렉트
+        if (user && user.isNewUser) {
+          // 소셜 로그인 정보를 세션에 저장
+          req.session.socialSignup = {
+            provider: user.provider,
+            socialId: user.socialId,
+            email: user.email,
+            name: user.name
+          };
+          
+          console.log('세션에 구글 가입 정보 저장:', req.session.socialSignup);
+          
+          // 회원가입 페이지로 리다이렉트
+          return res.redirect('/auth/register?social=google');
+        }
+        
+        // 기존 사용자는 대시보드로 리다이렉트
         res.redirect('/dashboard');
       }
     );

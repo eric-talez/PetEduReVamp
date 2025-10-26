@@ -79,7 +79,8 @@ export default function LocationServices() {
   };
   
   // 위치 정보가 있는 기관만 필터링하고 표시 데이터 매핑
-  const institutes = (institutesData || [])
+  const institutesArray = Array.isArray(institutesData?.data) ? institutesData.data : [];
+  const institutes = institutesArray
     .filter((inst: any) => inst.latitude && inst.longitude)
     .map((inst: any) => ({
       id: inst.id,
