@@ -148,7 +148,7 @@ function PlaceSearch() {
  * 근처 장소 찾기 컴포넌트
  */
 function NearbyPlaces() {
-  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop' | 'event' | 'cafe' | 'pension' | 'park'>('trainer');
+  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop' | 'event' | 'cafe' | 'pension' | 'park'>('institute');
   const { 
     currentLocation, 
     nearbyPlaces, 
@@ -1508,7 +1508,7 @@ export default function LocationPage() {
   return (
     <div className="w-full h-screen overflow-hidden">
       <div className="px-4 lg:px-6 py-4">
-        <h1 className="text-2xl lg:text-3xl font-bold mb-4">위치 서비스</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold mb-4">근처 훈련소 찾기</h1>
       </div>
       <div className="px-4 lg:px-6 pb-4">
         <MapServiceProvider>
