@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
-  Map, PawPrint, Scissors, Heart, Loader2, Award, X
+  Map, PawPrint, Scissors, Heart, Loader2, Award, X,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -55,6 +56,7 @@ export default function LocationServices() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
   const { toast} = useToast();
   
   // 실제 기관 데이터 가져오기
@@ -132,14 +134,15 @@ export default function LocationServices() {
         latitude: place.latitude.toString(),
         longitude: place.longitude.toString(),
         image: place.photo || '/images/institutes/default-institute.png',
+        images: place.photos || (place.photo ? [place.photo] : ['/images/institutes/default-institute.png']), // 이미지 배열
         category: place.type === 'institute' ? '훈련소' : '교육 센터',
         rating: place.rating || 4.0,
-        reviews: Math.floor(Math.random() * 50) + 10,
-        established: '2020',
-        trainers: Math.floor(Math.random() * 10) + 1,
-        courses: Math.floor(Math.random() * 20) + 5,
+        reviews: place.reviews || Math.floor(Math.random() * 50) + 10,
+        established: place.established || '2020',
+        trainers: place.trainers || Math.floor(Math.random() * 10) + 1,
+        courses: place.courses || Math.floor(Math.random() * 20) + 5,
         description: place.description || '반려견 전문 교육 기관',
-        facilities: ['실내 훈련장', '실외 훈련장', '주차장'],
+        facilities: place.facilities || ['실내 훈련장', '실외 훈련장', '주차장'],
         openingHours: place.openingHours || '평일 09:00-18:00',
         certification: place.certification || false,
         premium: false,
@@ -824,12 +827,80 @@ export default function LocationServices() {
               >
                 <div className="flex flex-col md:flex-row">
                   <div className="md:w-2/5">
-                    <div className="h-48 md:h-full relative">
-                      <img 
-                        src={institute.image} 
-                        alt={institute.name} 
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="h-48 md:h-full relative group">
+                      {/* 이미지 슬라이더 */}
+                      {(() => {
+                        const images = institute.images || [institute.image];
+                        const currentIndex = imageIndices[institute.id] || 0;
+                        
+                        return (
+                          <>
+                            <img 
+                              src={images[currentIndex]} 
+                              alt={`${institute.name} - 이미지 ${currentIndex + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = '/images/institutes/default-institute.png';
+                              }}
+                            />
+                            
+                            {/* 이미지가 여러 개인 경우 슬라이더 컨트롤 표시 */}
+                            {images.length > 1 && (
+                              <>
+                                {/* 이전 버튼 */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+                                    setImageIndices(prev => ({ ...prev, [institute.id]: newIndex }));
+                                  }}
+                                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  data-testid={`button-prev-image-${institute.id}`}
+                                >
+                                  <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                
+                                {/* 다음 버튼 */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+                                    setImageIndices(prev => ({ ...prev, [institute.id]: newIndex }));
+                                  }}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  data-testid={`button-next-image-${institute.id}`}
+                                >
+                                  <ChevronRight className="h-4 w-4" />
+                                </button>
+                                
+                                {/* 이미지 인디케이터 */}
+                                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                                  {images.map((_: any, idx: number) => (
+                                    <button
+                                      key={idx}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setImageIndices(prev => ({ ...prev, [institute.id]: idx }));
+                                      }}
+                                      className={`w-2 h-2 rounded-full transition-all ${
+                                        idx === currentIndex 
+                                          ? 'bg-white w-4' 
+                                          : 'bg-white/50 hover:bg-white/75'
+                                      }`}
+                                      data-testid={`button-image-indicator-${institute.id}-${idx}`}
+                                    />
+                                  ))}
+                                </div>
+                                
+                                {/* 이미지 카운터 */}
+                                <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                  {currentIndex + 1} / {images.length}
+                                </div>
+                              </>
+                            )}
+                          </>
+                        );
+                      })()}
                       
                       {institute.premium && (
                         <Badge variant="warning" className="absolute top-2 right-2">

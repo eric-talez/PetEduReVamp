@@ -2746,6 +2746,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .slice(0, 10)
         .map((place: any, index: number) => {
+          // Google Places의 모든 사진 URL 생성
+          const photos = (place.photos || []).slice(0, 5).map((photo: any) => 
+            `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photo.photo_reference}&key=${GOOGLE_MAPS_API_KEY}`
+          );
+          
           const placeData = {
             id: place.place_id || `google-search-${index}`,
             name: place.name,
@@ -2760,9 +2765,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             certification: false,
             isTalez: false,
             sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
-            photo: place.photos?.[0] ? 
-              `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}` : 
-              undefined,
+            photo: photos[0] || undefined, // 첫 번째 사진
+            photos: photos, // 모든 사진 배열
             openingHours: place.opening_hours?.open_now !== undefined ? 
               (place.opening_hours.open_now ? '영업 중' : '영업 종료') : 
               undefined,
@@ -2772,7 +2776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             courses: Math.floor(Math.random() * 10) + 1,
           };
           
-          console.log(`[Place ${index}] ${placeData.name} - ${placeData.address} (${placeData.latitude}, ${placeData.longitude})`);
+          console.log(`[Place ${index}] ${placeData.name} - ${placeData.address} (${placeData.latitude}, ${placeData.longitude}), photos: ${photos.length}`);
           return placeData;
         });
 
