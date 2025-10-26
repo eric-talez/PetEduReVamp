@@ -151,6 +151,7 @@ export default function LocationServices() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [detailInstitute, setDetailInstitute] = useState<any | null>(null);
@@ -492,6 +493,7 @@ export default function LocationServices() {
               onValueChange={(value: LocationType) => {
                 setFilter(value);
                 setSpecialFilter("none"); // 특수 필터 초기화
+                setHasSearched(true);
               }}
             >
               <SelectTrigger className="w-full">
@@ -516,7 +518,10 @@ export default function LocationServices() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">지역</label>
             <Select
               value={regionFilter}
-              onValueChange={(value: Region) => setRegionFilter(value)}
+              onValueChange={(value: Region) => {
+                setRegionFilter(value);
+                setHasSearched(true);
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="모든 지역" />
@@ -540,7 +545,10 @@ export default function LocationServices() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">견종 지원</label>
             <Select
               value={breedFilter}
-              onValueChange={(value: DogBreed) => setBreedFilter(value)}
+              onValueChange={(value: DogBreed) => {
+                setBreedFilter(value);
+                setHasSearched(true);
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="모든 견종" />
@@ -561,7 +569,10 @@ export default function LocationServices() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">특별 조건</label>
             <Select
               value={specialFilter}
-              onValueChange={(value) => setSpecialFilter(value)}
+              onValueChange={(value) => {
+                setSpecialFilter(value);
+                setHasSearched(true);
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="전체" />
@@ -588,6 +599,7 @@ export default function LocationServices() {
             onClick={() => {
               setFilter("교육 센터"); 
               setSpecialFilter("none");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -601,6 +613,7 @@ export default function LocationServices() {
             onClick={() => {
               setFilter("훈련소");
               setSpecialFilter("none");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -614,6 +627,7 @@ export default function LocationServices() {
             onClick={() => {
               setFilter("펜션");
               setSpecialFilter("none");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -627,6 +641,7 @@ export default function LocationServices() {
             onClick={() => {
               setFilter("카페");
               setSpecialFilter("none");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -640,6 +655,7 @@ export default function LocationServices() {
             onClick={() => {
               setFilter("수영장");
               setSpecialFilter("none");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -653,6 +669,7 @@ export default function LocationServices() {
             onClick={() => {
               setFilter("캠핑장");
               setSpecialFilter("none");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -666,6 +683,7 @@ export default function LocationServices() {
             onClick={() => {
               setFilter("병원");
               setSpecialFilter("none");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -679,6 +697,7 @@ export default function LocationServices() {
             onClick={() => {
               setFilter("미용");
               setSpecialFilter("none");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -692,6 +711,7 @@ export default function LocationServices() {
             onClick={() => {
               setSpecialFilter("certification");
               setFilter("all");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -705,6 +725,7 @@ export default function LocationServices() {
             onClick={() => {
               setSpecialFilter("premium");
               setFilter("all");
+              setHasSearched(true);
             }}
             className="text-xs"
           >
@@ -718,7 +739,16 @@ export default function LocationServices() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* 왼쪽 열 - 위치 서비스 목록 */}
         <div className="w-full lg:w-2/3">
-          {isLoading ? (
+          {!hasSearched ? (
+            <div className="text-center py-16">
+              <Search className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">검색을 시작하세요</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                위의 필터를 선택하거나 검색어를 입력하여<br />
+                원하는 위치 서비스를 찾아보세요.
+              </p>
+            </div>
+          ) : isLoading ? (
             <div className="flex justify-center items-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <span className="ml-2 text-muted-foreground">기관 정보를 불러오는 중...</span>
@@ -726,7 +756,7 @@ export default function LocationServices() {
           ) : finalFilteredInstitutes.length === 0 ? (
             <div className="text-center py-12">
               <MapPin className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-600 dark:text-gray-400">위치 정보가 등록된 기관이 없습니다.</p>
+              <p className="text-gray-600 dark:text-gray-400">검색 조건에 맞는 기관이 없습니다.</p>
             </div>
           ) : (
           <div className="grid grid-cols-1 gap-6">
@@ -944,7 +974,7 @@ export default function LocationServices() {
           )}
           
           {/* Pagination */}
-          {!isLoading && finalFilteredInstitutes.length > 0 && (
+          {hasSearched && !isLoading && finalFilteredInstitutes.length > 0 && (
           <div className="mt-8 flex justify-center">
             <nav className="flex items-center space-x-2">
               <Button variant="outline" size="sm" className="text-sm">
