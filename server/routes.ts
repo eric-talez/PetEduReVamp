@@ -10565,11 +10565,27 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 기관 수정 (관리자 전용)
-  app.put('/api/institutes/:id', requireAuth('admin'), async (req, res) => {
+  // 기관 수정 (관리자 및 기관 관리자)
+  app.put('/api/institutes/:id', requireAuth(['admin', 'institute-admin']), csrfProtection, async (req, res) => {
     try {
-      const institute = await storage.updateInstitute(parseInt(req.params.id), req.body);
-      res.json(institute);
+      const instituteId = parseInt(req.params.id);
+      
+      // 권한 확인: 기관 관리자는 자신의 기관만 수정 가능 (타입 통일)
+      if (req.session.user?.role === 'institute-admin' && Number(req.session.user.instituteId) !== instituteId) {
+        return res.status(403).json({ 
+          success: false,
+          error: '권한이 없습니다. 자신의 기관만 수정할 수 있습니다.' 
+        });
+      }
+
+      const institute = await storage.updateInstitute(instituteId, req.body);
+      console.log('[Institute] 기관 정보 업데이트:', { instituteId, userId: req.session.user?.id });
+      
+      res.json({
+        success: true,
+        data: institute,
+        message: '기관 정보가 성공적으로 업데이트되었습니다'
+      });
     } catch (error) {
       console.error('기관 수정 실패:', error);
       res.status(500).json({

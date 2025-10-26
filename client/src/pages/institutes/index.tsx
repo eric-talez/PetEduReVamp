@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +12,11 @@ import {
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart, Loader2, Award, X,
   ChevronLeft, ChevronRight, ExternalLink, Phone, Clock,
-  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap
+  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 // 훈련사 목록 컴포넌트
 function TrainersList({ instituteId, instituteName }: { instituteId: string | number; instituteName: string }) {
@@ -155,7 +156,34 @@ export default function LocationServices() {
   const [detailInstitute, setDetailInstitute] = useState<any | null>(null);
   const [trainersDialogOpen, setTrainersDialogOpen] = useState(false);
   const [selectedInstituteForTrainers, setSelectedInstituteForTrainers] = useState<any | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingInstitute, setEditingInstitute] = useState<any | null>(null);
   const { toast} = useToast();
+  
+  // 로그인 사용자 정보 가져오기
+  const getUserInfo = () => {
+    const storedAuth = localStorage.getItem('petedu_auth');
+    if (!storedAuth) return null;
+    try {
+      return JSON.parse(storedAuth);
+    } catch {
+      return null;
+    }
+  };
+  
+  // 수정 권한 확인
+  const canEditInstitute = (institute: any) => {
+    const userInfo = getUserInfo();
+    if (!userInfo) return false;
+    
+    // 전체 관리자는 모든 기관 수정 가능
+    if (userInfo.role === 'admin') return true;
+    
+    // 기관 관리자는 자신의 기관만 수정 가능 (타입 통일)
+    if (userInfo.role === 'institute-admin' && Number(userInfo.instituteId) === Number(institute.id)) return true;
+    
+    return false;
+  };
   
   // 실제 기관 데이터 가져오기
   const { data: institutesData, isLoading } = useQuery({
@@ -1073,6 +1101,22 @@ export default function LocationServices() {
                 {/* 업체 정보 탭 */}
                 <TabsContent value="info" className="p-4 m-0">
                   <div className="space-y-4">
+                    {selectedInstitute && canEditInstitute(selectedInstitute) && (
+                      <div className="flex justify-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingInstitute(selectedInstitute);
+                            setEditDialogOpen(true);
+                          }}
+                          data-testid="button-edit-institute"
+                        >
+                          <Building className="h-3.5 w-3.5 mr-1.5" />
+                          정보 수정
+                        </Button>
+                      </div>
+                    )}
                     <div>
                       <h4 className="font-semibold mb-2">기본 정보</h4>
                       <div className="space-y-2 text-sm">
@@ -1426,6 +1470,180 @@ export default function LocationServices() {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* 업체 정보 수정 Dialog */}
+      <InstituteEditDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        institute={editingInstitute}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/institutes'] });
+          toast({
+            title: "수정 완료",
+            description: "업체 정보가 성공적으로 업데이트되었습니다.",
+          });
+        }}
+      />
     </div>
+  );
+}
+
+// 업체 정보 수정 Dialog 컴포넌트
+function InstituteEditDialog({ 
+  open, 
+  onOpenChange, 
+  institute,
+  onSuccess 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  institute: any;
+  onSuccess: () => void;
+}) {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    phone: '',
+    openingHours: '',
+    established: '',
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
+
+  // institute가 변경될 때 formData 업데이트
+  useEffect(() => {
+    if (institute) {
+      setFormData({
+        name: institute.name || '',
+        description: institute.description || '',
+        phone: institute.phone || '',
+        openingHours: institute.openingHours || '',
+        established: institute.established || '',
+      });
+    }
+  }, [institute]);
+
+  const handleSave = async () => {
+    if (!institute) return;
+    
+    setIsSaving(true);
+    try {
+      await apiRequest(`/api/institutes/${institute.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(formData),
+      });
+
+      onSuccess();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('업체 정보 수정 실패:', error);
+      toast({
+        title: "수정 실패",
+        description: "업체 정보 수정 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (!institute) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            <Edit className="h-5 w-5" />
+            업체 정보 수정
+          </DialogTitle>
+          <DialogDescription>
+            {institute.name}의 정보를 수정합니다.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">업체명</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              placeholder="업체명을 입력하세요"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">전화번호</label>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              placeholder="02-1234-5678"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">운영 시간</label>
+            <input
+              type="text"
+              value={formData.openingHours}
+              onChange={(e) => setFormData({ ...formData, openingHours: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              placeholder="평일 09:00-18:00"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">설립년도</label>
+            <input
+              type="text"
+              value={formData.established}
+              onChange={(e) => setFormData({ ...formData, established: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              placeholder="2020"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">소개</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+              placeholder="업체 소개를 입력하세요"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => onOpenChange(false)}
+            disabled={isSaving}
+          >
+            취소
+          </Button>
+          <Button
+            className="flex-1"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                저장 중...
+              </>
+            ) : (
+              '저장'
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
