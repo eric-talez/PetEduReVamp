@@ -50,10 +50,6 @@ window.addEventListener('error', (event) => {
   }
 });
 
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('처리되지 않은 Promise 거부:', event.reason);
-});
-
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>

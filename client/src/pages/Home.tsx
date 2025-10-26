@@ -12,6 +12,7 @@ import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCir
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { useQuery } from '@tanstack/react-query';
+import { setRouteLoading } from '@/hooks/use-route-loading';
 // Banner 타입을 local로 정의
 interface Banner {
   id: number;
@@ -579,13 +580,21 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <TalezButton size="lg">
-                <Link href="/institutes" className="flex items-center">
+                <Link 
+                  href="/institutes" 
+                  className="flex items-center"
+                  onClick={() => setRouteLoading(true, '/institutes', '근처 교육기관 검색 중...')}
+                >
                   <MapPin className="mr-2 h-5 w-5" />
                   근처 교육기관 찾기
                 </Link>
               </TalezButton>
               <TalezButton variant="outline" size="lg">
-                <Link href="/video-training" className="flex items-center">
+                <Link 
+                  href="/video-training" 
+                  className="flex items-center"
+                  onClick={() => setRouteLoading(true, '/video-training', '온라인 교육 준비 중...')}
+                >
                   <Video className="mr-2 h-5 w-5" />
                   온라인 교육 체험
                 </Link>
