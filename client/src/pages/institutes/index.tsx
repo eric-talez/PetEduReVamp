@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
-  Map, PawPrint, Scissors, Heart, Loader2
+  Map, PawPrint, Scissors, Heart, Loader2, Award
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -742,10 +742,13 @@ export default function LocationServices() {
                       
                       <div className="flex gap-1">
                         {institute.certification && (
-                          <Badge variant="success" className="flex items-center">
-                            <Shield className="h-3 w-3 mr-1" />
-                            인증
-                          </Badge>
+                          <div className="relative inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-pulse-slow">
+                            <Award className="h-4 w-4 mr-1.5 text-white drop-shadow-md" />
+                            <span className="text-sm font-bold text-white drop-shadow-md tracking-wide">
+                              테일즈 공식인증
+                            </span>
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-300 to-yellow-600 opacity-30 blur-sm"></div>
+                          </div>
                         )}
                       </div>
                     </div>
