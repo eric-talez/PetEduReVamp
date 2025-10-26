@@ -394,6 +394,18 @@ export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
 export const insertInstituteSchema = createInsertSchema(institutes);
 export const selectInstituteSchema = createSelectSchema(institutes);
+export const insertSystemSettingSchema = createInsertSchema(systemSettings, {
+  key: z.string().min(1, "키는 필수입니다").max(100),
+  value: z.string(),
+  description: z.string().optional().nullable(),
+  category: z.string().max(50).optional().nullable(),
+}).omit({
+  id: true,
+  updatedAt: true,
+});
+export const selectSystemSettingSchema = createSelectSchema(systemSettings);
+export type SystemSetting = z.infer<typeof selectSystemSettingSchema>;
+export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
 // Basic Pet Zod Schemas
 export const insertPetSchema = createInsertSchema(pets).omit({ 
   id: true, 

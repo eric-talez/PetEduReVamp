@@ -3,11 +3,14 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import { 
   Users, Shield, Bell, CheckSquare, Settings, 
   TrendingUp, Database, BarChart3, Activity, Globe, Building
 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdminDashboardProps {
   onAction: (action: string, data?: any) => void;
@@ -40,6 +43,59 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [processingActions, setProcessingActions] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
+  
+  // 리뷰 설정 조회
+  const { data: reviewsSettingData, refetch: refetchReviewsSetting } = useQuery({
+    queryKey: ['/api/settings', 'reviews_enabled'],
+    queryFn: async () => {
+      const response = await fetch('/api/settings?key=reviews_enabled');
+      if (!response.ok) return { data: { value: 'true' } };
+      return response.json();
+    },
+  });
+  const reviewsEnabled = reviewsSettingData?.data?.value === 'true';
+  
+  // 리뷰 설정 업데이트 mutation
+  const updateReviewsSettingMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf-token='))
+        ?.split('=')[1];
+      
+      const response = await fetch('/api/admin/settings/reviews_enabled', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken || '',
+        },
+        body: JSON.stringify({
+          value: enabled ? 'true' : 'false',
+          description: '위치 서비스 페이지에서 리뷰 탭 표시 여부',
+          category: 'ui',
+        }),
+      });
+      
+      if (!response.ok) throw new Error('설정 업데이트 실패');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchReviewsSetting();
+      queryClient.invalidateQueries({ queryKey: ['/api/settings', 'reviews_enabled'] });
+      toast({
+        title: "설정 업데이트 완료",
+        description: `리뷰 표시가 ${reviewsEnabled ? '비활성화' : '활성화'}되었습니다.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "설정 업데이트 실패",
+        description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.',
+        variant: "destructive",
+      });
+    },
+  });
 
   // 시스템 상태 데이터 로드
   const loadStats = async () => {
@@ -560,6 +616,42 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
           </Card>
         </div>
+      </div>
+      
+      {/* 시스템 설정 */}
+      <div className="mt-8">
+        <Card className="border border-gray-100 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">시스템 설정</h2>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              플랫폼 UI 및 기능 표시 제어
+            </p>
+          </div>
+          
+          <div className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-900 dark:text-white">리뷰 표시</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    위치 서비스 페이지에서 리뷰 탭을 표시합니다
+                  </p>
+                </div>
+                <Switch
+                  checked={reviewsEnabled}
+                  onCheckedChange={(checked) => {
+                    updateReviewsSettingMutation.mutate(checked);
+                  }}
+                  disabled={updateReviewsSettingMutation.isPending}
+                  data-testid="switch-reviews-enabled"
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

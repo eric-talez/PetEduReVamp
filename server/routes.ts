@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications } from "../shared/schema";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -2045,6 +2045,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[AdminPlatformStats] 플랫폼 통계 조회 실패:', error);
       res.status(500).json({ error: '플랫폼 통계를 불러오는데 실패했습니다' });
+    }
+  });
+
+  // 시스템 설정 관리 API
+  
+  // 시스템 설정 조회 (공개)
+  app.get('/api/settings', async (req, res) => {
+    try {
+      const { key } = req.query;
+      
+      if (key) {
+        // 특정 키의 설정 조회
+        const setting = await storage.db.select().from(systemSettings).where(sql`${systemSettings.key} = ${key}`).limit(1);
+        if (setting.length === 0) {
+          return res.status(404).json({ error: '설정을 찾을 수 없습니다' });
+        }
+        res.json({ success: true, data: setting[0] });
+      } else {
+        // 모든 설정 조회
+        const settings = await storage.db.select().from(systemSettings).where(sql`${systemSettings.isActive} = true`);
+        res.json({ success: true, data: settings });
+      }
+    } catch (error) {
+      console.error('[Settings] 설정 조회 실패:', error);
+      res.status(500).json({ error: '설정을 불러오는데 실패했습니다' });
+    }
+  });
+  
+  // 시스템 설정 업데이트 (관리자 전용)
+  app.put('/api/admin/settings/:key', requireAuth('admin'), csrfProtection, async (req, res) => {
+    try {
+      const { key } = req.params;
+      const { value, description, category } = req.body;
+      
+      // 기존 설정 확인
+      const existing = await storage.db.select().from(systemSettings).where(sql`${systemSettings.key} = ${key}`).limit(1);
+      
+      if (existing.length === 0) {
+        // 새 설정 생성
+        const newSetting = await storage.db.insert(systemSettings).values({
+          key,
+          value,
+          description,
+          category,
+          isActive: true,
+        }).returning();
+        
+        console.log('[AdminSettings] 새 설정 생성:', { key, value });
+        res.json({ success: true, data: newSetting[0] });
+      } else {
+        // 기존 설정 업데이트
+        const updated = await storage.db.update(systemSettings)
+          .set({
+            value,
+            description,
+            category,
+            updatedAt: new Date(),
+          })
+          .where(sql`${systemSettings.key} = ${key}`)
+          .returning();
+        
+        console.log('[AdminSettings] 설정 업데이트:', { key, value });
+        res.json({ success: true, data: updated[0] });
+      }
+    } catch (error) {
+      console.error('[AdminSettings] 설정 업데이트 실패:', error);
+      res.status(500).json({ error: '설정 업데이트에 실패했습니다' });
     }
   });
 

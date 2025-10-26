@@ -53,6 +53,17 @@ type Region =
 export default function LocationServices() {
   const [filter, setFilter] = useState<LocationType>("all");
   const [regionFilter, setRegionFilter] = useState<Region>("all");
+  
+  // 리뷰 표시 설정 조회
+  const { data: reviewsSettingData } = useQuery({
+    queryKey: ['/api/settings', 'reviews_enabled'],
+    queryFn: async () => {
+      const response = await fetch('/api/settings?key=reviews_enabled');
+      if (!response.ok) return { data: { value: 'true' } }; // 기본값: 표시
+      return response.json();
+    },
+  });
+  const reviewsEnabled = reviewsSettingData?.data?.value === 'true';
   const [breedFilter, setBreedFilter] = useState<DogBreed>("all");
   const [specialFilter, setSpecialFilter] = useState<string>("none"); // 'none', 'certification', 'premium'
   const [selectedInstitute, setSelectedInstitute] = useState<any | null>(null);
@@ -840,14 +851,16 @@ export default function LocationServices() {
                       <Cloud className="h-4 w-4" />
                       <span className="text-xs">날씨</span>
                     </TabsTrigger>
-                    <TabsTrigger 
-                      value="reviews" 
-                      className="flex flex-col items-center gap-1 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-                      data-testid="tab-reviews"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      <span className="text-xs">리뷰</span>
-                    </TabsTrigger>
+                    {reviewsEnabled && (
+                      <TabsTrigger 
+                        value="reviews" 
+                        className="flex flex-col items-center gap-1 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                        data-testid="tab-reviews"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="text-xs">리뷰</span>
+                      </TabsTrigger>
+                    )}
                     <TabsTrigger 
                       value="info" 
                       className="flex flex-col items-center gap-1 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
@@ -910,42 +923,44 @@ export default function LocationServices() {
                 </TabsContent>
                 
                 {/* 리뷰 탭 */}
-                <TabsContent value="reviews" className="p-4 m-0">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                        <span className="text-2xl font-bold">{selectedInstitute.rating}</span>
-                        <span className="text-gray-500">({selectedInstitute.reviews} 후기)</span>
+                {reviewsEnabled && (
+                  <TabsContent value="reviews" className="p-4 m-0">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                          <span className="text-2xl font-bold">{selectedInstitute.rating}</span>
+                          <span className="text-gray-500">({selectedInstitute.reviews} 후기)</span>
+                        </div>
+                      </div>
+                      
+                      {/* 리뷰 목록 (데모) */}
+                      <div className="space-y-3">
+                        {[1, 2, 3].map((i) => (
+                          <Card key={i} className="p-3">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700" />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-medium text-sm">사용자 {i}</span>
+                                  <div className="flex">
+                                    {[...Array(5)].map((_, j) => (
+                                      <Star key={j} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                                    ))}
+                                  </div>
+                                </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  훌륭한 훈련 프로그램과 친절한 강사진입니다. 우리 강아지가 많이 발전했어요!
+                                </p>
+                                <span className="text-xs text-gray-400 mt-1">2024.10.{20 + i}</span>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
                       </div>
                     </div>
-                    
-                    {/* 리뷰 목록 (데모) */}
-                    <div className="space-y-3">
-                      {[1, 2, 3].map((i) => (
-                        <Card key={i} className="p-3">
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700" />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium text-sm">사용자 {i}</span>
-                                <div className="flex">
-                                  {[...Array(5)].map((_, j) => (
-                                    <Star key={j} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                                  ))}
-                                </div>
-                              </div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                훌륭한 훈련 프로그램과 친절한 강사진입니다. 우리 강아지가 많이 발전했어요!
-                              </p>
-                              <span className="text-xs text-gray-400 mt-1">2024.10.{20 + i}</span>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                </TabsContent>
+                  </TabsContent>
+                )}
                 
                 {/* 업체 정보 탭 */}
                 <TabsContent value="info" className="p-4 m-0">
