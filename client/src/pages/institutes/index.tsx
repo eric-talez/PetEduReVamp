@@ -51,6 +51,7 @@ export default function LocationServices() {
   const [breedFilter, setBreedFilter] = useState<DogBreed>("all");
   const [specialFilter, setSpecialFilter] = useState<string>("none"); // 'none', 'certification', 'premium'
   const [selectedInstitute, setSelectedInstitute] = useState<any | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const { toast} = useToast();
   
   // 실제 기관 데이터 가져오기
@@ -77,13 +78,37 @@ export default function LocationServices() {
       window.location.href = "/auth";
     }, 3000);
   };
+
+  // 검색 처리 함수
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      toast({
+        title: "검색어를 입력하세요",
+        description: "기관명, 지역 등으로 검색할 수 있습니다.",
+        variant: "default",
+      });
+      return;
+    }
+
+    toast({
+      title: "검색 중...",
+      description: `"${searchTerm}"로 검색합니다.`,
+    });
+
+    // 검색어로 지역 필터 자동 설정
+    const lowerSearch = searchTerm.toLowerCase();
+    if (lowerSearch.includes('서울')) setRegionFilter('서울');
+    else if (lowerSearch.includes('경기')) setRegionFilter('경기');
+    else if (lowerSearch.includes('부산') || lowerSearch.includes('경상')) setRegionFilter('경상');
+    else if (lowerSearch.includes('인천')) setRegionFilter('인천');
+    else if (lowerSearch.includes('강원')) setRegionFilter('강원');
+    else if (lowerSearch.includes('충청')) setRegionFilter('충청');
+    else if (lowerSearch.includes('전라')) setRegionFilter('전라');
+    else if (lowerSearch.includes('제주')) setRegionFilter('제주');
+  };
   
   // 위치 정보가 있는 기관만 필터링하고 표시 데이터 매핑
   const institutesArray = Array.isArray(institutesData?.data) ? institutesData.data : [];
-  
-  console.log('API Response:', institutesData);
-  console.log('Institutes Array:', institutesArray);
-  console.log('Institutes with location:', institutesArray.filter((inst: any) => inst.latitude && inst.longitude));
   
   const institutes = institutesArray
     .filter((inst: any) => inst.latitude && inst.longitude)
@@ -108,8 +133,6 @@ export default function LocationServices() {
       latitude: inst.latitude,
       longitude: inst.longitude
     }));
-  
-  console.log('Final institutes array:', institutes);
   
   // 업데이트된 데이터: 교육 시설 + 다양한 반려견 서비스 위치 포함
   const mockInstitutes = [
@@ -337,7 +360,7 @@ export default function LocationServices() {
     }
   ];
 
-  // 지역, 견종, 카테고리를 모두 고려한 필터링
+  // 지역, 견종, 카테고리, 검색어를 모두 고려한 필터링
   const filteredInstitutes = institutes
     .filter(institute => {
       // 서비스 타입 필터링
@@ -352,8 +375,14 @@ export default function LocationServices() {
         institute.breedSupport?.includes("반려견 전체") ||
         false;
       
+      // 검색어 필터링 (기관명, 주소, 설명에서 검색)
+      const searchMatch = !searchTerm.trim() || 
+        institute.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        institute.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        institute.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      
       // 모든 조건을 만족해야 함
-      return categoryMatch && regionMatch && breedMatch;
+      return categoryMatch && regionMatch && breedMatch && searchMatch;
     });
   
   // 추가 필터링 (인증, 프리미엄) - 옵셔널 체이닝 사용
@@ -418,8 +447,14 @@ export default function LocationServices() {
               type="text" 
               placeholder="지역, 전문 분야로 위치 서비스 찾기" 
               className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
-            <Button className="ml-2">
+            <Button 
+              className="ml-2"
+              onClick={handleSearch}
+            >
               검색
             </Button>
           </div>
