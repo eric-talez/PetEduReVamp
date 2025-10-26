@@ -12,10 +12,90 @@ import {
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart, Loader2, Award, X,
   ChevronLeft, ChevronRight, ExternalLink, Phone, Clock,
-  Image as ImageIcon, MessageSquare, Info, Cloud
+  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+
+// 훈련사 목록 컴포넌트
+function TrainersList({ instituteId, instituteName }: { instituteId: string | number; instituteName: string }) {
+  const { data: trainersData, isLoading } = useQuery({
+    queryKey: ['/api/trainers', instituteId],
+    queryFn: async () => {
+      const response = await fetch(`/api/trainers?instituteId=${instituteId}`);
+      if (!response.ok) throw new Error('Failed to fetch trainers');
+      return response.json();
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const trainers = trainersData?.data || trainersData || [];
+
+  if (trainers.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Users className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+        <p className="text-gray-500 dark:text-gray-400">등록된 훈련사가 없습니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {trainers.map((trainer: any) => (
+        <Card 
+          key={trainer.id}
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => {
+            window.location.href = `/trainers/${trainer.id}`;
+          }}
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+              <Users className="h-8 w-8 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg mb-1">{trainer.name}</h3>
+              <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                {trainer.specialty && (
+                  <div className="flex items-center gap-1">
+                    <GraduationCap className="h-3.5 w-3.5" />
+                    <span>{trainer.specialty}</span>
+                  </div>
+                )}
+                {trainer.email && (
+                  <div className="flex items-center gap-1">
+                    <Mail className="h-3.5 w-3.5" />
+                    <span>{trainer.email}</span>
+                  </div>
+                )}
+                {trainer.experience && (
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3.5 w-3.5 text-yellow-500" />
+                    <span>경력 {trainer.experience}년</span>
+                  </div>
+                )}
+              </div>
+              {trainer.certification && (
+                <Badge variant="outline" className="mt-2">
+                  <Shield className="h-3 w-3 mr-1" />
+                  인증 훈련사
+                </Badge>
+              )}
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 // 위치 서비스 타입 정의
 type LocationType = 
@@ -73,6 +153,8 @@ export default function LocationServices() {
   const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [detailInstitute, setDetailInstitute] = useState<any | null>(null);
+  const [trainersDialogOpen, setTrainersDialogOpen] = useState(false);
+  const [selectedInstituteForTrainers, setSelectedInstituteForTrainers] = useState<any | null>(null);
   const { toast} = useToast();
   
   // 실제 기관 데이터 가져오기
@@ -753,14 +835,31 @@ export default function LocationServices() {
                       </Badge>
                       
                       {institute.trainers > 0 && (
-                        <Badge variant="outline">
+                        <Badge 
+                          variant="outline"
+                          className="cursor-pointer hover:bg-primary/10 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedInstituteForTrainers(institute);
+                            setTrainersDialogOpen(true);
+                          }}
+                          data-testid={`badge-trainers-${institute.id}`}
+                        >
                           <Users className="h-3 w-3 mr-1" />
                           훈련사 {institute.trainers}명
                         </Badge>
                       )}
                       
                       {institute.courses > 0 && (
-                        <Badge variant="outline">
+                        <Badge 
+                          variant="outline"
+                          className="cursor-pointer hover:bg-primary/10 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = '/curriculum';
+                          }}
+                          data-testid={`badge-courses-${institute.id}`}
+                        >
                           <BookOpen className="h-3 w-3 mr-1" />
                           강의 {institute.courses}개
                         </Badge>
@@ -1103,6 +1202,26 @@ export default function LocationServices() {
           </Button>
         </div>
       </div>
+      
+      {/* 훈련사 목록 팝업 */}
+      <Dialog open={trainersDialogOpen} onOpenChange={setTrainersDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {selectedInstituteForTrainers?.name} - 훈련사 목록
+            </DialogTitle>
+            <DialogDescription>
+              등록된 훈련사를 클릭하면 상세 정보를 확인할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4">
+            {selectedInstituteForTrainers && (
+              <TrainersList instituteId={selectedInstituteForTrainers.id} instituteName={selectedInstituteForTrainers.name} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
       
       {/* 상세 정보 팝업 다이얼로그 */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
