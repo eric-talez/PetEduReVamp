@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Search, Filter, MapPin, Star, Users, Building, Calendar, 
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
-  Map, PawPrint, Scissors, Heart
+  Map, PawPrint, Scissors, Heart, Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 // 위치 서비스 타입 정의
 type LocationType = 
@@ -49,8 +50,13 @@ export default function LocationServices() {
   const [regionFilter, setRegionFilter] = useState<Region>("all");
   const [breedFilter, setBreedFilter] = useState<DogBreed>("all");
   const [specialFilter, setSpecialFilter] = useState<string>("none"); // 'none', 'certification', 'premium'
-  const [selectedInstitute, setSelectedInstitute] = useState<typeof institutes[0] | null>(null);
-  const { toast } = useToast();
+  const [selectedInstitute, setSelectedInstitute] = useState<any | null>(null);
+  const { toast} = useToast();
+  
+  // 실제 기관 데이터 가져오기
+  const { data: institutesData, isLoading } = useQuery({
+    queryKey: ['/api/institutes'],
+  });
   
   // 로그인 상태 확인 함수
   const isAuthenticated = (): boolean => {
@@ -72,8 +78,33 @@ export default function LocationServices() {
     }, 3000);
   };
   
+  // 위치 정보가 있는 기관만 필터링하고 표시 데이터 매핑
+  const institutes = (institutesData || [])
+    .filter((inst: any) => inst.latitude && inst.longitude)
+    .map((inst: any) => ({
+      id: inst.id,
+      name: inst.name,
+      description: inst.description || '반려동물 교육 기관',
+      image: inst.logo || "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
+      location: inst.address || '위치 정보 없음',
+      rating: inst.rating ? parseFloat(inst.rating) : 4.5,
+      reviews: 0,
+      trainers: 0,
+      courses: 0,
+      facilities: [],
+      openingHours: "평일 10:00 - 18:00",
+      category: "교육 센터",
+      region: inst.address?.includes('서울') ? '서울' : inst.address?.includes('경기') ? '경기' : inst.address?.includes('부산') ? '경상' : '기타',
+      breedSupport: ["소형견", "중형견", "대형견"],
+      certification: true,
+      premium: false,
+      established: "2020년",
+      latitude: inst.latitude,
+      longitude: inst.longitude
+    }));
+  
   // 업데이트된 데이터: 교육 시설 + 다양한 반려견 서비스 위치 포함
-  const institutes = [
+  const mockInstitutes = [
     {
       id: 1,
       name: "행복한 반려견 교육 센터",
@@ -324,21 +355,19 @@ export default function LocationServices() {
       : filteredInstitutes;
 
   // 위치 데이터를 지도용 형식으로 변환하는 함수
-  const getLocationFromInstitute = (institute: typeof institutes[0]) => {
-    // 실제 API에서는 정확한 좌표 사용 필요
-    // 여기서는 기관마다 서울 시내 랜덤 좌표 생성
-    const baseLat = 37.5665;
-    const baseLng = 126.9780;
+  const getLocationFromInstitute = (institute: any) => {
+    // 실제 위치 정보 사용
+    if (institute.latitude && institute.longitude) {
+      return {
+        lat: parseFloat(institute.latitude),
+        lng: parseFloat(institute.longitude)
+      };
+    }
     
-    // 기관 ID를 시드로 사용하여 일관된 좌표 생성
-    const latOffset = (institute.id * 0.01) % 0.1;
-    const lngOffset = (institute.id * 0.015) % 0.15;
-    
+    // 백업: 기본 서울 좌표
     return {
-      lat: baseLat + latOffset,
-      lng: baseLng + lngOffset,
-      name: institute.name,
-      address: institute.location
+      lat: 37.5665,
+      lng: 126.9780
     };
   };
 
@@ -626,6 +655,17 @@ export default function LocationServices() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* 왼쪽 열 - 위치 서비스 목록 */}
         <div className="w-full lg:w-2/3">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">기관 정보를 불러오는 중...</span>
+            </div>
+          ) : finalFilteredInstitutes.length === 0 ? (
+            <div className="text-center py-12">
+              <MapPin className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-600 dark:text-gray-400">위치 정보가 등록된 기관이 없습니다.</p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 gap-6">
             {finalFilteredInstitutes.map((institute) => (
               <Card 
@@ -749,8 +789,10 @@ export default function LocationServices() {
               </Card>
             ))}
           </div>
+          )}
           
           {/* Pagination */}
+          {!isLoading && finalFilteredInstitutes.length > 0 && (
           <div className="mt-8 flex justify-center">
             <nav className="flex items-center space-x-2">
               <Button variant="outline" size="sm" className="text-sm">
@@ -767,6 +809,7 @@ export default function LocationServices() {
               </Button>
             </nav>
           </div>
+          )}
         </div>
         
         {/* 오른쪽 열 - 지도 & 날씨 */}
