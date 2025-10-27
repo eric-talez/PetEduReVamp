@@ -408,7 +408,7 @@ export default function LocationServices() {
         category: "훈련소",
         region: inst.address?.includes('서울') ? '서울' : inst.address?.includes('경기') ? '경기' : inst.address?.includes('부산') ? '경상' : '기타',
         breedSupport: ["소형견", "중형견", "대형견"],
-        certification: inst.name === '아틀리독' || inst.name === '왕짱스쿨', // 공식 인증 업체만
+        certification: inst.certification || false, // DB의 certification 필드 사용
         premium: false,
         established: "2020년",
         latitude: inst.latitude,
@@ -1668,9 +1668,30 @@ function InstituteEditDialog({
     phone: '',
     openingHours: '',
     established: '',
+    address: '',
+    latitude: '',
+    longitude: '',
+    certification: false,
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const { toast } = useToast();
+
+  // 로그인 사용자 정보 가져오기
+  const getUserInfo = () => {
+    const storedAuth = localStorage.getItem('petedu_auth');
+    if (!storedAuth) return null;
+    try {
+      return JSON.parse(storedAuth);
+    } catch {
+      return null;
+    }
+  };
+
+  const userInfo = getUserInfo();
+  const isAdmin = userInfo?.role === 'admin';
 
   // institute가 변경될 때 formData 업데이트
   useEffect(() => {
@@ -1681,9 +1702,68 @@ function InstituteEditDialog({
         phone: institute.phone || '',
         openingHours: institute.openingHours || '',
         established: institute.established || '',
+        address: institute.location || '',
+        latitude: institute.latitude?.toString() || '',
+        longitude: institute.longitude?.toString() || '',
+        certification: institute.certification || false,
       });
     }
   }, [institute]);
+
+  // 위치 검색 핸들러
+  const handleLocationSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "검색어 입력",
+        description: "검색할 장소 이름이나 주소를 입력하세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchResults([]);
+    
+    try {
+      const response = await fetch(`/api/locations/search?query=${encodeURIComponent(searchQuery)}&lat=37.5665&lng=126.9780`);
+      if (!response.ok) throw new Error('위치 검색 실패');
+      
+      const results = await response.json();
+      setSearchResults(results);
+      
+      if (results.length === 0) {
+        toast({
+          title: "검색 결과 없음",
+          description: "검색 결과가 없습니다. 다른 검색어를 시도해보세요.",
+        });
+      }
+    } catch (error) {
+      console.error('위치 검색 오류:', error);
+      toast({
+        title: "검색 실패",
+        description: "위치 검색 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // 검색 결과 선택 핸들러
+  const handleSelectLocation = (place: any) => {
+    setFormData({
+      ...formData,
+      address: place.address || '',
+      latitude: place.latitude?.toString() || '',
+      longitude: place.longitude?.toString() || '',
+    });
+    setSearchResults([]);
+    setSearchQuery('');
+    toast({
+      title: "위치 선택 완료",
+      description: `${place.name}의 위치가 설정되었습니다.`,
+    });
+  };
 
   const handleSave = async () => {
     if (!institute) return;
@@ -1780,6 +1860,149 @@ function InstituteEditDialog({
               placeholder="업체 소개를 입력하세요"
             />
           </div>
+
+          {/* 위치 검색 섹션 */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              위치 정보
+            </h3>
+            
+            {/* 위치 검색 */}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">위치 검색</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleLocationSearch();
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    placeholder="장소 이름이나 주소를 입력하세요"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleLocationSearch}
+                    disabled={isSearching}
+                    size="sm"
+                  >
+                    {isSearching ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        검색 중
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4 mr-1" />
+                        검색
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* 검색 결과 */}
+              {searchResults.length > 0 && (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-md p-2 max-h-60 overflow-y-auto">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 px-2">
+                    {searchResults.length}개의 검색 결과
+                  </p>
+                  <div className="space-y-1">
+                    {searchResults.map((place: any, index: number) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => handleSelectLocation(place)}
+                        className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{place.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {place.address}
+                            </p>
+                            {place.isTalez && (
+                              <Badge variant="outline" className="mt-1 text-xs">
+                                <Award className="h-3 w-3 mr-1" />
+                                TALEZ 등록
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 주소 표시/수정 */}
+              <div>
+                <label className="block text-sm font-medium mb-1">주소</label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder="주소를 입력하세요"
+                />
+              </div>
+
+              {/* 위도/경도 */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">위도</label>
+                  <input
+                    type="text"
+                    value={formData.latitude}
+                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    placeholder="37.5665"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">경도</label>
+                  <input
+                    type="text"
+                    value={formData.longitude}
+                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    placeholder="126.9780"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 관리자 전용: 인증 마크 */}
+          {isAdmin && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Award className="h-4 w-4 text-yellow-500" />
+                  <label className="text-sm font-semibold">테일즈 공식 인증</label>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.certification}
+                    onChange={(e) => setFormData({ ...formData, certification: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-yellow-500"></div>
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                관리자만 인증 마크를 부여하거나 제거할 수 있습니다.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3 mt-6">

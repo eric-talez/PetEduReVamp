@@ -10581,8 +10581,21 @@ app.get('/api/search', async (req, res) => {
         });
       }
 
-      const institute = await storage.updateInstitute(instituteId, req.body);
-      console.log('[Institute] 기관 정보 업데이트:', { instituteId, userId: req.session.user?.id });
+      // 업데이트 데이터 준비
+      const updateData = { ...req.body };
+      
+      // 기관 관리자는 certification 필드 수정 불가 (관리자만 가능)
+      if (req.session.user?.role !== 'admin' && 'certification' in updateData) {
+        console.log('[Institute] 기관 관리자는 인증 마크를 수정할 수 없습니다');
+        delete updateData.certification;
+      }
+
+      const institute = await storage.updateInstitute(instituteId, updateData);
+      console.log('[Institute] 기관 정보 업데이트:', { 
+        instituteId, 
+        userId: req.session.user?.id,
+        updatedFields: Object.keys(updateData)
+      });
       
       res.json({
         success: true,
