@@ -1997,8 +1997,21 @@ class Storage {
       return null;
     }
 
+    // 데이터 정규화: 위도/경도를 숫자로 변환
+    const normalizedData = { ...updateData };
+    if ('latitude' in normalizedData && normalizedData.latitude !== null && normalizedData.latitude !== undefined) {
+      normalizedData.latitude = typeof normalizedData.latitude === 'string' 
+        ? parseFloat(normalizedData.latitude) 
+        : normalizedData.latitude;
+    }
+    if ('longitude' in normalizedData && normalizedData.longitude !== null && normalizedData.longitude !== undefined) {
+      normalizedData.longitude = typeof normalizedData.longitude === 'string' 
+        ? parseFloat(normalizedData.longitude) 
+        : normalizedData.longitude;
+    }
+
     // 기존 정보와 업데이트 데이터 병합
-    Object.assign(institute, updateData, {
+    Object.assign(institute, normalizedData, {
       updatedAt: new Date().toISOString()
     });
 

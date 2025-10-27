@@ -221,7 +221,7 @@ export default function LocationServices() {
     setAiRecommendations([]);
     
     try {
-      const response = await apiRequest('POST', '/api/ai/match-institutes', { petId });
+      const response = await apiRequest('POST', '/api/ai/match-institutes', { petId }) as any;
       
       if (response.success) {
         setAiMatchingPet(response.pet);
@@ -249,7 +249,7 @@ export default function LocationServices() {
 
   // 추천 기관 상세보기
   const handleViewRecommendedInstitute = (instituteId: number) => {
-    const allInstitutes = [...(dbInstitutes || []), ...searchResults];
+    const allInstitutes = [...(institutes || []), ...searchResults];
     const institute = allInstitutes.find(inst => Number(inst.id) === Number(instituteId));
     
     if (institute) {
@@ -1770,7 +1770,14 @@ function InstituteEditDialog({
     
     setIsSaving(true);
     try {
-      await apiRequest('PUT', `/api/institutes/${institute.id}`, formData);
+      // 위도/경도를 숫자로 변환 (데이터 타입 정규화)
+      const dataToSave = {
+        ...formData,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+      };
+
+      await apiRequest('PUT', `/api/institutes/${institute.id}`, dataToSave);
 
       onSuccess();
       onOpenChange(false);
