@@ -12,7 +12,7 @@ import {
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart, Loader2, Award, X,
   ChevronLeft, ChevronRight, ExternalLink, Phone, Clock,
-  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit, Bot, Navigation
+  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit, Bot, Navigation, Utensils, Trees
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -108,7 +108,9 @@ type LocationType =
   | "수영장" 
   | "캠핑장" 
   | "병원" 
-  | "미용";
+  | "미용"
+  | "음식점"
+  | "공원";
 
 // 견종 카테고리
 type DogBreed = 
@@ -288,7 +290,9 @@ export default function LocationServices() {
       "수영장": "반려견 수영장 애견수영장 pet pool",
       "캠핑장": "반려견 캠핑장 애견캠핑 pet camping",
       "병원": "동물병원 애견병원 veterinary",
-      "미용": "반려견 미용 애견미용 pet grooming"
+      "미용": "반려견 미용 애견미용 pet grooming",
+      "음식점": "반려견 음식점 애견 레스토랑 pet restaurant dog friendly restaurant",
+      "공원": "반려견 공원 애견공원 pet park dog park"
     };
     return keywords[category] || category;
   };
@@ -772,6 +776,8 @@ export default function LocationServices() {
       case "캠핑장": return <Tent className="h-4 w-4 mr-1" />;
       case "병원": return <Heart className="h-4 w-4 mr-1" />;
       case "미용": return <Scissors className="h-4 w-4 mr-1" />;
+      case "음식점": return <Utensils className="h-4 w-4 mr-1" />;
+      case "공원": return <Trees className="h-4 w-4 mr-1" />;
       default: return <Building className="h-4 w-4 mr-1" />;
     }
   };
@@ -1088,6 +1094,36 @@ export default function LocationServices() {
           >
             <Scissors className="h-3 w-3 mr-1" />
             미용
+          </Button>
+          
+          <Button
+            variant={filter === "음식점" ? "default" : "outline"}
+            size="sm"
+            onClick={async () => {
+              setFilter("음식점");
+              setSpecialFilter("none");
+              await handleCategorySearch("음식점");
+            }}
+            className="text-xs"
+            data-testid="button-category-restaurant"
+          >
+            <Utensils className="h-3 w-3 mr-1" />
+            음식점
+          </Button>
+          
+          <Button
+            variant={filter === "공원" ? "default" : "outline"}
+            size="sm"
+            onClick={async () => {
+              setFilter("공원");
+              setSpecialFilter("none");
+              await handleCategorySearch("공원");
+            }}
+            className="text-xs"
+            data-testid="button-category-park"
+          >
+            <Trees className="h-3 w-3 mr-1" />
+            공원
           </Button>
           
           <Button

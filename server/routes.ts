@@ -2809,6 +2809,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (q.includes('병원') || q.includes('clinic') || q.includes('veterinary')) return '병원';
         if (q.includes('훈련소') || q.includes('training')) return '훈련소';
         if (q.includes('미용') || q.includes('grooming')) return '미용';
+        if (q.includes('음식점') || q.includes('레스토랑') || q.includes('restaurant')) return '음식점';
+        if (q.includes('공원') || q.includes('park')) return '공원';
         return '기타';
       };
       
