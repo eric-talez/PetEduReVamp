@@ -2807,15 +2807,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const placeAddress = place.formatted_address?.toLowerCase() || '';
           const placeTypes = (place.types || []).join(' ').toLowerCase();
           
-          // 키워드 중 하나라도 매치되면 포함
-          // "카페", "cafe", "반려견", "pet" 등 하나라도 이름이나 주소에 있으면 OK
-          const hasMatch = keywords.some(keyword => 
+          // 반려견 관련 키워드 목록 (장소 이름에 이 키워드가 있으면 무조건 포함)
+          const petKeywords = ['반려견', '애견', '펫', 'pet', 'dog', '강아지', '멍멍이', '도그'];
+          
+          // 1. 장소 이름에 반려견 관련 키워드가 있으면 무조건 포함
+          const hasPetKeyword = petKeywords.some(keyword => placeName.includes(keyword));
+          
+          // 2. 검색어 키워드 중 하나라도 매치되면 포함
+          const hasSearchMatch = keywords.some(keyword => 
             placeName.includes(keyword) || 
             placeAddress.includes(keyword) ||
             placeTypes.includes(keyword)
           );
           
-          console.log(`[Filter] ${place.name}: ${hasMatch ? 'PASS' : 'FILTERED'} (keywords: ${keywords.join(', ')})`);
+          const hasMatch = hasPetKeyword || hasSearchMatch;
+          
+          console.log(`[Filter] ${place.name}: ${hasMatch ? 'PASS' : 'FILTERED'} (petKeyword: ${hasPetKeyword}, searchMatch: ${hasSearchMatch})`);
           
           return hasMatch;
         })
