@@ -166,6 +166,7 @@ export default function LocationServices() {
   const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
   const [isAiMatching, setIsAiMatching] = useState(false);
   const [mobileMapDialogOpen, setMobileMapDialogOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<string>("distance"); // 정렬 기준: distance, rating, reviews, name
   const { toast} = useToast();
   
   // 로그인 사용자 정보 가져오기
@@ -762,7 +763,38 @@ export default function LocationServices() {
   );
   
   // 4. DB 기관을 먼저 배치하고 구글 검색 결과를 뒤에 추가
-  const finalFilteredInstitutes = [...filteredDbInstitutes, ...uniqueSearchResults];
+  let finalFilteredInstitutes = [...filteredDbInstitutes, ...uniqueSearchResults];
+  
+  // 5. 정렬 적용
+  finalFilteredInstitutes = finalFilteredInstitutes.sort((a, b) => {
+    switch (sortBy) {
+      case "distance":
+        // 거리순 (가까운 순) - distance가 없으면 뒤로
+        if (a.distance === undefined && b.distance === undefined) return 0;
+        if (a.distance === undefined) return 1;
+        if (b.distance === undefined) return -1;
+        return a.distance - b.distance;
+      
+      case "rating":
+        // 평점순 (높은 순)
+        const ratingA = parseFloat(a.rating) || 0;
+        const ratingB = parseFloat(b.rating) || 0;
+        return ratingB - ratingA;
+      
+      case "reviews":
+        // 후기 많은 순
+        const reviewsA = parseInt(a.reviews) || 0;
+        const reviewsB = parseInt(b.reviews) || 0;
+        return reviewsB - reviewsA;
+      
+      case "name":
+        // 이름순 (가나다순)
+        return a.name.localeCompare(b.name, 'ko');
+      
+      default:
+        return 0;
+    }
+  });
 
   // 위치 데이터를 지도용 형식으로 변환하는 함수
   const getLocationFromInstitute = (institute: any) => {
@@ -1245,24 +1277,46 @@ export default function LocationServices() {
             </div>
           ) : (
           <>
-            {/* 검색 결과 카운터 - 접근성 개선 */}
+            {/* 검색 결과 카운터 및 정렬 - 접근성 개선 */}
             <div 
               className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border border-green-200 dark:border-green-800"
               aria-live="polite"
               aria-atomic="true"
             >
-              <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <p className="text-sm md:text-base font-medium text-green-800 dark:text-green-200">
                     검색 결과 <span className="text-lg font-bold text-green-700 dark:text-green-300">{finalFilteredInstitutes.length}건</span>
                   </p>
                 </div>
-                {filter !== "all" && (
-                  <span className="text-xs md:text-sm text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full">
-                    {filter} 필터 적용 중
-                  </span>
-                )}
+                
+                <div className="flex items-center gap-2 flex-wrap">
+                  {filter !== "all" && (
+                    <span className="text-xs md:text-sm text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full">
+                      {filter} 필터 적용 중
+                    </span>
+                  )}
+                  
+                  {/* 정렬 옵션 */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs md:text-sm text-green-700 dark:text-green-300 font-medium">정렬:</span>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger 
+                        className="w-[140px] h-8 text-xs md:text-sm bg-white dark:bg-gray-900 border-green-300 dark:border-green-700"
+                        aria-label="검색 결과 정렬 방식 선택"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="distance">거리순</SelectItem>
+                        <SelectItem value="rating">평점순</SelectItem>
+                        <SelectItem value="reviews">후기 많은 순</SelectItem>
+                        <SelectItem value="name">이름순</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             </div>
             
