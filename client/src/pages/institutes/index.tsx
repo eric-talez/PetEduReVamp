@@ -282,9 +282,11 @@ export default function LocationServices() {
 
   // 카테고리 검색 함수
   const handleCategorySearch = async (category: LocationType) => {
+    console.log('[Category Search] 시작:', category);
     if (category === "all") return; // 전체는 필터만 적용
     
     const keyword = getCategorySearchKeyword(category);
+    console.log('[Category Search] 검색 키워드:', keyword);
     setIsSearching(true);
     
     try {
@@ -299,20 +301,24 @@ export default function LocationServices() {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           };
+          console.log('[Category Search] 사용자 위치:', userLocation);
         } catch (err) {
           console.log('위치 정보를 가져올 수 없습니다. 기본 위치 사용');
         }
       }
       
-      const response = await fetch(
-        `/api/locations/search?query=${encodeURIComponent(keyword)}&lat=${userLocation.lat}&lng=${userLocation.lng}`
-      );
+      const apiUrl = `/api/locations/search?query=${encodeURIComponent(keyword)}&lat=${userLocation.lat}&lng=${userLocation.lng}`;
+      console.log('[Category Search] API 호출:', apiUrl);
+      
+      const response = await fetch(apiUrl);
       
       if (!response.ok) {
+        console.error('[Category Search] API 에러:', response.status, response.statusText);
         throw new Error('검색에 실패했습니다.');
       }
       
       const results = await response.json();
+      console.log('[Category Search] API 응답:', results.length, '개 결과');
       
       const formattedResults = results.map((place: any) => {
         const address = place.address || '';
@@ -353,8 +359,12 @@ export default function LocationServices() {
         };
       });
       
+      console.log('[Category Search] 포맷팅된 결과:', formattedResults);
+      
       setSearchResults(formattedResults);
       setHasSearched(true);
+      
+      console.log('[Category Search] searchResults 상태 업데이트됨');
       
       toast({
         title: `${category} 검색 완료`,
