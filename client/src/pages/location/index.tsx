@@ -1561,13 +1561,13 @@ function LocationPageContent() {
       </div>
 
       {/* 오른쪽: 지도 */}
-      <div className="w-full lg:w-3/5 flex-shrink-0">
-        <Card className="h-full">
+      <div className="w-full lg:w-3/5 flex-shrink-0 min-h-[400px] lg:min-h-0">
+        <Card className="h-full min-h-[400px] lg:min-h-0">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">지도</CardTitle>
               {currentLocation && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground hidden sm:block">
                   현재 위치: {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}
                 </div>
               )}
