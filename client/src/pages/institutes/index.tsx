@@ -427,15 +427,31 @@ export default function LocationServices() {
       
       if (error.code === 1) { // PERMISSION_DENIED
         toast({
-          title: "위치 접근 권한 없음",
-          description: "브라우저 설정에서 위치 접근 권한을 허용해주세요.",
+          title: "위치 접근 권한 필요",
+          description: "브라우저 주소창 왼쪽의 🔒 아이콘을 클릭하여 '위치' 권한을 허용해주세요. 허용 후 '내 위치 찾기' 버튼을 다시 눌러주세요.",
           variant: "destructive",
+          duration: 8000,
+        });
+      } else if (error.code === 2) { // POSITION_UNAVAILABLE
+        toast({
+          title: "위치 정보 사용 불가",
+          description: "현재 위치를 확인할 수 없습니다. 네트워크 연결을 확인하고 다시 시도해주세요.",
+          variant: "destructive",
+          duration: 6000,
+        });
+      } else if (error.code === 3) { // TIMEOUT
+        toast({
+          title: "위치 확인 시간 초과",
+          description: "위치 확인에 시간이 너무 오래 걸립니다. 다시 시도해주세요.",
+          variant: "destructive",
+          duration: 6000,
         });
       } else {
         toast({
           title: "검색 실패",
-          description: "위치를 가져오는 중 오류가 발생했습니다.",
+          description: "위치를 가져오는 중 오류가 발생했습니다. 다시 시도해주세요.",
           variant: "destructive",
+          duration: 5000,
         });
       }
     } finally {
