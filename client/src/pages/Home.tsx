@@ -8,7 +8,7 @@ import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { RealTimePopularChart } from '@/components/RealTimePopularChart';
 import { useState, lazy, Suspense, useEffect, useMemo } from 'react';
-import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCircle, MapPin, Video, ArrowRight } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCircle, MapPin, Video, ArrowRight, BookOpen, Users as LucideUsers } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +27,6 @@ interface Banner {
   isActive: boolean;
 }
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users } from "lucide-react"
 import { 
   TalezSection,
   TalezPageHeader,
@@ -1458,9 +1457,7 @@ export default function Home() {
           <TalezGrid cols={3}>
             <TalezCard variant="default">
               <TalezIcon bg="var(--tile-blue)">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
+                <BookOpen className="h-6 w-6" />
               </TalezIcon>
               <div>
                 <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>교육 프로그램</h3>
@@ -1473,9 +1470,7 @@ export default function Home() {
 
             <TalezCard variant="default">
               <TalezIcon bg="var(--tile-green)">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+                <LucideUsers className="h-6 w-6" />
               </TalezIcon>
               <div>
                 <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>전문 트레이너</h3>
@@ -1488,9 +1483,7 @@ export default function Home() {
 
             <TalezCard variant="default">
               <TalezIcon bg="var(--tile-purple)">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
+                <Video className="h-6 w-6" />
               </TalezIcon>
               <div>
                 <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>온라인 화상 교육</h3>
