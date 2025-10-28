@@ -12,7 +12,7 @@ import {
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart, Loader2, Award, X,
   ChevronLeft, ChevronRight, ExternalLink, Phone, Clock,
-  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit, Bot
+  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit, Bot, Navigation
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -265,6 +265,19 @@ export default function LocationServices() {
     }
   };
 
+  // 거리 계산 함수 (Haversine 공식)
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // 지구 반지름 (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // km 단위 거리
+  };
+
   // 카테고리별 검색 키워드 매핑
   const getCategorySearchKeyword = (category: LocationType): string => {
     const keywords: Record<string, string> = {
@@ -278,6 +291,152 @@ export default function LocationServices() {
       "미용": "반려견 미용 애견미용 pet grooming"
     };
     return keywords[category] || category;
+  };
+
+  // 내 위치 찾기 핸들러
+  const handleFindNearby = async () => {
+    setIsSearching(true);
+    
+    try {
+      // 사용자 위치 가져오기
+      if (!navigator.geolocation) {
+        toast({
+          title: "위치 서비스 사용 불가",
+          description: "브라우저에서 위치 서비스를 지원하지 않습니다.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { 
+          timeout: 10000,
+          enableHighAccuracy: true 
+        });
+      });
+
+      const userLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+
+      console.log('[Find Nearby] 사용자 위치:', userLocation);
+
+      // 반려견 관련 장소 검색 (여러 카테고리)
+      const searchQueries = [
+        "반려견 훈련소",
+        "동물병원",
+        "반려견 카페",
+        "반려견 펜션",
+        "반려견 미용"
+      ];
+
+      const allResults: any[] = [];
+
+      // 모든 카테고리 검색
+      for (const query of searchQueries) {
+        const apiUrl = `/api/locations/search?query=${encodeURIComponent(query)}&lat=${userLocation.lat}&lng=${userLocation.lng}`;
+        const response = await fetch(apiUrl);
+        
+        if (response.ok) {
+          const results = await response.json();
+          allResults.push(...results);
+        }
+      }
+
+      console.log('[Find Nearby] 검색 결과:', allResults.length, '개');
+
+      // 거리 계산 및 정렬
+      const resultsWithDistance = allResults.map((place: any) => {
+        const distance = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          parseFloat(place.latitude),
+          parseFloat(place.longitude)
+        );
+
+        const address = place.address || '';
+        let region = '기타';
+        if (address.includes('서울')) region = '서울';
+        else if (address.includes('경기')) region = '경기';
+        else if (address.includes('인천')) region = '인천';
+        else if (address.includes('강원')) region = '강원';
+        else if (address.includes('충청') || address.includes('충남') || address.includes('충북') || address.includes('대전') || address.includes('세종')) region = '충청';
+        else if (address.includes('전라') || address.includes('전남') || address.includes('전북') || address.includes('광주')) region = '전라';
+        else if (address.includes('경상') || address.includes('경남') || address.includes('경북') || address.includes('부산') || address.includes('대구') || address.includes('울산')) region = '경상';
+        else if (address.includes('제주')) region = '제주';
+
+        return {
+          id: place.id,
+          name: place.name,
+          location: place.address,
+          latitude: place.latitude.toString(),
+          longitude: place.longitude.toString(),
+          image: place.photo || '/images/institutes/default-institute.png',
+          images: place.photos || (place.photo ? [place.photo] : ['/images/institutes/default-institute.png']),
+          category: place.category || '기타',
+          rating: place.rating || 4.0,
+          reviews: place.reviews || Math.floor(Math.random() * 50) + 10,
+          established: place.established || '2020',
+          trainers: place.trainers || Math.floor(Math.random() * 10) + 1,
+          courses: place.courses || Math.floor(Math.random() * 20) + 5,
+          description: place.description || `${place.category} 전문 시설`,
+          facilities: place.facilities || ['편의시설'],
+          openingHours: place.openingHours || '영업시간 문의',
+          certification: place.certification || false,
+          premium: false,
+          isTalez: place.isTalez || false,
+          sourceUrl: place.sourceUrl || null,
+          phone: place.phone || '',
+          region: region,
+          breedSupport: ["소형견", "중형견", "대형견", "반려견 전체"],
+          distance: distance, // 거리 정보 추가
+        };
+      });
+
+      // 중복 제거 (같은 이름, 같은 주소)
+      const uniqueResults = resultsWithDistance.filter((result, index, self) => 
+        index === self.findIndex((r) => r.name === result.name && r.location === result.location)
+      );
+
+      // 거리순 정렬
+      const sortedResults = uniqueResults.sort((a, b) => a.distance - b.distance);
+
+      console.log('[Find Nearby] 정렬된 결과:', sortedResults.length, '개');
+
+      setSearchResults(sortedResults);
+      setHasSearched(true);
+      setFilter("all");
+      setSpecialFilter("none");
+
+      toast({
+        title: "내 주변 검색 완료",
+        description: `${sortedResults.length}개의 반려견 시설을 찾았습니다. 가까운 순으로 정렬됩니다.`,
+      });
+
+      if (sortedResults.length > 0) {
+        setSelectedInstitute(sortedResults[0]);
+      }
+
+    } catch (error: any) {
+      console.error('내 위치 찾기 오류:', error);
+      
+      if (error.code === 1) { // PERMISSION_DENIED
+        toast({
+          title: "위치 접근 권한 없음",
+          description: "브라우저 설정에서 위치 접근 권한을 허용해주세요.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "검색 실패",
+          description: "위치를 가져오는 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   // 카테고리 검색 함수
@@ -794,6 +953,23 @@ export default function LocationServices() {
             <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">빠른 선택:</span>
           </div>
           
+          {/* 내 위치 찾기 버튼 */}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleFindNearby}
+            disabled={isSearching}
+            className="text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            data-testid="button-find-nearby"
+          >
+            {isSearching ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <Navigation className="h-3 w-3 mr-1" />
+            )}
+            내 위치 찾기
+          </Button>
+          
           <Button
             variant={filter === "교육 센터" ? "default" : "outline"}
             size="sm"
@@ -1103,9 +1279,19 @@ export default function LocationServices() {
                     </div>
                     
                     <div className="space-y-2 mb-3">
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{institute.location}</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center flex-1">
+                          <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{institute.location}</span>
+                        </div>
+                        {institute.distance !== undefined && (
+                          <Badge variant="secondary" className="ml-2 shrink-0">
+                            <Navigation className="h-3 w-3 mr-1" />
+                            {institute.distance < 1 
+                              ? `${Math.round(institute.distance * 1000)}m` 
+                              : `${institute.distance.toFixed(1)}km`}
+                          </Badge>
+                        )}
                       </div>
                       
                       <div className="flex items-center">
