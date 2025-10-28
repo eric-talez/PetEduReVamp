@@ -978,9 +978,9 @@ export default function Home() {
             {/* 배너 콘텐츠 */}
             <div className="relative z-10 flex flex-col justify-center min-h-[400px] py-8 px-6 md:px-12">
               <div className="max-w-4xl mx-auto w-full">
-                <h1 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
+                <h2 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
                   {bannerSlides[currentSlide].title}
-                </h1>
+                </h2>
                 <p className="text-white/90 text-sm md:text-lg mb-4 leading-relaxed max-w-2xl">
                   {bannerSlides[currentSlide].subtitle}
                 </p>
@@ -1003,6 +1003,7 @@ export default function Home() {
                     size="default"
                     className="bg-white text-primary font-semibold hover:bg-white/90 border border-white px-6 py-2.5 rounded-lg shadow-md"
                     onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
+                    aria-label={`${bannerSlides[currentSlide].primaryAction.text} - ${bannerSlides[currentSlide].title}`}
                   >
                     {bannerSlides[currentSlide].primaryAction.text}
                   </Button>
@@ -1011,6 +1012,7 @@ export default function Home() {
                     variant="outline"
                     className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-6 py-2.5 rounded-lg backdrop-blur-sm font-semibold"
                     onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
+                    aria-label={`${bannerSlides[currentSlide].secondaryAction.text} - ${bannerSlides[currentSlide].title}`}
                   >
                     {bannerSlides[currentSlide].secondaryAction.text}
                   </Button>
