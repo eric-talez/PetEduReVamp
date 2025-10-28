@@ -1259,15 +1259,16 @@ export default function LocationServices() {
                 {/* 위치 탭 */}
                 <TabsContent value="location" className="p-4 m-0">
                   <GoogleMapView 
-                    locations={[{
-                      id: selectedInstitute.id,
-                      name: selectedInstitute.name,
-                      address: selectedInstitute.location,
-                      coordinates: getLocationFromInstitute(selectedInstitute)
-                    }]}
+                    locations={finalFilteredInstitutes.map(inst => ({
+                      id: inst.id,
+                      name: inst.name,
+                      address: inst.location,
+                      coordinates: getLocationFromInstitute(inst),
+                      category: inst.category
+                    }))}
                     center={getLocationFromInstitute(selectedInstitute)}
                     height="400px"
-                    zoom={15}
+                    zoom={13}
                   />
                   <div className="mt-3 space-y-2">
                     <div className="flex items-start gap-2 text-sm">
