@@ -264,6 +264,118 @@ export default function LocationServices() {
     }
   };
 
+  // 카테고리별 검색 키워드 매핑
+  const getCategorySearchKeyword = (category: LocationType): string => {
+    const keywords: Record<string, string> = {
+      "훈련소": "반려견 훈련소 애견훈련",
+      "교육 센터": "반려견 교육센터 애견학교",
+      "펜션": "반려견 펜션 애견펜션 pet pension",
+      "카페": "반려견 카페 애견카페 pet cafe",
+      "수영장": "반려견 수영장 애견수영장 pet pool",
+      "캠핑장": "반려견 캠핑장 애견캠핑 pet camping",
+      "병원": "동물병원 애견병원 veterinary",
+      "미용": "반려견 미용 애견미용 pet grooming"
+    };
+    return keywords[category] || category;
+  };
+
+  // 카테고리 검색 함수
+  const handleCategorySearch = async (category: LocationType) => {
+    if (category === "all") return; // 전체는 필터만 적용
+    
+    const keyword = getCategorySearchKeyword(category);
+    setIsSearching(true);
+    
+    try {
+      let userLocation = { lat: 37.5665, lng: 126.9780 };
+      
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+          userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+        } catch (err) {
+          console.log('위치 정보를 가져올 수 없습니다. 기본 위치 사용');
+        }
+      }
+      
+      const response = await fetch(
+        `/api/locations/search?query=${encodeURIComponent(keyword)}&lat=${userLocation.lat}&lng=${userLocation.lng}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('검색에 실패했습니다.');
+      }
+      
+      const results = await response.json();
+      
+      const formattedResults = results.map((place: any) => {
+        const address = place.address || '';
+        let region = '기타';
+        if (address.includes('서울')) region = '서울';
+        else if (address.includes('경기')) region = '경기';
+        else if (address.includes('인천')) region = '인천';
+        else if (address.includes('강원')) region = '강원';
+        else if (address.includes('충청') || address.includes('충남') || address.includes('충북') || address.includes('대전') || address.includes('세종')) region = '충청';
+        else if (address.includes('전라') || address.includes('전남') || address.includes('전북') || address.includes('광주')) region = '전라';
+        else if (address.includes('경상') || address.includes('경남') || address.includes('경북') || address.includes('부산') || address.includes('대구') || address.includes('울산')) region = '경상';
+        else if (address.includes('제주')) region = '제주';
+        
+        return {
+          id: place.id,
+          name: place.name,
+          location: place.address,
+          latitude: place.latitude.toString(),
+          longitude: place.longitude.toString(),
+          image: place.photo || '/images/institutes/default-institute.png',
+          images: place.photos || (place.photo ? [place.photo] : ['/images/institutes/default-institute.png']),
+          category: category,
+          rating: place.rating || 4.0,
+          reviews: place.reviews || Math.floor(Math.random() * 50) + 10,
+          established: place.established || '2020',
+          trainers: place.trainers || Math.floor(Math.random() * 10) + 1,
+          courses: place.courses || Math.floor(Math.random() * 20) + 5,
+          description: place.description || `${category} 전문 시설`,
+          facilities: place.facilities || ['편의시설'],
+          openingHours: place.openingHours || '영업시간 문의',
+          certification: place.certification || false,
+          premium: false,
+          isTalez: place.isTalez || false,
+          sourceUrl: place.sourceUrl || null,
+          phone: place.phone || '',
+          region: region,
+          breedSupport: ["소형견", "중형견", "대형견", "반려견 전체"],
+        };
+      });
+      
+      setSearchResults(formattedResults);
+      setHasSearched(true);
+      
+      toast({
+        title: `${category} 검색 완료`,
+        description: `${formattedResults.length}개의 ${category}를 찾았습니다.`,
+      });
+      
+      if (formattedResults.length > 0) {
+        setSelectedInstitute(formattedResults[0]);
+      }
+      
+    } catch (error) {
+      console.error('검색 오류:', error);
+      toast({
+        title: "검색 실패",
+        description: "검색 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // 검색 처리 함수 - Google Maps 기반 검색
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
@@ -661,12 +773,13 @@ export default function LocationServices() {
           <Button
             variant={filter === "교육 센터" ? "default" : "outline"}
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               setFilter("교육 센터"); 
               setSpecialFilter("none");
-              setHasSearched(true);
+              await handleCategorySearch("교육 센터");
             }}
             className="text-xs"
+            data-testid="button-category-education"
           >
             <Building className="h-3 w-3 mr-1" />
             교육 센터
@@ -675,12 +788,13 @@ export default function LocationServices() {
           <Button
             variant={filter === "훈련소" ? "default" : "outline"}
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               setFilter("훈련소");
               setSpecialFilter("none");
-              setHasSearched(true);
+              await handleCategorySearch("훈련소");
             }}
             className="text-xs"
+            data-testid="button-category-training"
           >
             <PawPrint className="h-3 w-3 mr-1" />
             훈련소
@@ -689,12 +803,13 @@ export default function LocationServices() {
           <Button
             variant={filter === "펜션" ? "default" : "outline"}
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               setFilter("펜션");
               setSpecialFilter("none");
-              setHasSearched(true);
+              await handleCategorySearch("펜션");
             }}
             className="text-xs"
+            data-testid="button-category-pension"
           >
             <Home className="h-3 w-3 mr-1" />
             펜션
@@ -703,12 +818,13 @@ export default function LocationServices() {
           <Button
             variant={filter === "카페" ? "default" : "outline"}
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               setFilter("카페");
               setSpecialFilter("none");
-              setHasSearched(true);
+              await handleCategorySearch("카페");
             }}
             className="text-xs"
+            data-testid="button-category-cafe"
           >
             <Coffee className="h-3 w-3 mr-1" />
             카페
@@ -717,12 +833,13 @@ export default function LocationServices() {
           <Button
             variant={filter === "수영장" ? "default" : "outline"}
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               setFilter("수영장");
               setSpecialFilter("none");
-              setHasSearched(true);
+              await handleCategorySearch("수영장");
             }}
             className="text-xs"
+            data-testid="button-category-pool"
           >
             <Droplets className="h-3 w-3 mr-1" />
             수영장
@@ -731,12 +848,13 @@ export default function LocationServices() {
           <Button
             variant={filter === "캠핑장" ? "default" : "outline"}
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               setFilter("캠핑장");
               setSpecialFilter("none");
-              setHasSearched(true);
+              await handleCategorySearch("캠핑장");
             }}
             className="text-xs"
+            data-testid="button-category-camping"
           >
             <Tent className="h-3 w-3 mr-1" />
             캠핑장
@@ -745,12 +863,13 @@ export default function LocationServices() {
           <Button
             variant={filter === "병원" ? "default" : "outline"}
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               setFilter("병원");
               setSpecialFilter("none");
-              setHasSearched(true);
+              await handleCategorySearch("병원");
             }}
             className="text-xs"
+            data-testid="button-category-hospital"
           >
             <Heart className="h-3 w-3 mr-1" />
             병원
@@ -759,12 +878,13 @@ export default function LocationServices() {
           <Button
             variant={filter === "미용" ? "default" : "outline"}
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               setFilter("미용");
               setSpecialFilter("none");
-              setHasSearched(true);
+              await handleCategorySearch("미용");
             }}
             className="text-xs"
+            data-testid="button-category-grooming"
           >
             <Scissors className="h-3 w-3 mr-1" />
             미용
