@@ -2799,6 +2799,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`[Google Places API] status: ${data.status}, results: ${data.results?.length || 0}`);
       
+      // 검색 키워드로부터 카테고리 결정하는 함수
+      const getCategoryFromQuery = (query: string): string => {
+        const q = query.toLowerCase();
+        if (q.includes('펜션') || q.includes('pension')) return '펜션';
+        if (q.includes('카페') || q.includes('cafe')) return '카페';
+        if (q.includes('수영장') || q.includes('pool')) return '수영장';
+        if (q.includes('캠핑') || q.includes('camping')) return '캠핑장';
+        if (q.includes('병원') || q.includes('clinic') || q.includes('veterinary')) return '병원';
+        if (q.includes('훈련소') || q.includes('training')) return '훈련소';
+        if (q.includes('미용') || q.includes('grooming')) return '미용';
+        return '기타';
+      };
+      
+      const categoryFromQuery = getCategoryFromQuery(searchQuery);
+
       const googlePlaces = (data.results || [])
         .filter((place: any) => {
           // 검색어를 키워드로 분리 (공백 기준)
@@ -2837,6 +2852,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: place.place_id || `google-search-${index}`,
             name: place.name,
             type: getGooglePlaceType(place.types),
+            category: categoryFromQuery, // 검색어 기반 카테고리 추가
             latitude: place.geometry?.location?.lat || 0,
             longitude: place.geometry?.location?.lng || 0,
             address: place.formatted_address || place.vicinity || '',

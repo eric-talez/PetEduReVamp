@@ -340,7 +340,7 @@ export default function LocationServices() {
           longitude: place.longitude.toString(),
           image: place.photo || '/images/institutes/default-institute.png',
           images: place.photos || (place.photo ? [place.photo] : ['/images/institutes/default-institute.png']),
-          category: category,
+          category: place.category || category, // 서버에서 받은 category 우선 사용
           rating: place.rating || 4.0,
           reviews: place.reviews || Math.floor(Math.random() * 50) + 10,
           established: place.established || '2020',
