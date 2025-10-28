@@ -13327,7 +13327,7 @@ ${activeInstitutes.map((inst, idx) => `${idx + 1}. ${inst.name} (ID: ${inst.id})
    - 설명: ${inst.description || '설명 없음'}
    - 주소: ${inst.address || '주소 정보 없음'}
    - 평점: ${inst.rating || '평점 없음'}
-   ${inst.name === '아틀리독' || inst.name === '왕짱스쿨' ? '   - **테일즈 공식 인증 기관**' : ''}
+   ${inst.certification ? '   - **테일즈 공식 인증 기관**' : ''}
 `).join('\n')}
 
 위 반려견의 특성(품종, 나이, 성격, 체중, 훈련 상태)을 분석하여 가장 적합한 교육 기관을 3개 추천해주세요.
