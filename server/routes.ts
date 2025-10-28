@@ -2801,18 +2801,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const googlePlaces = (data.results || [])
         .filter((place: any) => {
-          // 검색어가 장소 이름에 포함되어 있는지 확인 (관련성 필터)
+          // 검색어를 키워드로 분리 (공백 기준)
+          const keywords = searchQuery.toLowerCase().split(/\s+/).filter(k => k.length >= 2);
           const placeName = place.name?.toLowerCase() || '';
-          const searchTermLower = searchQuery.toLowerCase();
+          const placeAddress = place.formatted_address?.toLowerCase() || '';
+          const placeTypes = (place.types || []).join(' ').toLowerCase();
           
-          // 검색어가 4글자 이상이면 정확한 매칭 요구
-          if (searchQuery.length >= 4) {
-            return placeName.includes(searchTermLower) || 
-                   place.formatted_address?.toLowerCase().includes(searchTermLower);
-          }
+          // 키워드 중 하나라도 매치되면 포함
+          // "카페", "cafe", "반려견", "pet" 등 하나라도 이름이나 주소에 있으면 OK
+          const hasMatch = keywords.some(keyword => 
+            placeName.includes(keyword) || 
+            placeAddress.includes(keyword) ||
+            placeTypes.includes(keyword)
+          );
           
-          // 짧은 검색어는 더 넓게 허용
-          return true;
+          console.log(`[Filter] ${place.name}: ${hasMatch ? 'PASS' : 'FILTERED'} (keywords: ${keywords.join(', ')})`);
+          
+          return hasMatch;
         })
         .slice(0, 10)
         .map((place: any, index: number) => {
