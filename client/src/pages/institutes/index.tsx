@@ -166,8 +166,57 @@ export default function LocationServices() {
   const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
   const [isAiMatching, setIsAiMatching] = useState(false);
   const [mobileMapDialogOpen, setMobileMapDialogOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<string>("distance"); // 정렬 기준: distance, rating, reviews, name
   const { toast} = useToast();
+  
+  // 정렬 기준 초기화 (URL 파라미터 > 로컬스토리지 > 기본값)
+  // lazy initializer를 사용하여 SSR/테스트 환경에서 안전하게 처리
+  const [sortBy, setSortBy] = useState<string>(() => {
+    // window가 없는 환경(SSR, 테스트)에서는 기본값 반환
+    if (typeof window === 'undefined') {
+      return 'distance';
+    }
+    
+    try {
+      // 1. URL 파라미터 확인
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSort = urlParams.get('sort');
+      if (urlSort && ['distance', 'rating', 'reviews', 'name'].includes(urlSort)) {
+        return urlSort;
+      }
+      
+      // 2. 로컬스토리지 확인
+      const savedSort = localStorage.getItem('institutes_sort_by');
+      if (savedSort && ['distance', 'rating', 'reviews', 'name'].includes(savedSort)) {
+        return savedSort;
+      }
+    } catch (error) {
+      // localStorage 접근 불가 시 기본값
+      console.warn('Failed to access localStorage:', error);
+    }
+    
+    // 3. 기본값
+    return 'distance';
+  });
+  
+  // 정렬 기준 변경 시 로컬스토리지 및 URL 업데이트
+  const handleSortChange = (newSort: string) => {
+    setSortBy(newSort);
+    
+    // 브라우저 환경에서만 실행
+    if (typeof window === 'undefined') return;
+    
+    try {
+      // 로컬스토리지에 저장
+      localStorage.setItem('institutes_sort_by', newSort);
+      
+      // URL 파라미터 업데이트 (히스토리에 추가하지 않음)
+      const url = new URL(window.location.href);
+      url.searchParams.set('sort', newSort);
+      window.history.replaceState({}, '', url.toString());
+    } catch (error) {
+      console.warn('Failed to save sort preference:', error);
+    }
+  };
   
   // 로그인 사용자 정보 가져오기
   const getUserInfo = () => {
@@ -1301,7 +1350,7 @@ export default function LocationServices() {
                   {/* 정렬 옵션 */}
                   <div className="flex items-center gap-2">
                     <span className="text-xs md:text-sm text-green-700 dark:text-green-300 font-medium">정렬:</span>
-                    <Select value={sortBy} onValueChange={setSortBy}>
+                    <Select value={sortBy} onValueChange={handleSortChange}>
                       <SelectTrigger 
                         className="w-[140px] h-8 text-xs md:text-sm bg-white dark:bg-gray-900 border-green-300 dark:border-green-700"
                         aria-label="검색 결과 정렬 방식 선택"
