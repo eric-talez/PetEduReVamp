@@ -557,10 +557,23 @@ export default function LocationServices() {
     });
   };
   
-  // 검색 결과가 있으면 검색 결과에 필터 적용, 없으면 DB 데이터에 필터 적용
-  const finalFilteredInstitutes = searchResults.length > 0 
-    ? applyFilters(searchResults)
-    : applyFilters(institutes);
+  // DB 기관 우선 표시 로직
+  // 1. DB 기관 필터링
+  const filteredDbInstitutes = applyFilters(institutes);
+  
+  // 2. 구글 검색 결과 필터링
+  const filteredSearchResults = applyFilters(searchResults);
+  
+  // 3. 중복 제거: DB 기관과 같은 이름의 구글 검색 결과 제거
+  const uniqueSearchResults = filteredSearchResults.filter(searchInst => 
+    !filteredDbInstitutes.some(dbInst => 
+      dbInst.name.toLowerCase().includes(searchInst.name.toLowerCase()) ||
+      searchInst.name.toLowerCase().includes(dbInst.name.toLowerCase())
+    )
+  );
+  
+  // 4. DB 기관을 먼저 배치하고 구글 검색 결과를 뒤에 추가
+  const finalFilteredInstitutes = [...filteredDbInstitutes, ...uniqueSearchResults];
 
   // 위치 데이터를 지도용 형식으로 변환하는 함수
   const getLocationFromInstitute = (institute: any) => {
