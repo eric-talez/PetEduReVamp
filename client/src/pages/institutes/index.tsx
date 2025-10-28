@@ -12,7 +12,7 @@ import {
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart, Loader2, Award, X,
   ChevronLeft, ChevronRight, ExternalLink, Phone, Clock,
-  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit, Bot, Navigation, Utensils, Trees
+  Image as ImageIcon, MessageSquare, Info, Cloud, Mail, GraduationCap, Edit, Bot, Navigation, Utensils, Trees, CheckCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -1244,7 +1244,29 @@ export default function LocationServices() {
               <p className="text-gray-600 dark:text-gray-400">검색 조건에 맞는 기관이 없습니다.</p>
             </div>
           ) : (
-          <div className="grid grid-cols-1 gap-6">
+          <>
+            {/* 검색 결과 카운터 - 접근성 개선 */}
+            <div 
+              className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border border-green-200 dark:border-green-800"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <p className="text-sm md:text-base font-medium text-green-800 dark:text-green-200">
+                    검색 결과 <span className="text-lg font-bold text-green-700 dark:text-green-300">{finalFilteredInstitutes.length}건</span>
+                  </p>
+                </div>
+                {filter !== "all" && (
+                  <span className="text-xs md:text-sm text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full">
+                    {filter} 필터 적용 중
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-6">
             {finalFilteredInstitutes.map((institute) => (
               <Card 
                 key={institute.id} 
@@ -1471,7 +1493,8 @@ export default function LocationServices() {
                 </div>
               </Card>
             ))}
-          </div>
+            </div>
+          </>
           )}
           
           {/* Pagination */}
