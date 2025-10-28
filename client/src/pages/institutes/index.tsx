@@ -798,13 +798,14 @@ export default function LocationServices() {
           
           {/* Search Bar */}
           <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
-            <div className="px-2">
+            <div className="px-2" aria-hidden="true">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
             <input 
               type="text" 
-              placeholder="지역, 전문 분야로 위치 서비스 찾기 (예: 강남 애견훈련)" 
-              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+              placeholder="지역, 분야로 검색 (예: 강남 애견훈련)" 
+              aria-label="반려견 시설 검색"
+              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder:text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -875,6 +876,8 @@ export default function LocationServices() {
                 <SelectItem value="캠핑장">캠핑장</SelectItem>
                 <SelectItem value="병원">병원</SelectItem>
                 <SelectItem value="미용">미용</SelectItem>
+                <SelectItem value="음식점">음식점</SelectItem>
+                <SelectItem value="공원">공원</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -953,28 +956,44 @@ export default function LocationServices() {
         </div>
         
         {/* 빠른 필터 버튼 */}
-        <div className="flex flex-wrap items-center gap-2 mt-2">
-          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mr-4">
-            <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
-            <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">빠른 선택:</span>
+        <div className="space-y-3 mt-2">
+          {/* 상단 헤더 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">빠른 선택</span>
+            </div>
+            {hasSearched && finalFilteredInstitutes.length > 0 && (
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                검색 결과: <span className="font-semibold text-primary">{finalFilteredInstitutes.length}개</span>
+              </span>
+            )}
           </div>
           
-          {/* 내 위치 찾기 버튼 */}
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleFindNearby}
-            disabled={isSearching}
-            className="text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-            data-testid="button-find-nearby"
-          >
-            {isSearching ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <Navigation className="h-3 w-3 mr-1" />
-            )}
-            내 위치 찾기
-          </Button>
+          {/* 내 위치 찾기 - 강조 */}
+          <div className="flex gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleFindNearby}
+              disabled={isSearching}
+              className="flex-1 sm:flex-none text-sm h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              aria-label="내 위치 기반 주변 시설 찾기"
+              data-testid="button-find-nearby"
+            >
+              {isSearching ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Navigation className="h-4 w-4 mr-2" />
+              )}
+              내 위치 찾기
+            </Button>
+          </div>
+          
+          {/* 서비스 카테고리 */}
+          <div>
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">서비스 카테고리</p>
+            <div className="flex flex-wrap gap-2">
           
           <Button
             variant={filter === "교육 센터" ? "default" : "outline"}
@@ -1119,58 +1138,69 @@ export default function LocationServices() {
               setSpecialFilter("none");
               await handleCategorySearch("공원");
             }}
-            className="text-xs"
+            className="text-xs h-9"
             data-testid="button-category-park"
           >
             <Trees className="h-3 w-3 mr-1" />
             공원
           </Button>
+            </div>
+          </div>
           
-          <Button
-            variant={specialFilter === "certification" ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setSpecialFilter("certification");
-              setFilter("all");
-              setHasSearched(true);
-            }}
-            className="text-xs"
-          >
-            <Shield className="h-3 w-3 mr-1" />
-            인증 기관
-          </Button>
-          
-          <Button
-            variant={specialFilter === "premium" ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setSpecialFilter("premium");
-              setFilter("all");
-              setHasSearched(true);
-            }}
-            className="text-xs"
-          >
-            <Sparkles className="h-3 w-3 mr-1" />
-            프리미엄 기관
-          </Button>
-          
-          {/* AI 추천 버튼 */}
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => {
-              if (!isAuthenticated()) {
-                promptLogin();
-                return;
-              }
-              setAiMatchDialogOpen(true);
-            }}
-            className="text-xs bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-            data-testid="button-ai-match"
-          >
-            <Bot className="h-3 w-3 mr-1" />
-            AI 추천
-          </Button>
+          {/* 특별 조건 */}
+          <div>
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">특별 조건</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={specialFilter === "certification" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setSpecialFilter("certification");
+                  setFilter("all");
+                  setHasSearched(true);
+                }}
+                className="text-xs h-9"
+                aria-label="TALEZ 인증 기관만 보기"
+              >
+                <Shield className="h-3 w-3 mr-1" />
+                인증 기관
+              </Button>
+              
+              <Button
+                variant={specialFilter === "premium" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setSpecialFilter("premium");
+                  setFilter("all");
+                  setHasSearched(true);
+                }}
+                className="text-xs h-9"
+                aria-label="프리미엄 기관만 보기"
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                프리미엄 기관
+              </Button>
+              
+              {/* AI 추천 버튼 */}
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  if (!isAuthenticated()) {
+                    promptLogin();
+                    return;
+                  }
+                  setAiMatchDialogOpen(true);
+                }}
+                className="text-xs h-9 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                aria-label="AI가 내 반려견에게 맞는 기관 추천"
+                data-testid="button-ai-match"
+              >
+                <Bot className="h-3 w-3 mr-1" />
+                AI 추천
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
       
