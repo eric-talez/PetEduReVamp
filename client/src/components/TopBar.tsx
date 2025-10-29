@@ -431,7 +431,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
           </div>
 
           {/* Action buttons - 모바일 터치 최적화 */}
-          <div className="flex items-center space-x-1 sm:space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2 ml-auto">
             {/* 메시지, 알림, 테마 토글 그룹 */}
             <div className="flex items-center space-x-1 sm:space-x-2 border-r border-gray-200 dark:border-gray-700 pr-1 sm:pr-2 mr-1 sm:mr-2">
               {/* Messages Button & Popup - 44px 터치 타겟 */}
