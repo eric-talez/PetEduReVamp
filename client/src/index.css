@@ -9,7 +9,7 @@
 @tailwind utilities;
 
 @layer base {
-  /* 색상 변수 정의 - 모던 팔레트 */
+  /* 색상 변수 정의 - TALEZ 브랜드 컬러 */
   :root {
     /* 기본 배경 및 전경 색상 */
     --background: 0 0% 100%;
@@ -23,41 +23,33 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
     
-    /* 주 색상 - 모던 인디고 */
-    --primary: 250 70% 50%;
+    /* 주 색상 - TALEZ 그린 (#2BAA61) */
+    --primary: 141 56% 42%;
     --primary-foreground: 0 0% 100%;
     
-    /* 보조 색상 - 따뜻한 코랄 */
-    --secondary: 10 80% 65%;
+    /* 보조 색상 - 그레이 톤으로 단순화 */
+    --secondary: 240 10% 96%;
     --secondary-foreground: 240 10% 10%;
     
     /* 뮤트 색상 */
     --muted: 240 10% 96%;
     --muted-foreground: 240 5% 45%;
     
-    /* 액센트 색상 - 프레시 민트 */
-    --accent: 170 60% 45%;
-    --accent-foreground: 240 10% 10%;
+    /* 액센트 색상 - Primary와 동일하게 통일 */
+    --accent: 141 56% 42%;
+    --accent-foreground: 0 0% 100%;
     
-    /* 파괴적 액션 색상 */
-    --destructive: 0 70% 50%;
+    /* 파괴적 액션 색상 - Danger (#E74D3C) */
+    --destructive: 5 78% 57%;
     --destructive-foreground: 0 0% 100%;
     
     /* 경계선 및 입력 */
     --border: 240 10% 88%;
     --input: 240 10% 96%;
-    --ring: 250 70% 60%;
+    --ring: 141 56% 50%;
     
     /* 모서리 둥글기 */
     --radius: 0.5rem;
-    
-    /* TALEZ 브랜드 색상 */
-    --talez-primary: 250 70% 50%;
-    --talez-secondary: 10 80% 65%;
-    --talez-accent: 170 60% 45%;
-    --talez-success: 140 60% 30%;
-    --talez-warning: 40 90% 60%;
-    --talez-error: 0 70% 50%;
   }
   
   .dark {
@@ -73,30 +65,30 @@
     --popover: 240 10% 12%;
     --popover-foreground: 0 0% 95%;
     
-    /* 다크 모드 주 색상 - 밝은 인디고 */
-    --primary: 250 70% 70%;
+    /* 다크 모드 주 색상 - TALEZ 그린 밝게 */
+    --primary: 141 56% 55%;
     --primary-foreground: 0 0% 10%;
     
-    /* 다크 모드 보조 색상 - 밝은 코랄 */
-    --secondary: 10 80% 70%;
-    --secondary-foreground: 0 0% 10%;
+    /* 다크 모드 보조 색상 - 그레이 톤 */
+    --secondary: 240 10% 18%;
+    --secondary-foreground: 0 0% 95%;
     
     /* 다크 모드 뮤트 */
     --muted: 240 10% 18%;
     --muted-foreground: 240 5% 65%;
     
-    /* 다크 모드 액센트 - 밝은 민트 */
-    --accent: 170 60% 60%;
+    /* 다크 모드 액센트 - Primary와 동일 */
+    --accent: 141 56% 55%;
     --accent-foreground: 0 0% 10%;
     
     /* 다크 모드 파괴적 액션 */
-    --destructive: 0 70% 65%;
+    --destructive: 5 78% 65%;
     --destructive-foreground: 0 0% 10%;
     
     /* 다크 모드 경계선 및 입력 */
     --border: 240 10% 20%;
     --input: 240 10% 15%;
-    --ring: 250 70% 70%;
+    --ring: 141 56% 60%;
   }
 
   /* 기본 타이포그래피 설정 */
@@ -762,17 +754,17 @@
 
 @layer base {
   :root {
-    /* 상태 색상 */
-    --success: 140 60% 30%;
+    /* 상태 색상 - 필수 상태만 유지 */
+    --success: 141 56% 42%;
     --success-foreground: 0 0% 100%;
 
-    --info: 200 80% 35%;
+    --info: 198 79% 45%;
     --info-foreground: 0 0% 100%;
 
-    --warning: 40 90% 60%;
-    --warning-foreground: 240 10% 10%;
+    --warning: 28 92% 58%;
+    --warning-foreground: 0 0% 10%;
 
-    --error: 0 70% 50%;
+    --error: 5 78% 57%;
     --error-foreground: 0 0% 100%;
 
     /* 추가 상태 변수 */
@@ -795,16 +787,16 @@
 
   .dark {
     /* 다크 모드 상태 색상 */
-    --success: 140 60% 60%;
+    --success: 141 56% 55%;
     --success-foreground: 0 0% 10%;
 
-    --info: 200 80% 65%;
+    --info: 198 79% 60%;
     --info-foreground: 0 0% 10%;
 
-    --warning: 40 90% 65%;
+    --warning: 28 92% 65%;
     --warning-foreground: 0 0% 10%;
 
-    --error: 0 70% 65%;
+    --error: 5 78% 65%;
     --error-foreground: 0 0% 10%;
 
     /* 다크 모드 추가 상태 */
