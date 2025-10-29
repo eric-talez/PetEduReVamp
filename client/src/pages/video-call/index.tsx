@@ -27,6 +27,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import VideoClassBannerImage from '@assets/stock_images/veterinarian_video_c_b450da3c.jpg';
+import { PageBanner } from '@/components/PageBanner';
 
 interface Meeting {
   id: string;
@@ -255,26 +256,18 @@ export default function VideoCallPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* 페이지 헤더 */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">화상 강의</h1>
-        <p className="text-muted-foreground">실시간 화상 강의 및 미팅을 관리하고 참여하세요.</p>
-      </div>
-
-      {/* 강아지 화상 강의 배너 */}
-      <section className="video-class-banner bg-white rounded-lg shadow-md overflow-hidden">
-        <img 
-          src={VideoClassBannerImage} 
-          alt="강아지 화상 강의 - 실시간 펫케어 클래스" 
-          className="w-full h-auto max-h-[250px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
-          onClick={() => {
-            // 화상 강의 예약 페이지로 이동 또는 특별 이벤트 페이지로 이동
-            setActiveTab('trainers');
-          }}
-          data-testid="video-class-banner"
-        />
-      </section>
+    <div className="pb-8">
+      <PageBanner
+        imageSrc={VideoClassBannerImage}
+        imageAlt="실시간 화상 상담"
+        title="1:1 화상 상담 서비스"
+        description="전문 훈련사와 실시간으로 만나 반려견 교육 상담을 받아보세요"
+        onBannerClick={() => {
+          setActiveTab('trainers');
+        }}
+      />
+      
+      <div className="container mx-auto px-4 py-8 space-y-8">
 
       {/* 메인 탭 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -718,6 +711,7 @@ ${videoClass.title}
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

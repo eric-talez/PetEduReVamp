@@ -8,6 +8,7 @@ import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, Vide
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CoursesBannerImage from '@assets/stock_images/professional_dog_tra_c482bf10.jpg';
+import { PageBanner } from '@/components/PageBanner';
 
 interface CoursesPageProps {
   mode?: 'view' | 'create' | 'edit';
@@ -292,33 +293,23 @@ export default function Courses(props?: CoursesPageProps) {
   };
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* 강의찾기 홍보 배너 */}
-      <section className="courses-banner bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
-        <img 
-          src={CoursesBannerImage} 
-          alt="풍부한 콘텐츠 - 반려견을 위한 체계적인 교육 과정" 
-          className="w-full h-auto max-h-[500px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
-          onClick={() => {
-            // 검색 입력창으로 포커스
-            const searchInput = document.querySelector('input[placeholder*="강의"]') as HTMLInputElement;
-            if (searchInput) {
-              searchInput.focus();
-            }
-          }}
-          data-testid="courses-banner"
-        />
-      </section>
+    <div className="pb-8">
+      <PageBanner
+        imageSrc={CoursesBannerImage}
+        imageAlt="반려견 전문 교육 과정"
+        title="체계적인 반려견 교육"
+        description="평생 함께할 반려견에게 필요한 훈련과 교육을 전문가와 함께 시작하세요"
+        onBannerClick={() => {
+          const searchInput = document.querySelector('input[placeholder*="강의"]') as HTMLInputElement;
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }}
+      />
 
       {/* 검색 섹션 */}
-      <div className="mb-8">
+      <div className="mb-8 px-4 sm:px-6 lg:px-8 mt-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-center mb-4">
-            반려견을 위한 체계적인 교육 과정
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
-            평생 함께할 반려견에게 필요한 훈련과 교육을 전문가와 함께 시작하세요.
-          </p>
           
           {/* Search Bar */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center p-2">

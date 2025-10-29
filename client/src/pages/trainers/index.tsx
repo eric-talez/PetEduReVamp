@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle, Loader2 } from "lucide-react";
 import TrainerBannerImage from '@assets/stock_images/professional_certifi_8e9795a3.jpg';
+import { PageBanner } from '@/components/PageBanner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -350,33 +351,23 @@ export default function Trainers() {
   const filteredTrainers = trainers;
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* 전문가 찾기 홍보 배너 */}
-      <section className="trainer-banner bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
-        <img 
-          src={TrainerBannerImage} 
-          alt="테일즈 인증 훈련사 찾기 - TRAINING 인증 훈련사 찾기" 
-          className="w-full h-auto max-h-[300px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
-          onClick={() => {
-            // 검색 입력창으로 포커스
-            const searchInput = document.querySelector('input[placeholder*="훈련사"]') as HTMLInputElement;
-            if (searchInput) {
-              searchInput.focus();
-            }
-          }}
-          data-testid="trainer-banner"
-        />
-      </section>
+    <div className="pb-8">
+      <PageBanner
+        imageSrc={TrainerBannerImage}
+        imageAlt="TALEZ 인증 전문 훈련사"
+        title="전문 반려견 훈련사"
+        description="경험이 풍부한 인증 훈련사들이 당신과 반려견의 행복한 생활을 도와드립니다"
+        onBannerClick={() => {
+          const searchInput = document.querySelector('input[placeholder*="훈련사"]') as HTMLInputElement;
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }}
+      />
 
       {/* 검색 섹션 */}
-      <div className="mb-8">
+      <div className="mb-8 px-4 sm:px-6 lg:px-8 mt-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-center mb-4">
-            전문 반려견 훈련사를 만나보세요
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
-            경험이 풍부한 훈련사들이 당신과 반려견의 행복한 생활을 도와드립니다.
-          </p>
           
           {/* Search Bar */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center p-2">

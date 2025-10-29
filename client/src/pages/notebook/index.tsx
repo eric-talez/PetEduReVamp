@@ -47,6 +47,7 @@ import { ko } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth-compat';
 import NotebookBannerImage from '@assets/stock_images/person_writing_dog_t_52d82c97.jpg';
+import { PageBanner } from '@/components/PageBanner';
 
 // 알림장 엔트리 타입 정의
 interface NotebookEntry {
@@ -948,7 +949,18 @@ export default function NotebookPage() {
 
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="pb-8">
+      <PageBanner
+        imageSrc={NotebookBannerImage}
+        imageAlt="반려견 훈련 일지"
+        title="반려견 훈련 알림장"
+        description="매일매일 반려견의 훈련 기록과 성장 과정을 체계적으로 관리하세요"
+        onBannerClick={() => {
+          setIsNewEntryOpen(true);
+        }}
+      />
+      
+      <div className="container mx-auto p-6 space-y-6">
       {/* 헤더 */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -956,22 +968,8 @@ export default function NotebookPage() {
             <BookOpen className="h-8 w-8 text-primary" />
             알림장
           </h1>
-          <p className="text-gray-600 mt-2">반려동물의 일일 훈련 기록과 상태를 관리하세요</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">반려동물의 일일 훈련 기록과 상태를 관리하세요</p>
         </div>
-
-        {/* 알림장 홍보 배너 */}
-        <section className="notebook-banner bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
-          <img 
-            src={NotebookBannerImage} 
-            alt="알림장 - 기존 생성된 이미지대로" 
-            className="w-full h-auto max-h-[250px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
-            onClick={() => {
-              // 새 알림장 작성 모달 열기
-              setIsNewEntryOpen(true);
-            }}
-            data-testid="notebook-banner"
-          />
-        </section>
 
         <div className="flex gap-2">
           {canCreateNotebook && (
@@ -2333,6 +2331,7 @@ export default function NotebookPage() {
           </DialogContent>
         </Dialog>
       )}
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { TopBar } from '@/components/TopBar';
 import { Sidebar } from '@/components/Sidebar';
 import { Badge } from '@/components/ui/badge';
 import PetcareBannerImage from '@assets/stock_images/happy_dog_with_pet_s_08e2cb27.jpg';
+import { PageBanner } from '@/components/PageBanner';
 
 /**
  * 테일즈 샵 스타일의 쇼핑몰 메인 컴포넌트
@@ -225,6 +226,17 @@ export default function ShopIndex() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* TopBar와 Sidebar는 AppLayout에서 제공되므로 여기서는 중복 렌더링하지 않음 */}
+      
+      <PageBanner
+        imageSrc={PetcareBannerImage}
+        imageAlt="반려동물 용품 쇼핑"
+        title="반려동물을 위한 모든 것"
+        description="건강하고 행복한 반려동물을 위한 프리미엄 용품과 특가 상품을 만나보세요"
+        onBannerClick={() => {
+          setLocation('/shop/special-deals');
+        }}
+      />
+      
       <div className=""> {/* TopBar 패딩 제거 (AppLayout에서 제공) */}
         {/* FunnyTalez 스타일 검색바 */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
@@ -585,24 +597,6 @@ export default function ShopIndex() {
           </div>
         </section>
         
-        {/* 펫케어 특가 모음전 배너 */}
-        <section className="petcare-special-banner bg-white dark:bg-gray-800 py-6">
-          <div className="container mx-auto px-4">
-            <div className="relative rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src={PetcareBannerImage} 
-                alt="펫케어 특가 모음전 - 테일즈 초특가 핫딜" 
-                className="w-full h-auto max-h-[300px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
-                onClick={() => {
-                  // 특가 상품 페이지로 이동
-                  setLocation('/shop/special-deals');
-                }}
-                data-testid="petcare-special-banner"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-transparent hover:from-black/10 hover:to-transparent transition-all duration-300"></div>
-            </div>
-          </div>
-        </section>
         
         {/* 카테고리 아이콘 내비게이션 */}
         <section className="category-section bg-white dark:bg-gray-800 py-8">
