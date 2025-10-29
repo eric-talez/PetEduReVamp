@@ -398,16 +398,13 @@ export function SimpleChatBot() {
         <Button
           onClick={() => setIsOpen(true)}
           onMouseDown={handleDragStart}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20 cursor-move"
+          className="w-14 h-14 rounded-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl border-2 border-white/20 cursor-move"
           style={{ 
             background: 'linear-gradient(135deg, #2BAA61 0%, #1e8b4f 100%)',
             boxShadow: '0 8px 32px rgba(43, 170, 97, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)',
           }}
         >
           <Bot size={22} className="text-white drop-shadow-sm" />
-          {/* 펄스 애니메이션 효과 */}
-          <div className="absolute -inset-2 rounded-full bg-primary/20 animate-ping" />
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary/30 to-primary/10 animate-pulse" />
         </Button>
         
         {/* 툴팁 */}
@@ -442,7 +439,7 @@ export function SimpleChatBot() {
           <div>
             <span className="font-semibold text-sm">TALEZ AI 도우미</span>
             <div className="flex items-center gap-1 text-xs text-white/80">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               온라인
             </div>
           </div>
