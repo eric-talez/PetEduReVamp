@@ -964,7 +964,7 @@ export default function NotebookPage() {
           <img 
             src={NotebookBannerImage} 
             alt="알림장 - 기존 생성된 이미지대로" 
-            className="w-full h-auto max-h-[250px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+            className="w-full h-auto max-h-[250px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
             onClick={() => {
               // 새 알림장 작성 모달 열기
               setIsNewEntryOpen(true);

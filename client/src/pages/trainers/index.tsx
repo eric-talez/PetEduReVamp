@@ -339,7 +339,7 @@ export default function Trainers() {
         <img 
           src={TrainerBannerImage} 
           alt="테일즈 인증 훈련사 찾기 - TRAINING 인증 훈련사 찾기" 
-          className="w-full h-auto max-h-[300px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          className="w-full h-auto max-h-[300px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
           onClick={() => {
             // 검색 입력창으로 포커스
             const searchInput = document.querySelector('input[placeholder*="훈련사"]') as HTMLInputElement;

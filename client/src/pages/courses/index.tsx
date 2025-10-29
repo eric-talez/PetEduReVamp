@@ -298,7 +298,7 @@ export default function Courses(props?: CoursesPageProps) {
         <img 
           src={CoursesBannerImage} 
           alt="풍부한 콘텐츠 - 반려견을 위한 체계적인 교육 과정" 
-          className="w-full h-auto max-h-[500px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          className="w-full h-auto max-h-[500px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
           onClick={() => {
             // 검색 입력창으로 포커스
             const searchInput = document.querySelector('input[placeholder*="강의"]') as HTMLInputElement;

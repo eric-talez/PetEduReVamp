@@ -592,7 +592,7 @@ export default function ShopIndex() {
               <img 
                 src={PetcareBannerImage} 
                 alt="펫케어 특가 모음전 - 테일즈 초특가 핫딜" 
-                className="w-full h-auto max-h-[300px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="w-full h-auto max-h-[300px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
                 onClick={() => {
                   // 특가 상품 페이지로 이동
                   setLocation('/shop/special-deals');

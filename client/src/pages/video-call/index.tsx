@@ -267,7 +267,7 @@ export default function VideoCallPage() {
         <img 
           src={VideoClassBannerImage} 
           alt="강아지 화상 강의 - 실시간 펫케어 클래스" 
-          className="w-full h-auto max-h-[250px] object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          className="w-full h-auto max-h-[250px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
           onClick={() => {
             // 화상 강의 예약 페이지로 이동 또는 특별 이벤트 페이지로 이동
             setActiveTab('trainers');
