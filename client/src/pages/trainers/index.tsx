@@ -15,10 +15,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth"; // 모듈화된 useAuth 훅 사용
 import { UnifiedTrainerProfileModal } from "@/components/UnifiedTrainerProfileModal";
+import { GoogleMapView } from "@/components/GoogleMapView";
 
 export default function Trainers() {
   const [filter, setFilter] = useState("all");
@@ -32,6 +39,10 @@ export default function Trainers() {
   const [error, setError] = useState<string | null>(null);
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
+
+  // 지도 팝업 관련 state
+  const [showMapDialog, setShowMapDialog] = useState(false);
+  const [selectedTrainerForMap, setSelectedTrainerForMap] = useState<any>(null);
 
   // 고급 필터링 상태
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -247,6 +258,12 @@ export default function Trainers() {
 
     closeTrainerModal();
     setLocation(`/course-reservation?trainer=${trainerId}`);
+  };
+
+  const handleLocationClick = (trainer: any) => {
+    console.log('위치 클릭:', trainer.name);
+    setSelectedTrainerForMap(trainer);
+    setShowMapDialog(true);
   };
 
   const handleLoginRedirect = () => {
@@ -588,9 +605,16 @@ export default function Trainers() {
               </div>
 
               <div className="space-y-3 mb-4">
-                <div className="flex items-center">
-                  <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{trainer.location}</span>
+                <div 
+                  className="flex items-center cursor-pointer hover:text-primary transition-colors group"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLocationClick(trainer);
+                  }}
+                  data-testid={`location-${trainer.id}`}
+                >
+                  <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2 group-hover:text-primary" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:underline">{trainer.location}</span>
                 </div>
 
                 <div className="flex items-center">
@@ -736,6 +760,75 @@ export default function Trainers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 위치 지도 팝업 */}
+      <Dialog open={showMapDialog} onOpenChange={setShowMapDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              {selectedTrainerForMap?.name} - 위치
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* 훈련사 정보 */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+                  <img 
+                    src={selectedTrainerForMap?.avatar || selectedTrainerForMap?.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selectedTrainerForMap?.name || '')}&backgroundColor=6366f1&textColor=ffffff`}
+                    alt={selectedTrainerForMap?.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg mb-1">{selectedTrainerForMap?.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{selectedTrainerForMap?.title}</p>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    {selectedTrainerForMap?.location}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 지도 */}
+            {selectedTrainerForMap && (selectedTrainerForMap.latitude && selectedTrainerForMap.longitude) ? (
+              <GoogleMapView
+                locations={[
+                  {
+                    id: selectedTrainerForMap.id,
+                    name: selectedTrainerForMap.name,
+                    address: selectedTrainerForMap.location || selectedTrainerForMap.address || '',
+                    type: 'trainer',
+                    coordinates: {
+                      lat: parseFloat(selectedTrainerForMap.latitude),
+                      lng: parseFloat(selectedTrainerForMap.longitude)
+                    }
+                  }
+                ]}
+                center={{
+                  lat: parseFloat(selectedTrainerForMap.latitude),
+                  lng: parseFloat(selectedTrainerForMap.longitude)
+                }}
+                height="400px"
+                zoom={15}
+              />
+            ) : (
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-8 text-center">
+                <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-400">
+                  이 훈련사의 정확한 위치 정보가 등록되어 있지 않습니다.
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                  주소: {selectedTrainerForMap?.location || '정보 없음'}
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 트레이너 프로필 모달 */}
       {isModalOpen && selectedTrainer && (
