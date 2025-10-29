@@ -954,7 +954,7 @@
 /* TALEZ 타일 시스템 */
 @layer components {
   .talez-tile {
-    @apply rounded-lg shadow-sm bg-[var(--card-bg)] border border-[var(--border-color)];
+    @apply rounded-lg shadow-sm bg-[var(--card-bg)] border border-[var(--border-color)] p-6;
     box-shadow: var(--shadow-soft);
     transition: all 0.2s ease;
   }
@@ -1035,11 +1035,11 @@
   
   /* 현대적인 카드 시스템 */
   .talez-feature-card {
-    @apply talez-tile p-6 flex items-start gap-4;
+    @apply talez-tile flex items-start gap-4;
   }
   
   .talez-pricing-card {
-    @apply talez-tile p-6 relative overflow-hidden;
+    @apply talez-tile relative overflow-hidden;
   }
   
   .talez-pricing-card::before {
