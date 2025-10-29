@@ -166,6 +166,8 @@ export default function LocationServices() {
   const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
   const [isAiMatching, setIsAiMatching] = useState(false);
   const [mobileMapDialogOpen, setMobileMapDialogOpen] = useState(false);
+  const [myLocationEnabled, setMyLocationEnabled] = useState(false);
+  const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
   const { toast} = useToast();
   
   // 정렬 기준 초기화 (URL 파라미터 > 로컬스토리지 > 기본값)
@@ -347,8 +349,20 @@ export default function LocationServices() {
     return keywords[category] || category;
   };
 
-  // 내 위치 찾기 핸들러
+  // 내 위치 찾기 토글 핸들러
   const handleFindNearby = async () => {
+    // 이미 켜져있으면 끄기 (기존 검색 결과는 유지)
+    if (myLocationEnabled) {
+      setMyLocationEnabled(false);
+      setUserLocation(null);
+      toast({
+        title: "내 위치 찾기 해제",
+        description: "내 위치 추적이 비활성화되었습니다. 검색 결과는 유지됩니다.",
+      });
+      return;
+    }
+
+    // 켜기
     setIsSearching(true);
     
     try {
@@ -369,12 +383,16 @@ export default function LocationServices() {
         });
       });
 
-      const userLocation = {
+      const location = {
         lat: position.coords.latitude,
         lng: position.coords.longitude
       };
 
-      console.log('[Find Nearby] 사용자 위치:', userLocation);
+      console.log('[Find Nearby] 사용자 위치:', location);
+      
+      // 내 위치 저장 및 활성화
+      setUserLocation(location);
+      setMyLocationEnabled(true);
 
       // 반려견 관련 장소 검색 (여러 카테고리)
       const searchQueries = [
@@ -389,7 +407,7 @@ export default function LocationServices() {
 
       // 모든 카테고리 검색
       for (const query of searchQueries) {
-        const apiUrl = `/api/locations/search?query=${encodeURIComponent(query)}&lat=${userLocation.lat}&lng=${userLocation.lng}`;
+        const apiUrl = `/api/locations/search?query=${encodeURIComponent(query)}&lat=${location.lat}&lng=${location.lng}`;
         const response = await fetch(apiUrl);
         
         if (response.ok) {
@@ -403,8 +421,8 @@ export default function LocationServices() {
       // 거리 계산 및 정렬
       const resultsWithDistance = allResults.map((place: any) => {
         const distance = calculateDistance(
-          userLocation.lat,
-          userLocation.lng,
+          location.lat,
+          location.lng,
           parseFloat(place.latitude),
           parseFloat(place.longitude)
         );
@@ -1067,23 +1085,27 @@ export default function LocationServices() {
             )}
           </div>
           
-          {/* 내 위치 찾기 - 강조 */}
+          {/* 내 위치 찾기 - 토글 버튼 */}
           <div className="flex gap-2">
             <Button
-              variant="default"
+              variant={myLocationEnabled ? "default" : "outline"}
               size="sm"
               onClick={handleFindNearby}
               disabled={isSearching}
-              className="flex-1 sm:flex-none text-sm h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-              aria-label="내 위치 기반 주변 시설 찾기"
+              className={`flex-1 sm:flex-none text-sm h-10 transition-all ${
+                myLocationEnabled 
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg' 
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+              }`}
+              aria-label={myLocationEnabled ? "내 위치 추적 해제" : "내 위치 기반 주변 시설 찾기"}
               data-testid="button-find-nearby"
             >
               {isSearching ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
-                <Navigation className="h-4 w-4 mr-2" />
+                <Navigation className={`h-4 w-4 mr-2 ${myLocationEnabled ? 'animate-pulse' : ''}`} />
               )}
-              내 위치 찾기
+              {myLocationEnabled ? '내 위치 추적 중' : '내 위치 찾기'}
             </Button>
           </div>
           
@@ -1683,9 +1705,10 @@ export default function LocationServices() {
                       coordinates: getLocationFromInstitute(inst),
                       category: inst.category
                     }))}
-                    center={getLocationFromInstitute(selectedInstitute)}
+                    center={userLocation || getLocationFromInstitute(selectedInstitute)}
                     height="400px"
                     zoom={13}
+                    userLocation={userLocation}
                   />
                   <div className="mt-3 space-y-2">
                     <div className="flex items-start gap-2 text-sm">
@@ -1982,9 +2005,10 @@ export default function LocationServices() {
                       address: selectedInstitute.location,
                       coordinates: getLocationFromInstitute(selectedInstitute)
                     }]}
-                    center={getLocationFromInstitute(selectedInstitute)}
+                    center={userLocation || getLocationFromInstitute(selectedInstitute)}
                     height="400px"
                     zoom={15}
+                    userLocation={userLocation}
                   />
                   <div className="mt-3 space-y-2">
                     <div className="flex items-start gap-2 text-sm">
@@ -2355,9 +2379,10 @@ export default function LocationServices() {
                       address: detailInstitute.location,
                       coordinates: getLocationFromInstitute(detailInstitute)
                     }]}
-                    center={getLocationFromInstitute(detailInstitute)}
+                    center={userLocation || getLocationFromInstitute(detailInstitute)}
                     height="400px"
                     zoom={15}
+                    userLocation={userLocation}
                   />
                 </div>
                 

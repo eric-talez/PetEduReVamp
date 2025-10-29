@@ -19,6 +19,10 @@ interface GoogleMapViewProps {
   onLocationSelect?: (location: any) => void;
   height?: string;
   zoom?: number;
+  userLocation?: {
+    lat: number;
+    lng: number;
+  } | null;
 }
 
 const categoryIcons: Record<string, string> = {
@@ -56,7 +60,8 @@ export function GoogleMapView({
   center = { lat: 37.5665, lng: 126.9780 }, // 서울시청 기본 좌표
   onLocationSelect,
   height = '500px',
-  zoom = 14
+  zoom = 14,
+  userLocation = null
 }: GoogleMapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -209,6 +214,47 @@ export function GoogleMapView({
         return marker;
       });
 
+    // 내 위치 마커 추가
+    if (userLocation) {
+      const userMarker = new google.maps.Marker({
+        position: { lat: userLocation.lat, lng: userLocation.lng },
+        map: map,
+        title: '내 위치',
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: '#4285F4',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 3,
+          scale: 15
+        },
+        animation: google.maps.Animation.BOUNCE,
+        zIndex: 9999
+      });
+
+      // 내 위치 정보창
+      const userInfoWindow = new google.maps.InfoWindow({
+        content: `
+          <div style="padding: 12px; min-width: 150px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span style="font-size: 24px;">📍</span>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #4285F4;">내 위치</h3>
+            </div>
+            <p style="margin: 4px 0; font-size: 12px; color: #666;">
+              현재 위치를 기준으로 검색 중
+            </p>
+          </div>
+        `
+      });
+
+      // 내 위치 마커 클릭 이벤트
+      userMarker.addListener('click', () => {
+        userInfoWindow.open(map, userMarker);
+      });
+
+      newMarkers.push(userMarker);
+    }
+
     setMarkers(newMarkers);
 
     // 마커들이 모두 보이도록 지도 범위 조정
@@ -220,9 +266,16 @@ export function GoogleMapView({
           bounds.extend(position);
         }
       });
-      map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
+      
+      // userLocation이 있으면 중심을 내 위치로
+      if (userLocation) {
+        map.setCenter({ lat: userLocation.lat, lng: userLocation.lng });
+        map.setZoom(zoom);
+      } else {
+        map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
+      }
     }
-  }, [map, locations, onLocationSelect]);
+  }, [map, locations, onLocationSelect, userLocation, zoom]);
 
   if (isLoading) {
     return (
