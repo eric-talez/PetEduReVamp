@@ -418,19 +418,19 @@ export default function Courses(props?: CoursesPageProps) {
                       target.style.display = 'none';
                       const parent = target.parentElement;
                       if (parent) {
-                        parent.className += ' bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center';
+                        parent.className += ' bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center';
                         parent.innerHTML += course.hasAnyVideo 
                           ? '<div class="w-16 h-16 text-green-500"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>'
-                          : '<div class="w-16 h-16 text-blue-400"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>';
+                          : '<div class="w-16 h-16 text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>';
                       }
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
                     {course.hasAnyVideo ? (
                       <Video className="w-16 h-16 text-green-500" />
                     ) : (
-                      <BookOpen className="w-16 h-16 text-blue-400" />
+                      <BookOpen className="w-16 h-16 text-primary" />
                     )}
                   </div>
                 )}
@@ -658,7 +658,7 @@ export default function Courses(props?: CoursesPageProps) {
                             {module.materials && module.materials.length > 0 && (
                               <div className="mb-3">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <Package className="w-4 h-4 text-blue-600" />
+                                  <Package className="w-4 h-4 text-primary" />
                                   <span className="text-sm font-medium text-gray-700">준비물</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1 ml-6">
@@ -666,7 +666,7 @@ export default function Courses(props?: CoursesPageProps) {
                                     <Badge 
                                       key={idx} 
                                       variant="outline" 
-                                      className="text-xs cursor-pointer hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
+                                      className="text-xs cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary transition-colors"
                                       onClick={() => handleProductClick(material)}
                                     >
                                       {material}
@@ -795,7 +795,7 @@ export default function Courses(props?: CoursesPageProps) {
                 {selectedModule.materials && selectedModule.materials.length > 0 && (
                   <div className="mt-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <Package className="w-4 h-4 text-blue-600" />
+                      <Package className="w-4 h-4 text-primary" />
                       <span className="font-medium text-gray-700">준비물</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
@@ -803,7 +803,7 @@ export default function Courses(props?: CoursesPageProps) {
                         <Badge 
                           key={idx} 
                           variant="outline" 
-                          className="text-xs cursor-pointer hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
+                          className="text-xs cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary transition-colors"
                           onClick={() => handleProductClick(material)}
                         >
                           {material}

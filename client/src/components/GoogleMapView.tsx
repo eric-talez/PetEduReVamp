@@ -41,7 +41,7 @@ const categoryIcons: Record<string, string> = {
 };
 
 const categoryColors: Record<string, string> = {
-  trainer: '#4285F4',
+  trainer: '#2BAA61',
   institute: '#EA4335',
   hospital: '#34A853',
   shop: '#FBBC04',
@@ -222,7 +222,7 @@ export function GoogleMapView({
         title: '내 위치',
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          fillColor: '#4285F4',
+          fillColor: '#2BAA61',
           fillOpacity: 1,
           strokeColor: '#ffffff',
           strokeWeight: 3,
@@ -238,7 +238,7 @@ export function GoogleMapView({
           <div style="padding: 12px; min-width: 150px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
               <span style="font-size: 24px;">📍</span>
-              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #4285F4;">내 위치</h3>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #2BAA61;">내 위치</h3>
             </div>
             <p style="margin: 4px 0; font-size: 12px; color: #666;">
               현재 위치를 기준으로 검색 중

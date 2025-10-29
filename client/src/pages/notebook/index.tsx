@@ -953,7 +953,7 @@ export default function NotebookPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <BookOpen className="h-8 w-8 text-blue-600" />
+            <BookOpen className="h-8 w-8 text-primary" />
             알림장
           </h1>
           <p className="text-gray-600 mt-2">반려동물의 일일 훈련 기록과 상태를 관리하세요</p>
@@ -1013,7 +1013,7 @@ export default function NotebookPage() {
                           src={`https://api.dicebear.com/7.x/big-ears-neutral/svg?seed=${newEntry.petName || 'pet'}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&eyesColor=2563eb,7c3aed,dc2626,059669,ea580c&mouthColor=2563eb,7c3aed,dc2626,059669`} 
                           alt={newEntry.petName || '반려동물'}
                         />
-                        <AvatarFallback className="bg-blue-100 text-blue-600">
+                        <AvatarFallback className="bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-foreground">
                           <PawPrint className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
@@ -1031,7 +1031,7 @@ export default function NotebookPage() {
                   <div className="mb-4 p-4 bg-yellow-200 border-4 border-red-500 rounded-lg">
                     <div className="text-lg text-red-700 font-bold mb-2 text-center">🔥 TAB NAVIGATION SYSTEM 🔥</div>
                     <div className="text-sm text-black font-medium mb-2 text-center">현재 활성 탭: {activeTab}</div>
-                    <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-indigo-100 p-2 rounded-lg border-2 border-blue-300 shadow-lg"
+                    <div className="flex space-x-1 bg-gradient-to-r from-primary/10 to-primary/5 p-2 rounded-lg border-2 border-primary shadow-lg"
                          data-tab-system="custom-v2">
                     <button 
                       onClick={() => {
@@ -1170,9 +1170,9 @@ export default function NotebookPage() {
                   {activeTab === 'activities' && (
                     <div className="space-y-4">
                   <div className="space-y-6">
-                    <div className="bg-blue-50 p-4 rounded-lg mb-4">
-                      <h2 className="text-lg font-semibold text-blue-800 mb-2">📊 상세 활동 추적 시스템</h2>
-                      <p className="text-sm text-blue-600">반려동물의 일일 활동을 체계적으로 기록하고 관리하세요.</p>
+                    <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg mb-4">
+                      <h2 className="text-lg font-semibold text-primary dark:text-primary-foreground mb-2">📊 상세 활동 추적 시스템</h2>
+                      <p className="text-sm text-primary dark:text-gray-300">반려동물의 일일 활동을 체계적으로 기록하고 관리하세요.</p>
                     </div>
 
                     {/* 배변 활동 */}
@@ -1640,8 +1640,8 @@ export default function NotebookPage() {
                         <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center">
                           {uploadingImages ? (
                             <>
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                              <span className="text-sm text-blue-600 font-medium">이미지 업로드 중...</span>
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                              <span className="text-sm text-primary font-medium">이미지 업로드 중...</span>
                             </>
                           ) : (
                             <>
@@ -1704,8 +1704,8 @@ export default function NotebookPage() {
                         <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center justify-center">
                           {uploadingVideos ? (
                             <>
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                              <span className="text-sm text-blue-600 font-medium">동영상 업로드 중...</span>
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                              <span className="text-sm text-primary font-medium">동영상 업로드 중...</span>
                             </>
                           ) : (
                             <>
@@ -1722,8 +1722,8 @@ export default function NotebookPage() {
                           {newEntry.videos.map((video, index) => (
                             <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
                               <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                  <Video className="h-6 w-6 text-blue-600" />
+                                <div className="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                                  <Video className="h-6 w-6 text-primary dark:text-primary-foreground" />
                                 </div>
                                 <div>
                                   <span className="text-sm font-medium text-gray-700">동영상 {index + 1}</span>
@@ -1759,8 +1759,8 @@ export default function NotebookPage() {
 
                   {activeTab === 'ai' && (
                     <div className="space-y-4">
-                  <div className="text-center p-8 border border-blue-200 rounded-lg bg-blue-50">
-                    <Sparkles className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                  <div className="text-center p-8 border border-primary rounded-lg bg-primary/10 dark:bg-primary/20">
+                    <Sparkles className="h-12 w-12 text-primary dark:text-primary-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">AI 알림장 도우미</h3>
                     <p className="text-gray-600 mb-4">
                       AI가 반려동물 정보를 바탕으로 알림장 내용을 자동 생성해드립니다.
@@ -2001,7 +2001,7 @@ export default function NotebookPage() {
         {isLoading ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-gray-600">알림장을 불러오는 중...</p>
             </CardContent>
           </Card>
@@ -2041,7 +2041,7 @@ export default function NotebookPage() {
                         src={`https://api.dicebear.com/7.x/big-ears${entry.petId === 'pet1' ? '-neutral' : ''}/svg?seed=${entry.petName}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&eyesColor=2563eb,7c3aed,dc2626,059669,ea580c&mouthColor=2563eb,7c3aed,dc2626,059669`} 
                         alt={entry.petName}
                       />
-                      <AvatarFallback className="bg-blue-100 text-blue-600">
+                      <AvatarFallback className="bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-foreground">
                         <PawPrint className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
@@ -2188,7 +2188,7 @@ export default function NotebookPage() {
                     src={`https://api.dicebear.com/7.x/big-ears${selectedEntry.petId === 'pet1' ? '-neutral' : ''}/svg?seed=${selectedEntry.petName}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&eyesColor=2563eb,7c3aed,dc2626,059669,ea580c&mouthColor=2563eb,7c3aed,dc2626,059669`} 
                     alt={selectedEntry.petName}
                   />
-                  <AvatarFallback className="bg-blue-100 text-blue-600">
+                  <AvatarFallback className="bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-foreground">
                     <PawPrint className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>

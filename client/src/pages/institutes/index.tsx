@@ -1094,7 +1094,7 @@ export default function LocationServices() {
               disabled={isSearching}
               className={`flex-1 sm:flex-none text-sm h-10 transition-all ${
                 myLocationEnabled 
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg' 
+                  ? 'bg-primary hover:bg-primary/90 shadow-lg text-white' 
                   : 'hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
               aria-label={myLocationEnabled ? "내 위치 추적 해제" : "내 위치 기반 주변 시설 찾기"}
@@ -1311,7 +1311,7 @@ export default function LocationServices() {
                   }
                   setAiMatchDialogOpen(true);
                 }}
-                className="text-xs h-9 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                className="text-xs h-9 bg-primary hover:bg-primary/90"
                 aria-label="AI가 내 반려견에게 맞는 기관 추천"
                 data-testid="button-ai-match"
               >
@@ -3029,7 +3029,7 @@ function AiRecommendationsDialog({
                   <Card key={index} className="p-5 hover:shadow-lg transition-shadow">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white font-bold text-sm">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm">
                           {index + 1}
                         </div>
                         <h4 className="font-bold text-lg">{rec.instituteName}</h4>

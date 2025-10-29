@@ -716,7 +716,7 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
           <div className="flex items-center gap-2 mb-2">
             <h1 className="text-3xl font-bold">{institute.name}</h1>
             {institute.isVerified && (
-              <Badge className="bg-blue-600">테일즈 인증 기관</Badge>
+              <Badge className="bg-primary">테일즈 인증 기관</Badge>
             )}
           </div>
           <div className="flex items-center gap-4">
