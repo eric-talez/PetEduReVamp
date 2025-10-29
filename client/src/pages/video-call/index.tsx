@@ -26,7 +26,7 @@ import { ko } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import VideoClassBannerImage from '@assets/image_1758608084415.png';
+import VideoClassBannerImage from '@assets/stock_images/veterinarian_video_c_b450da3c.jpg';
 
 interface Meeting {
   id: string;

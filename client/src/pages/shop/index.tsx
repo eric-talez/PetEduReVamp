@@ -7,7 +7,7 @@ import { useLocation } from 'wouter';
 import { TopBar } from '@/components/TopBar';
 import { Sidebar } from '@/components/Sidebar';
 import { Badge } from '@/components/ui/badge';
-import PetcareBannerImage from '@assets/image_1758604283508.png';
+import PetcareBannerImage from '@assets/stock_images/happy_dog_with_pet_s_08e2cb27.jpg';
 
 /**
  * 테일즈 샵 스타일의 쇼핑몰 메인 컴포넌트
