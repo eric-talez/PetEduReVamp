@@ -1512,7 +1512,28 @@ class Storage {
 
   async getAllTrainers() {
     try {
-      const trainers = await db.select().from(users).where(eq(users.role, 'trainer'));
+      const trainers = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          avatar: users.avatar,
+          bio: users.bio,
+          location: users.location,
+          specialty: users.specialty,
+          institute_id: users.instituteId,
+          address: users.address,
+          latitude: users.latitude,
+          longitude: users.longitude,
+          verified: users.verified,
+          is_verified: users.isVerified,
+          created_at: users.createdAt
+        })
+        .from(users)
+        .where(eq(users.role, 'trainer'));
+      
       return trainers;
     } catch (error) {
       console.error('[Storage] getAllTrainers error:', error);
