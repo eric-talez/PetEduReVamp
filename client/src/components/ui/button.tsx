@@ -5,26 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 hover:shadow-lg hover:shadow-emerald-500/25 font-semibold border border-emerald-600/20 shadow-md",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90",
         destructive:
-          "bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-500/25 font-semibold border border-red-600/20 shadow-md",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md hover:shadow-lg dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90",
         outline:
-          "border-2 border-emerald-600/30 bg-background text-emerald-700 hover:bg-emerald-50 hover:border-emerald-600 hover:text-emerald-800 hover:shadow-sm font-medium dark:border-emerald-400/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50",
+          "border-2 border-primary/30 bg-background text-primary hover:bg-primary/10 hover:border-primary font-semibold dark:border-primary/30 dark:text-primary dark:hover:bg-primary/20",
         secondary:
-          "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 hover:shadow-lg hover:shadow-amber-500/25 font-medium border border-amber-500/20 shadow-md",
-        ghost: "text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/50",
-        link: "text-emerald-700 underline-offset-4 hover:underline hover:text-emerald-800 font-medium dark:text-emerald-400 dark:hover:text-emerald-300",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 font-semibold dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80",
+        ghost: "text-primary hover:bg-primary/10 font-semibold dark:text-primary dark:hover:bg-primary/20",
+        link: "text-primary underline-offset-4 hover:underline hover:text-primary/80 font-semibold dark:text-primary dark:hover:text-primary/80",
         premium: "bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 text-white hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 hover:shadow-xl hover:shadow-amber-500/30 font-bold border border-amber-400/30 shadow-lg",
-        danger: "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 hover:shadow-lg hover:shadow-red-500/25 font-semibold border border-red-600/20 shadow-md",
+        danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md hover:shadow-lg dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90",
       },
       size: {
         default: "h-11 px-6 py-2.5 text-base min-w-[3rem] rounded-lg",
-        sm: "h-9 px-4 py-2 text-sm min-w-[2.5rem] rounded-md",
-        lg: "h-13 px-8 py-3 text-lg min-w-[3.5rem] rounded-xl",
+        sm: "h-9 px-4 py-2 text-sm min-w-[2.5rem] rounded-lg",
+        lg: "h-13 px-8 py-3 text-lg min-w-[3.5rem] rounded-lg",
         icon: "h-11 w-11 text-base rounded-lg",
       },
     },

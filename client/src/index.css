@@ -973,28 +973,34 @@
   .talez-tile-pink { background: var(--tile-pink); }
   .talez-tile-gray { background: var(--tile-gray); }
   
-  /* TALEZ 버튼 시스템 */
+  /* TALEZ 버튼 시스템 - 통합 스타일 */
   .talez-btn {
-    @apply inline-flex items-center justify-center font-semibold transition-all duration-200;
-    border-radius: var(--radius-full);
-    padding: 12px 20px;
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold transition-all duration-200;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply active:scale-[0.98];
+    min-height: 44px;
+    padding: 10px 24px;
   }
   
   .talez-btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90;
-    box-shadow: 0 4px 12px rgba(6, 95, 70, 0.25);
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg;
+    @apply dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90;
   }
   
   .talez-btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+    @apply dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80;
   }
   
   .talez-btn-ghost {
-    @apply bg-[var(--card-bg)] text-[var(--txt-primary)] border border-[var(--border-color)] hover:bg-[var(--tile-gray)];
+    @apply text-primary hover:bg-primary/10;
+    @apply dark:text-primary dark:hover:bg-primary/20;
   }
   
   .talez-btn-outline {
-    @apply bg-transparent text-[var(--txt-primary)] border-2 border-primary hover:bg-primary hover:text-white;
+    @apply border-2 border-primary/30 bg-background text-primary hover:bg-primary/10 hover:border-primary;
+    @apply dark:border-primary/30 dark:text-primary dark:hover:bg-primary/20;
   }
   
   /* 아이콘 래퍼 */

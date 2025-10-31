@@ -72,27 +72,25 @@ export const TalezButton: React.FC<{
   onClick, 
   disabled = false 
 }) => {
-  const baseClasses = 'talez-btn';
   const variantClasses = {
     primary: 'talez-btn-primary',
-    secondary: 'talez-btn-secondary', 
+    secondary: 'talez-btn-secondary',
     ghost: 'talez-btn-ghost',
     outline: 'talez-btn-outline'
   };
   
   const sizeClasses = {
-    sm: 'text-sm px-3 py-2',
-    md: 'text-base px-5 py-3',
-    lg: 'text-lg px-6 py-4'
+    sm: 'h-9 px-4 text-sm',
+    md: 'h-11 px-6 text-base',
+    lg: 'h-13 px-8 text-lg'
   };
 
   return (
     <button
       className={cn(
-        baseClasses,
+        'talez-btn',
         variantClasses[variant],
         sizeClasses[size],
-        disabled && 'opacity-50 cursor-not-allowed',
         className
       )}
       onClick={onClick}
