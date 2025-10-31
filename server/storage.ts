@@ -1,5 +1,5 @@
 import { db } from './db/index';
-import { logoSettings } from '../shared/schema';
+import { logoSettings, users } from '../shared/schema';
 import { eq } from 'drizzle-orm';
 
 class Storage {
@@ -1510,8 +1510,15 @@ class Storage {
     return [];
   }
 
-  getAllTrainers() {
-    return this.users?.filter(user => user.role === 'trainer') || [];
+  async getAllTrainers() {
+    try {
+      const trainers = await db.select().from(users).where(eq(users.role, 'trainer'));
+      return trainers;
+    } catch (error) {
+      console.error('[Storage] getAllTrainers error:', error);
+      // fallback to memory storage
+      return this.users?.filter(user => user.role === 'trainer') || [];
+    }
   }
 
   getTrainer(id: number) {
