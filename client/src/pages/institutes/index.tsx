@@ -1643,8 +1643,8 @@ export default function LocationServices() {
           )}
         </div>
         
-        {/* 오른쪽 열 - 탭 구조 (데스크톱 전용) */}
-        <div className="hidden lg:block w-full lg:w-1/3 sticky top-24 h-fit">
+        {/* 오른쪽 열 - 탭 구조 (모바일: 리스트 하단, 데스크톱: 오른쪽 고정) */}
+        <div className="w-full lg:w-1/3 lg:sticky lg:top-24 h-fit">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             {selectedInstitute ? (
               <Tabs defaultValue="location" className="w-full">
@@ -1706,7 +1706,7 @@ export default function LocationServices() {
                       category: inst.category
                     }))}
                     center={userLocation || getLocationFromInstitute(selectedInstitute)}
-                    height="400px"
+                    height="300px"
                     zoom={13}
                     userLocation={userLocation}
                   />
