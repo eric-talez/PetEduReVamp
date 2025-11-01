@@ -16,10 +16,15 @@ export const users = pgTable("users", {
   birthDate: varchar("birth_date", { length: 10 }), // YYYY-MM-DD 형식
   age: integer("age"), // 연령
   gender: varchar("gender", { length: 10 }), // 성별 (male/female)
+  avatar: text("avatar"), // 프로필 이미지
   profileImage: text("profile_image"),
   bio: text("bio"),
+  specialty: text("specialty"), // 전문 분야 (훈련사용)
+  location: text("location"), // 위치 (훈련사용)
   isActive: boolean("is_active").default(true),
   emailVerified: boolean("email_verified").default(false),
+  isVerified: boolean("is_verified").default(false), // 훈련사 인증 여부
+  instituteId: integer("institute_id").references(() => institutes.id), // 소속 기관
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   // Missing columns from error report
@@ -42,8 +47,16 @@ export const users = pgTable("users", {
   // 소셜 로그인 관련 필드
   provider: varchar("provider", { length: 20 }), // kakao, naver, google
   socialId: varchar("social_id", { length: 255 }), // 소셜 플랫폼에서 제공하는 고유 ID
+  ci: text("ci"), // 본인인증 CI 값
   verified: boolean("verified").default(false), // 인증 여부
   verifiedAt: timestamp("verified_at"), // 인증 완료 시각
+  verificationName: text("verification_name"), // 본인인증 이름
+  verificationBirth: text("verification_birth"), // 본인인증 생년월일
+  verificationPhone: text("verification_phone"), // 본인인증 휴대폰
+  stripeCustomerId: text("stripe_customer_id"), // Stripe 고객 ID
+  stripeSubscriptionId: text("stripe_subscription_id"), // Stripe 구독 ID
+  membershipTier: text("membership_tier"), // 멤버십 등급
+  membershipExpiresAt: timestamp("membership_expires_at"), // 멤버십 만료일
 });
 
 // 강의 테이블
