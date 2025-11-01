@@ -564,8 +564,8 @@ export default function Trainers() {
             className="overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
 
             {/* 프로필 이미지를 맨 위로 이동 */}
-            <div className="relative h-48 bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 flex items-center justify-center">
-              <div className="w-32 h-32 rounded-full overflow-hidden shadow-xl border-4 border-white dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="relative h-24 bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full overflow-hidden shadow-xl border-2 border-white dark:border-gray-700 bg-white dark:bg-gray-800">
                 <img 
                   src={trainer.avatar || trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
                   alt={trainer.name} 
@@ -582,7 +582,7 @@ export default function Trainers() {
               </div>
 
               {trainer.featured && (
-                <Badge variant="warning" className="absolute top-3 right-3">
+                <Badge variant="warning" className="absolute top-2 right-2">
                   <Sparkles className="h-3 w-3 mr-1" />
                   추천 훈련사
                 </Badge>
@@ -766,7 +766,7 @@ export default function Trainers() {
             {/* 훈련사 정보 */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                   <img 
                     src={selectedTrainerForMap?.avatar || selectedTrainerForMap?.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selectedTrainerForMap?.name || '')}&backgroundColor=6366f1&textColor=ffffff`}
                     alt={selectedTrainerForMap?.name}
@@ -774,7 +774,7 @@ export default function Trainers() {
                   />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{selectedTrainerForMap?.name}</h3>
+                  <h3 className="font-semibold text-base mb-1">{selectedTrainerForMap?.name}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{selectedTrainerForMap?.title}</p>
                   <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
                     <MapPin className="h-4 w-4 mr-1" />
