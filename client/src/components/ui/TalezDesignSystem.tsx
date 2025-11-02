@@ -215,7 +215,9 @@ export const TalezSection: React.FC<{
   children: React.ReactNode;
   className?: string;
   background?: 'default' | 'glass' | 'gradient';
-}> = ({ children, className, background = 'default' }) => {
+  backgroundImage?: string;
+  backgroundOpacity?: number;
+}> = ({ children, className, background = 'default', backgroundImage, backgroundOpacity = 0.12 }) => {
   const bgClasses = {
     default: '',
     glass: 'talez-glass',
@@ -223,8 +225,23 @@ export const TalezSection: React.FC<{
   };
 
   return (
-    <section className={cn('py-16 px-4', bgClasses[background], className)}>
-      <div className="mx-auto max-w-6xl">
+    <section 
+      className={cn('py-16 px-4 relative overflow-hidden', bgClasses[background], className)}
+      style={backgroundImage ? {
+        position: 'relative'
+      } : undefined}
+    >
+      {backgroundImage && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            opacity: backgroundOpacity,
+            zIndex: 0
+          }}
+        />
+      )}
+      <div className="mx-auto max-w-6xl relative z-10">
         {children}
       </div>
     </section>
