@@ -28,7 +28,7 @@ export function PageBanner({ imageSrc, imageAlt, title, description, onBannerCli
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 drop-shadow-lg transform transition-transform duration-300 group-hover:translate-x-2">
                 {title}
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-white/95 dark:text-white leading-relaxed drop-shadow-md max-w-xl transform transition-transform duration-300 group-hover:translate-x-2">
+              <p className="text-base sm:text-lg md:text-xl text-white/95 dark:text-white leading-relaxed drop-shadow-md max-w-xl transform transition-transform duration-300 group-hover:translate-x-2 whitespace-nowrap overflow-hidden text-ellipsis">
                 {description}
               </p>
               <div className="mt-4 sm:mt-6 h-1 w-20 sm:w-24 bg-primary dark:bg-primary-foreground rounded-full transform transition-all duration-300 group-hover:w-32 sm:group-hover:w-40" />
