@@ -131,6 +131,70 @@ export default function TrainerNotebookPage() {
 
   const queryClient = useQueryClient();
 
+  // AI 알림장 생성 mutation
+  const generateAIContentMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/ai/generate-training-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          breed: notebookForm.petId || '반려동물',
+          age: '알 수 없음',
+          issue: notebookForm.behaviorNotes || '일반 훈련',
+          experience: `훈련 시간: ${notebookForm.trainingDuration}분, 진도: ${notebookForm.progressRating}/5`,
+          additionalInfo: {
+            title: notebookForm.title,
+            date: notebookForm.trainingDate,
+            activities: notebookForm.activities,
+            homework: notebookForm.homeworkInstructions,
+            nextGoals: notebookForm.nextGoals
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('AI 생성 실패');
+      }
+      
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data.plan) {
+        setNotebookForm(prev => ({
+          ...prev,
+          content: data.plan
+        }));
+        toast({
+          title: "AI 내용 생성 완료",
+          description: "알림장 내용이 자동으로 생성되었습니다. 수정 후 저장하세요."
+        });
+        setActiveTab('basic');
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "AI 생성 실패",
+        description: "AI 내용 생성 중 오류가 발생했습니다. 직접 입력해주세요.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // AI 내용 생성 핸들러
+  const handleGenerateAIContent = () => {
+    if (!notebookForm.studentId) {
+      toast({
+        title: "수강생을 선택해주세요",
+        description: "AI가 내용을 생성하려면 수강생 정보가 필요합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    generateAIContentMutation.mutate();
+  };
+
   // 알림장 생성 mutation
   const createNotebookMutation = useMutation({
     mutationFn: async (notebookData: any) => {
@@ -846,9 +910,24 @@ export default function TrainerNotebookPage() {
                       <p className="text-sm text-blue-700 mb-4">
                         AI가 입력된 정보를 바탕으로 알림장 내용을 자동으로 생성해드립니다.
                       </p>
-                      <Button className="w-full" variant="outline">
-                        <Sparkles className="h-4 w-4 mr-2" />
-                        AI로 내용 생성하기
+                      <Button 
+                        className="w-full" 
+                        variant="outline"
+                        onClick={handleGenerateAIContent}
+                        disabled={generateAIContentMutation.isPending}
+                        data-testid="button-generate-ai-content"
+                      >
+                        {generateAIContentMutation.isPending ? (
+                          <>
+                            <Clock className="h-4 w-4 mr-2 animate-spin" />
+                            AI 생성 중...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            AI로 내용 생성하기
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
