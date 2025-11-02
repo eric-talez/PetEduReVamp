@@ -473,7 +473,7 @@ export default function AdminHome() {
                   {platformStats.map((stat) => (
                     <div key={stat.name} className="space-y-1">
                       <p className="text-sm font-medium text-muted-foreground">{stat.name}</p>
-                      <p className="text-xl font-bold">{stat.value.toLocaleString()}</p>
+                      <p className="text-xl font-bold">{(stat.value ?? 0).toLocaleString()}</p>
                       <div className="flex items-center text-xs">
                         {stat.changeType === 'increase' ? (
                           <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
@@ -481,7 +481,7 @@ export default function AdminHome() {
                           <TrendingUp className="h-3 w-3 mr-1 text-red-500 transform rotate-180" />
                         )}
                         <span className={stat.changeType === 'increase' ? 'text-green-500' : 'text-red-500'}>
-                          {stat.change}%
+                          {stat.change ?? 0}%
                         </span>
                       </div>
                     </div>
