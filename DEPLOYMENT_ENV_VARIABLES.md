@@ -90,7 +90,28 @@ DATABASE_URL=postgresql://production_host:5432/talez_prod
 ## 문제 해결
 
 ### 502 Bad Gateway 에러가 발생하는 경우
-**원인**: Google Places API 호출 타임아웃 또는 데이터베이스 연결 문제
+**원인**: 백엔드 서버가 응답하지 못하고 있음 (서버 크래시, DB 연결 실패, 환경 변수 누락 등)
+
+**긴급 조치**:
+```bash
+# 1. 서버 로그 확인
+pm2 logs talez
+# 또는
+docker logs talez-container
+
+# 2. 서버 재시작
+pm2 restart talez
+# 또는
+docker restart talez-container
+
+# 3. 데이터베이스 연결 테스트
+psql $DATABASE_URL -c "SELECT 1;"
+```
+
+**자세한 해결 방법**: `DEPLOYMENT_TROUBLESHOOTING.md` 참고
+
+### API 타임아웃 문제
+**증상**: 특정 API만 502 에러 (전체가 아님)
 
 **해결 방법**:
 1. **환경 변수 확인**: `VITE_GOOGLE_MAPS_API_KEY`와 `DATABASE_URL`이 올바르게 설정되었는지 확인
@@ -98,7 +119,7 @@ DATABASE_URL=postgresql://production_host:5432/talez_prod
 3. **타임아웃 처리**: 코드에 자동 타임아웃 보호 기능이 적용되어 있음
    - Google Places API: 10초 타임아웃
    - 데이터베이스 쿼리: 5초 타임아웃
-   - API 호출 실패 시 빈 배열 반환 (502 에러 방지)
+   - API 호출 실패 시 빈 배열 반환
 4. **네트워크**: 서버에서 Google API에 접근 가능한지 확인
 
 ### 지도가 표시되지 않는 경우
