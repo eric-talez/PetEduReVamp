@@ -662,7 +662,7 @@ export default function LocationServices() {
                     </div>
                     
                     <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge variant="outline" className="bg-primary/10 dark:bg-primary/5 text-primary-foreground flex items-center">
+                      <Badge variant="outline" className="bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-foreground flex items-center">
                         {getCategoryIcon(institute.category)}
                         {institute.category}
                       </Badge>

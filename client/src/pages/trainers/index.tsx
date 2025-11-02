@@ -620,7 +620,7 @@ export default function Trainers() {
               </div>
 
               <div className="flex flex-wrap gap-2 mb-4">
-                <Badge variant="outline" className="bg-primary/10 dark:bg-primary/5 text-primary-foreground">
+                <Badge variant="outline" className="bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-foreground">
                   {trainer.specialty}
                 </Badge>
 
