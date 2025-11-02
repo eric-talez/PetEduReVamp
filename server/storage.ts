@@ -1277,8 +1277,28 @@ class Storage {
 
   async getUserByUsername(username: string) {
     try {
-      // 데이터베이스에서 먼저 조회
-      const [user] = await db.select().from(users).where(eq(users.username, username));
+      // 데이터베이스에서 먼저 조회 (존재하는 컬럼만 선택)
+      const [user] = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        password: users.password,
+        role: users.role,
+        name: users.name,
+        phone: users.phone,
+        avatar: users.avatar,
+        bio: users.bio,
+        specialty: users.specialty,
+        location: users.location,
+        isActive: users.isActive,
+        emailVerified: users.emailVerified,
+        isVerified: users.isVerified,
+        instituteId: users.instituteId,
+        createdAt: users.createdAt,
+        provider: users.provider,
+        socialId: users.socialId
+      }).from(users).where(eq(users.username, username));
+      
       if (user) {
         return user;
       }
