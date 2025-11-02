@@ -66,7 +66,7 @@ export default function AiAnalysisPage() {
   // State
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
-    start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7일 전
+    start: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 60일 전
     end: new Date().toISOString().split('T')[0] // 오늘
   });
   const [selectedSignals, setSelectedSignals] = useState({
@@ -372,8 +372,38 @@ export default function AiAnalysisPage() {
                 <Calendar className="w-5 h-5" />
                 알림장 목록
               </CardTitle>
-              <CardDescription>
-                {selectedPetId ? `${pets.find(p => p.id === selectedPetId)?.name}의 알림장` : '반려동물을 선택해주세요'}
+              <CardDescription className="flex items-center justify-between">
+                <span>{selectedPetId ? `${pets.find(p => p.id === selectedPetId)?.name}의 알림장` : '반려동물을 선택해주세요'}</span>
+                {selectedPetId && careLogsData?.dates?.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const allLogIds: number[] = [];
+                        careLogsData.dates.forEach((date: string) => {
+                          careLogsData.logsByDate[date]?.forEach((log: CareLog) => {
+                            allLogIds.push(log.id);
+                          });
+                        });
+                        setSelectedLogIds(allLogIds);
+                      }}
+                      disabled={analyzeDataMutation.isPending}
+                      data-testid="button-select-all"
+                    >
+                      모두 선택
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedLogIds([])}
+                      disabled={analyzeDataMutation.isPending || selectedLogIds.length === 0}
+                      data-testid="button-deselect-all"
+                    >
+                      선택 해제
+                    </Button>
+                  </div>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
