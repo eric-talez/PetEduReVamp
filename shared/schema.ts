@@ -2118,3 +2118,111 @@ export type UpdateCareLog = z.infer<typeof updateCareLogSchema>;
 export type AiAnalysis = z.infer<typeof selectAiAnalysisSchema>;
 export type InsertAiAnalysis = z.infer<typeof insertAiAnalysisSchema>;
 
+// =============================================================================
+// 미디어 분석(Pet Media Analysis) 스키마 정의
+// =============================================================================
+
+// 미디어 자산 테이블
+export const petMediaAssets = pgTable("pet_media_assets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  petId: integer("pet_id").notNull().references(() => pets.id),
+  fileUrl: text("file_url").notNull(),
+  fileType: varchar("file_type", { length: 20 }).notNull(), // image/jpeg, image/png, video/mp4
+  fileSize: integer("file_size"), // bytes
+  width: integer("width"),
+  height: integer("height"),
+  duration: integer("duration"), // seconds for video
+  thumbnailUrl: text("thumbnail_url"),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+});
+
+// 미디어 분석 결과 테이블
+export const petMediaAnalyses = pgTable("pet_media_analyses", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  petId: integer("pet_id").notNull().references(() => pets.id),
+  mediaAssetId: integer("media_asset_id").notNull().references(() => petMediaAssets.id),
+  model: varchar("model", { length: 50 }).notNull().default("gpt-4o"), // gpt-4o, gemini-2.5-flash, etc.
+  memo: text("memo"), // optional user note
+  resultJson: jsonb("result_json").notNull().$type<{
+    summary: string;
+    posture?: {
+      score: number; // 0-100
+      notes: string;
+      keyFindings: string[];
+    };
+    behavior?: {
+      observed: string[];
+      concerns: string[];
+      positive: string[];
+    };
+    health?: {
+      status: string;
+      warnings: string[];
+      recommendations: string[];
+    };
+    issues?: string[];
+    solutions?: string[];
+  }>(),
+  tokensIn: integer("tokens_in"),
+  tokensOut: integer("tokens_out"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 미디어 자산 생성 스키마
+export const insertMediaAssetSchema = createInsertSchema(petMediaAssets, {
+  fileUrl: z.string().url("올바른 URL 형식이어야 합니다"),
+  fileType: z.string().regex(/^(image\/(jpeg|jpg|png|gif|webp)|video\/(mp4|webm|mov))$/, "지원되지 않는 파일 형식입니다"),
+  fileSize: z.number().int().positive("파일 크기는 양수여야 합니다").optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  duration: z.number().int().positive().optional(),
+}).omit({
+  id: true,
+  uploadedAt: true
+});
+
+// 미디어 분석 생성 스키마
+export const insertMediaAnalysisSchema = createInsertSchema(petMediaAnalyses, {
+  model: z.string().max(50, "모델명은 50자를 초과할 수 없습니다"),
+  memo: z.string().max(1000, "메모는 1000자를 초과할 수 없습니다").optional(),
+  resultJson: z.object({
+    summary: z.string(),
+    posture: z.object({
+      score: z.number().min(0).max(100),
+      notes: z.string(),
+      keyFindings: z.array(z.string())
+    }).optional(),
+    behavior: z.object({
+      observed: z.array(z.string()),
+      concerns: z.array(z.string()),
+      positive: z.array(z.string())
+    }).optional(),
+    health: z.object({
+      status: z.string(),
+      warnings: z.array(z.string()),
+      recommendations: z.array(z.string())
+    }).optional(),
+    issues: z.array(z.string()).optional(),
+    solutions: z.array(z.string()).optional()
+  }),
+  tokensIn: z.number().int().min(0).optional(),
+  tokensOut: z.number().int().min(0).optional()
+}).omit({
+  id: true,
+  createdAt: true
+});
+
+// 미디어 자산 조회 스키마
+export const selectMediaAssetSchema = createSelectSchema(petMediaAssets);
+
+// 미디어 분석 조회 스키마
+export const selectMediaAnalysisSchema = createSelectSchema(petMediaAnalyses);
+
+// 타입 정의
+export type MediaAsset = z.infer<typeof selectMediaAssetSchema>;
+export type InsertMediaAsset = z.infer<typeof insertMediaAssetSchema>;
+export type MediaAnalysis = z.infer<typeof selectMediaAnalysisSchema>;
+export type InsertMediaAnalysis = z.infer<typeof insertMediaAnalysisSchema>;
+

@@ -34,8 +34,10 @@ export interface ServerConfig {
   SSL_CERT_PATH?: string;
 }
 
+const NODE_ENV = (process.env.NODE_ENV || 'development') as ServerConfig['NODE_ENV'];
+
 const config: ServerConfig = {
-  NODE_ENV: (process.env.NODE_ENV || 'development') as ServerConfig['NODE_ENV'],
+  NODE_ENV,
   PORT: parseInt(process.env.PORT || '5000'),
   HOST: process.env.HOST || '0.0.0.0',
   
@@ -51,13 +53,13 @@ const config: ServerConfig = {
   SENTRY_DSN: process.env.SENTRY_DSN,
   
   // 보안 설정
-  CORS_ORIGIN: process.env.CORS_ORIGIN || (config.NODE_ENV === 'production' ? 'https://your-domain.com' : '*'),
+  CORS_ORIGIN: process.env.CORS_ORIGIN || (NODE_ENV === 'production' ? 'https://your-domain.com' : '*'),
   RATE_LIMIT_MAX: parseInt(process.env.RATE_LIMIT_MAX || '100'),
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS || (15 * 60 * 1000).toString()),
   MAX_UPLOAD_SIZE_MB: parseInt(process.env.MAX_UPLOAD_SIZE_MB || '10'),
   
   // 로깅
-  LOG_LEVEL: (process.env.LOG_LEVEL || (config.NODE_ENV === 'production' ? 'warn' : 'info')) as ServerConfig['LOG_LEVEL'],
+  LOG_LEVEL: (process.env.LOG_LEVEL || (NODE_ENV === 'production' ? 'warn' : 'info')) as ServerConfig['LOG_LEVEL'],
   LOG_FILE_PATH: process.env.LOG_FILE_PATH || './logs/application.log',
   
   // SSL
@@ -67,7 +69,7 @@ const config: ServerConfig = {
 };
 
 function generateSecureSecret(): string {
-  if (config.NODE_ENV === 'production') {
+  if (NODE_ENV === 'production') {
     throw new Error('SESSION_SECRET must be set in production environment');
   }
   return 'development-secret-key-change-in-production';

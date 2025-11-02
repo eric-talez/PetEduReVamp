@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, PawPrint, Brain, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Calendar, PawPrint, Brain, Clock, AlertTriangle, CheckCircle, Upload, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -78,6 +78,12 @@ export default function AiAnalysisPage() {
   });
   const [selectedLogIds, setSelectedLogIds] = useState<number[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
+  
+  // 미디어 분석 state
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mediaMemo, setMediaMemo] = useState<string>('');
+  const [mediaAnalysisResult, setMediaAnalysisResult] = useState<any>(null);
 
   // 임시 반려동물 목록 (실제로는 API에서 가져와야 함)
   const pets = [
@@ -151,6 +157,96 @@ export default function AiAnalysisPage() {
       });
     }
   });
+
+  // 미디어 분석 실행
+  const analyzeMediaMutation = useMutation({
+    mutationFn: async (data: {
+      petId: number;
+      imageBase64: string;
+      model: string;
+      memo?: string;
+    }) => {
+      const response = await fetch('/api/ai/analyze-media', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await response.json();
+      if (!response.ok && response.status !== 503) {
+        throw new Error(result.message || '미디어 분석 요청 실패');
+      }
+      return result;
+    },
+    onSuccess: (data) => {
+      setMediaAnalysisResult(data);
+      toast({
+        title: "미디어 분석 완료",
+        description: "AI 미디어 분석이 성공적으로 완료되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "분석 실패",
+        description: error?.message || "AI 미디어 분석 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // 이미지 업로드 핸들러
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "파일 크기 초과",
+        description: "이미지 파일은 10MB 이하만 업로드 가능합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setMediaAnalysisResult(null);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setUploadedImage(base64);
+      setImagePreview(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 미디어 분석 실행 핸들러
+  const handleMediaAnalyze = () => {
+    if (!selectedPetId) {
+      toast({
+        title: "반려동물을 선택해주세요",
+        description: "분석할 반려동물을 먼저 선택해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!uploadedImage) {
+      toast({
+        title: "이미지를 업로드해주세요",
+        description: "분석할 이미지를 먼저 업로드해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    analyzeMediaMutation.mutate({
+      petId: selectedPetId,
+      imageBase64: uploadedImage,
+      model: selectedModel,
+      memo: mediaMemo
+    });
+  };
 
   // 신호 선택 핸들러
   const handleSignalChange = (signal: string, checked: boolean) => {
@@ -486,8 +582,9 @@ export default function AiAnalysisPage() {
 
       {/* 분석 결과 섹션 */}
       <Tabs defaultValue="results" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="results" data-testid="tab-results">최신 분석 결과</TabsTrigger>
+          <TabsTrigger value="media" data-testid="tab-media">미디어 분석</TabsTrigger>
           <TabsTrigger value="history" data-testid="tab-history">분석 기록</TabsTrigger>
         </TabsList>
 
@@ -596,6 +693,238 @@ export default function AiAnalysisPage() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* 미디어 분석 탭 */}
+        <TabsContent value="media" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-primary dark:text-primary-foreground" />
+                미디어 업로드 및 분석
+              </CardTitle>
+              <CardDescription>
+                반려동물의 이미지나 동영상을 업로드하여 AI가 자세, 행동, 건강 상태를 분석합니다
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* 이미지 업로드 영역 */}
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
+                <div className="text-center">
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <label htmlFor="image-upload" className="cursor-pointer">
+                    <span className="text-primary dark:text-primary-foreground hover:underline">
+                      이미지 선택
+                    </span>
+                    <input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      data-testid="input-image-upload"
+                    />
+                  </label>
+                  <p className="text-sm text-gray-500 mt-2">
+                    JPG, PNG, GIF 형식 지원 (최대 10MB)
+                  </p>
+                </div>
+
+                {/* 이미지 미리보기 */}
+                {imagePreview && (
+                  <div className="mt-4">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-w-full h-auto rounded-lg mx-auto"
+                      style={{ maxHeight: '400px' }}
+                    />
+                    <div className="mt-4 space-y-2">
+                      <label className="block text-sm font-medium">
+                        메모 (선택사항)
+                      </label>
+                      <textarea
+                        value={mediaMemo}
+                        onChange={(e) => setMediaMemo(e.target.value)}
+                        placeholder="이미지에 대한 추가 설명을 입력하세요..."
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        rows={3}
+                        data-testid="textarea-media-memo"
+                      />
+                    </div>
+                    <Button
+                      onClick={handleMediaAnalyze}
+                      disabled={!selectedPetId || analyzeMediaMutation.isPending}
+                      className="w-full mt-4"
+                      data-testid="button-analyze-media"
+                    >
+                      {analyzeMediaMutation.isPending ? (
+                        <>
+                          <Clock className="w-4 h-4 mr-2 animate-spin" />
+                          분석 중...
+                        </>
+                      ) : (
+                        <>
+                          <Brain className="w-4 h-4 mr-2" />
+                          AI 분석 실행
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* 분석 결과 표시 */}
+              {mediaAnalysisResult ? (
+                <div className="mt-6 space-y-4">
+                  <h3 className="text-lg font-semibold">분석 결과</h3>
+                  
+                  {/* 종합 분석 */}
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2">📊 종합 분석</h4>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      {mediaAnalysisResult?.analysis?.summary || '분석 결과가 없습니다.'}
+                    </p>
+                  </div>
+
+                  {/* 자세 분석 */}
+                  {mediaAnalysisResult?.analysis?.posture && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2">🐕 자세 분석</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">점수:</span>
+                          <Badge className="bg-primary dark:bg-primary/80">
+                            {mediaAnalysisResult.analysis.posture.score}/100
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {mediaAnalysisResult.analysis.posture.notes}
+                        </p>
+                        {mediaAnalysisResult.analysis.posture.keyFindings?.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-sm font-medium mb-1">주요 발견사항:</p>
+                            <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                              {mediaAnalysisResult.analysis.posture.keyFindings.map((finding: string, idx: number) => (
+                                <li key={idx}>{finding}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 행동 분석 */}
+                  {mediaAnalysisResult?.analysis?.behavior && (
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2">🎯 행동 분석</h4>
+                      <div className="space-y-2 text-sm">
+                        {mediaAnalysisResult.analysis.behavior.observed?.length > 0 && (
+                          <div>
+                            <p className="font-medium">관찰된 행동:</p>
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
+                              {mediaAnalysisResult.analysis.behavior.observed.map((obs: string, idx: number) => (
+                                <li key={idx}>{obs}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {mediaAnalysisResult.analysis.behavior.positive?.length > 0 && (
+                          <div>
+                            <p className="font-medium text-green-600 dark:text-green-400">긍정적 행동:</p>
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
+                              {mediaAnalysisResult.analysis.behavior.positive.map((pos: string, idx: number) => (
+                                <li key={idx}>{pos}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {mediaAnalysisResult.analysis.behavior.concerns?.length > 0 && (
+                          <div>
+                            <p className="font-medium text-amber-600 dark:text-amber-400">우려사항:</p>
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
+                              {mediaAnalysisResult.analysis.behavior.concerns.map((concern: string, idx: number) => (
+                                <li key={idx}>{concern}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 건강 상태 */}
+                  {mediaAnalysisResult?.analysis?.health && (
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2">💊 건강 상태</h4>
+                      <div className="space-y-2 text-sm">
+                        <p className="text-gray-700 dark:text-gray-300">
+                          {mediaAnalysisResult.analysis.health.status}
+                        </p>
+                        {mediaAnalysisResult.analysis.health.warnings?.length > 0 && (
+                          <div>
+                            <p className="font-medium text-red-600 dark:text-red-400">경고:</p>
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
+                              {mediaAnalysisResult.analysis.health.warnings.map((warning: string, idx: number) => (
+                                <li key={idx}>{warning}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {mediaAnalysisResult.analysis.health.recommendations?.length > 0 && (
+                          <div>
+                            <p className="font-medium">권장사항:</p>
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
+                              {mediaAnalysisResult.analysis.health.recommendations.map((rec: string, idx: number) => (
+                                <li key={idx}>{rec}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 문제점 및 해결방안 */}
+                  {mediaAnalysisResult?.analysis?.issues?.length > 0 && (
+                    <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                        발견된 문제점
+                      </h4>
+                      <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                        {mediaAnalysisResult.analysis.issues.map((issue: string, idx: number) => (
+                          <li key={idx}>{issue}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {mediaAnalysisResult?.analysis?.solutions?.length > 0 && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-blue-500" />
+                        해결방안
+                      </h4>
+                      <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                        {mediaAnalysisResult.analysis.solutions.map((solution: string, idx: number) => (
+                          <li key={idx}>{solution}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : analyzeMediaMutation.isError ? (
+                <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <h4 className="font-medium text-red-800 dark:text-red-400 mb-2">⚠️ 오류 발생</h4>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    {(analyzeMediaMutation.error as any)?.message || '미디어 분석 중 오류가 발생했습니다.'}
+                  </p>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* 분석 기록 탭 */}

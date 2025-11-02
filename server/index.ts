@@ -4,6 +4,7 @@ import { registerAIRoutes } from "./routes/ai";
 import { registerAIProxyRoutes } from "./routes/ai-proxy";
 import { registerAdminAIRoutes } from "./routes/admin-ai";
 import { registerEnhancedAnalysisRoutes } from "./routes/enhanced-analysis";
+import { registerMediaAnalysisRoutes } from "./routes/ai-media";
 import { registerExperienceRoutes } from "./routes/experience";
 import { registerInstituteRoutes } from "./institutes/routes";
 import { setupVite, serveStatic } from "./vite";
@@ -500,6 +501,9 @@ async function startServer() {
 
     // Enhanced Analysis Routes (강화된 AI 분석)
     registerEnhancedAnalysisRoutes(app);
+
+    // Media Analysis Routes (미디어 분석)
+    registerMediaAnalysisRoutes(app);
 
     // Register experience routes
     registerExperienceRoutes(app);
