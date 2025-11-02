@@ -69,8 +69,7 @@ JSON 형식:
       console.log('[Media Analysis] 이미지 분석 시작:', { 
         petId, 
         model, 
-        imageLength: imageBase64.length,
-        userId: req.user?.id 
+        imageLength: imageBase64.length
       });
 
       const response = await openai.chat.completions.create({
@@ -154,6 +153,39 @@ JSON 형식:
 
     } catch (error: any) {
       console.error('[Media Analysis] 오류:', error);
+      
+      // OpenAI API 할당량 초과 시 데모 모드로 전환
+      if (error.status === 429 || error.message?.includes('quota') || error.message?.includes('429')) {
+        console.warn('[Media Analysis] OpenAI 할당량 초과 - 데모 모드로 전환');
+        return res.status(200).json({
+          success: true,
+          message: 'OpenAI API 할당량 초과로 데모 분석 결과를 제공합니다.',
+          analysis: {
+            summary: '(데모 분석) OpenAI API 할당량이 초과되어 데모 결과를 제공합니다. 실제 분석을 위해서는 API 키를 확인하거나 할당량을 늘려주세요.',
+            posture: {
+              score: 80,
+              notes: '데모 모드: 할당량 초과로 실제 분석을 진행할 수 없습니다.',
+              keyFindings: ['API 할당량 초과']
+            },
+            behavior: {
+              observed: ['이미지 업로드 확인됨'],
+              concerns: ['API 할당량 부족'],
+              positive: ['정상적으로 업로드됨']
+            },
+            health: {
+              status: '데모 모드 (할당량 초과)',
+              warnings: ['OpenAI API 할당량을 확인하세요'],
+              recommendations: ['API 키 플랜 업그레이드 또는 결제 정보 확인']
+            },
+            issues: ['OpenAI API 할당량이 초과되었습니다'],
+            solutions: ['OpenAI 계정에서 결제 정보를 확인하거나 플랜을 업그레이드하세요']
+          },
+          tokensUsed: { in: 0, out: 0 },
+          model: 'demo-mode-quota-exceeded'
+        });
+      }
+      
+      // 기타 에러
       return res.status(500).json({
         success: false,
         message: error.message || 'AI 분석 중 오류가 발생했습니다.',
