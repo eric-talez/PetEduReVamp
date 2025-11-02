@@ -995,24 +995,20 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link href="/auth">
-                  <Button 
-                    variant="ghost" 
-                    size="default"
+                  <a
                     aria-label="로그인 페이지로 이동"
-                    className="min-w-[44px] min-h-[44px] h-10 px-4 sm:px-5 text-sm sm:text-base font-medium transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground min-w-[44px] min-h-[44px] h-10 px-4 sm:px-5 sm:text-base transition-all hover:scale-105 cursor-pointer"
                   >
                     로그인
-                  </Button>
+                  </a>
                 </Link>
                 <Link href="/auth?tab=register">
-                  <Button 
-                    variant="default" 
-                    size="default"
+                  <a
                     aria-label="회원가입 페이지로 이동"
-                    className="min-w-[44px] min-h-[44px] h-10 px-4 sm:px-6 text-sm sm:text-base font-medium transition-all hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-md hover:shadow-lg"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 min-w-[44px] min-h-[44px] h-10 px-4 sm:px-6 sm:text-base transition-all hover:scale-105 shadow-md hover:shadow-lg cursor-pointer"
                   >
                     회원가입
-                  </Button>
+                  </a>
                 </Link>
               </div>
             )}
