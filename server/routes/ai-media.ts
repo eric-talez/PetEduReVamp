@@ -9,7 +9,7 @@ const openai = config.OPENAI_API_KEY || config.OPENAI_API_TALEZ
 export function registerMediaAnalysisRoutes(app: Express) {
   app.post('/api/ai/analyze-media', async (req: Request, res: Response) => {
     try {
-      const { imageBase64, petId, model = 'gpt-4o', memo } = req.body;
+      const { imageBase64, petId, model = 'gpt-4o-mini', memo } = req.body;
 
       if (!imageBase64) {
         return res.status(400).json({ 
@@ -54,52 +54,16 @@ export function registerMediaAnalysisRoutes(app: Express) {
         });
       }
 
-      const prompt = `당신은 반려견 전문가입니다. 제공된 이미지를 분석하여 다음 정보를 한국어로 제공해주세요:
-
-1. **자세 분석 (Posture Analysis)**:
-   - 자세 점수 (0-100점)
-   - 자세 관련 주요 발견사항
-   - 자세 개선 노트
-
-2. **행동 분석 (Behavior Analysis)**:
-   - 관찰된 행동들
-   - 우려되는 행동 패턴
-   - 긍정적인 행동들
-
-3. **건강 상태 분석 (Health Status)**:
-   - 전반적인 건강 상태
-   - 건강 경고사항 (있는 경우)
-   - 건강 관리 권장사항
-
-4. **문제점 식별 (Issues)**:
-   - 발견된 문제점들
-
-5. **해결방안 (Solutions)**:
-   - 구체적인 개선 방법
-   - 단계별 실행 계획
-
-${memo ? `\n사용자 메모: ${memo}` : ''}
-
-반드시 다음 JSON 형식으로 응답해주세요:
+      const prompt = `반려견 전문가로서 이미지를 분석하여 JSON 형식으로 응답하세요.
+${memo ? `메모: ${memo}\n` : ''}
+JSON 형식:
 {
-  "summary": "종합 분석 요약",
-  "posture": {
-    "score": 85,
-    "notes": "자세 분석 내용",
-    "keyFindings": ["발견사항 1", "발견사항 2"]
-  },
-  "behavior": {
-    "observed": ["관찰된 행동 1", "관찰된 행동 2"],
-    "concerns": ["우려사항 1"],
-    "positive": ["긍정적 행동 1"]
-  },
-  "health": {
-    "status": "건강 상태 설명",
-    "warnings": ["경고사항 1"],
-    "recommendations": ["권장사항 1", "권장사항 2"]
-  },
-  "issues": ["문제점 1", "문제점 2"],
-  "solutions": ["해결방안 1", "해결방안 2", "해결방안 3"]
+  "summary": "전체 요약",
+  "posture": {"score": 85, "notes": "자세 설명", "keyFindings": ["발견사항"]},
+  "behavior": {"observed": ["관찰"], "concerns": ["우려"], "positive": ["긍정"]},
+  "health": {"status": "상태", "warnings": ["경고"], "recommendations": ["권장"]},
+  "issues": ["문제"],
+  "solutions": ["해결방안"]
 }`;
 
       console.log('[Media Analysis] 이미지 분석 시작:', { 
@@ -120,14 +84,14 @@ ${memo ? `\n사용자 메모: ${memo}` : ''}
                 type: 'image_url',
                 image_url: {
                   url: imageBase64.startsWith('data:') ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`,
-                  detail: 'high'
+                  detail: 'auto'
                 }
               }
             ]
           }
         ],
-        max_tokens: 2000,
-        temperature: 0.7,
+        max_tokens: 1200,
+        temperature: 0.5,
       });
 
       const content = response.choices[0]?.message?.content;
