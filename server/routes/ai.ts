@@ -6,7 +6,7 @@ import path from 'path';
 
 // OpenAI 클라이언트 초기화
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY,
 });
 
 // Multer 설정 (파일 업로드용)
@@ -109,7 +109,7 @@ export function registerAIRoutes(app: Express) {
   // AI 기능 상태 확인 엔드포인트
   app.get('/api/ai/status', async (req, res) => {
     try {
-      if (!process.env.OPENAI_API_KEY) {
+      if (!process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY) {
         return res.json({ 
           available: false, 
           reason: 'API 키가 설정되지 않았습니다.' 

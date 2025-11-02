@@ -11,7 +11,7 @@ export function registerAiRoutes(app: Express) {
 
   // OpenAI API 클라이언트 초기화
   const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY || '',
+    apiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY || '',
   });
 
   // 채팅 API 엔드포인트
@@ -24,7 +24,7 @@ export function registerAiRoutes(app: Express) {
       }
 
       // API 키 확인
-      if (!process.env.OPENAI_API_KEY) {
+      if (!process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY) {
         return res.status(500).json({ error: 'API 키가 설정되지 않았습니다.' });
       }
 
@@ -102,7 +102,7 @@ export function registerAiRoutes(app: Express) {
       }
       
       // API 키 확인
-      if (!process.env.OPENAI_API_KEY) {
+      if (!process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY) {
         return res.status(500).json({ error: 'API 키가 설정되지 않았습니다.' });
       }
       
@@ -172,7 +172,7 @@ export function registerAiRoutes(app: Express) {
       }
       
       // API 키 확인
-      if (!process.env.OPENAI_API_KEY) {
+      if (!process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY) {
         return res.status(500).json({ error: 'API 키가 설정되지 않았습니다.' });
       }
       

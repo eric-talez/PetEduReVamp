@@ -22,7 +22,7 @@ export class AIProxyService {
 
   constructor() {
     // API 키 검증
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.OPENAI_API_TALEZ && !process.env.OPENAI_API_KEY) {
       console.warn('⚠️ OpenAI API 키가 설정되지 않았습니다.');
     }
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -36,7 +36,7 @@ export class AIProxyService {
     }
 
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY,
     });
 
     this.claude = new Anthropic({
@@ -465,7 +465,7 @@ export class AIProxyService {
     // 각 엔진에서 분석 수행 (병렬 처리)
     const promises = [];
 
-    if (weights.openai > 0 && process.env.OPENAI_API_KEY) {
+    if (weights.openai > 0 && process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY) {
       promises.push(this.analyzeWithOpenAI(prompt, analysisType));
     }
     if (weights.claude > 0 && process.env.ANTHROPIC_API_KEY) {

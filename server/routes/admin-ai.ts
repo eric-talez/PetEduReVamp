@@ -71,7 +71,7 @@ export function registerAdminAIRoutes(app: Express) {
       // API 키는 마스킹해서 전송
       const safeConfig = {
         ...aiConfig,
-        openaiApiKey: process.env.OPENAI_API_KEY ? '••••••••' : '',
+        openaiApiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY ? '••••••••' : '',
         claudeApiKey: process.env.ANTHROPIC_API_KEY ? '••••••••' : '',
         geminiApiKey: process.env.GEMINI_API_KEY ? '••••••••' : '',
         perplexityApiKey: process.env.PERPLEXITY_API_KEY ? '••••••••' : ''
@@ -114,6 +114,7 @@ export function registerAdminAIRoutes(app: Express) {
 
       // API 키 업데이트 (환경변수로 설정 - 실제로는 안전한 저장소 사용)
       if (openaiApiKey && openaiApiKey !== '••••••••') {
+        process.env.OPENAI_API_TALEZ = openaiApiKey;
         process.env.OPENAI_API_KEY = openaiApiKey;
         console.log('🔑 OpenAI API 키가 업데이트되었습니다.');
       }
@@ -141,7 +142,7 @@ export function registerAdminAIRoutes(app: Express) {
         message: 'AI 설정이 성공적으로 업데이트되었습니다.',
         config: {
           ...aiConfig,
-          openaiApiKey: process.env.OPENAI_API_KEY ? '••••••••' : '',
+          openaiApiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY ? '••••••••' : '',
           claudeApiKey: process.env.ANTHROPIC_API_KEY ? '••••••••' : '',
           geminiApiKey: process.env.GEMINI_API_KEY ? '••••••••' : '',
           perplexityApiKey: process.env.PERPLEXITY_API_KEY ? '••••••••' : ''
@@ -215,7 +216,7 @@ export function registerAdminAIRoutes(app: Express) {
           usageTrackingEnabled: aiConfig.enableUsageTracking
         },
         environment: {
-          openaiConfigured: !!process.env.OPENAI_API_KEY,
+          openaiConfigured: !!process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY,
           geminiConfigured: !!process.env.GEMINI_API_KEY,
           nodeEnv: process.env.NODE_ENV
         },

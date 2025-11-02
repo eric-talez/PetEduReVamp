@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { z } from "zod";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY });
 
 // 커리큘럼 모듈 스키마
 const CurriculumModuleSchema = z.object({

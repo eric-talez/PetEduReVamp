@@ -58,7 +58,7 @@ export function registerErrorAutoFixRoutes(app: Express) {
 
   // OpenAI API 클라이언트 초기화
   const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY || '',
+    apiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY || '',
   });
 
   // 오류 로그 조회
@@ -201,7 +201,7 @@ export function registerErrorAutoFixRoutes(app: Express) {
 
     try {
       // OpenAI API 키 확인
-      if (!process.env.OPENAI_API_KEY) {
+      if (!process.env.OPENAI_API_TALEZ && !process.env.OPENAI_API_KEY) {
         return { success: false, message: 'OpenAI API 키가 설정되지 않았습니다.' };
       }
 

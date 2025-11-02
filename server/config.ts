@@ -13,6 +13,7 @@ export interface ServerConfig {
   
   // API 키들
   OPENAI_API_KEY?: string;
+  OPENAI_API_TALEZ?: string;
   KAKAO_MAPS_API_KEY?: string;
   STRIPE_SECRET_KEY?: string;
   SENTRY_DSN?: string;
@@ -43,7 +44,8 @@ const config: ServerConfig = {
   SESSION_MAX_AGE_MS: parseInt(process.env.SESSION_MAX_AGE_MS || (24 * 60 * 60 * 1000).toString()),
   
   // API 키들
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY || process.env.OPENAI_API_TALEZ,
+  OPENAI_API_TALEZ: process.env.OPENAI_API_TALEZ,
   KAKAO_MAPS_API_KEY: process.env.KAKAO_MAPS_API_KEY,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   SENTRY_DSN: process.env.SENTRY_DSN,

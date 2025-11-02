@@ -23,7 +23,7 @@ export class AILocationCrawler {
 
   constructor() {
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || ''
+      apiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY || ''
     });
     this.kakaoApiKey = process.env.VITE_KAKAO_MAPS_API_KEY || '';
   }

@@ -21,7 +21,7 @@ import { GoogleGenAI } from "@google/genai";
 import { storage } from "./storage";
 
 // AI 모델 초기화
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY });
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
