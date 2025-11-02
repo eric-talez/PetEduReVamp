@@ -1275,7 +1275,18 @@ class Storage {
     return this.users?.find(user => user.email === email);
   }
 
-  getUserByUsername(username: string) {
+  async getUserByUsername(username: string) {
+    try {
+      // 데이터베이스에서 먼저 조회
+      const [user] = await db.select().from(users).where(eq(users.username, username));
+      if (user) {
+        return user;
+      }
+    } catch (error) {
+      console.error('[DB] getUserByUsername 오류:', error);
+    }
+    
+    // 데이터베이스에서 찾지 못하면 메모리에서 검색 (fallback)
     return this.users?.find(user => user.username === username);
   }
 
