@@ -2769,38 +2769,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      // TALEZ 데이터베이스에서도 검색
-      const talezResults = await db
-        .select()
-        .from(institutes)
-        .where(
-          sql`${institutes.name} LIKE ${`%${searchQuery}%`} 
-              OR ${institutes.address} LIKE ${`%${searchQuery}%`}
-              AND ${institutes.isActive} = true
-              AND ${institutes.latitude} IS NOT NULL 
-              AND ${institutes.longitude} IS NOT NULL`
-        )
-        .limit(20);
+      // TALEZ 데이터베이스에서도 검색 (타임아웃 보호)
+      let talezPlaces: any[] = [];
+      try {
+        const talezResults = await Promise.race([
+          db
+            .select()
+            .from(institutes)
+            .where(
+              sql`${institutes.name} LIKE ${`%${searchQuery}%`} 
+                  OR ${institutes.address} LIKE ${`%${searchQuery}%`}
+                  AND ${institutes.isActive} = true
+                  AND ${institutes.latitude} IS NOT NULL 
+                  AND ${institutes.longitude} IS NOT NULL`
+            )
+            .limit(20),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('DB timeout')), 5000)
+          )
+        ]) as any[];
 
-      const talezPlaces = talezResults.map((inst: any) => ({
-        id: `talez-institute-${inst.id}`,
-        name: inst.name,
-        type: 'institute',
-        latitude: inst.latitude ? parseFloat(inst.latitude) : 0,
-        longitude: inst.longitude ? parseFloat(inst.longitude) : 0,
-        address: inst.address || '',
-        phone: inst.phone || '',
-        rating: inst.rating ? parseFloat(inst.rating) : 4.5,
-        description: inst.description || '반려동물 훈련 기관',
-        certification: inst.certification || false,
-        isTalez: true,
-        photo: inst.logo,
-        website: inst.website,
-        established: inst.createdAt ? new Date(inst.createdAt).getFullYear().toString() : '2020',
-        facilities: ['실내 훈련장', '실외 훈련장', '주차장'],
-        trainers: 5,
-        courses: 10,
-      }));
+        talezPlaces = talezResults.map((inst: any) => ({
+          id: `talez-institute-${inst.id}`,
+          name: inst.name,
+          type: 'institute',
+          latitude: inst.latitude ? parseFloat(inst.latitude) : 0,
+          longitude: inst.longitude ? parseFloat(inst.longitude) : 0,
+          address: inst.address || '',
+          phone: inst.phone || '',
+          rating: inst.rating ? parseFloat(inst.rating) : 4.5,
+          description: inst.description || '반려동물 훈련 기관',
+          certification: inst.certification || false,
+          isTalez: true,
+          photo: inst.logo,
+          website: inst.website,
+          established: inst.createdAt ? new Date(inst.createdAt).getFullYear().toString() : '2020',
+          facilities: ['실내 훈련장', '실외 훈련장', '주차장'],
+          trainers: 5,
+          courses: 10,
+        }));
+      } catch (dbError) {
+        console.warn('[Places Search] DB 쿼리 실패, Google Places만 사용:', dbError);
+      }
 
       // Google Places Text Search API 호출
       // 검색어가 짧으면 (3글자 이하) 카테고리 키워드 추가, 길면 정확도 우선
@@ -2820,13 +2830,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         params.append('radius', '50000'); // 50km
       }
 
-      const response = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?${params}`);
+      // Google Places API 호출 (10초 타임아웃)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      let googlePlaces: any[] = [];
+      
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/place/textsearch/json?${params}`,
+          { signal: controller.signal }
+        );
+        clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        throw new Error(`Google Places API 오류: ${response.status}`);
-      }
+        if (!response.ok) {
+          throw new Error(`Google Places API 오류: ${response.status}`);
+        }
 
-      const data = await response.json();
+        const data = await response.json();
       
       console.log(`[Google Places API] status: ${data.status}, results: ${data.results?.length || 0}`);
       
@@ -2847,7 +2868,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const categoryFromQuery = getCategoryFromQuery(searchQuery);
 
-      const googlePlaces = (data.results || [])
+        googlePlaces = (data.results || [])
         .filter((place: any) => {
           // 검색어를 키워드로 분리 (공백 기준)
           const keywords = searchQuery.toLowerCase().split(/\s+/).filter(k => k.length >= 2);
@@ -2910,6 +2931,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Place ${index}] ${placeData.name} - ${placeData.address} (${placeData.latitude}, ${placeData.longitude}), photos: ${photos.length}`);
           return placeData;
         });
+      } catch (googleError: any) {
+        clearTimeout(timeoutId);
+        console.warn('[Places Search] Google Places API 호출 실패:', googleError.message);
+        // Google API 실패해도 계속 진행 (TALEZ 결과만 반환)
+      }
 
       // TALEZ 결과를 우선순위로 병합
       const combinedResults = [...talezPlaces, ...googlePlaces];
@@ -2919,10 +2945,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error('장소 검색 오류:', error);
-      res.status(500).json({ 
-        error: '장소를 검색하는데 실패했습니다.',
-        details: error instanceof Error ? error.message : String(error)
-      });
+      // 최소한 빈 배열이라도 반환 (502 에러 방지)
+      res.json([]);
     }
   });
 

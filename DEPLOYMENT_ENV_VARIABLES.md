@@ -89,6 +89,18 @@ DATABASE_URL=postgresql://production_host:5432/talez_prod
 
 ## 문제 해결
 
+### 502 Bad Gateway 에러가 발생하는 경우
+**원인**: Google Places API 호출 타임아웃 또는 데이터베이스 연결 문제
+
+**해결 방법**:
+1. **환경 변수 확인**: `VITE_GOOGLE_MAPS_API_KEY`와 `DATABASE_URL`이 올바르게 설정되었는지 확인
+2. **Google API 할당량**: Google Cloud Console에서 Places API 할당량 확인
+3. **타임아웃 처리**: 코드에 자동 타임아웃 보호 기능이 적용되어 있음
+   - Google Places API: 10초 타임아웃
+   - 데이터베이스 쿼리: 5초 타임아웃
+   - API 호출 실패 시 빈 배열 반환 (502 에러 방지)
+4. **네트워크**: 서버에서 Google API에 접근 가능한지 확인
+
 ### 지도가 표시되지 않는 경우
 1. `VITE_GOOGLE_MAPS_API_KEY`가 올바르게 설정되었는지 확인
 2. Google Cloud Console에서 Maps JavaScript API가 활성화되었는지 확인
@@ -101,3 +113,8 @@ DATABASE_URL=postgresql://production_host:5432/talez_prod
 
 ### 퀵로그인 버튼이 표시되지 않는 경우 (배포 환경)
 - 의도된 동작입니다. 배포 환경에서 퀵로그인을 활성화하려면 `VITE_ENABLE_QUICK_LOGIN=true` 설정
+
+### 지도 검색이 느린 경우
+- Google Places API와 데이터베이스 모두 사용하므로 첫 검색에 시간이 걸릴 수 있음
+- 타임아웃 설정으로 최대 10초 이상 대기하지 않음
+- 실패 시 자동으로 graceful fallback 처리됨

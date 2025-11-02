@@ -1,0 +1,35 @@
+Failed to load resource: the server responded with a status of 404 (Not Found)Understand this error
+api/logo:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/dashboard/system/status:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/events:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/weekly-stats:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/popular-stats:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/banners?type=main&position=hero:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/banners?type=main&position=hero:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/dashboard/system/status:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/events:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/weekly-stats:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/popular-stats:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/settings?key=reviews_enabled:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/institutes:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/dashboard/system/status:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/institutes:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%B0%98%EB%A0%A4%EA%B2%AC%20%ED%9B%88%EB%A0%A8%EC%86%8C&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%8F%99%EB%AC%BC%EB%B3%91%EC%9B%90&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%B0%98%EB%A0%A4%EA%B2%AC%20%EC%B9%B4%ED%8E%98&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%B0%98%EB%A0%A4%EA%B2%AC%20%ED%8E%9C%EC%85%98&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%B0%98%EB%A0%A4%EA%B2%AC%20%EB%AF%B8%EC%9A%A9&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/institutes:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%B0%98%EB%A0%A4%EA%B2%AC%20%ED%9B%88%EB%A0%A8%EC%86%8C&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%8F%99%EB%AC%BC%EB%B3%91%EC%9B%90&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%B0%98%EB%A0%A4%EA%B2%AC%20%EC%B9%B4%ED%8E%98&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%B0%98%EB%A0%A4%EA%B2%AC%20%ED%8E%9C%EC%85%98&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EB%B0%98%EB%A0%A4%EA%B2%AC%20%EB%AF%B8%EC%9A%A9&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+api/locations/search?query=%EC%95%84%ED%8B%80%EB%A6%AC%EB%8F%85&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+index-BSmsV-Tb.js:1370 검색 오류: Error: 검색에 실패했습니다.
+    at he (index-BSmsV-Tb.js:1370:78759)
+he @ index-BSmsV-Tb.js:1370Understand this error
+api/locations/search?query=%EC%95%84%ED%8B%80%EB%A6%AC%EB%8F%85&lat=37.4276096&lng=126.746624:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+index-BSmsV-Tb.js:1370 검색 오류: Error: 검색에 실패했습니다.
+    at he (index-BSmsV-Tb.js:1370:78759)
