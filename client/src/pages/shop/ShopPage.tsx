@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Package2, Search, Sun, Moon, ChevronRight, Star } from 'lucide-react';
 import { useLocation } from "wouter";
+import { useTheme } from "@/context/theme-context";
 
 /**
  * 쇼핑몰 메인 페이지 컴포넌트
@@ -8,32 +9,20 @@ import { useLocation } from "wouter";
  * - 기존의 정적 HTML 페이지 기능을 React 컴포넌트로 구현
  */
 export default function ShopPage() {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const totalSlides = 3;
   const [, setLocation] = useLocation();
   
-  // 다크 모드 초기화
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
+  // ThemeProvider의 테마 상태 사용
+  const { theme, setTheme } = useTheme();
+  
+  // 현재 다크 모드 여부 계산
+  const isDarkMode = theme === "dark" || 
+    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   
   // 다크 모드 토글
   const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode;
-    setIsDarkMode(newDarkMode);
-    
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    setTheme(isDarkMode ? "light" : "dark");
   };
   
   // 배너 슬라이더 자동 전환

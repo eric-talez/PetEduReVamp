@@ -1,0 +1,103 @@
+# TALEZ 배포 환경 변수 가이드
+
+## 필수 환경 변수
+
+### 1. Google Maps API
+```bash
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+```
+- **용도**: 모든 지도 기능 (훈련사 위치, 주변 검색 등)
+- **획득 방법**: [Google Cloud Console](https://console.cloud.google.com/)에서 Maps JavaScript API 활성화
+- **참고**: 프로젝트의 모든 지도는 Google Maps를 사용합니다
+
+### 2. 데이터베이스
+```bash
+DATABASE_URL=your_postgresql_connection_string
+```
+- **용도**: PostgreSQL 데이터베이스 연결
+- **형식**: `postgresql://user:password@host:port/database`
+
+## 선택적 환경 변수
+
+### 3. 퀵로그인 활성화 (배포 환경)
+```bash
+VITE_ENABLE_QUICK_LOGIN=true
+```
+- **용도**: 배포 환경에서 퀵로그인 버튼 표시 여부
+- **기본값**: 개발 환경에서는 자동으로 표시됨
+- **참고**: 상용 배포 시에는 보안상 `false` 또는 설정하지 않는 것을 권장
+
+### 4. Kakao Maps API (사용 안 함)
+```bash
+# VITE_KAKAO_MAPS_API_KEY=deprecated
+# VITE_KAKAO_MAP_APP_KEY=deprecated
+```
+- **참고**: 현재 프로젝트는 Google Maps만 사용합니다
+- 카카오 맵 관련 환경 변수는 설정하지 않아도 됩니다
+
+### 5. 기타 OAuth 및 서비스
+```bash
+# OAuth 제공자
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+
+# Stripe 결제
+STRIPE_SECRET_KEY=your_stripe_secret_key
+VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key
+
+# Toss Payments (한국 시장)
+TOSS_CLIENT_KEY=your_toss_client_key
+TOSS_SECRET_KEY=your_toss_secret_key
+```
+
+## 배포 체크리스트
+
+### 상용화 배포 전 필수 확인사항
+
+1. **지도 API 설정**
+   - [ ] `VITE_GOOGLE_MAPS_API_KEY` 설정 완료
+   - [ ] Google Maps API 할당량 및 결제 설정 확인
+   - [ ] 네이버/카카오 맵 관련 코드가 실행되지 않는지 확인
+
+2. **테마 일관성**
+   - [ ] 모든 페이지에서 ThemeProvider 사용 확인
+   - [ ] localStorage의 `petedu-theme` 키 사용 일관성 확인
+
+3. **보안**
+   - [ ] 퀵로그인 버튼 비활성화 (`VITE_ENABLE_QUICK_LOGIN` 설정 안 함)
+   - [ ] 모든 API 키가 환경 변수로 관리되는지 확인
+
+4. **데이터베이스**
+   - [ ] 프로덕션 데이터베이스 연결 문자열 설정
+   - [ ] 데이터베이스 백업 설정 완료
+
+## 환경별 설정 예시
+
+### 개발 환경 (.env.development)
+```bash
+VITE_GOOGLE_MAPS_API_KEY=your_dev_key
+DATABASE_URL=postgresql://localhost:5432/talez_dev
+# VITE_ENABLE_QUICK_LOGIN은 설정하지 않음 (자동으로 true)
+```
+
+### 배포 환경 (.env.production)
+```bash
+VITE_GOOGLE_MAPS_API_KEY=your_production_key
+DATABASE_URL=postgresql://production_host:5432/talez_prod
+# VITE_ENABLE_QUICK_LOGIN=false (또는 설정하지 않음)
+```
+
+## 문제 해결
+
+### 지도가 표시되지 않는 경우
+1. `VITE_GOOGLE_MAPS_API_KEY`가 올바르게 설정되었는지 확인
+2. Google Cloud Console에서 Maps JavaScript API가 활성화되었는지 확인
+3. API 키의 도메인 제한 설정 확인
+
+### 테마가 페이지마다 다른 경우
+1. 브라우저 개발자 도구의 Application > Local Storage 확인
+2. `petedu-theme` 키의 값 확인 (light/dark/system)
+3. 페이지를 새로고침하여 ThemeProvider 초기화 확인
+
+### 퀵로그인 버튼이 표시되지 않는 경우 (배포 환경)
+- 의도된 동작입니다. 배포 환경에서 퀵로그인을 활성화하려면 `VITE_ENABLE_QUICK_LOGIN=true` 설정

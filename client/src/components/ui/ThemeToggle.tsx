@@ -1,50 +1,20 @@
 import { Moon, Sun } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useTheme } from "@/context/theme-context";
 
 export function ThemeToggle() {
-  // 현재 테마 상태를 React state로 관리
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // ThemeProvider의 테마 상태 사용
+  const { theme, setTheme } = useTheme();
   
-  // 컴포넌트 마운트 시 현재 테마 확인
-  useEffect(() => {
-    // 초기 테마 상태 설정
-    const isDark = document.documentElement.classList.contains('dark');
-    setIsDarkMode(isDark);
-    
-    // 테마 변경 감지를 위한 MutationObserver 설정
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          const isDark = document.documentElement.classList.contains('dark');
-          setIsDarkMode(isDark);
-        }
-      });
-    });
-    
-    observer.observe(document.documentElement, { attributes: true });
-    
-    // 컴포넌트 언마운트 시 observer 해제
-    return () => observer.disconnect();
-  }, []);
+  // 현재 다크 모드 여부 계산 (system 테마 고려)
+  const isDarkMode = theme === "dark" || 
+    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   
   function handleClick() {
     // 테마 변경 시 로그 출력
     console.log("테마 토글 버튼 클릭됨");
     
-    // document.documentElement에 직접 다크 모드 클래스를 토글
-    const newIsDark = !isDarkMode;
-    
-    if (newIsDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    
-    // React 상태 업데이트
-    setIsDarkMode(newIsDark);
-    
-    // 로컬 스토리지에 저장
-    localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
+    // ThemeProvider를 통해 테마 변경
+    setTheme(isDarkMode ? "light" : "dark");
   }
   
   return (

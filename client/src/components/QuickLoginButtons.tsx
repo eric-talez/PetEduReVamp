@@ -40,11 +40,13 @@ export function QuickLoginButtons() {
     window.dispatchEvent(logoutEvent);
   };
 
-  // QuickLogin 버튼 개발 환경에서만 표시
+  // QuickLogin 버튼 표시 여부 제어
+  // 환경 변수 VITE_ENABLE_QUICK_LOGIN이 'true'로 설정되어 있거나 개발 모드인 경우 표시
   const isDevEnv = import.meta.env.MODE === 'development';
+  const enableQuickLogin = import.meta.env.VITE_ENABLE_QUICK_LOGIN === 'true';
   
-  if (!isDevEnv) {
-    return null; // 개발 모드가 아닌 경우 아무것도 렌더링하지 않음
+  if (!isDevEnv && !enableQuickLogin) {
+    return null; // 개발 모드가 아니고 VITE_ENABLE_QUICK_LOGIN이 활성화되지 않은 경우 숨김
   }
   
   return (

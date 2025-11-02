@@ -96,36 +96,11 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
 
   const { toast } = useToast();
 
-  // Kakao Maps API 로드
+  // Google Maps API는 GoogleMapView 컴포넌트에서 자동으로 로드됨
+  // Kakao Maps API 로드는 더 이상 필요하지 않으므로 제거됨
   useEffect(() => {
-    if (typeof window === 'undefined' || isMapLoaded) return;
-    
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAPS_API_KEY}&libraries=services,clusterer,drawing&autoload=false`;
-    
-    script.onload = () => {
-      if (window.kakao?.maps) {
-        window.kakao.maps.load(() => {
-          setIsMapLoaded(true);
-          console.log('Kakao Maps API 로드 완료');
-        });
-      }
-    };
-    
-    script.onerror = () => {
-      console.error('Kakao Maps API 로드 실패');
-    };
-    
-    document.head.appendChild(script);
-    
-    return () => {
-      try {
-        document.head.removeChild(script);
-      } catch (e) {
-        // 스크립트가 이미 제거된 경우 무시
-      }
-    };
+    // 지도는 항상 사용 가능한 것으로 간주 (GoogleMapView가 자체적으로 로드)
+    setIsMapLoaded(true);
   }, []);
 
   // 사용자 위치 가져오기
