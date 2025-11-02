@@ -1820,7 +1820,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/popular-stats", async (req, res) => {
     try {
       // 실제 데이터에서 인기 항목 추출
-      const trainers = storage.getAllTrainers()
+      const allTrainers = await storage.getAllTrainers();
+      const trainers = (Array.isArray(allTrainers) ? allTrainers : [])
         .sort((a, b) => (b.views || 0) - (a.views || 0))
         .slice(0, 5)
         .map(trainer => ({
@@ -1892,7 +1893,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // 실제 데이터베이스에서 조회
       const users = storage.getAllUsers();
-      const trainers = storage.getAllTrainers();
+      const allTrainersData = await storage.getAllTrainers();
+      const trainers = Array.isArray(allTrainersData) ? allTrainersData : [];
       const allPets = storage.getAllPets();
 
       // 지난 7일간의 실제 등록 데이터 집계

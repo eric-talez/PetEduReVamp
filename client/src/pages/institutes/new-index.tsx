@@ -607,9 +607,8 @@ export default function LocationServices() {
           <div className="grid grid-cols-1 gap-6">
             {finalFilteredInstitutes.map((institute) => (
               <Card 
-                key={institute.id} 
-                hover 
-                className={`overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer transition-all ${selectedInstitute?.id === institute.id ? 'ring-2 ring-primary' : ''}`}
+                key={institute.id}
+                className={`overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer transition-all hover:shadow-lg ${selectedInstitute?.id === institute.id ? 'ring-2 ring-primary' : ''}`}
                 onClick={() => setSelectedInstitute(institute)}
               >
                 <div className="flex flex-col md:flex-row">
