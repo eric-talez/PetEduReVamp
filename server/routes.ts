@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
-import { sql } from "drizzle-orm";
+import { sql, eq, and, isNotNull } from "drizzle-orm";
 import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
@@ -2546,14 +2546,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (type === 'trainer') {
         // 훈련사 검색 (role = 'trainer'이고 latitude/longitude가 있는 사용자)
         const trainers = await db
-          .select()
+          .select({
+            id: users.id,
+            name: users.name,
+            username: users.username,
+            latitude: users.latitude,
+            longitude: users.longitude,
+            address: users.address,
+            verificationPhone: users.verificationPhone,
+            avatar: users.avatar,
+          })
           .from(users)
           .where(
-            sql`${users.role} = 'trainer' 
-                AND ${users.latitude} IS NOT NULL 
-                AND ${users.longitude} IS NOT NULL
-                AND ${users.isActive} = true`
+            and(
+              eq(users.role, 'trainer'),
+              isNotNull(users.latitude),
+              isNotNull(users.longitude),
+              eq(users.isActive, true)
+            )
           );
+
+        console.log(`[searchTalezPlaces] 훈련사 검색 결과: ${trainers.length}명`);
 
         return trainers.map((trainer: any) => ({
           id: `trainer-${trainer.id}`,
@@ -2562,24 +2575,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           latitude: parseFloat(trainer.latitude),
           longitude: parseFloat(trainer.longitude),
           address: trainer.address || '',
-          phone: trainer.verification_phone || '',
+          phone: trainer.verificationPhone || '',
           rating: 4.5,
           description: '전문 반려동물 훈련사',
           certification: true,
-          contact: trainer.verification_phone,
+          contact: trainer.verificationPhone,
           photo: trainer.avatar,
         }));
       } else if (type === 'institute') {
         // 기관 검색 - 인증 기관만 표시
         const institutions = await db
-          .select()
+          .select({
+            id: institutes.id,
+            name: institutes.name,
+            latitude: institutes.latitude,
+            longitude: institutes.longitude,
+            address: institutes.address,
+            phone: institutes.phone,
+            rating: institutes.rating,
+            description: institutes.description,
+            certification: institutes.certification,
+            logo: institutes.logo,
+            website: institutes.website,
+          })
           .from(institutes)
           .where(
-            sql`${institutes.latitude} IS NOT NULL 
-                AND ${institutes.longitude} IS NOT NULL
-                AND ${institutes.isActive} = true
-                AND ${institutes.certification} = true`
+            and(
+              isNotNull(institutes.latitude),
+              isNotNull(institutes.longitude),
+              eq(institutes.isActive, true),
+              eq(institutes.certification, true)
+            )
           );
+
+        console.log(`[searchTalezPlaces] 기관 검색 결과: ${institutions.length}개`);
 
         return institutions.map((inst: any) => ({
           id: `institute-${inst.id}`,
