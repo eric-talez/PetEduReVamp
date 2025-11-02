@@ -708,6 +708,42 @@ export default function AiAnalysisPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* 반려동물 선택 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">반려동물 선택</label>
+                <Select 
+                  value={selectedPetId?.toString() || ""} 
+                  onValueChange={(value) => setSelectedPetId(parseInt(value))}
+                >
+                  <SelectTrigger data-testid="select-pet-media">
+                    <SelectValue placeholder="반려동물을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pets.map(pet => (
+                      <SelectItem key={pet.id} value={pet.id.toString()}>
+                        {pet.name} ({pet.breed})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* AI 모델 선택 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">AI 모델 선택</label>
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <SelectTrigger data-testid="select-model-media">
+                    <SelectValue placeholder="AI 모델을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gpt-4o">ChatGPT 4o (Vision)</SelectItem>
+                    <SelectItem value="gpt-4o-mini">ChatGPT 4o Mini (Vision)</SelectItem>
+                    <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (Vision)</SelectItem>
+                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Vision)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* 이미지 업로드 영역 */}
               <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
                 <div className="text-center">
