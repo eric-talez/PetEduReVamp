@@ -233,7 +233,7 @@ export const TalezSection: React.FC<{
     >
       {backgroundImage && (
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
           style={{
             backgroundImage: `url(${backgroundImage})`,
             opacity: backgroundOpacity,

@@ -42,6 +42,7 @@ import {
   IconVideoCall,
   IconShield
 } from '@/components/ui/TalezDesignSystem';
+import DogTrainingBackground from '@assets/stock_images/happy_dog_training_o_e67db05d.jpg';
 
 
 // 각 역할별 홈 페이지를 동적으로 임포트
@@ -535,7 +536,12 @@ export default function Home() {
     return (
       <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
         {/* Hero Section - TALEZ Style */}
-        <TalezSection background="glass" className="relative py-20">
+        <TalezSection 
+          background="glass" 
+          className="relative py-20" 
+          backgroundImage={DogTrainingBackground}
+          backgroundOpacity={0.15}
+        >
           <div className="text-center talez-fade-in">
             <TalezBadge variant="success" className="mb-4">
               🐕 한국 최고의 반려동물 교육 플랫폼
