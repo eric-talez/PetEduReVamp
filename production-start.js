@@ -18,14 +18,19 @@ if (missingVars.length > 0) {
 // Google Maps API Key 확인 (경고만)
 if (!process.env.VITE_GOOGLE_MAPS_API_KEY) {
   console.warn('⚠️  VITE_GOOGLE_MAPS_API_KEY is not set - Google Maps may not work');
+} else {
+  console.log('✅ VITE_GOOGLE_MAPS_API_KEY is set:', process.env.VITE_GOOGLE_MAPS_API_KEY.substring(0, 10) + '...');
 }
 
-// 환경 변수 설정
+// 환경 변수 설정 (VITE_ 프리픽스 변수들 명시적 전달)
 const env = {
   ...process.env,
   NODE_ENV: 'production',
   PORT: process.env.PORT || '5000',
-  HOST: process.env.HOST || '0.0.0.0'
+  HOST: process.env.HOST || '0.0.0.0',
+  VITE_GOOGLE_MAPS_API_KEY: process.env.VITE_GOOGLE_MAPS_API_KEY || '',
+  VITE_KAKAO_MAPS_API_KEY: process.env.VITE_KAKAO_MAPS_API_KEY || '',
+  VITE_STRIPE_PUBLIC_KEY: process.env.VITE_STRIPE_PUBLIC_KEY || ''
 };
 
 console.log('✅ Environment variables validated\n');

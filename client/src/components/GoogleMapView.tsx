@@ -71,12 +71,15 @@ export function GoogleMapView({
 
   // 구글 맵 스크립트 로드
   useEffect(() => {
-    // 환경 변수에서 API 키 가져오기 (폴백 포함)
+    // 환경 변수에서 API 키 가져오기 (여러 소스 확인)
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 
                    (window as any).__GOOGLE_MAPS_API_KEY__ ||
+                   import.meta.env.GOOGLE_MAPS_API_KEY ||
                    'AIzaSyARFSKm3o7O4vn7RMjCkqYD4YuVfFF14Fo'; // 폴백 키
     
-    console.log('[GoogleMapView] 환경 변수 전체:', import.meta.env);
+    console.log('[GoogleMapView] 환경 변수 MODE:', import.meta.env.MODE);
+    console.log('[GoogleMapView] 환경 변수 DEV:', import.meta.env.DEV);
+    console.log('[GoogleMapView] 환경 변수 PROD:', import.meta.env.PROD);
     console.log('[GoogleMapView] API Key 확인:', apiKey ? `설정됨 (${apiKey.substring(0, 10)}...)` : '누락');
     
     if (!apiKey) {
