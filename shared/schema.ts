@@ -631,15 +631,6 @@ export const trainers = pgTable("trainers", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const vaccinations = pgTable("vaccinations", {
-  id: serial("id").primaryKey(),
-  petId: integer("pet_id").references(() => pets.id),
-  name: varchar("name", { length: 100 }).notNull(),
-  date: timestamp("date").notNull(),
-  nextDue: timestamp("next_due"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
 export const checkups = pgTable("checkups", {
   id: serial("id").primaryKey(),
   petId: integer("pet_id").references(() => pets.id),

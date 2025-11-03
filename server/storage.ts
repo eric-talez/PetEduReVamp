@@ -76,6 +76,7 @@ class Storage {
     }
   ];
   aiAnalyses: any[] = [];
+  vaccinations: any[] = []; // 예방접종 스케줄 저장소
   // 대체 훈련사 시스템 데이터 저장소
   substituteClassPosts: any[] = [];
   substituteClassApplications: any[] = [];
@@ -5203,6 +5204,71 @@ class HybridStorage extends Storage {
     const dates = Object.keys(logsByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
     return { dates, logsByDate, counts };
+  }
+
+  // =============================================================================
+  // 예방접종 스케줄 관리: Vaccinations 관련 메서드
+  // =============================================================================
+
+  async getVaccinationsByPetId(petId: number): Promise<any[]> {
+    return this.vaccinations.filter(v => v.petId === petId)
+      .sort((a, b) => new Date(a.vaccineDate).getTime() - new Date(b.vaccineDate).getTime());
+  }
+
+  async getVaccinationsByUserId(userId: number): Promise<any[]> {
+    return this.vaccinations.filter(v => v.userId === userId)
+      .sort((a, b) => new Date(a.vaccineDate).getTime() - new Date(b.vaccineDate).getTime());
+  }
+
+  async getVaccinationById(id: number): Promise<any | null> {
+    return this.vaccinations.find(v => v.id === id) || null;
+  }
+
+  async createVaccination(vaccinationData: any): Promise<any> {
+    const newVaccination = {
+      id: this.vaccinations.length + 1,
+      ...vaccinationData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    this.vaccinations.push(newVaccination);
+    return newVaccination;
+  }
+
+  async updateVaccination(id: number, updateData: any): Promise<any> {
+    const index = this.vaccinations.findIndex(v => v.id === id);
+    if (index === -1) {
+      throw new Error("Vaccination not found");
+    }
+    this.vaccinations[index] = {
+      ...this.vaccinations[index],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    return this.vaccinations[index];
+  }
+
+  async deleteVaccination(id: number): Promise<boolean> {
+    const index = this.vaccinations.findIndex(v => v.id === id);
+    if (index === -1) {
+      return false;
+    }
+    this.vaccinations.splice(index, 1);
+    return true;
+  }
+
+  async getUpcomingVaccinations(userId: number, days: number = 30): Promise<any[]> {
+    const today = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(today.getDate() + days);
+
+    return this.vaccinations.filter(v => {
+      if (v.userId !== userId) return false;
+      if (v.status === 'completed' || v.status === 'cancelled') return false;
+      
+      const vaccineDate = new Date(v.vaccineDate);
+      return vaccineDate >= today && vaccineDate <= futureDate;
+    }).sort((a, b) => new Date(a.vaccineDate).getTime() - new Date(b.vaccineDate).getTime());
   }
 }
 
