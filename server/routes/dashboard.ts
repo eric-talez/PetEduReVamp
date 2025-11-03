@@ -7,52 +7,6 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 class ApiError extends Error {
-
-
-// 권한 검증 API
-app.get('/api/auth/check-permission', asyncHandler(async (req: any, res: any) => {
-  console.log('[Auth] 권한 검증 요청');
-  
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      error: '인증이 필요합니다.'
-    });
-  }
-
-  const userRole = req.user.role;
-  const requestedPath = req.query.path || '';
-  
-  // 역할별 권한 매핑
-  const permissions: Record<string, string[]> = {
-    'admin': ['/', '/admin', '/dashboard', '/trainer', '/institute', '/shop', '/community', '/courses'],
-    'institute-admin': ['/', '/dashboard', '/institute', '/shop', '/community', '/courses'],
-    'trainer': ['/', '/dashboard', '/trainer', '/shop', '/community', '/courses'],
-    'pet-owner': ['/', '/dashboard', '/shop', '/community', '/courses'],
-    'user': ['/', '/shop', '/community']
-  };
-
-  const allowedPaths = permissions[userRole] || permissions['user'];
-  const hasAccess = allowedPaths.some(path => requestedPath.startsWith(path));
-
-  console.log('[Auth] 권한 검증 결과:', {
-    userRole,
-    requestedPath,
-    hasAccess
-  });
-
-  res.json({
-    success: true,
-    data: {
-      userRole,
-      requestedPath,
-      hasAccess,
-      allowedPaths
-    }
-  });
-}));
-
-
   statusCode: number;
 
   constructor(statusCode: number, message: string) {
@@ -76,6 +30,49 @@ app.get('/api/auth/check-permission', asyncHandler(async (req: any, res: any) =>
 const successResponse = (data: any) => ({ success: true, data });
 
 export function registerDashboardRoutes(app: Express) {
+  // 권한 검증 API
+  app.get('/api/auth/check-permission', asyncHandler(async (req: any, res: any) => {
+    console.log('[Auth] 권한 검증 요청');
+    
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: '인증이 필요합니다.'
+      });
+    }
+
+    const userRole = req.user.role;
+    const requestedPath = req.query.path || '';
+    
+    // 역할별 권한 매핑
+    const permissions: Record<string, string[]> = {
+      'admin': ['/', '/admin', '/dashboard', '/trainer', '/institute', '/shop', '/community', '/courses'],
+      'institute-admin': ['/', '/dashboard', '/institute', '/shop', '/community', '/courses'],
+      'trainer': ['/', '/dashboard', '/trainer', '/shop', '/community', '/courses'],
+      'pet-owner': ['/', '/dashboard', '/shop', '/community', '/courses'],
+      'user': ['/', '/shop', '/community']
+    };
+
+    const allowedPaths = permissions[userRole] || permissions['user'];
+    const hasAccess = allowedPaths.some(path => requestedPath.startsWith(path));
+
+    console.log('[Auth] 권한 검증 결과:', {
+      userRole,
+      requestedPath,
+      hasAccess
+    });
+
+    res.json({
+      success: true,
+      data: {
+        userRole,
+        requestedPath,
+        hasAccess,
+        allowedPaths
+      }
+    });
+  }));
+
   // 대시보드 통계 API
   app.get('/api/dashboard/stats', asyncHandler(async (req: any, res: any) => {
     console.log('[Dashboard] 대시보드 통계 요청받음');
