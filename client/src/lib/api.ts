@@ -58,6 +58,12 @@ export async function apiRequest(
     // 실제 API 요청 수행
     const response = await fetch(finalUrl, options);
     
+    // 서버 오류 처리 (502 Bad Gateway)
+    if (response.status === 502) {
+      console.error(`서버 게이트웨이 오류: ${response.status}`, finalUrl);
+      throw new Error('서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.');
+    }
+    
     // 인증 관련 오류 처리 (401, 403)
     if (response.status === 401 || response.status === 403) {
       console.error(`인증 오류: ${response.status}`, finalUrl);
