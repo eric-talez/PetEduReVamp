@@ -15497,6 +15497,136 @@ export function registerTrainerCertificationRoutes(app: Express) {
   console.log('[Pet Facilities] 반려견 시설 API 엔드포인트가 등록되었습니다.');
   console.log('  - GET /api/pet-facilities (시설 목록 조회)');
 
+  // =============================================================================
+  // 예방접종 스케줄 관리 API (Vaccinations)
+  // =============================================================================
+
+  /**
+   * GET /api/vaccinations/user/:userId - 사용자의 모든 예방접종 스케줄 조회
+   */
+  app.get('/api/vaccinations/user/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const vaccinations = await storage.getVaccinationsByUserId(userId);
+      res.json({ success: true, vaccinations });
+    } catch (error: any) {
+      console.error('[Vaccinations] 사용자 예방접종 조회 오류:', error);
+      res.status(500).json({ success: false, message: '예방접종 스케줄을 조회할 수 없습니다.' });
+    }
+  });
+
+  /**
+   * GET /api/vaccinations/pet/:petId - 반려동물의 예방접종 스케줄 조회
+   */
+  app.get('/api/vaccinations/pet/:petId', async (req, res) => {
+    try {
+      const petId = parseInt(req.params.petId);
+      const vaccinations = await storage.getVaccinationsByPetId(petId);
+      res.json({ success: true, vaccinations });
+    } catch (error: any) {
+      console.error('[Vaccinations] 반려동물 예방접종 조회 오류:', error);
+      res.status(500).json({ success: false, message: '예방접종 스케줄을 조회할 수 없습니다.' });
+    }
+  });
+
+  /**
+   * GET /api/vaccinations/upcoming/:userId - 다가오는 예방접종 스케줄 조회
+   */
+  app.get('/api/vaccinations/upcoming/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+      const vaccinations = await storage.getUpcomingVaccinations(userId, days);
+      res.json({ success: true, vaccinations });
+    } catch (error: any) {
+      console.error('[Vaccinations] 다가오는 예방접종 조회 오류:', error);
+      res.status(500).json({ success: false, message: '다가오는 예방접종을 조회할 수 없습니다.' });
+    }
+  });
+
+  /**
+   * GET /api/vaccinations/:id - 특정 예방접종 스케줄 조회
+   */
+  app.get('/api/vaccinations/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const vaccination = await storage.getVaccinationById(id);
+      if (!vaccination) {
+        return res.status(404).json({ success: false, message: '예방접종 스케줄을 찾을 수 없습니다.' });
+      }
+      res.json({ success: true, vaccination });
+    } catch (error: any) {
+      console.error('[Vaccinations] 예방접종 조회 오류:', error);
+      res.status(500).json({ success: false, message: '예방접종 스케줄을 조회할 수 없습니다.' });
+    }
+  });
+
+  /**
+   * POST /api/vaccinations - 예방접종 스케줄 생성
+   */
+  app.post('/api/vaccinations', async (req, res) => {
+    try {
+      const { insertVaccinationSchema } = await import('../shared/schema');
+      const validatedData = insertVaccinationSchema.parse(req.body);
+      const newVaccination = await storage.createVaccination(validatedData);
+      res.status(201).json({ success: true, vaccination: newVaccination });
+    } catch (error: any) {
+      console.error('[Vaccinations] 예방접종 생성 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ success: false, message: '입력 데이터가 올바르지 않습니다.', errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: '예방접종 스케줄을 생성할 수 없습니다.' });
+    }
+  });
+
+  /**
+   * PATCH /api/vaccinations/:id - 예방접종 스케줄 수정
+   */
+  app.patch('/api/vaccinations/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { updateVaccinationSchema } = await import('../shared/schema');
+      const validatedData = updateVaccinationSchema.parse(req.body);
+      const updatedVaccination = await storage.updateVaccination(id, validatedData);
+      res.json({ success: true, vaccination: updatedVaccination });
+    } catch (error: any) {
+      console.error('[Vaccinations] 예방접종 수정 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ success: false, message: '입력 데이터가 올바르지 않습니다.', errors: error.errors });
+      }
+      if (error.message === 'Vaccination not found') {
+        return res.status(404).json({ success: false, message: '예방접종 스케줄을 찾을 수 없습니다.' });
+      }
+      res.status(500).json({ success: false, message: '예방접종 스케줄을 수정할 수 없습니다.' });
+    }
+  });
+
+  /**
+   * DELETE /api/vaccinations/:id - 예방접종 스케줄 삭제
+   */
+  app.delete('/api/vaccinations/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteVaccination(id);
+      if (!deleted) {
+        return res.status(404).json({ success: false, message: '예방접종 스케줄을 찾을 수 없습니다.' });
+      }
+      res.json({ success: true, message: '예방접종 스케줄이 삭제되었습니다.' });
+    } catch (error: any) {
+      console.error('[Vaccinations] 예방접종 삭제 오류:', error);
+      res.status(500).json({ success: false, message: '예방접종 스케줄을 삭제할 수 없습니다.' });
+    }
+  });
+
+  console.log('[Vaccinations] 예방접종 스케줄 관리 API 엔드포인트가 등록되었습니다.');
+  console.log('  - GET /api/vaccinations/user/:userId (사용자의 모든 예방접종)');
+  console.log('  - GET /api/vaccinations/pet/:petId (반려동물의 예방접종)');
+  console.log('  - GET /api/vaccinations/upcoming/:userId (다가오는 예방접종)');
+  console.log('  - GET /api/vaccinations/:id (특정 예방접종 조회)');
+  console.log('  - POST /api/vaccinations (예방접종 생성)');
+  console.log('  - PATCH /api/vaccinations/:id (예방접종 수정)');
+  console.log('  - DELETE /api/vaccinations/:id (예방접종 삭제)');
+
   // Database test routes
   import('./routes/database-test').then(({ databaseTestRoutes }) => {
     app.use('/api/test', databaseTestRoutes);
