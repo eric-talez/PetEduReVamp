@@ -2944,9 +2944,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(combinedResults);
       
     } catch (error) {
-      console.error('장소 검색 오류:', error);
-      // 최소한 빈 배열이라도 반환 (502 에러 방지)
-      res.json([]);
+      console.error('[Places Search API] 치명적 오류:', error);
+      // 응답이 이미 전송되지 않았다면 빈 배열 반환
+      if (!res.headersSent) {
+        res.status(200).json([]);
+      }
     }
   });
 
