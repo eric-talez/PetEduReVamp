@@ -192,6 +192,26 @@ export const aiAnalyses = pgTable("ai_analyses", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 예방접종 스케줄 테이블
+export const vaccinations = pgTable("vaccinations", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  vaccineName: varchar("vaccine_name", { length: 100 }).notNull(), // 백신 종류 (광견병, DHPPL, 코로나 등)
+  vaccineDate: date("vaccine_date").notNull(), // 접종 예정일 또는 접종일
+  status: varchar("status", { length: 20 }).default("scheduled"), // scheduled, completed, overdue, cancelled
+  hospitalName: varchar("hospital_name", { length: 200 }), // 병원 이름
+  hospitalAddress: text("hospital_address"), // 병원 주소
+  hospitalLatitude: text("hospital_latitude"), // 병원 위도
+  hospitalLongitude: text("hospital_longitude"), // 병원 경도
+  hospitalPhone: varchar("hospital_phone", { length: 20 }), // 병원 전화번호
+  notes: text("notes"), // 메모
+  nextDueDate: date("next_due_date"), // 다음 접종 예정일
+  reminderEnabled: boolean("reminder_enabled").default(true), // 알림 활성화 여부
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // 커뮤니티 게시글 테이블
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
@@ -2117,6 +2137,46 @@ export type InsertCareLog = z.infer<typeof insertCareLogSchema>;
 export type UpdateCareLog = z.infer<typeof updateCareLogSchema>;
 export type AiAnalysis = z.infer<typeof selectAiAnalysisSchema>;
 export type InsertAiAnalysis = z.infer<typeof insertAiAnalysisSchema>;
+
+// =============================================================================
+// 예방접종(Vaccinations) 스키마 정의
+// =============================================================================
+
+// 백신 상태 enum
+export const vaccinationStatusEnum = z.enum(["scheduled", "completed", "overdue", "cancelled"]);
+
+// 예방접종 생성 스키마
+export const insertVaccinationSchema = createInsertSchema(vaccinations, {
+  vaccineName: z.string().min(1, "백신 종류는 필수입니다").max(100, "백신 종류는 100자를 초과할 수 없습니다"),
+  vaccineDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "날짜는 YYYY-MM-DD 형식이어야 합니다"),
+  status: vaccinationStatusEnum.default("scheduled"),
+  hospitalName: z.string().max(200, "병원 이름은 200자를 초과할 수 없습니다").optional().nullable(),
+  hospitalAddress: z.string().optional().nullable(),
+  hospitalLatitude: z.string().optional().nullable(),
+  hospitalLongitude: z.string().optional().nullable(),
+  hospitalPhone: z.string().max(20, "전화번호는 20자를 초과할 수 없습니다").optional().nullable(),
+  notes: z.string().max(1000, "메모는 1000자를 초과할 수 없습니다").optional().nullable(),
+  nextDueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "날짜는 YYYY-MM-DD 형식이어야 합니다").optional().nullable(),
+  reminderEnabled: z.boolean().default(true)
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 예방접종 수정 스키마
+export const updateVaccinationSchema = insertVaccinationSchema.partial().omit({
+  petId: true,  // 반려동물은 변경 불가
+  userId: true  // 작성자는 변경 불가
+});
+
+// 예방접종 조회 스키마
+export const selectVaccinationSchema = createSelectSchema(vaccinations);
+
+// 타입 정의
+export type Vaccination = z.infer<typeof selectVaccinationSchema>;
+export type InsertVaccination = z.infer<typeof insertVaccinationSchema>;
+export type UpdateVaccination = z.infer<typeof updateVaccinationSchema>;
 
 // =============================================================================
 // 미디어 분석(Pet Media Analysis) 스키마 정의
