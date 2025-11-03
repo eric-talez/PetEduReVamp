@@ -34,7 +34,7 @@ const PORT = parseInt(process.env.PORT || "5000", 10);
 const HOST = process.env.HOST || "0.0.0.0";
 
 // 필수 환경 변수 확인
-const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'GOOGLE_MAPS_API_KEY']; // Google Maps API Key도 필수 항목으로 추가
+const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET'];
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingEnvVars.length > 0) {
@@ -42,6 +42,12 @@ if (missingEnvVars.length > 0) {
   console.error('Replit Secrets에서 다음 변수들을 설정해주세요:');
   missingEnvVars.forEach(varName => console.error(`  - ${varName}`));
   process.exit(1);
+}
+
+// Google Maps API Key 확인 (선택사항, 경고만 표시)
+if (!process.env.GOOGLE_MAPS_API_KEY && !process.env.VITE_GOOGLE_MAPS_API_KEY) {
+  console.warn('⚠️ GOOGLE_MAPS_API_KEY 또는 VITE_GOOGLE_MAPS_API_KEY가 설정되지 않았습니다.');
+  console.warn('   지도 기능이 제한될 수 있습니다.');
 }
 
 

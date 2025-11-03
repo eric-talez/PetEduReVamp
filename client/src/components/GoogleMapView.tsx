@@ -73,10 +73,12 @@ export function GoogleMapView({
   useEffect(() => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     
-    console.log('[GoogleMapView] API Key 확인:', apiKey ? '설정됨' : '누락');
+    console.log('[GoogleMapView] 환경 변수 전체:', import.meta.env);
+    console.log('[GoogleMapView] API Key 확인:', apiKey ? `설정됨 (${apiKey.substring(0, 10)}...)` : '누락');
     
     if (!apiKey) {
       console.error('[GoogleMapView] VITE_GOOGLE_MAPS_API_KEY 환경 변수가 설정되지 않았습니다.');
+      console.error('[GoogleMapView] Replit Secrets에서 VITE_GOOGLE_MAPS_API_KEY를 설정하고 서버를 재시작하세요.');
       setError('Google Maps API 키가 설정되지 않았습니다. Replit Secrets에서 VITE_GOOGLE_MAPS_API_KEY를 설정해주세요.');
       setIsLoading(false);
       return;
