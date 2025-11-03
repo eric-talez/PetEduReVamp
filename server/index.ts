@@ -1,6 +1,9 @@
-import express from "express";
+// 환경 변수 먼저 로드
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { registerAIRoutes } from "./routes/ai";
 import { registerAIProxyRoutes } from "./routes/ai-proxy";
 import { registerAdminAIRoutes } from "./routes/admin-ai";
 import { registerEnhancedAnalysisRoutes } from "./routes/enhanced-analysis";
@@ -28,6 +31,19 @@ import aiLocationCrawlerRoutes from './routes/ai-location-crawler';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
+const HOST = process.env.HOST || "0.0.0.0";
+
+// 필수 환경 변수 확인
+const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'GOOGLE_MAPS_API_KEY']; // Google Maps API Key도 필수 항목으로 추가
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ 필수 환경 변수 누락:', missingEnvVars.join(', '));
+  console.error('Replit Secrets에서 다음 변수들을 설정해주세요:');
+  missingEnvVars.forEach(varName => console.error(`  - ${varName}`));
+  process.exit(1);
+}
+
 
 // Production proxy compatibility - CRITICAL for production deployment
 app.set('trust proxy', 1);
@@ -39,9 +55,10 @@ if (process.env.NODE_ENV === 'production') {
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "https://fonts.googleapis.com"],
-        scriptSrc: ["'self'", "https://dapi.kakao.com", "https://developers.kakao.com"],
+        // Google Maps API 스크립트 로드를 위한 'connect-src' 및 'script-src' 추가
+        scriptSrc: ["'self'", "https://dapi.kakao.com", "https://developers.kakao.com", "https://maps.googleapis.com"],
         imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "ws:", "wss:"],
+        connectSrc: ["'self'", "ws:", "wss:", "https://maps.googleapis.com"],
       },
     },
   }));
@@ -112,7 +129,8 @@ if (process.env.NODE_ENV === 'production') {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    // Google Maps API에서 지오로케이션 사용을 허용하도록 수정
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
     next();
   });
 }
@@ -491,30 +509,13 @@ async function startServer() {
     const server = await registerRoutes(app);
 
     // Register AI routes
-    registerAIRoutes(app);
-
-    // AI Proxy Routes (개선된 AI 분석 시스템)
-    registerAIProxyRoutes(app);
-
-    // Admin AI Routes (AI API 관리)
+    registerAIProxyRoutes(app); // registerAIProxyRoutes 호출
     registerAdminAIRoutes(app);
-
-    // Enhanced Analysis Routes (강화된 AI 분석)
     registerEnhancedAnalysisRoutes(app);
-
-    // Media Analysis Routes (미디어 분석)
     registerMediaAnalysisRoutes(app);
-
-    // Register experience routes
     registerExperienceRoutes(app);
-
-    // Register institute routes
     registerInstituteRoutes(app, storage);
-
-    // 관리자 라우트 등록
     registerAdminRoutes(app);
-
-    // 결제연동 관리 라우트 등록
     registerPaymentIntegrationRoutes(app);
 
     // AI 위치 크롤러 라우트 등록
@@ -552,7 +553,7 @@ async function startServer() {
     app.use(errorHandler);
 
     // Start the server
-    server.listen(PORT, "0.0.0.0", () => {
+    server.listen(PORT, HOST, () => {
       // 운영 환경 모니터링 설정
       if (process.env.NODE_ENV === 'production') {
         // 에러 로깅 강화
