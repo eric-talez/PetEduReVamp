@@ -928,6 +928,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/pet-care/vaccination-schedule">
+                    {() => {
+                      const VaccinationSchedulePage = lazy(() => import('./pages/pet-care/vaccination-schedule'));
+                      return (
+                        <Suspense fallback={<SimpleLoading />}>
+                          <VaccinationSchedulePage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/pet-care/pet-detail/:id">
                     {() => {
                       const PetDetailPage = lazy(() => import('./pages/pet-care/pet-detail'));
