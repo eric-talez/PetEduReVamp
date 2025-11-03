@@ -3,21 +3,38 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// Set production environment
-process.env.NODE_ENV = 'production';
+console.log('🚀 Starting production server...\n');
 
-console.log('Starting FunnyTalez Backend in Production Mode...');
+// 필수 환경 변수 확인
+const requiredVars = ['DATABASE_URL', 'SESSION_SECRET'];
+const missingVars = requiredVars.filter(v => !process.env[v]);
 
-// Start the server using tsx directly
-const serverPath = path.join(__dirname, 'server', 'index.ts');
-const tsxPath = path.join(__dirname, 'node_modules', '.bin', 'tsx');
+if (missingVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingVars.join(', '));
+  console.error('Please set them in Replit Secrets');
+  process.exit(1);
+}
 
-const server = spawn('node', [tsxPath, serverPath], {
+// Google Maps API Key 확인 (경고만)
+if (!process.env.VITE_GOOGLE_MAPS_API_KEY) {
+  console.warn('⚠️  VITE_GOOGLE_MAPS_API_KEY is not set - Google Maps may not work');
+}
+
+// 환경 변수 설정
+const env = {
+  ...process.env,
+  NODE_ENV: 'production',
+  PORT: process.env.PORT || '5000',
+  HOST: process.env.HOST || '0.0.0.0'
+};
+
+console.log('✅ Environment variables validated\n');
+
+// tsx로 TypeScript 파일 직접 실행
+const server = spawn('npx', ['tsx', 'server/index.ts'], {
+  env,
   stdio: 'inherit',
-  env: {
-    ...process.env,
-    NODE_ENV: 'production'
-  }
+  shell: true
 });
 
 server.on('error', (error) => {
@@ -30,7 +47,7 @@ server.on('close', (code) => {
   process.exit(code);
 });
 
-// Handle process termination
+// Process termination handling
 process.on('SIGINT', () => {
   console.log('Received SIGINT, shutting down gracefully...');
   server.kill('SIGINT');

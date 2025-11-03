@@ -1,20 +1,36 @@
-
 #!/usr/bin/env node
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const dotenv = require('dotenv'); // dotenv is likely needed for .env files
 
-console.log('🚀 TALEZ Production Optimization Starting...');
+// 환경 변수 로드
+dotenv.config();
 
-// 1. 의존성 최적화
-console.log('1️⃣ Optimizing dependencies...');
-try {
-  execSync('npm ci --production=false', { stdio: 'inherit' });
-  execSync('npm audit fix --force', { stdio: 'inherit' });
-} catch (error) {
-  console.log('⚠️ Dependency optimization completed with warnings');
-}
+console.log('🔧 프로덕션 최적화 시작...\n');
+
+// 환경 변수 확인 및 설정
+const requiredEnvVars = [
+  'VITE_GOOGLE_MAPS_API_KEY',
+  'VITE_KAKAO_MAPS_API_KEY',
+  'DATABASE_URL',
+  'SESSION_SECRET'
+];
+
+console.log('🔑 환경 변수 확인 중...');
+requiredEnvVars.forEach(varName => {
+  if (!process.env[varName]) {
+    console.warn(`⚠️  ${varName}이(가) 설정되지 않았습니다.`);
+  } else {
+    console.log(`✅ ${varName} 설정됨`);
+  }
+});
+
+// 1. 의존성 설치 확인
+console.log('\n1️⃣ 의존성 확인 중...');
+execSync('npm install', { stdio: 'inherit' });
+
 
 // 2. 캐시 정리
 console.log('2️⃣ Cleaning caches...');
@@ -39,15 +55,15 @@ try {
   console.log('⚠️ TypeScript compilation issues detected');
 }
 
-// 4. 환경 변수 검증
+// 4. 환경 변수 검증 (기존 NODE_ENV 검증 유지)
 console.log('4️⃣ Environment variables validation...');
-const requiredEnvVars = [
+const existingRequiredEnvVars = [
   'DATABASE_URL',
   'SESSION_SECRET',
   'NODE_ENV'
 ];
 
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+const missingVars = existingRequiredEnvVars.filter(varName => !process.env[varName]);
 if (missingVars.length > 0) {
   console.log(`⚠️ Missing environment variables: ${missingVars.join(', ')}`);
 } else {
