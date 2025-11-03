@@ -1,9 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-// 지도 서비스 API 키가 있는지 확인
-const KAKAO_MAPS_API_KEY = import.meta.env.VITE_KAKAO_MAPS_API_KEY;
-
 // 위치 타입 정의
 export interface Location {
   latitude: number;
@@ -97,9 +94,7 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   // Google Maps API는 GoogleMapView 컴포넌트에서 자동으로 로드됨
-  // Kakao Maps API 로드는 더 이상 필요하지 않으므로 제거됨
   useEffect(() => {
-    // 지도는 항상 사용 가능한 것으로 간주 (GoogleMapView가 자체적으로 로드)
     setIsMapLoaded(true);
   }, []);
 

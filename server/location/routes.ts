@@ -2,34 +2,10 @@ import { Router } from 'express';
 
 const router = Router();
 
-// 카카오 API 키
-const KAKAO_REST_API_KEY = process.env.VITE_KAKAO_MAPS_API_KEY;
+// Google Maps API 키
+const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
 
-interface KakaoPlace {
-  id: string;
-  place_name: string;
-  category_name: string;
-  category_group_code: string;
-  category_group_name: string;
-  phone: string;
-  address_name: string;
-  road_address_name: string;
-  x: string; // longitude
-  y: string; // latitude
-  place_url: string;
-  distance: string;
-}
-
-interface KakaoSearchResponse {
-  documents: KakaoPlace[];
-  meta: {
-    total_count: number;
-    pageable_count: number;
-    is_end: boolean;
-  };
-}
-
-// 위치/장소 검색 API
+// 위치/장소 검색 API (Google Places Text Search)
 router.get('/locations', async (req, res) => {
   const { search } = req.query;
   
@@ -37,45 +13,43 @@ router.get('/locations', async (req, res) => {
     return res.status(400).json({ error: '검색어가 필요합니다.' });
   }
 
-  if (!KAKAO_REST_API_KEY) {
-    console.error('KAKAO_REST_API_KEY가 설정되지 않음');
-    return res.status(500).json({ error: '카카오 API 키가 설정되지 않았습니다.' });
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.error('GOOGLE_MAPS_API_KEY가 설정되지 않음');
+    return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
   }
 
   try {
     const params = new URLSearchParams({
       query: search,
-      page: '1',
-      size: '15',
-      sort: 'accuracy'
+      key: GOOGLE_MAPS_API_KEY,
+      language: 'ko',
+      region: 'KR'
     });
 
-    const response = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?${params}`, {
-      headers: {
-        'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`,
-      },
-    });
+    const response = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?${params}`);
 
     if (!response.ok) {
-      throw new Error(`카카오 API 오류: ${response.status} ${response.statusText}`);
+      throw new Error(`Google Places API 오류: ${response.status} ${response.statusText}`);
     }
 
-    const data: KakaoSearchResponse = await response.json();
+    const data = await response.json();
     
-    // 카카오 장소 데이터를 앱 형식으로 변환
-    const places = data.documents.map(place => ({
-      id: place.id,
-      name: place.place_name,
-      type: getCategoryType(place.category_group_code, place.category_name),
-      latitude: parseFloat(place.y),
-      longitude: parseFloat(place.x),
-      address: place.road_address_name || place.address_name,
-      phone: place.phone || '',
-      rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0-5.0 랜덤 평점
-      description: place.category_name,
-      certification: Math.random() > 0.7, // 30% 확률로 인증
-      distance: place.distance ? parseInt(place.distance) : undefined,
-      sourceUrl: place.place_url
+    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+      throw new Error(`Google Places API 오류: ${data.status}`);
+    }
+
+    const places = (data.results || []).map((place: any) => ({
+      id: place.place_id,
+      name: place.name,
+      type: getGooglePlaceType(place.types),
+      latitude: place.geometry.location.lat,
+      longitude: place.geometry.location.lng,
+      address: place.formatted_address || '',
+      phone: '',
+      rating: place.rating || undefined,
+      description: place.types?.[0] || '',
+      certification: false,
+      sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
     }));
 
     console.log(`[위치 API] 검색어: "${search}", 결과: ${places.length}개`);
@@ -90,7 +64,7 @@ router.get('/locations', async (req, res) => {
   }
 });
 
-// 통합 장소 검색 API (query 기반)
+// 통합 장소 검색 API (Google Places Nearby Search)
 router.get('/locations/search', async (req, res) => {
   const { query, lat, lng } = req.query;
   
@@ -98,49 +72,48 @@ router.get('/locations/search', async (req, res) => {
     return res.status(400).json({ error: '검색어가 필요합니다.' });
   }
 
-  if (!KAKAO_REST_API_KEY) {
-    console.error('KAKAO_REST_API_KEY가 설정되지 않음');
-    return res.status(500).json({ error: '카카오 API 키가 설정되지 않았습니다.' });
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.error('GOOGLE_MAPS_API_KEY가 설정되지 않음');
+    return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
   }
 
   try {
     const params = new URLSearchParams({
       query: query,
-      page: '1',
-      size: '15',
-      sort: lat && lng ? 'distance' : 'accuracy'
+      key: GOOGLE_MAPS_API_KEY,
+      language: 'ko',
+      region: 'KR'
     });
 
     if (lat && lng) {
-      params.append('x', lng as string);
-      params.append('y', lat as string);
+      params.append('location', `${lat},${lng}`);
+      params.append('radius', '5000');
     }
 
-    const response = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?${params}`, {
-      headers: {
-        'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`,
-      },
-    });
+    const response = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?${params}`);
 
     if (!response.ok) {
-      throw new Error(`카카오 API 오류: ${response.status} ${response.statusText}`);
+      throw new Error(`Google Places API 오류: ${response.status} ${response.statusText}`);
     }
 
-    const data: KakaoSearchResponse = await response.json();
+    const data = await response.json();
     
-    const places = data.documents.map(place => ({
-      id: place.id,
-      name: place.place_name,
-      type: getCategoryType(place.category_group_code, place.category_name),
-      latitude: parseFloat(place.y),
-      longitude: parseFloat(place.x),
-      address: place.road_address_name || place.address_name,
-      phone: place.phone || '',
-      rating: Math.round((Math.random() * 2 + 3) * 10) / 10,
-      description: place.category_name,
-      certification: Math.random() > 0.7,
-      distance: place.distance ? parseInt(place.distance) : undefined,
-      sourceUrl: place.place_url
+    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+      throw new Error(`Google Places API 오류: ${data.status}`);
+    }
+
+    const places = (data.results || []).map((place: any) => ({
+      id: place.place_id,
+      name: place.name,
+      type: getGooglePlaceType(place.types),
+      latitude: place.geometry.location.lat,
+      longitude: place.geometry.location.lng,
+      address: place.formatted_address || '',
+      phone: '',
+      rating: place.rating || undefined,
+      description: place.types?.[0] || '',
+      certification: false,
+      sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
     }));
 
     console.log(`[장소 검색 API] 검색어: "${query}", 결과: ${places.length}개`);
@@ -155,7 +128,7 @@ router.get('/locations/search', async (req, res) => {
   }
 });
 
-// 카테고리별 근처 장소 검색 API
+// 카테고리별 근처 장소 검색 API (Google Places Nearby Search)
 router.get('/locations/nearby', async (req, res) => {
   const { type, lat, lng, radius = '3000' } = req.query;
   
@@ -163,8 +136,8 @@ router.get('/locations/nearby', async (req, res) => {
     return res.status(400).json({ error: '타입, 위도, 경도가 필요합니다.' });
   }
 
-  if (!KAKAO_REST_API_KEY) {
-    return res.status(500).json({ error: '카카오 API 키가 설정되지 않았습니다.' });
+  if (!GOOGLE_MAPS_API_KEY) {
+    return res.status(500).json({ error: 'Google Maps API 키가 설정되지 않았습니다.' });
   }
 
   try {
@@ -185,39 +158,37 @@ router.get('/locations/nearby', async (req, res) => {
     
     const params = new URLSearchParams({
       query: keyword,
-      x: lng as string,
-      y: lat as string,
+      location: `${lat},${lng}`,
       radius: radius as string,
-      page: '1',
-      size: '15',
-      sort: 'distance'
+      key: GOOGLE_MAPS_API_KEY,
+      language: 'ko',
+      region: 'KR'
     });
 
-    const response = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?${params}`, {
-      headers: {
-        'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`,
-      },
-    });
+    const response = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?${params}`);
 
     if (!response.ok) {
-      throw new Error(`카카오 API 오류: ${response.status} ${response.statusText}`);
+      throw new Error(`Google Places API 오류: ${response.status} ${response.statusText}`);
     }
 
-    const data: KakaoSearchResponse = await response.json();
+    const data = await response.json();
     
-    const places = data.documents.map(place => ({
-      id: place.id,
-      name: place.place_name,
-      type: getCategoryType(place.category_group_code, place.category_name),
-      latitude: parseFloat(place.y),
-      longitude: parseFloat(place.x),
-      address: place.road_address_name || place.address_name,
-      phone: place.phone || '',
-      rating: Math.round((Math.random() * 2 + 3) * 10) / 10,
-      description: place.category_name,
-      certification: Math.random() > 0.7,
-      distance: place.distance ? parseInt(place.distance) : undefined,
-      sourceUrl: place.place_url
+    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+      throw new Error(`Google Places API 오류: ${data.status}`);
+    }
+
+    const places = (data.results || []).map((place: any) => ({
+      id: place.place_id,
+      name: place.name,
+      type: type as string,
+      latitude: place.geometry.location.lat,
+      longitude: place.geometry.location.lng,
+      address: place.formatted_address || '',
+      phone: '',
+      rating: place.rating || undefined,
+      description: place.types?.[0] || '',
+      certification: false,
+      sourceUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
     }));
 
     console.log(`[근처 장소 API] 타입: ${type}, 결과: ${places.length}개`);
@@ -232,40 +203,20 @@ router.get('/locations/nearby', async (req, res) => {
   }
 });
 
-// 카카오 카테고리를 앱 타입으로 매핑
-function getCategoryType(groupCode: string, categoryName: string): string {
-  switch (groupCode) {
-    case 'HP8': // 병원
-      return 'clinic';
-    case 'MT1': // 대형마트
-    case 'CS2': // 편의점
-      return 'shop';
-    case 'AD5': // 숙박
-      return 'pension';
-    case 'FD6': // 음식점
-      if (categoryName.includes('카페') || categoryName.includes('커피')) {
-        return 'cafe';
-      }
-      return 'shop';
-    case 'CE7': // 카페
-      return 'cafe';
-    case 'AT4': // 관광명소
-      return 'event';
-    default:
-      // 키워드 기반 분류
-      if (categoryName.includes('동물병원') || categoryName.includes('수의')) {
-        return 'clinic';
-      } else if (categoryName.includes('훈련') || categoryName.includes('애견')) {
-        return 'trainer';
-      } else if (categoryName.includes('펜션') || categoryName.includes('호텔')) {
-        return 'pension';
-      } else if (categoryName.includes('카페') || categoryName.includes('커피')) {
-        return 'cafe';
-      } else if (categoryName.includes('공원')) {
-        return 'event';
-      }
-      return 'shop';
+// Google Places 타입을 앱 타입으로 매핑
+function getGooglePlaceType(types: string[]): string {
+  if (!types || types.length === 0) return 'shop';
+  
+  for (const type of types) {
+    if (type.includes('veterinary_care')) return 'clinic';
+    if (type.includes('pet_store')) return 'shop';
+    if (type.includes('cafe')) return 'cafe';
+    if (type.includes('lodging')) return 'pension';
+    if (type.includes('park')) return 'park';
+    if (type.includes('restaurant')) return 'cafe';
   }
+  
+  return 'shop';
 }
 
 export default router;
