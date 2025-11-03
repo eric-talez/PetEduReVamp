@@ -7,6 +7,52 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 class ApiError extends Error {
+
+
+// 권한 검증 API
+app.get('/api/auth/check-permission', asyncHandler(async (req: any, res: any) => {
+  console.log('[Auth] 권한 검증 요청');
+  
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: '인증이 필요합니다.'
+    });
+  }
+
+  const userRole = req.user.role;
+  const requestedPath = req.query.path || '';
+  
+  // 역할별 권한 매핑
+  const permissions: Record<string, string[]> = {
+    'admin': ['/', '/admin', '/dashboard', '/trainer', '/institute', '/shop', '/community', '/courses'],
+    'institute-admin': ['/', '/dashboard', '/institute', '/shop', '/community', '/courses'],
+    'trainer': ['/', '/dashboard', '/trainer', '/shop', '/community', '/courses'],
+    'pet-owner': ['/', '/dashboard', '/shop', '/community', '/courses'],
+    'user': ['/', '/shop', '/community']
+  };
+
+  const allowedPaths = permissions[userRole] || permissions['user'];
+  const hasAccess = allowedPaths.some(path => requestedPath.startsWith(path));
+
+  console.log('[Auth] 권한 검증 결과:', {
+    userRole,
+    requestedPath,
+    hasAccess
+  });
+
+  res.json({
+    success: true,
+    data: {
+      userRole,
+      requestedPath,
+      hasAccess,
+      allowedPaths
+    }
+  });
+}));
+
+
   statusCode: number;
 
   constructor(statusCode: number, message: string) {
@@ -141,11 +187,24 @@ export function registerDashboardRoutes(app: Express) {
     }
   }));
 
-  // 시스템 상태 API (실시간 서비스 현황용)
+  // 캐시 저장소
+  let systemStatusCache: any = null;
+  let cacheTimestamp = 0;
+  const CACHE_DURATION = 30000; // 30초
+
+  // 시스템 상태 API (실시간 서비스 현황용) - 캐싱 적용
   app.get('/api/dashboard/system/status', asyncHandler(async (req: any, res: any) => {
     console.log('[Dashboard] 시스템 상태 요청받음');
 
     try {
+      const now = Date.now();
+      
+      // 캐시가 유효하면 캐시된 데이터 반환
+      if (systemStatusCache && (now - cacheTimestamp) < CACHE_DURATION) {
+        console.log('[Dashboard] 캐시된 시스템 상태 반환');
+        return res.json(successResponse(systemStatusCache));
+      }
+
       const allUsers = storage.getAllUsers();
       const allCourses = storage.getAllCourses();
       const allInstitutes = storage.getAllInstitutes();
@@ -162,7 +221,7 @@ export function registerDashboardRoutes(app: Express) {
         uptime: process.uptime(),
         memoryUsage: process.memoryUsage(),
         activeConnections: activeConnections,
-        errorRate: Math.random() * 0.01 // 실제 환경에서는 실제 에러율을 계산
+        errorRate: 0.005 // 실제 환경에서는 실제 에러율을 계산
       };
 
       const stats = {
@@ -175,6 +234,10 @@ export function registerDashboardRoutes(app: Express) {
         systemHealth,
         timestamp: new Date().toISOString()
       };
+
+      // 캐시 업데이트
+      systemStatusCache = stats;
+      cacheTimestamp = now;
 
       console.log('[Dashboard] 시스템 상태 응답:', {
         totalUsers: stats.totalUsers,
