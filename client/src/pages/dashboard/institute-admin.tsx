@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Users, BookOpen, Building, UserRoundCheck, BarChart3, 
   TrendingUp, DollarSign, Calendar, MapPin 
@@ -14,10 +15,29 @@ interface InstituteAdminDashboardProps {
 
 export default function InstituteAdminDashboard({ onAction }: InstituteAdminDashboardProps) {
   const { userName } = useAuth();
+  const { toast } = useToast();
 
   const handleClick = (action: string, data?: any) => {
     console.log(`Institute Admin action: ${action}`, data);
     onAction(action, data);
+  };
+
+  const handleEditInfo = () => {
+    toast({
+      title: "기관 정보 수정",
+      description: "기관 정보 수정 페이지로 이동합니다.",
+    });
+    // 추후 페이지 이동 구현
+    // window.location.href = '/institute/settings';
+  };
+
+  const handleAddTrainer = () => {
+    toast({
+      title: "훈련사 추가",
+      description: "새 훈련사를 초대하는 기능이 곧 제공될 예정입니다.",
+    });
+    // 추후 구현
+    // window.location.href = '/institute/trainers/invite';
   };
 
   return (
@@ -173,7 +193,14 @@ export default function InstituteAdminDashboard({ onAction }: InstituteAdminDash
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">기관 정보</h2>
-          <Button variant="outline" size="sm">정보 수정</Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleEditInfo}
+            data-testid="button-edit-institute-info"
+          >
+            정보 수정
+          </Button>
         </div>
         
         <Card className="border border-gray-100 dark:border-gray-700">
@@ -316,7 +343,12 @@ export default function InstituteAdminDashboard({ onAction }: InstituteAdminDash
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white">새 훈련사 추가</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">훈련사를 초대하세요</p>
               
-              <Button>훈련사 추가</Button>
+              <Button 
+                onClick={handleAddTrainer}
+                data-testid="button-add-trainer"
+              >
+                훈련사 추가
+              </Button>
             </div>
           </Card>
         </div>

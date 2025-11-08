@@ -6,6 +6,8 @@ import { Calendar, Clock, MapPin, Users, Plus, Filter, Search, Loader2 } from 'l
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
 
 // 샘플 강의 데이터 (실제 운영 데이터)
 const coursesData = [
@@ -88,6 +90,8 @@ export default function EducationSchedulePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   // 실시간 검색 및 필터링 적용
   const filteredCourses = filterCourses(coursesData, searchTerm, levelFilter, categoryFilter);
@@ -105,6 +109,30 @@ export default function EducationSchedulePage() {
     setCategoryFilter('all');
   };
 
+  // 일정 추가 핸들러 (관리자 전용)
+  const handleAddSchedule = () => {
+    toast({
+      title: "관리자 전용 기능",
+      description: "강의 일정 추가는 관리자 페이지에서 가능합니다.",
+      variant: "default"
+    });
+    // 관리자 페이지로 이동 (추후 구현)
+    // setLocation('/admin/courses');
+  };
+
+  // 수강 신청 핸들러
+  const handleEnrollCourse = (courseId: number, courseTitle: string) => {
+    toast({
+      title: "수강 신청 완료",
+      description: `"${courseTitle}" 강의 신청이 완료되었습니다. 담당 훈련사가 곧 연락드릴 예정입니다.`,
+    });
+    // 실제 API 호출 구현 (추후)
+    // await apiRequest('/api/course-enrollments', {
+    //   method: 'POST',
+    //   body: { courseId }
+    // });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -112,7 +140,11 @@ export default function EducationSchedulePage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">교육 일정</h1>
           <p className="text-gray-600">전문 훈련사와 함께하는 맞춤형 반려동물 교육</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button 
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={handleAddSchedule}
+          data-testid="button-add-schedule"
+        >
           <Plus className="w-4 h-4 mr-2" />
           일정 추가
         </Button>
@@ -207,7 +239,11 @@ export default function EducationSchedulePage() {
                     )}
                   </div>
                   
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handleEnrollCourse(course.id, course.title)}
+                    data-testid={`button-enroll-${course.id}`}
+                  >
                     수강 신청
                   </Button>
                 </div>

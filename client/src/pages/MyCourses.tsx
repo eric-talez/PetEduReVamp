@@ -6,8 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, Clock, Hourglass, Star, BarChart } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
 
 export default function MyCourses() {
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
+  const handleEnrollCourse = (courseId: number, courseTitle: string) => {
+    toast({
+      title: "수강 신청 완료",
+      description: `"${courseTitle}" 강의 신청이 완료되었습니다.`,
+    });
+    setLocation(`/courses/${courseId}/enroll`);
+  };
+
   // Mock courses data
   const ongoingCourses = [
     {
@@ -222,7 +235,18 @@ export default function MyCourses() {
                   <span className="text-xs font-medium text-accent">{course.price}</span>
                 </div>
                 <div className="mt-3">
-                  <Button variant="default" size="sm" className="w-full">수강 신청</Button>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEnrollCourse(course.id, course.title);
+                    }}
+                    data-testid={`button-enroll-wishlist-${course.id}`}
+                  >
+                    수강 신청
+                  </Button>
                 </div>
               </CourseCard>
             ))}

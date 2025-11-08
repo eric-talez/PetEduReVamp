@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, Clock, Calendar, CheckCircle, PlayCircle, List, Download, Share2, Bookmark, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 // 커리큘럼 타입 정의
 interface Lesson {
@@ -32,9 +33,47 @@ export default function CourseDetail() {
   const courseId = (match && params) ? parseInt(params.id) : (match2 && params2) ? parseInt(params2.id) : 1;
   
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("curriculum"); // 기본 탭을 커리큘럼으로 설정
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [activeVideo, setActiveVideo] = useState<Lesson | null>(null);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
+
+  const handleSubmitReview = () => {
+    if (reviewRating === 0) {
+      toast({
+        title: "별점을 선택해주세요",
+        description: "리뷰 등록을 위해서는 별점을 선택해야 합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!reviewText.trim()) {
+      toast({
+        title: "리뷰를 작성해주세요",
+        description: "리뷰 내용을 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "리뷰가 등록되었습니다",
+      description: "소중한 의견 감사합니다!",
+    });
+    
+    // 리뷰 초기화
+    setReviewText("");
+    setReviewRating(0);
+    
+    // 실제 API 호출 (추후 구현)
+    // await apiRequest('/api/course-reviews', {
+    //   method: 'POST',
+    //   body: { courseId, rating: reviewRating, content: reviewText }
+    // });
+  };
 
   // 강의 정보 (실제로는 API에서 가져와야 함)
   const course = {
@@ -517,17 +556,28 @@ export default function CourseDetail() {
                       className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       rows={4}
                       placeholder="이 강의에 대한 리뷰를 작성해주세요..."
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
                     />
                     <div className="flex items-center mt-2">
                       <div className="flex mr-4">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className="h-5 w-5 text-gray-300 cursor-pointer"
+                            className={`h-5 w-5 cursor-pointer ${
+                              i < reviewRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+                            }`}
+                            onClick={() => setReviewRating(i + 1)}
                           />
                         ))}
                       </div>
-                      <Button className="ml-auto">리뷰 등록</Button>
+                      <Button 
+                        className="ml-auto"
+                        onClick={handleSubmitReview}
+                        data-testid="button-submit-review"
+                      >
+                        리뷰 등록
+                      </Button>
                     </div>
                   </div>
                 )}
