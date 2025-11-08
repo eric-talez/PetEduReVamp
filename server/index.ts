@@ -26,7 +26,7 @@ import { extendResponse } from "./middleware/api-standards";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 import path from 'path'; // path 모듈 추가
 import locationRoutes from './location/routes';
-import eventRoutes from './events/routes';
+import { registerEventRoutes } from './events/routes';
 import aiLocationCrawlerRoutes from './routes/ai-location-crawler';
 
 const app = express();
@@ -552,6 +552,7 @@ async function startServer() {
     registerInstituteRoutes(app, storage);
     registerAdminRoutes(app);
     registerPaymentIntegrationRoutes(app);
+    registerEventRoutes(app);
 
     // AI 위치 크롤러 라우트 등록
     app.use(aiLocationCrawlerRoutes);

@@ -1460,7 +1460,8 @@ export function setupSocialRoutes(app: Express) {
         try {
           console.log(`[이벤트 크롤링] 검색 중: ${query}`);
           
-          const response = await fetch(`https://openapi.naver.com/v1/search/news.json?query=${encodeURIComponent(query + ' 2024')}&display=5&sort=date`, {
+          const currentYear = new Date().getFullYear();
+          const response = await fetch(`https://openapi.naver.com/v1/search/news.json?query=${encodeURIComponent(query + ' ' + currentYear)}&display=5&sort=date`, {
             method: 'GET',
             headers: {
               'X-Naver-Client-Id': NAVER_CLIENT_ID,
@@ -1501,7 +1502,7 @@ export function setupSocialRoutes(app: Express) {
                 id: nextPostId++,
                 title: title,
                 content: `🔍 네이버 검색을 통해 발견된 반려동물 관련 이벤트/행사 정보입니다.\n\n${description}\n\n자세한 내용은 원본 링크를 확인해주세요.\n\n📅 발행일: ${item.pubDate}\n📰 출처: ${stripHtml(item.bloggername || '네이버 뉴스')}\n\n⚠️ 이벤트 참가 전 최신 정보를 확인하시기 바랍니다.`,
-                tag: "이벤트/행사",
+                tag: "events",
                 authorId: 1,
                 author: { id: 1, name: '네이버 검색봇' },
                 likes: 0,
