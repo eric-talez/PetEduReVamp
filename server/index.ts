@@ -60,11 +60,40 @@ if (process.env.NODE_ENV === 'production') {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "https://fonts.googleapis.com"],
-        // Google Maps API 스크립트 로드를 위한 'connect-src' 및 'script-src' 추가
-        scriptSrc: ["'self'", "https://dapi.kakao.com", "https://developers.kakao.com", "https://maps.googleapis.com"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "ws:", "wss:", "https://maps.googleapis.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        // Google Maps API: 스크립트 및 인라인 스크립트 허용
+        scriptSrc: [
+          "'self'", 
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "https://maps.googleapis.com",
+          "https://maps.gstatic.com",
+          "https://*.googleapis.com"
+        ],
+        // Google Maps: 이미지 및 타일
+        imgSrc: [
+          "'self'", 
+          "data:", 
+          "https:", 
+          "https://maps.googleapis.com",
+          "https://maps.gstatic.com",
+          "https://*.googleapis.com",
+          "https://*.gstatic.com"
+        ],
+        // Google Maps API 연결
+        connectSrc: [
+          "'self'", 
+          "ws:", 
+          "wss:", 
+          "https://maps.googleapis.com",
+          "https://*.googleapis.com"
+        ],
+        frameSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: [],
       },
     },
   }));
