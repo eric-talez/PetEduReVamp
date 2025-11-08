@@ -12,7 +12,7 @@ import { Plus, Syringe, Calendar, MapPin, Phone, Clock, CheckCircle, AlertCircle
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { GoogleMapView } from '@/components/maps/GoogleMapView';
+import { GoogleMapView } from '@/components/GoogleMapView';
 
 interface Pet {
   id: number;

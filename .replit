@@ -8,9 +8,12 @@ packages = ["maven", "openjdk17", "unzip"]
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["sh", "-c", "npm run build && rm -rf server/public && cp -r dist/public server/public"]
-run = ["sh", "-c", "npm run dev"]
-
+build = [
+  "sh",
+  "-c",
+  "npm run build && rm -rf server/public && cp -r dist/public server/public",
+]
+run = ["sh", "-c", "npm start"]
 [[ports]]
 localPort = 3001
 externalPort = 3001
@@ -130,4 +133,10 @@ syntax = "typescript"
 start = ["typescript-language-server", "--stdio"]
 
 [agent]
-integrations = ["javascript_stripe:1.0.0", "perplexity_v0:1.0.0", "javascript_object_storage:1.0.0", "javascript_openai:1.0.0", "javascript_gemini:1.0.0"]
+integrations = [
+  "javascript_stripe:1.0.0",
+  "perplexity_v0:1.0.0",
+  "javascript_object_storage:1.0.0",
+  "javascript_openai:1.0.0",
+  "javascript_gemini:1.0.0",
+]
