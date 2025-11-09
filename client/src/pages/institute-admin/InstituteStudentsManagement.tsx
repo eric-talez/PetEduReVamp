@@ -721,7 +721,18 @@ export default function InstituteStudentsManagement() {
                                       훈련사: {course.trainer}
                                     </p>
                                   </div>
-                                  <Button variant="ghost" size="icon">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => {
+                                      toast({
+                                        title: "과정 상세보기",
+                                        description: `${course.name} 과정 상세 정보를 확인합니다.`,
+                                      });
+                                      setLocation(`/courses/${course.id}`);
+                                    }}
+                                    data-testid={`button-view-course-${course.id}`}
+                                  >
                                     <ArrowUpRight className="h-4 w-4" />
                                   </Button>
                                 </div>
@@ -751,7 +762,19 @@ export default function InstituteStudentsManagement() {
                         <Card>
                           <CardContent className="p-6 text-center">
                             <p className="text-muted-foreground mb-4">현재 진행 중인 과정이 없습니다.</p>
-                            <Button variant="outline">과정 등록하기</Button>
+                            <Button 
+                              variant="outline"
+                              onClick={() => {
+                                toast({
+                                  title: "과정 등록",
+                                  description: "과정 등록 페이지로 이동합니다.",
+                                });
+                                setLocation("/courses");
+                              }}
+                              data-testid="button-register-course"
+                            >
+                              과정 등록하기
+                            </Button>
                           </CardContent>
                         </Card>
                       )}
@@ -768,7 +791,17 @@ export default function InstituteStudentsManagement() {
                                     완료일: 2023-03-15
                                   </p>
                                 </div>
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    toast({
+                                      title: "과정 결과 보기",
+                                      description: "반려견 기초 사회화 과정의 결과를 확인합니다.",
+                                    });
+                                  }}
+                                  data-testid="button-view-completed-course-result"
+                                >
                                   <FileText className="h-4 w-4 mr-2" />
                                   결과 보기
                                 </Button>

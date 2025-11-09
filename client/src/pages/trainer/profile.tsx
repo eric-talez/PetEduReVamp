@@ -391,7 +391,18 @@ export default function TrainerProfile() {
                     <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   {isEditing && (
-                    <Button size="icon" variant="outline" className="absolute -bottom-2 -right-2 h-8 w-8">
+                    <Button 
+                      size="icon" 
+                      variant="outline" 
+                      className="absolute -bottom-2 -right-2 h-8 w-8"
+                      onClick={() => {
+                        toast({
+                          title: '프로필 사진 업로드',
+                          description: '프로필 사진 업로드 기능이 곧 제공됩니다.',
+                        });
+                      }}
+                      data-testid="button-upload-avatar"
+                    >
                       <Camera className="h-4 w-4" />
                     </Button>
                   )}
@@ -595,7 +606,18 @@ export default function TrainerProfile() {
                     </div>
                     <div className="flex items-center space-x-2">
                       {getCertificationStatus(cert)}
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: '자격증 보기',
+                            description: `${cert.name} 자격증을 확인합니다.`,
+                          });
+                          window.open(cert.certificateUrl, '_blank');
+                        }}
+                        data-testid={`button-view-certification-${cert.id}`}
+                      >
                         <FileText className="h-4 w-4 mr-2" />
                         보기
                       </Button>
@@ -689,7 +711,22 @@ export default function TrainerProfile() {
                         <Badge variant="secondary" className="mb-2">
                           {getCategoryLabel(item.category)}
                         </Badge>
-                        <Button variant="ghost" size="sm" className="text-muted-foreground">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-muted-foreground"
+                          onClick={() => {
+                            setProfile(prev => prev ? {
+                              ...prev,
+                              portfolio: prev.portfolio.filter(p => p.id !== item.id)
+                            } : null);
+                            toast({
+                              title: '포트폴리오 삭제',
+                              description: `${item.title}이(가) 삭제되었습니다.`,
+                            });
+                          }}
+                          data-testid={`button-delete-portfolio-${item.id}`}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
