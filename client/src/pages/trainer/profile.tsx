@@ -610,6 +610,14 @@ export default function TrainerProfile() {
                         variant="outline" 
                         size="sm"
                         onClick={() => {
+                          if (!cert.certificateUrl || cert.certificateUrl === '') {
+                            toast({
+                              title: '자격증 파일 없음',
+                              description: '자격증 파일이 등록되지 않았습니다.',
+                              variant: 'destructive',
+                            });
+                            return;
+                          }
                           toast({
                             title: '자격증 보기',
                             description: `${cert.name} 자격증을 확인합니다.`,
