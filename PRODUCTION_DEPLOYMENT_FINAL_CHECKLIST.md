@@ -54,10 +54,14 @@ cat .env.production
 
 **위치**: `server/security/index.ts`
 
-#### 퀵로그인 버튼 제어
+#### 퀵로그인 시스템
+- ✅ **백엔드 API**: `/api/auth/quick-login` (실제 세션 생성)
 - ✅ **개발 환경**: 자동으로 활성화
 - ✅ **프로덕션 환경**: `VITE_ENABLE_QUICK_LOGIN=false` 또는 미설정 시 자동 비활성화
-- **위치**: `client/src/components/QuickLoginButtons.tsx` (lines 44-50)
+- ✅ **CSRF 보호**: 세션 기반 토큰 검증
+- **위치**: 
+  - 백엔드: `server/auth/index.ts` (quickLogin 함수)
+  - 프론트엔드: `client/src/components/QuickLoginButtons.tsx`
 
 #### Rate Limiting
 - ✅ API 전체: 15분당 100회 (IP당)
@@ -225,6 +229,7 @@ pm2 logs talez --err --lines 50
 - [ ] 위치 검색 (`/api/locations/search`)
 - [ ] 예방접종 API (`/api/vaccinations/*`)
 - [ ] 커뮤니티 게시글 (`/api/community/posts`)
+- [ ] 퀵로그인 API (`/api/auth/quick-login`) - 개발/데모 전용
 
 ### 주요 기능
 - [ ] 사용자 로그인/로그아웃
