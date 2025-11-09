@@ -1,6 +1,6 @@
 import { db } from './db/index';
-import { logoSettings, users } from '../shared/schema';
-import { eq } from 'drizzle-orm';
+import { logoSettings, users, products } from '../shared/schema';
+import { eq, desc } from 'drizzle-orm';
 
 class Storage {
   users: any[] = [];
@@ -2135,15 +2135,15 @@ class Storage {
   // 상품 관리 메서드 (DB 연동)
   async getAllProducts(): Promise<any[]> {
     try {
-      const { db } = await import('./db');
-      const { products } = await import('../shared/schema');
-      const { eq, desc } = await import('drizzle-orm');
+      console.log('[Storage] getAllProducts 시작');
       
       const productList = await db
         .select()
         .from(products)
         .where(eq(products.is_active, true))
         .orderBy(desc(products.created_at));
+      
+      console.log(`[Storage] DB에서 ${productList.length}개 상품 조회됨`);
       
       // images가 JSONB 배열이므로 첫 번째 이미지를 image 필드로 변환
       const transformedProducts = productList.map((p: any) => ({
@@ -2155,10 +2155,11 @@ class Storage {
         discountRate: p.discount_price ? Math.round(((p.price - p.discount_price) / p.price) * 100) : 0
       }));
       
+      console.log(`[Storage] ${transformedProducts.length}개 상품 변환 완료`);
       return transformedProducts || [];
     } catch (error) {
       console.error('[Storage] getAllProducts 에러:', error);
-      return this.products || [];
+      return [];
     }
   }
 
