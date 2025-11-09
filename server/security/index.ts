@@ -8,17 +8,58 @@ import { logger } from '../monitoring/logger';
  * 보안 설정 초기화
  */
 export function setupSecurity(app: Express) {
-  // Helmet 보안 헤더 설정
+  // Helmet 보안 헤더 설정 - Google Maps API 지원
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://ka-f.fontawesome.com", "https://static.nid.naver.com", "https://developers.kakao.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        imgSrc: ["'self'", "data:", "https:", "blob:"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com", "https://ka-f.fontawesome.com"],
-        connectSrc: ["'self'", "https://api.openai.com", "https://kauth.kakao.com", "https://nid.naver.com", "wss:", "ws:"],
-        frameSrc: ["'self'", "https://drive.google.com", "https://youtube.com", "https://www.youtube.com"]
+        scriptSrc: [
+          "'self'", 
+          "'unsafe-inline'", 
+          "'unsafe-eval'",
+          "https://ka-f.fontawesome.com",
+          "https://static.nid.naver.com",
+          "https://developers.kakao.com",
+          "https://maps.googleapis.com",
+          "https://maps.gstatic.com",
+          "https://*.googleapis.com"
+        ],
+        styleSrc: [
+          "'self'", 
+          "'unsafe-inline'", 
+          "https://fonts.googleapis.com"
+        ],
+        imgSrc: [
+          "'self'", 
+          "data:", 
+          "https:", 
+          "blob:",
+          "https://maps.googleapis.com",
+          "https://maps.gstatic.com",
+          "https://*.gstatic.com",
+          "https://*.googleapis.com"
+        ],
+        fontSrc: [
+          "'self'", 
+          "https://fonts.gstatic.com", 
+          "https://ka-f.fontawesome.com"
+        ],
+        connectSrc: [
+          "'self'", 
+          "https://api.openai.com", 
+          "https://kauth.kakao.com", 
+          "https://nid.naver.com",
+          "https://maps.googleapis.com",
+          "https://*.googleapis.com",
+          "wss:", 
+          "ws:"
+        ],
+        frameSrc: [
+          "'self'", 
+          "https://drive.google.com", 
+          "https://youtube.com", 
+          "https://www.youtube.com"
+        ]
       }
     },
     crossOriginEmbedderPolicy: false // iframe 사용을 위해 필요
