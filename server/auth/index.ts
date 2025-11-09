@@ -244,6 +244,88 @@ function setupAuthRoutes(app: Express) {
     });
   });
   
+  // 퀵로그인 API (테스트/데모 용도) - CSRF 보호 적용
+  router.post('/quick-login', csrfProtection, async (req, res) => {
+    try {
+      const { role } = req.body;
+      
+      // 허용된 역할 확인
+      const allowedRoles = ['pet-owner', 'trainer', 'institute-admin', 'admin'];
+      if (!role || !allowedRoles.includes(role)) {
+        return res.error(
+          ApiErrorCode.VALIDATION_ERROR,
+          '유효하지 않은 역할입니다.',
+          { validRoles: allowedRoles }
+        );
+      }
+      
+      // 역할별 테스트 사용자 매핑
+      const testUsernames: Record<string, string> = {
+        'pet-owner': 'test_owner',
+        'trainer': 'test_trainer',
+        'institute-admin': 'institute01',
+        'admin': 'admin'
+      };
+      
+      const username = testUsernames[role];
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user) {
+        return res.error(
+          ApiErrorCode.RESOURCE_NOT_FOUND,
+          `테스트 사용자를 찾을 수 없습니다: ${username}`,
+          { role, username }
+        );
+      }
+      
+      // 세션 생성
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          console.error('[QuickLogin] 세션 생성 오류:', loginErr);
+          return res.error(
+            ApiErrorCode.INTERNAL_SERVER_ERROR,
+            '로그인 세션 생성 중 오류가 발생했습니다'
+          );
+        }
+        
+        // 세션 명시적 저장
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('[QuickLogin] 세션 저장 오류:', saveErr);
+            return res.error(
+              ApiErrorCode.INTERNAL_SERVER_ERROR,
+              '세션 저장 중 오류가 발생했습니다'
+            );
+          }
+          
+          console.log(`[QuickLogin] 퀵로그인 성공: ${user.username} (${user.role})`);
+          console.log('[QuickLogin] 세션 저장 완료 - SessionID:', req.sessionID);
+          
+          // JWT 토큰 생성
+          const token = generateJwtToken(user);
+          
+          return res.success({
+            user: {
+              id: user.id,
+              username: user.username,
+              name: user.name,
+              email: user.email,
+              role: user.role
+            },
+            token,
+            expiresIn: JWT_EXPIRES_IN
+          }, `퀵로그인에 성공했습니다 (${user.role}).`);
+        });
+      });
+    } catch (error) {
+      console.error('[QuickLogin] 퀵로그인 오류:', error);
+      return res.error(
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+        '퀵로그인 처리 중 오류가 발생했습니다'
+      );
+    }
+  });
+  
   // 회원가입 API (표준화 적용)
   router.post('/register', csrfProtection, async (req, res) => {
     try {
