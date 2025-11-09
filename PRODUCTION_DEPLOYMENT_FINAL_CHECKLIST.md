@@ -60,9 +60,11 @@ cat .env.production
 - **위치**: `client/src/components/QuickLoginButtons.tsx` (lines 44-50)
 
 #### Rate Limiting
-- ✅ API 전체: 15분당 100회
-- ✅ 인증 엔드포인트: 15분당 5회
-- ✅ 로그인: 1시간당 10회
+- ✅ API 전체: 15분당 100회 (IP당)
+- ✅ 로그인/OAuth 콜백: 1시간당 10회 (IP당)
+  - `/api/login`
+  - `/api/auth/kakao/callback`
+  - `/api/auth/naver/callback`
 
 ---
 
