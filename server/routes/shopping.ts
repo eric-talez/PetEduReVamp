@@ -1,16 +1,19 @@
 import type { Express } from "express";
-import { IStorage } from "../storage";
+import { db } from "../db";
+import { products, shopCategories, cartItems } from "../../shared/schema";
+import { eq, and, or, like, gte, lte, desc, count } from "drizzle-orm";
+import type { IStorage } from "../storage";
 
 export function registerShoppingRoutes(app: Express, storage: IStorage) {
   console.log('[ShoppingRoutes] 쇼핑 라우트 등록 시작');
   
-  // 상품 목록 조회
+  // 상품 목록 조회 (storage를 통한 DB 조회)
   app.get("/api/shop/products", async (req, res) => {
     try {
       console.log('[ShoppingRoutes] 상품 목록 조회 요청');
-      const products = await storage.getAllProducts();
-      console.log(`[ShoppingRoutes] 상품 ${products?.length || 0}개 조회됨`);
-      res.json({ success: true, products: products || [] });
+      const productList = await storage.getAllProducts();
+      console.log(`[ShoppingRoutes] 상품 ${productList?.length || 0}개 조회됨`);
+      res.json({ success: true, products: productList || [] });
     } catch (error) {
       console.error('Error fetching products:', error);
       res.status(500).json({ error: '상품 목록을 불러올 수 없습니다' });

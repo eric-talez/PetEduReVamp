@@ -2132,9 +2132,24 @@ class Storage {
     return null;
   }
 
-  // 상품 관리 메서드
-  getAllProducts(): any[] {
-    return this.products || [];
+  // 상품 관리 메서드 (DB 연동)
+  async getAllProducts(): Promise<any[]> {
+    try {
+      const { db } = await import('./db');
+      const { products } = await import('../shared/schema');
+      const { eq, desc } = await import('drizzle-orm');
+      
+      const productList = await db
+        .select()
+        .from(products)
+        .where(eq(products.isActive, true))
+        .orderBy(desc(products.createdAt));
+      
+      return productList || [];
+    } catch (error) {
+      console.error('[Storage] getAllProducts 에러:', error);
+      return this.products || [];
+    }
   }
 
   getProduct(id: number): any {
