@@ -2142,10 +2142,20 @@ class Storage {
       const productList = await db
         .select()
         .from(products)
-        .where(eq(products.isActive, true))
-        .orderBy(desc(products.createdAt));
+        .where(eq(products.is_active, true))
+        .orderBy(desc(products.created_at));
       
-      return productList || [];
+      // images가 JSONB 배열이므로 첫 번째 이미지를 image 필드로 변환
+      const transformedProducts = productList.map((p: any) => ({
+        ...p,
+        image: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
+        imageUrl: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
+        inStock: (p.stock || 0) > 0,
+        category: `Category ${p.category_id}`,
+        discountRate: p.discount_price ? Math.round(((p.price - p.discount_price) / p.price) * 100) : 0
+      }));
+      
+      return transformedProducts || [];
     } catch (error) {
       console.error('[Storage] getAllProducts 에러:', error);
       return this.products || [];

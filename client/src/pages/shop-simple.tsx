@@ -1,8 +1,9 @@
 import { ShoppingBag, Search, Star, Filter } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/context/cart-context';
+import { useQuery } from '@tanstack/react-query';
 
-// 샘플 상품 데이터
+// 상품 타입 정의
 interface Product {
   id: number;
   name: string;
@@ -10,92 +11,27 @@ interface Product {
   price: number;
   discountRate?: number;
   image: string;
+  imageUrl?: string;
   category: string;
-  rating: number;
-  reviewCount: number;
+  categoryId?: number;
+  rating?: number;
+  reviewCount?: number;
   inStock: boolean;
+  isActive?: boolean;
   isNew?: boolean;
   isBestseller?: boolean;
 }
 
-const sampleProducts: Product[] = [
-  {
-    id: 1,
-    name: '프리미엄 반려견 사료',
-    description: '높은 단백질 함량과 균형 잡힌 영양소로 건강한 식단을 제공합니다.',
-    price: 42000,
-    discountRate: 10,
-    image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png',
-    category: '사료',
-    rating: 4.8,
-    reviewCount: 124,
-    inStock: true,
-    isBestseller: true
-  },
-  {
-    id: 2,
-    name: '강아지 장난감 세트',
-    description: '내구성 있는 소재로 만든, 치아 건강과 스트레스 해소에 도움이 되는 장난감 세트입니다.',
-    price: 28000,
-    image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png',
-    category: '장난감',
-    rating: 4.5,
-    reviewCount: 89,
-    inStock: true,
-    isNew: true
-  },
-  {
-    id: 3,
-    name: '반려동물 자동 급식기',
-    description: '스마트폰으로 제어 가능한 자동 급식기로, 정해진 시간에 음식을 제공합니다.',
-    price: 98000,
-    discountRate: 15,
-    image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png',
-    category: '용품',
-    rating: 4.7,
-    reviewCount: 56,
-    inStock: true
-  },
-  {
-    id: 4,
-    name: '반려견 목욕 용품 세트',
-    description: '피부에 자극이 없는 천연 성분으로 만든 샴푸와 컨디셔너, 빗 세트입니다.',
-    price: 36500,
-    image: '/attached_assets/image_1746582251297.png',
-    category: '미용',
-    rating: 4.4,
-    reviewCount: 42,
-    inStock: true
-  },
-  {
-    id: 5,
-    name: '강아지 트레이닝 클리커',
-    description: '전문가들이 사용하는 효과적인 훈련 도구로, 긍정적 강화 훈련에 적합합니다.',
-    price: 12000,
-    discountRate: 5,
-    image: '/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png',
-    category: '훈련',
-    rating: 4.9,
-    reviewCount: 136,
-    inStock: true,
-    isBestseller: true
-  },
-  {
-    id: 6,
-    name: '반려동물 GPS 추적기',
-    description: '실시간 위치 추적과 활동 모니터링이 가능한 스마트 GPS 장치입니다.',
-    price: 65000,
-    image: '/attached_assets/image_1746582251297.png',
-    category: '안전',
-    rating: 4.6,
-    reviewCount: 78,
-    inStock: false
-  }
-];
-
 export default function SimpleShopPage() {
   const auth = useAuth();
   const { addToCart } = useCart();
+
+  // DB에서 상품 목록 가져오기
+  const { data, isLoading } = useQuery<{ success: boolean; products: Product[] }>({
+    queryKey: ['/api/shop/products']
+  });
+
+  const products = data?.products || [];
 
   const handleAddToCart = (product: Product) => {
     addToCart({
@@ -106,10 +42,20 @@ export default function SimpleShopPage() {
         ? Math.round(product.price * (1 - product.discountRate / 100)) 
         : undefined,
       quantity: 1,
-      imageUrl: product.image,
-      inStock: product.inStock
+      imageUrl: product.image || product.imageUrl || '',
+      inStock: product.inStock ?? true
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="text-center">
+          <p className="text-lg">상품을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -144,14 +90,19 @@ export default function SimpleShopPage() {
       
       {/* 상품 그리드 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {sampleProducts.map(product => (
+        {products.length === 0 && (
+          <div className="col-span-full text-center text-gray-500 py-8">
+            등록된 상품이 없습니다.
+          </div>
+        )}
+        {products.map(product => (
           <div 
             key={product.id} 
             className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden flex flex-col h-full"
           >
             <div className="relative h-48 overflow-hidden">
               <img 
-                src={product.image} 
+                src={product.image || product.imageUrl || '/placeholder.jpg'} 
                 alt={product.name} 
                 className="w-full h-full object-cover transition-transform hover:scale-105" 
               />
@@ -173,21 +124,23 @@ export default function SimpleShopPage() {
             </div>
             
             <div className="p-4 flex-1 flex flex-col">
-              <div className="flex items-center mb-1">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`w-4 h-4 ${
-                        i < Math.floor(product.rating) 
-                          ? 'fill-yellow-400 text-yellow-400' 
-                          : 'text-gray-300'
-                      }`} 
-                    />
-                  ))}
+              {product.rating && product.reviewCount && (
+                <div className="flex items-center mb-1">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`w-4 h-4 ${
+                          i < Math.floor(product.rating || 0) 
+                            ? 'fill-yellow-400 text-yellow-400' 
+                            : 'text-gray-300'
+                        }`} 
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-500 ml-1">({product.reviewCount})</span>
                 </div>
-                <span className="text-sm text-gray-500 ml-1">({product.reviewCount})</span>
-              </div>
+              )}
               
               <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{product.description}</p>
