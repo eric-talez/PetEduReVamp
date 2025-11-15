@@ -34,8 +34,7 @@ interface Meeting {
   start_time: string;
   duration: number;
   join_url: string;
-  password: string;
-  host_key: string;
+  agenda?: string;
 }
 
 export default function VideoCallPage() {
@@ -69,19 +68,15 @@ export default function VideoCallPage() {
     price: number;
     category: string;
     difficulty: string;
-    zoomPMI: string;
-    zoomPMIPassword: string;
-    zoomHostKey: string;
-    meetingSetupType: string;
+    meetingUrl: string;
     status: string;
   }>>([]);
   
-  // Zoom Meeting SDK 통합을 위한 상태
+  // Google Meet 통합을 위한 상태
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [activeMeeting, setActiveMeeting] = useState<{
     meetingUrl?: string;
     topic?: string;
-    password?: string;
     userName?: string;
     userEmail?: string;
   } | null>(null);
@@ -216,17 +211,17 @@ export default function VideoCallPage() {
 
       if (!meetingId) {
         toast({
-          title: '미팅 ID 필요',
-          description: '미팅에 참여하려면 미팅 ID를 입력해주세요.',
+          title: '미팅 URL 필요',
+          description: '미팅에 참여하려면 Google Meet URL을 입력해주세요.',
           variant: 'destructive'
         });
         return;
       }
 
-      // Zoom Meeting SDK로 임베디드 방식으로 참여
+      // Google Meet 링크로 참여
       setActiveMeeting({
-        meetingNumber: meetingId,
-        password: '', // 비밀번호는 사용자가 별도 입력하거나 없을 수 있음
+        meetingUrl: meetingId,
+        topic: 'Google Meet 화상 수업',
         userName: userName || '게스트',
         userEmail: ''
       });
@@ -234,7 +229,7 @@ export default function VideoCallPage() {
       
       toast({
         title: '미팅 참여',
-        description: '화상 미팅에 참여합니다.',
+        description: 'Google Meet에 참여합니다.',
       });
     } catch (error: any) {
       console.error('Error joining meeting:', error);
@@ -253,8 +248,6 @@ export default function VideoCallPage() {
 미팅 주제: ${meeting.topic}
 시간: ${format(new Date(meeting.start_time), 'PPP p', { locale: ko })}
 소요 시간: ${meeting.duration}분
-미팅 ID: ${meeting.id}
-비밀번호: ${meeting.password}
 참여 링크: ${meeting.join_url}
     `.trim();
 
@@ -281,9 +274,7 @@ export default function VideoCallPage() {
     setActiveMeeting({
       meetingUrl: meeting.join_url,
       topic: meeting.topic,
-      password: meeting.password,
-      userName: userName || '게스트',
-      userEmail: ''
+      userName: userName || '게스트'
     });
     setIsInMeeting(true);
     toast({
@@ -729,17 +720,17 @@ ${videoClass.title}
           <Card>
             <CardHeader>
               <CardTitle>미팅 참여</CardTitle>
-              <CardDescription>미팅 ID를 입력하여 기존 화상 훈련 세션에 참여합니다.</CardDescription>
+              <CardDescription>Google Meet URL을 입력하여 기존 화상 훈련 세션에 참여합니다.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="meetingId">미팅 ID</Label>
+                <Label htmlFor="meetingId">Google Meet URL</Label>
                 <Input 
                   id="meetingId" 
-                  placeholder="예: 123 456 7890" 
+                  placeholder="예: https://meet.google.com/abc-defg-hij" 
                   value={meetingId}
                   onChange={(e) => setMeetingId(e.target.value)}
-                  aria-label="미팅 ID 입력"
+                  aria-label="Google Meet URL 입력"
                   aria-required="true"
                 />
               </div>

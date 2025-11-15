@@ -8398,10 +8398,7 @@ app.get('/api/search', async (req, res) => {
           price: 35000,
           category: "기초 훈련",
           difficulty: "beginner",
-          zoomPMI: "123-456-789",
-          zoomPMIPassword: "basic123",
-          zoomHostKey: "456789",
-          meetingSetupType: "pmi",
+          meetingUrl: "https://meet.google.com/talez-basic-training",
           status: "scheduled"
         },
         {
@@ -8418,10 +8415,7 @@ app.get('/api/search', async (req, res) => {
           price: 50000,
           category: "문제행동 교정",
           difficulty: "intermediate",
-          zoomPMI: "987-654-321",
-          zoomPMIPassword: "advanced456",
-          zoomHostKey: "987654",
-          meetingSetupType: "pmi",
+          meetingUrl: "https://meet.google.com/talez-behavior-correction",
           status: "scheduled"
         },
         {
@@ -8438,10 +8432,7 @@ app.get('/api/search', async (req, res) => {
           price: 40000,
           category: "사회화 훈련",
           difficulty: "beginner",
-          zoomPMI: "555-777-999",
-          zoomPMIPassword: "social789",
-          zoomHostKey: "555777",
-          meetingSetupType: "pmi",
+          meetingUrl: "https://meet.google.com/talez-socialization",
           status: "scheduled"
         }
       ];
@@ -8460,7 +8451,7 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-// Create new meeting (simplified version)
+// Create new meeting (Google Meet)
   app.post("/api/videocall/create-meeting", async (req, res) => {
     try {
       const { topic, start_time, duration, agenda } = req.body;
@@ -8472,27 +8463,24 @@ app.get('/api/search', async (req, res) => {
         });
       }
 
-      // 간단한 미팅 ID 생성 (실제로는 Zoom API 사용)
-      const meetingId = `${Math.floor(Math.random() * 900000000) + 100000000}`;
-      const password = `pwd${Math.floor(Math.random() * 10000)}`;
+      // Google Meet 미팅 생성 (간소화 버전 - OAuth 불필요)
+      const meetId = `talez-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      const meetingUrl = `https://meet.google.com/${meetId}`;
       
       const meeting = {
-        id: meetingId,
+        id: meetId,
         topic,
         start_time,
         duration: parseInt(duration),
-        join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
-        password,
-        host_key: `host${Math.floor(Math.random() * 100000)}`,
+        join_url: meetingUrl,
         agenda: agenda || '',
         created_at: new Date().toISOString()
       };
 
-
       res.json({
         success: true,
         meeting,
-        message: '미팅이 성공적으로 생성되었습니다.'
+        message: 'Google Meet 미팅이 성공적으로 생성되었습니다.'
       });
     } catch (error) {
       console.error('Error creating meeting:', error);
@@ -8509,16 +8497,13 @@ app.get('/api/search', async (req, res) => {
       // 임시 미팅 목록 (실제로는 데이터베이스에서 가져옴)
       const meetings = [
         {
-          id: "123456789",
-          topic: "테일즈 팀 회의",
+          id: "talez-demo-123",
+          topic: "테일즈 화상 훈련",
           start_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1시간 후
           duration: 60,
-          join_url: "https://zoom.us/j/123456789?pwd=demo123",
-          password: "demo123",
-          host_key: "host123"
+          join_url: "https://meet.google.com/talez-demo-123"
         }
       ];
-
 
       res.json({
         success: true,
