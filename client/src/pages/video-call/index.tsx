@@ -358,6 +358,33 @@ export default function VideoCallPage() {
                         <Button 
                           variant="ghost" 
                           size="sm"
+                          onClick={async () => {
+                            const shareText = `${meeting.topic}\n일시: ${format(new Date(meeting.start_time), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}\n참여 링크: ${meeting.join_url}`;
+                            try {
+                              if (navigator.share) {
+                                await navigator.share({ title: meeting.topic, text: shareText });
+                              } else if (navigator.clipboard?.writeText) {
+                                await navigator.clipboard.writeText(shareText);
+                                toast({
+                                  title: '복사 완료',
+                                  description: '미팅 정보가 클립보드에 복사되었습니다.',
+                                });
+                              } else {
+                                toast({
+                                  title: '공유 정보',
+                                  description: shareText,
+                                  duration: 10000,
+                                });
+                              }
+                            } catch (err) {
+                              console.log('공유 실패:', err);
+                              toast({
+                                title: '공유 실패',
+                                description: '정보 공유 중 오류가 발생했습니다.',
+                                variant: 'destructive'
+                              });
+                            }
+                          }}
                           aria-label={`${meeting.topic} 미팅 정보 공유하기`}
                         >
                           <Share2 className="w-4 h-4 mr-1" /> 공유
@@ -572,6 +599,37 @@ ${videoClass.title}
                           <Button 
                             variant="ghost" 
                             size="sm"
+                            onClick={async () => {
+                              const meetingUrl = videoClass.meetingUrl || 
+                                (videoClass.zoomPMI && videoClass.zoomPMIPassword ? 
+                                  `https://zoom.us/j/${videoClass.zoomPMI.replace(/-/g, '')}?pwd=${videoClass.zoomPMIPassword}` : 
+                                  '');
+                              const shareText = `${videoClass.title}\n훈련사: ${videoClass.trainerName}\n일시: ${format(new Date(videoClass.scheduledTime), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}${meetingUrl ? `\n참여 링크: ${meetingUrl}` : ''}`;
+                              try {
+                                if (navigator.share) {
+                                  await navigator.share({ title: videoClass.title, text: shareText });
+                                } else if (navigator.clipboard?.writeText) {
+                                  await navigator.clipboard.writeText(shareText);
+                                  toast({
+                                    title: '복사 완료',
+                                    description: '화상수업 정보가 클립보드에 복사되었습니다.',
+                                  });
+                                } else {
+                                  toast({
+                                    title: '공유 정보',
+                                    description: shareText,
+                                    duration: 10000,
+                                  });
+                                }
+                              } catch (err) {
+                                console.log('공유 실패:', err);
+                                toast({
+                                  title: '공유 실패',
+                                  description: '정보 공유 중 오류가 발생했습니다.',
+                                  variant: 'destructive'
+                                });
+                              }
+                            }}
                             aria-label={`${videoClass.title} 화상수업 정보 공유하기`}
                           >
                             <Share2 className="w-4 h-4 mr-1" /> 공유

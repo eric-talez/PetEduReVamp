@@ -51,6 +51,7 @@ export default function Courses(props?: CoursesPageProps) {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [showProductModal, setShowProductModal] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const { toast } = useToast();
 
   // 강의 구매 처리 함수
@@ -386,6 +387,7 @@ export default function Courses(props?: CoursesPageProps) {
           variant="outline"
           size="sm"
           className="ml-auto text-xs"
+          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
         >
           <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
           고급 필터

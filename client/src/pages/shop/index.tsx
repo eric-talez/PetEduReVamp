@@ -461,7 +461,13 @@ export default function ShopIndex() {
                             className="bg-[#03c75a] hover:bg-[#02b04a] text-white rounded-full px-6"
                             onClick={(e) => {
                               e.preventDefault();
-                              // 클릭 시 적절한 카테고리로 이동
+                              const categoryMap: { [key: number]: string } = {
+                                0: '사료',
+                                1: '사료',
+                                2: '장난감'
+                              };
+                              const category = categoryMap[currentSlide] || '전체';
+                              setSearchQuery(category);
                             }}
                           >
                             더 알아보기
