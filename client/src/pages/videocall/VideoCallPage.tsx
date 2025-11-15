@@ -222,25 +222,19 @@ export default function VideoCallPage() {
         return;
       }
 
-      // 토큰 생성 요청
-      const response = await apiRequest('POST', '/api/videocall/join-token', {
+      // Zoom Meeting SDK로 임베디드 방식으로 참여
+      setActiveMeeting({
         meetingNumber: meetingId,
-        role: 'participant' // 참가자로 참여
+        password: '', // 비밀번호는 사용자가 별도 입력하거나 없을 수 있음
+        userName: userName || '게스트',
+        userEmail: ''
       });
-
-      const data = await response.json();
-
-      if (data.signature) {
-        // 실제 구현에서는 Zoom Web SDK를 사용하여 미팅에 참여
-        window.open(`https://zoom.us/wc/${meetingId}/join?pwd=&uname=${encodeURIComponent(userName || '게스트')}`, '_blank');
-        
-        toast({
-          title: '미팅 참여 중',
-          description: '새 창에서 미팅에 참여합니다.',
-        });
-      } else {
-        throw new Error(data.error || '미팅 참여 실패');
-      }
+      setIsInMeeting(true);
+      
+      toast({
+        title: '미팅 참여',
+        description: '화상 미팅에 참여합니다.',
+      });
     } catch (error: any) {
       console.error('Error joining meeting:', error);
       toast({
@@ -282,7 +276,18 @@ export default function VideoCallPage() {
   };
 
   const startMeeting = (meeting: Meeting) => {
-    window.open(meeting.join_url, '_blank');
+    // Zoom Meeting SDK로 임베디드 방식으로 참여
+    setActiveMeeting({
+      meetingNumber: meeting.id,
+      password: meeting.password,
+      userName: userName || '게스트',
+      userEmail: ''
+    });
+    setIsInMeeting(true);
+    toast({
+      title: "미팅 참여",
+      description: `${meeting.topic} 미팅에 참여합니다.`,
+    });
   };
 
   if (isLoading) {
