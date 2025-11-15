@@ -556,6 +556,11 @@ async function startServer() {
 
     // AI 위치 크롤러 라우트 등록
     app.use(aiLocationCrawlerRoutes);
+    
+    // Zoom Meeting SDK 라우트 등록
+    const zoomRoutes = (await import('./routes/zoom')).default;
+    app.use('/api/zoom', zoomRoutes);
+    console.log('[Zoom] Zoom Meeting SDK 라우트가 등록되었습니다.');
 
     // Setup Vite for development or serve static files for production
     // This MUST come AFTER API routes to prevent catch-all from intercepting API calls
