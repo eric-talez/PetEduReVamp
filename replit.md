@@ -3,6 +3,19 @@
 ## Overview
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
+## Recent Changes (November 15, 2025)
+### Firebase Cloud Messaging (FCM) Integration
+- **Backend**: FCMService implementation with Firebase Admin SDK for push notification delivery
+  - NotificationOrchestrator pattern: DB persistence → WebSocket (real-time) → FCM (background)
+  - Multi-device support with automatic invalid token cleanup
+  - API endpoints: `/api/fcm/register-token`, `/api/fcm/unregister-token`, `/api/fcm/tokens`
+- **Frontend**: Service Worker + FCM client integration
+  - Lazy Firebase initialization with graceful degradation (works without FCM credentials)
+  - Background message handling in `firebase-messaging-sw.js`
+  - NotificationProvider enhanced with FCM token management
+- **Database**: `fcmTokens` table for device token management
+- **Required env vars**: FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL, FIREBASE_PROJECT_ID (backend), VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID, VITE_FIREBASE_VAPID_KEY (frontend)
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 UI/UX Preferences: Enhanced font sizes and accessibility-focused design with improved touch targets and typography.
@@ -43,6 +56,7 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Deployment Strategy**: Production-ready Docker containerization, PM2 cluster mode, Nginx reverse proxy, automated backup, GitHub Actions CI/CD for AWS EC2.
 - **Vaccination Schedule Management**: Comprehensive system for tracking pet vaccinations, including hospital location, 7 REST API endpoints for CRUD, Google Maps integration, status management, and upcoming appointment notifications.
 - **Zoom Meeting Integration**: In-service video call participation using Zoom Meeting SDK for live classes.
+- **Push Notifications**: Firebase Cloud Messaging (FCM) integration for real-time push notifications with WebSocket fallback, multi-device support, and graceful degradation.
 
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
@@ -55,3 +69,4 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Avatars**: Dicebear API
 - **Video Processing**: FFmpeg
 - **Video Conferencing**: Zoom Meeting SDK
+- **Push Notifications**: Firebase Cloud Messaging (FCM)
