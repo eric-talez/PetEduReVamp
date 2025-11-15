@@ -410,6 +410,18 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// FCM 기기 토큰 테이블
+export const fcmTokens = pgTable("fcm_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  token: text("token").notNull().unique(),
+  deviceType: varchar("device_type", { length: 20 }), // 'web', 'android', 'ios'
+  deviceInfo: jsonb("device_info"), // 브라우저/기기 정보
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // 시스템 설정 테이블
 export const systemSettings = pgTable("system_settings", {
   id: serial("id").primaryKey(),
@@ -1753,6 +1765,18 @@ export type InsertNotification = z.infer<typeof createNotificationSchema>;
 export type UpdateNotification = z.infer<typeof updateNotificationSchema>;
 export type NotificationQuery = z.infer<typeof notificationQuerySchema>;
 export type BulkNotificationUpdate = z.infer<typeof bulkNotificationUpdateSchema>;
+
+// FCM 토큰 스키마 및 타입
+export const insertFcmTokenSchema = createInsertSchema(fcmTokens).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const selectFcmTokenSchema = createSelectSchema(fcmTokens);
+
+export type FcmToken = typeof fcmTokens.$inferSelect;
+export type InsertFcmToken = z.infer<typeof insertFcmTokenSchema>;
 
 // 훈련 일지 (알림장) Zod 스키마
 export const insertTrainingJournalSchema = createInsertSchema(trainingJournals).omit({
