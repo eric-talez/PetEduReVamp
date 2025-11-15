@@ -1,7 +1,23 @@
 # TALEZ 상용화 배포 최종 점검 리포트
-**작성일**: 2025-11-09  
-**버전**: 1.0.0  
+**작성일**: 2025-11-15  
+**버전**: 1.1.0  
 **배포 준비 상태**: ✅ READY FOR PRODUCTION
+
+---
+
+## 🆕 최신 업데이트 (2025-11-15)
+
+### Zoom Meeting SDK 통합 완료
+- ✅ **임베디드 화상 수업**: 서비스 화면 안에 Zoom UI 통합 (Component View)
+- ✅ **백엔드 API**: `/api/zoom/signature` - JWT 서명 생성 엔드포인트
+- ✅ **프론트엔드 컴포넌트**: `ZoomMeeting.tsx` - 임베디드 미팅 참여
+- ✅ **패키지 추가**: `@zoom/meetingsdk`, `jsrsasign`
+- ✅ **라우트 등록**: `server/index.ts`에 Zoom 라우트 추가
+- **주요 특징**:
+  - 새 창이 아닌 서비스 화면 내 임베드
+  - 자동 CSRF 토큰 처리
+  - 에러 핸들링 및 로딩 상태 관리
+  - 나가기 버튼으로 수업 목록 복귀
 
 ---
 
@@ -17,6 +33,10 @@ NODE_ENV=production
 
 # 보안 (상용 배포 시 필수)
 VITE_ENABLE_QUICK_LOGIN=false  # 퀵로그인 비활성화
+
+# Zoom Meeting SDK (화상 수업 기능 사용 시 필수)
+ZOOM_SDK_KEY=your_zoom_sdk_key
+ZOOM_SDK_SECRET=your_zoom_sdk_secret
 
 # 선택 (기능 활성화 시)
 OPENAI_API_KEY=your_openai_api_key
@@ -121,6 +141,9 @@ curl https://your-domain.com/api/logo
 
 # 기관 목록
 curl https://your-domain.com/api/institutes
+
+# Zoom Meeting SDK (신규)
+curl https://your-domain.com/api/zoom/health
 
 # 예방접종 API (신규)
 curl https://your-domain.com/api/vaccinations/user/1

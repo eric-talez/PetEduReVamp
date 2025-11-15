@@ -26,6 +26,7 @@ import { ko } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import ZoomMeeting from '@/components/ZoomMeeting';
 
 interface Meeting {
   id: string;
@@ -74,6 +75,15 @@ export default function VideoCallPage() {
     meetingSetupType: string;
     status: string;
   }>>([]);
+  
+  // Zoom Meeting SDK 통합을 위한 상태
+  const [isInMeeting, setIsInMeeting] = useState(false);
+  const [activeMeeting, setActiveMeeting] = useState<{
+    meetingNumber: string;
+    password: string;
+    userName: string;
+    userEmail?: string;
+  } | null>(null);
 
   useEffect(() => {
     console.log('🎥 VideoCallPage useEffect - 인증 상태:', { isLoading, isAuthenticated });
@@ -287,6 +297,23 @@ export default function VideoCallPage() {
     );
   }
 
+  // 미팅 참여 중일 때는 Zoom Meeting SDK 컴포넌트 렌더링
+  if (isInMeeting && activeMeeting) {
+    return (
+      <ZoomMeeting
+        meetingNumber={activeMeeting.meetingNumber}
+        password={activeMeeting.password}
+        userName={activeMeeting.userName}
+        userEmail={activeMeeting.userEmail}
+        role={0}
+        onLeave={() => {
+          setIsInMeeting(false);
+          setActiveMeeting(null);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="container mx-auto py-8">
       {/* 스크린 리더 사용자를 위한 실시간 알림 영역 */}
@@ -438,14 +465,21 @@ export default function VideoCallPage() {
                               variant="default" 
                               size="sm" 
                               onClick={() => {
-                                const pmiUrl = `https://zoom.us/j/${videoClass.zoomPMI.replace(/-/g, '')}?pwd=${videoClass.zoomPMIPassword}`;
-                                window.open(pmiUrl, '_blank');
+                                // Zoom Meeting SDK로 임베디드 방식으로 참여
+                                setActiveMeeting({
+                                  meetingNumber: videoClass.zoomPMI.replace(/-/g, ''),
+                                  password: videoClass.zoomPMIPassword,
+                                  userName: userName || '게스트',
+                                  userEmail: ''
+                                });
+                                setIsInMeeting(true);
                                 toast({
                                   title: "화상수업 참여",
                                   description: `${videoClass.title} 수업에 참여합니다.`,
                                 });
                               }}
                               aria-label={`${videoClass.title} 화상수업 참여하기`}
+                              data-testid={`button-join-class-${videoClass.id}`}
                             >
                               <Video className="w-4 h-4 mr-2" /> 수업 참여
                             </Button>
