@@ -227,8 +227,7 @@ export default function VideoCallPage() {
       setActiveMeeting({
         meetingUrl: meetingId,
         topic: 'Google Meet 화상 수업',
-        userName: userName || '게스트',
-        userEmail: ''
+        userName: userName || '게스트'
       });
       setIsInMeeting(true);
       
@@ -467,12 +466,12 @@ export default function VideoCallPage() {
                               variant="default" 
                               size="sm" 
                               onClick={() => {
-                                // Zoom Meeting SDK로 임베디드 방식으로 참여
+                                // Google Meet 링크로 참여
+                                const meetingUrl = videoClass.meetingUrl || '';
                                 setActiveMeeting({
-                                  meetingNumber: videoClass.zoomPMI.replace(/-/g, ''),
-                                  password: videoClass.zoomPMIPassword,
-                                  userName: userName || '게스트',
-                                  userEmail: ''
+                                  meetingUrl,
+                                  topic: videoClass.title,
+                                  userName: userName || '게스트'
                                 });
                                 setIsInMeeting(true);
                                 toast({

@@ -10,7 +10,6 @@ import {
   ChevronRight, MessageCircle, BookOpen, Clipboard, Award, DollarSign
 } from 'lucide-react';
 import { Link } from 'wouter';
-import ZoomMeetingManager from '@/components/ZoomMeetingManager';
 
 export default function TrainerHome() {
   const { userName } = useAuth();
@@ -489,11 +488,6 @@ export default function TrainerHome() {
             </CardContent>
           </Link>
         </Card>
-      </div>
-
-      {/* 화상수업 관리 */}
-      <div className="grid gap-6 mb-6">
-        <ZoomMeetingManager userRole="trainer" userName="강동훈" />
       </div>
     </div>
   );
