@@ -4,6 +4,18 @@
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
 ## Recent Changes (November 15, 2025)
+### Banner Images & UI Consistency
+- **All Pages Banner Update**: Replaced external Unsplash images with custom TALEZ Green branded banner images
+  - Pages updated: Home (3 banners), Video Call, Shop, Trainers, Courses, Notebook, Institutes
+  - Standardized gradient overlay: `from-black/60 via-black/40 to-transparent`
+  - All banners now use local assets from `attached_assets/stock_images/`
+  - Consistent TALEZ Green (#2C8C7D) color scheme across all banners
+- **Click Event Fixes**: Added missing onClick handlers
+  - Courses page: "고급 필터" button now toggles advanced filter visibility
+  - Shop page: Banner "더 알아보기" button implements category search
+  - Video Call page: "공유" buttons with 3-tier fallback (Web Share API → Clipboard API → Toast notification)
+  - All share buttons include proper error handling and feature detection
+
 ### Firebase Cloud Messaging (FCM) Integration
 - **Backend**: FCMService implementation with Firebase Admin SDK for push notification delivery
   - NotificationOrchestrator pattern: DB persistence → WebSocket (real-time) → FCM (background)

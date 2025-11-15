@@ -17,6 +17,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import InstitutesBannerImage from '@assets/stock_images/happy_dog_training_o_e67db05d.jpg';
 
 // 훈련사 목록 컴포넌트
 function TrainersList({ instituteId, instituteName }: { instituteId: string | number; instituteName: string }) {
@@ -900,8 +901,8 @@ export default function LocationServices() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Hero Banner */}
-      <div className="relative h-72 rounded-2xl overflow-hidden mb-8 bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1534551767192-78b8dd45b51b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80")' }}>
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
+      <div className="relative h-72 rounded-2xl overflow-hidden mb-8 bg-cover bg-center" style={{ backgroundImage: `url("${InstitutesBannerImage}")` }}>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
         
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
           <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
