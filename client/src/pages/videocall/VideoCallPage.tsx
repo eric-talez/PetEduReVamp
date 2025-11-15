@@ -277,9 +277,10 @@ export default function VideoCallPage() {
   };
 
   const startMeeting = (meeting: Meeting) => {
-    // Zoom Meeting SDK로 임베디드 방식으로 참여
+    // Google Meet 링크로 새 탭에서 참여
     setActiveMeeting({
-      meetingNumber: meeting.id,
+      meetingUrl: meeting.join_url,
+      topic: meeting.topic,
       password: meeting.password,
       userName: userName || '게스트',
       userEmail: ''
