@@ -55,7 +55,7 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Design System**: Consistent UI/UX with enhanced typography, accessibility-focused design (44px min touch targets), unified button styles, simplified color palette (TALEZ Green primary).
 - **Deployment Strategy**: Production-ready Docker containerization, PM2 cluster mode, Nginx reverse proxy, automated backup, GitHub Actions CI/CD for AWS EC2.
 - **Vaccination Schedule Management**: Comprehensive system for tracking pet vaccinations, including hospital location, 7 REST API endpoints for CRUD, Google Maps integration, status management, and upcoming appointment notifications.
-- **Zoom Meeting Integration**: In-service video call participation using Zoom Meeting SDK for live classes.
+- **Google Meet Integration**: Video conferencing using Google Meet API for live classes with link-based meeting creation.
 - **Push Notifications**: Firebase Cloud Messaging (FCM) integration for real-time push notifications with WebSocket fallback, multi-device support, and graceful degradation.
 
 ## External Dependencies
@@ -68,5 +68,5 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Authentication**: Kakao, Naver, Google (OAuth providers)
 - **Avatars**: Dicebear API
 - **Video Processing**: FFmpeg
-- **Video Conferencing**: Zoom Meeting SDK
+- **Video Conferencing**: Google Meet API
 - **Push Notifications**: Firebase Cloud Messaging (FCM)

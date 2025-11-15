@@ -26,7 +26,7 @@ import { ko } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import ZoomMeeting from '@/components/ZoomMeeting';
+import GoogleMeet from '@/components/GoogleMeet';
 
 interface Meeting {
   id: string;
@@ -79,9 +79,10 @@ export default function VideoCallPage() {
   // Zoom Meeting SDK 통합을 위한 상태
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [activeMeeting, setActiveMeeting] = useState<{
-    meetingNumber: string;
-    password: string;
-    userName: string;
+    meetingUrl?: string;
+    topic?: string;
+    password?: string;
+    userName?: string;
     userEmail?: string;
   } | null>(null);
 
@@ -302,15 +303,12 @@ export default function VideoCallPage() {
     );
   }
 
-  // 미팅 참여 중일 때는 Zoom Meeting SDK 컴포넌트 렌더링
+  // 미팅 참여 중일 때는 Google Meet 컴포넌트 렌더링
   if (isInMeeting && activeMeeting) {
     return (
-      <ZoomMeeting
-        meetingNumber={activeMeeting.meetingNumber}
-        password={activeMeeting.password}
-        userName={activeMeeting.userName}
-        userEmail={activeMeeting.userEmail}
-        role={0}
+      <GoogleMeet
+        meetingUrl={activeMeeting.meetingUrl}
+        title={activeMeeting.topic || '화상 수업'}
         onLeave={() => {
           setIsInMeeting(false);
           setActiveMeeting(null);
