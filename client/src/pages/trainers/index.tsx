@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle, Loader2 } from "lucide-react";
-import TrainerBannerImage from '@assets/stock_images/professional_certifi_8e9795a3.jpg';
+import TrainerBannerImage from '@assets/stock_images/professional_certifi_526f360a.jpg';
 import { PageBanner } from '@/components/PageBanner';
 import {
   AlertDialog,

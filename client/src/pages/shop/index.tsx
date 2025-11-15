@@ -7,7 +7,7 @@ import { useLocation } from 'wouter';
 import { TopBar } from '@/components/TopBar';
 import { Sidebar } from '@/components/Sidebar';
 import { Badge } from '@/components/ui/badge';
-import PetcareBannerImage from '@assets/stock_images/happy_dog_with_pet_s_08e2cb27.jpg';
+import PetcareBannerImage from '@assets/stock_images/eco-friendly_pet_pro_daa059e9.jpg';
 import { PageBanner } from '@/components/PageBanner';
 
 /**

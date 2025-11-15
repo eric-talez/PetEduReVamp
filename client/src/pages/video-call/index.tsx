@@ -26,7 +26,7 @@ import { ko } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import VideoClassBannerImage from '@assets/stock_images/veterinarian_video_c_b450da3c.jpg';
+import VideoClassBannerImage from '@assets/stock_images/virtual_online_pet_d_cb89d2cb.jpg';
 import { PageBanner } from '@/components/PageBanner';
 
 interface Meeting {
@@ -70,9 +70,10 @@ export default function VideoCallPage() {
     price: number;
     category: string;
     difficulty: string;
-    zoomPMI: string;
-    zoomPMIPassword: string;
-    zoomHostKey: string;
+    meetingUrl?: string;
+    zoomPMI?: string;
+    zoomPMIPassword?: string;
+    zoomHostKey?: string;
     meetingSetupType: string;
     status: string;
   }>>([]);
@@ -259,9 +260,9 @@ export default function VideoCallPage() {
     <div className="pb-8">
       <PageBanner
         imageSrc={VideoClassBannerImage}
-        imageAlt="실시간 화상 상담"
-        title="1:1 화상 상담 서비스"
-        description="전문 훈련사와 실시간으로 만나 반려견 교육 상담을 받아보세요"
+        imageAlt="실시간 Google Meet 훈련"
+        title="실시간 화상 훈련 서비스"
+        description="Google Meet로 어디서나 전문 훈련사와 실시간 화상 수업을 받아보세요"
         onBannerClick={() => {
           setActiveTab('trainers');
         }}
@@ -458,12 +459,24 @@ export default function VideoCallPage() {
                               variant="default" 
                               size="sm" 
                               onClick={() => {
-                                const pmiUrl = `https://zoom.us/j/${videoClass.zoomPMI.replace(/-/g, '')}?pwd=${videoClass.zoomPMIPassword}`;
-                                window.open(pmiUrl, '_blank');
-                                toast({
-                                  title: "화상수업 참여",
-                                  description: `${videoClass.title} 수업에 참여합니다.`,
-                                });
+                                const meetingUrl = videoClass.meetingUrl || 
+                                  (videoClass.zoomPMI && videoClass.zoomPMIPassword ? 
+                                    `https://zoom.us/j/${videoClass.zoomPMI.replace(/-/g, '')}?pwd=${videoClass.zoomPMIPassword}` : 
+                                    null);
+                                
+                                if (meetingUrl) {
+                                  window.open(meetingUrl, '_blank');
+                                  toast({
+                                    title: "화상수업 참여",
+                                    description: `${videoClass.title} 수업에 참여합니다.`,
+                                  });
+                                } else {
+                                  toast({
+                                    title: "미팅 정보 없음",
+                                    description: "화상수업 참여 링크를 찾을 수 없습니다.",
+                                    variant: "destructive"
+                                  });
+                                }
                               }}
                               aria-label={`${videoClass.title} 화상수업 참여하기`}
                             >

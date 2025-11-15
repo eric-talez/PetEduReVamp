@@ -46,7 +46,7 @@ import { format, isToday, isYesterday, subDays, addDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth-compat';
-import NotebookBannerImage from '@assets/stock_images/person_writing_dog_t_52d82c97.jpg';
+import NotebookBannerImage from '@assets/stock_images/pet_training_journal_3a3d5b29.jpg';
 import { PageBanner } from '@/components/PageBanner';
 
 // 알림장 엔트리 타입 정의

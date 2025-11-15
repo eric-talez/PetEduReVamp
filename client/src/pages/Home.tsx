@@ -143,30 +143,30 @@ export default function Home() {
   const defaultBannerSlides = [
     {
       id: 1,
-      title: "세계적인 단계별 훈련 커리큘럼",
-      subtitle: "TALEZ에서 체계적이고 과학적인 반려동물 교육을 경험하세요",
-      features: ["전문 교육", "단계별 커리큘럼", "맞춤 훈련", "안전한 환경"],
-      image: "/attached_assets/stock_images/professional_dog_tra_ee0b010b.jpg",
-      primaryAction: { text: "자세히 보기", path: "/home" },
+      title: "AI 기반 맞춤형 반려동물 케어",
+      subtitle: "TALEZ의 AI 대시보드로 반려동물의 행동을 분석하고 최적의 훈련 방법을 제공받으세요",
+      features: ["AI 분석", "맞춤 훈련", "실시간 인사이트", "전문가 추천"],
+      image: "/attached_assets/stock_images/pet_owner_with_dog_t_a7acd251.jpg",
+      primaryAction: { text: "AI 분석 시작", path: "/home" },
       secondaryAction: { text: "더 알아보기", path: "/about" }
     },
     {
       id: 2,
-      title: "국가자격 전문 훈련사와 함께하는 교육",
-      subtitle: "제1회 반려동물행동지도사 자격을 보유한 전문가가 직접 교육합니다",
-      features: ["국가자격증", "전문 상담", "체계적 교육", "1:1 맞춤"],
-      image: "/attached_assets/stock_images/certified_dog_traine_a553a840.jpg",
+      title: "검증된 전문 훈련사와 함께하는 교육",
+      subtitle: "TALEZ 인증 전문 훈련사가 직접 제공하는 1:1 맞춤형 훈련 프로그램",
+      features: ["검증된 전문가", "디지털 코칭", "체계적 커리큘럼", "자격증 보유"],
+      image: "/attached_assets/stock_images/professional_certifi_9d203640.jpg",
       primaryAction: { text: "무료 체험하기", path: "/experience" },
-      secondaryAction: { text: "서비스 안내", path: "/about" }
+      secondaryAction: { text: "훈련사 찾기", path: "/trainers" }
     },
     {
       id: 3,
-      title: "왕짱 반려견스쿨 - 전문 교육기관",
-      subtitle: "체계적인 반려견 행동 교육과 사회화 프로그램을 제공합니다",
-      features: ["전문 기관", "행동 교육", "사회화 훈련", "수제간식"],
-      image: "/attached_assets/stock_images/modern_pet_training__7ccd29e2.jpg",
-      primaryAction: { text: "장소 찾기", path: "/locations" },
-      secondaryAction: { text: "지도 보기", path: "/map" }
+      title: "스마트한 반려동물 용품 쇼핑",
+      subtitle: "AI 추천 시스템으로 우리 반려동물에게 딱 맞는 용품을 찾아보세요",
+      features: ["AI 추천", "빠른 배송", "친환경 제품", "로열티 혜택"],
+      image: "/attached_assets/stock_images/pet_owner_shopping_o_86fedd4a.jpg",
+      primaryAction: { text: "쇼핑하기", path: "/shop" },
+      secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
     },
     {
       id: 4,

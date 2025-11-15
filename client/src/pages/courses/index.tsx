@@ -7,7 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import CoursesBannerImage from '@assets/stock_images/professional_dog_tra_c482bf10.jpg';
+import CoursesBannerImage from '@assets/stock_images/online_pet_dog_train_c9e8e79a.jpg';
 import { PageBanner } from '@/components/PageBanner';
 
 interface CoursesPageProps {
