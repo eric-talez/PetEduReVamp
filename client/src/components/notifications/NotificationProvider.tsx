@@ -1,20 +1,30 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  requestFCMToken, 
+  registerFCMTokenWithBackend, 
+  onForegroundMessage,
+  isFCMSupported 
+} from '@/lib/fcm-service';
 
 interface NotificationContextType {
   isConnected: boolean;
   connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
   unreadCount: number;
   sendTestNotification: (data: { title: string; message: string; type?: string }) => void;
+  fcmEnabled: boolean;
+  requestNotificationPermission: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType>({
   isConnected: false,
   connectionStatus: 'disconnected',
   unreadCount: 0,
-  sendTestNotification: () => {}
+  sendTestNotification: () => {},
+  fcmEnabled: false,
+  requestNotificationPermission: async () => {},
 });
 
 export const useNotification = () => useContext(NotificationContext);
@@ -29,6 +39,8 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
   const [isConnected, setIsConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [fcmEnabled, setFcmEnabled] = useState(false);
+  const fcmTokenRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -68,6 +80,52 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
       toast({
         title: '알림 전송 실패',
         description: '알림 전송 중 오류가 발생했습니다',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // FCM 토큰 등록 및 알림 권한 요청
+  const requestNotificationPermission = async () => {
+    if (!userId) {
+      console.warn('[FCM] 로그인이 필요합니다');
+      return;
+    }
+
+    if (!isFCMSupported()) {
+      console.warn('[FCM] 브라우저가 푸시 알림을 지원하지 않습니다');
+      toast({
+        title: '알림 미지원',
+        description: '이 브라우저는 푸시 알림을 지원하지 않습니다',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      // FCM 토큰 요청
+      const token = await requestFCMToken();
+      if (!token) {
+        console.warn('[FCM] 토큰을 가져올 수 없습니다');
+        return;
+      }
+
+      fcmTokenRef.current = token;
+
+      // 백엔드에 토큰 등록
+      const success = await registerFCMTokenWithBackend(token);
+      if (success) {
+        setFcmEnabled(true);
+        toast({
+          title: '✓ 푸시 알림 활성화됨',
+          description: '이제 앱이 닫혀있어도 알림을 받을 수 있습니다',
+        });
+      }
+    } catch (error) {
+      console.error('[FCM] 알림 권한 요청 실패:', error);
+      toast({
+        title: '알림 활성화 실패',
+        description: '푸시 알림을 활성화하는 중 오류가 발생했습니다',
         variant: 'destructive',
       });
     }
@@ -162,12 +220,40 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
     };
   }, [userId, queryClient, toast]);
 
+  // FCM 포그라운드 메시지 수신 (앱이 열려있을 때)
+  useEffect(() => {
+    if (!userId || !fcmEnabled) return;
+
+    const unsubscribe = onForegroundMessage((payload) => {
+      console.log('[FCM] 포그라운드 메시지 수신:', payload);
+      
+      // WebSocket으로 이미 처리된 알림인지 확인 (중복 방지)
+      // FCM 메시지는 WebSocket 메시지의 백업 역할
+      const notification = payload.notification;
+      if (notification) {
+        toast({
+          title: notification.title || '새 알림',
+          description: notification.body || '',
+          duration: 5000,
+        });
+        
+        // 알림 목록 갱신
+        queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+        fetchUnreadCount();
+      }
+    });
+
+    return unsubscribe;
+  }, [userId, fcmEnabled, toast, queryClient]);
+
   return (
     <NotificationContext.Provider value={{ 
       isConnected, 
       connectionStatus, 
       unreadCount,
-      sendTestNotification 
+      sendTestNotification,
+      fcmEnabled,
+      requestNotificationPermission,
     }}>
       {children}
     </NotificationContext.Provider>

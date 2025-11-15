@@ -1,7 +1,8 @@
 import { WebSocket } from 'ws';
 import { db } from '../db';
-import { notifications } from '@shared/schema';
+import { notifications, fcmTokens } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
+import { fcmService } from '../services/fcm-service';
 
 export interface NotificationData {
   userId: number;
@@ -9,6 +10,7 @@ export interface NotificationData {
   title: string;
   message: string;
   data?: any;
+  actionUrl?: string;
 }
 
 // 실시간 알림 서비스 (WebSocket)
@@ -172,48 +174,129 @@ export class NotificationService {
     console.log(`[Notification] 사용자 ${userId} WebSocket 연결 해제됨`);
   }
 
-  // 실시간 알림 발송
+  // 실시간 알림 발송 (NotificationOrchestrator 패턴)
   async sendNotification(notification: NotificationData): Promise<void> {
     try {
-      // 데이터베이스에 알림 저장
+      // 1. 데이터베이스에 알림 저장 (영속성 보장)
       const [savedNotification] = await db.insert(notifications).values({
         userId: notification.userId,
         type: notification.type,
         title: notification.title,
         message: notification.message,
-        data: notification.data ? JSON.stringify(notification.data) : null,
+        actionUrl: notification.actionUrl || null,
+        metadata: notification.data || null,
         isRead: false
       }).returning();
 
-      // 실시간으로 사용자에게 전송
+      // 2. WebSocket으로 실시간 전송 (앱이 열려있는 경우)
       const userConnections = this.connections.get(notification.userId);
+      let webSocketSent = false;
+      
       if (userConnections && userConnections.length > 0) {
         const payload = JSON.stringify({
           type: 'notification',
-          data: {
-            ...savedNotification,
-            data: savedNotification.data ? JSON.parse(savedNotification.data) : null
-          }
+          data: savedNotification
         });
 
         userConnections.forEach(ws => {
           if (ws.readyState === WebSocket.OPEN) {
             try {
               ws.send(payload);
+              webSocketSent = true;
             } catch (error) {
-              console.error(`[Notification] 전송 실패:`, error);
+              console.error(`[Notification] WebSocket 전송 실패:`, error);
               this.removeConnection(notification.userId, ws);
             }
           }
         });
 
-        console.log(`[Notification] 사용자 ${notification.userId}에게 실시간 알림 전송: ${notification.title}`);
-      } else {
-        console.log(`[Notification] 사용자 ${notification.userId}가 오프라인 상태 - 알림만 저장됨`);
+        if (webSocketSent) {
+          console.log(`[Notification] ✓ WebSocket - 사용자 ${notification.userId}: ${notification.title}`);
+        }
       }
+
+      // 3. FCM 푸시 알림 전송 (백그라운드/오프라인 경우)
+      // 사용자가 오프라인이거나, 백그라운드에 있을 때를 위해 항상 FCM 전송
+      await this.sendFCMNotification(
+        notification.userId,
+        notification.title,
+        notification.message,
+        {
+          type: notification.type,
+          actionUrl: notification.actionUrl || '',
+          notificationId: savedNotification.id.toString(),
+          ...(notification.data || {})
+        }
+      );
+
     } catch (error) {
       console.error('[Notification] 알림 발송 실패:', error);
       throw error;
+    }
+  }
+
+  // FCM 푸시 알림 전송 (Private Helper)
+  private async sendFCMNotification(
+    userId: number,
+    title: string,
+    body: string,
+    data: Record<string, string>
+  ): Promise<void> {
+    if (!fcmService.isReady()) {
+      console.log('[FCM] Firebase 미설정 - 푸시 알림 스킵');
+      return;
+    }
+
+    try {
+      // 사용자의 활성 FCM 토큰 조회
+      const userTokens = await db
+        .select()
+        .from(fcmTokens)
+        .where(and(
+          eq(fcmTokens.userId, userId),
+          eq(fcmTokens.isActive, true)
+        ));
+
+      if (userTokens.length === 0) {
+        console.log(`[FCM] 사용자 ${userId}의 FCM 토큰 없음 - 푸시 알림 스킵`);
+        return;
+      }
+
+      const tokens = userTokens.map(t => t.token);
+
+      // 여러 기기에 푸시 알림 전송
+      const result = await fcmService.sendToMultipleDevices(
+        tokens,
+        title,
+        body,
+        data
+      );
+
+      console.log(`[FCM] ✓ 푸시 알림 - 사용자 ${userId}: 성공 ${result.successCount}/${tokens.length}`);
+
+      // 무효한 토큰 제거
+      if (result.invalidTokens.length > 0) {
+        await db
+          .update(fcmTokens)
+          .set({ isActive: false, updatedAt: new Date() })
+          .where(and(
+            eq(fcmTokens.userId, userId),
+            // Note: Drizzle doesn't support inArray for text columns easily, so we loop
+          ));
+        
+        // 무효한 토큰 개별 비활성화
+        for (const invalidToken of result.invalidTokens) {
+          await db
+            .update(fcmTokens)
+            .set({ isActive: false, updatedAt: new Date() })
+            .where(eq(fcmTokens.token, invalidToken));
+        }
+
+        console.log(`[FCM] ${result.invalidTokens.length}개의 무효한 토큰 비활성화됨`);
+      }
+    } catch (error) {
+      console.error('[FCM] 푸시 알림 전송 실패:', error);
+      // FCM 실패는 전체 알림 발송을 막지 않음 (graceful degradation)
     }
   }
 

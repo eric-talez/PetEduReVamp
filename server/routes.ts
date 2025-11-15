@@ -15637,6 +15637,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
     console.error('[Database Test] 라우트 등록 실패:', error);
   });
 
+  // FCM 푸시 알림 라우트
+  import('./routes/fcm').then(fcmModule => {
+    app.use('/api/fcm', fcmModule.default);
+    console.log('[FCM] Firebase Cloud Messaging 라우트가 등록되었습니다.');
+  }).catch(error => {
+    console.error('[FCM] FCM 라우트 로드 실패:', error);
+  });
+
   // 모든 인증 API들은 setupAuth()에서 처리됩니다 (/api/auth/login, /api/auth/logout, /api/auth/me)
 
   const httpServer = createServer(app);
