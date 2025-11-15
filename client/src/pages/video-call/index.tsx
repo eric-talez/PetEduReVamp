@@ -267,20 +267,20 @@ export default function VideoCallPage() {
         }}
       />
       
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-8 space-y-8 text-sm">
 
       {/* 메인 탭 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="scheduled" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-3 text-sm">
+          <TabsTrigger value="scheduled" className="flex items-center gap-2 text-sm">
             <CalendarIcon className="w-4 h-4" />
             예약된 미팅
           </TabsTrigger>
-          <TabsTrigger value="trainers" className="flex items-center gap-2">
+          <TabsTrigger value="trainers" className="flex items-center gap-2 text-sm">
             <Users className="w-4 h-4" />
             훈련사 수업
           </TabsTrigger>
-          <TabsTrigger value="create" className="flex items-center gap-2">
+          <TabsTrigger value="create" className="flex items-center gap-2 text-sm">
             <Plus className="w-4 h-4" />
             미팅 생성
           </TabsTrigger>
@@ -290,8 +290,8 @@ export default function VideoCallPage() {
         <TabsContent value="scheduled" id="scheduled-tab-content" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>내 예약된 미팅</CardTitle>
-              <CardDescription>예약된 미팅 목록을 확인하고 참여할 수 있습니다.</CardDescription>
+              <CardTitle className="text-base">내 예약된 미팅</CardTitle>
+              <CardDescription className="text-xs">예약된 미팅 목록을 확인하고 참여할 수 있습니다.</CardDescription>
             </CardHeader>
             <CardContent>
               {meetings.length > 0 ? (
@@ -301,9 +301,9 @@ export default function VideoCallPage() {
                       <CardHeader className="bg-muted/50">
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle className="text-lg">{meeting.topic}</CardTitle>
-                            <CardDescription className="mt-1">
-                              <div className="flex items-center gap-4 text-sm">
+                            <CardTitle className="text-sm">{meeting.topic}</CardTitle>
+                            <CardDescription className="mt-1 text-xs">
+                              <div className="flex items-center gap-4 text-xs">
                                 <span className="flex items-center gap-1">
                                   <CalendarIcon className="w-4 h-4" />
                                   {format(new Date(meeting.start_time), 'yyyy년 MM월 dd일', { locale: ko })}
@@ -326,15 +326,15 @@ export default function VideoCallPage() {
                         </div>
                       </CardHeader>
                       <CardContent className="pt-4 pb-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                           <div>
-                            <p className="font-medium text-muted-foreground mb-1">미팅 ID:</p>
-                            <p className="font-mono">{meeting.id}</p>
+                            <p className="font-medium text-muted-foreground mb-1 text-xs">미팅 ID:</p>
+                            <p className="font-mono text-xs">{meeting.id}</p>
                           </div>
                           {meeting.password && (
                             <div>
-                              <p className="font-medium text-muted-foreground mb-1">비밀번호:</p>
-                              <p className="font-mono">{meeting.password}</p>
+                              <p className="font-medium text-muted-foreground mb-1 text-xs">비밀번호:</p>
+                              <p className="font-mono text-xs">{meeting.password}</p>
                             </div>
                           )}
                         </div>
@@ -368,8 +368,8 @@ export default function VideoCallPage() {
               ) : (
                 <div className="text-center py-8">
                   <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">예약된 미팅이 없습니다</h3>
-                  <p className="text-muted-foreground mb-4">새로운 미팅을 생성하거나 미팅 ID로 참여해보세요.</p>
+                  <h3 className="text-sm font-medium mb-2">예약된 미팅이 없습니다</h3>
+                  <p className="text-muted-foreground mb-4 text-xs">새로운 미팅을 생성하거나 미팅 ID로 참여해보세요.</p>
                   <div className="flex gap-2 justify-center">
                     <Button onClick={() => setActiveTab('create')}>
                       <Plus className="w-4 h-4 mr-2" /> 미팅 생성
@@ -386,8 +386,8 @@ export default function VideoCallPage() {
           {/* 미팅 ID로 참여 섹션 */}
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>미팅 ID로 참여</CardTitle>
-              <CardDescription>다른 사람의 미팅에 참여하려면 미팅 ID를 입력하세요.</CardDescription>
+              <CardTitle className="text-base">미팅 ID로 참여</CardTitle>
+              <CardDescription className="text-xs">다른 사람의 미팅에 참여하려면 미팅 ID를 입력하세요.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4">
@@ -423,8 +423,8 @@ export default function VideoCallPage() {
         <TabsContent value="trainers" id="trainers-tab-content" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>테일즈 화상 수업</CardTitle>
-              <CardDescription>테일즈 소속 훈련사가 진행하는 화상수업에 참여하세요.</CardDescription>
+              <CardTitle className="text-base">테일즈 화상 수업</CardTitle>
+              <CardDescription className="text-xs">테일즈 소속 훈련사가 진행하는 화상수업에 참여하세요.</CardDescription>
             </CardHeader>
             <CardContent>
               {videoClasses.length > 0 ? (
@@ -434,11 +434,11 @@ export default function VideoCallPage() {
                       <CardHeader className="bg-muted/50">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <CardTitle className="flex items-center gap-2 mb-2">
-                              <Video className="w-5 h-5" />
+                            <CardTitle className="flex items-center gap-2 mb-2 text-sm">
+                              <Video className="w-4 h-4" />
                               {videoClass.title}
                             </CardTitle>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <Users className="w-4 h-4" />
                                 {videoClass.trainerName} 훈련사
@@ -476,11 +476,11 @@ export default function VideoCallPage() {
                         </div>
                       </CardHeader>
                       <CardContent className="pt-4 pb-2">
-                        <p className="text-sm text-muted-foreground mb-4">
+                        <p className="text-xs text-muted-foreground mb-4">
                           {videoClass.description}
                         </p>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs mb-4">
                           <div>
                             <p className="font-medium text-muted-foreground mb-1">카테고리:</p>
                             <p>{videoClass.category}</p>
@@ -501,8 +501,8 @@ export default function VideoCallPage() {
                         </div>
 
                         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                          <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">회의 정보</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2 text-xs">회의 정보</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                             <div>
                               <p className="text-blue-700 dark:text-blue-300 font-medium">회의 번호:</p>
                               <p className="font-mono text-blue-900 dark:text-blue-100">{videoClass.zoomPMI}</p>
@@ -571,8 +571,8 @@ ${videoClass.title}
               ) : (
                 <div className="text-center py-8">
                   <Video className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">예정된 화상수업이 없습니다</h3>
-                  <p className="text-muted-foreground mb-4">테일즈 소속 훈련사가 진행하는 화상수업을 준비 중입니다.</p>
+                  <h3 className="text-sm font-medium mb-2">예정된 화상수업이 없습니다</h3>
+                  <p className="text-muted-foreground mb-4 text-xs">테일즈 소속 훈련사가 진행하는 화상수업을 준비 중입니다.</p>
                 </div>
               )}
             </CardContent>
@@ -582,8 +582,8 @@ ${videoClass.title}
         <TabsContent value="create" id="create-tab-content" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>새 미팅 생성</CardTitle>
-              <CardDescription>새로운 Zoom 미팅을 생성하여 다른 사람들을 초대하세요.</CardDescription>
+              <CardTitle className="text-base">새 미팅 생성</CardTitle>
+              <CardDescription className="text-xs">새로운 Zoom 미팅을 생성하여 다른 사람들을 초대하세요.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
