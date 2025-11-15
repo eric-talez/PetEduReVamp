@@ -33,9 +33,15 @@ interface Meeting {
   topic: string;
   start_time: string;
   duration: number;
-  join_url: string;
+  join_url?: string; // Legacy field for backward compatibility
+  meetingUrl?: string; // Google Meet URL
   agenda?: string;
 }
+
+// Helper function to get meeting URL (supports both join_url and meetingUrl)
+const getMeetingUrl = (meeting: Pick<Meeting, 'meetingUrl' | 'join_url'>): string => {
+  return meeting.meetingUrl || meeting.join_url || '';
+};
 
 export default function VideoCallPage() {
   const [, setLocation] = useLocation();
@@ -78,7 +84,6 @@ export default function VideoCallPage() {
     meetingUrl?: string;
     topic?: string;
     userName?: string;
-    userEmail?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -244,11 +249,12 @@ export default function VideoCallPage() {
   };
 
   const copyMeetingInfo = (meeting: Meeting) => {
+    const meetingUrl = getMeetingUrl(meeting);
     const meetingInfo = `
 미팅 주제: ${meeting.topic}
 시간: ${format(new Date(meeting.start_time), 'PPP p', { locale: ko })}
 소요 시간: ${meeting.duration}분
-참여 링크: ${meeting.join_url}
+참여 링크: ${meetingUrl}
     `.trim();
 
     navigator.clipboard.writeText(meetingInfo)
@@ -271,8 +277,9 @@ export default function VideoCallPage() {
 
   const startMeeting = (meeting: Meeting) => {
     // Google Meet 링크로 새 탭에서 참여
+    const meetingUrl = getMeetingUrl(meeting);
     setActiveMeeting({
-      meetingUrl: meeting.join_url,
+      meetingUrl,
       topic: meeting.topic,
       userName: userName || '게스트'
     });
