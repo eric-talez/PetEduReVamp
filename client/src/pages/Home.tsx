@@ -254,15 +254,6 @@ export default function Home() {
       secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
     },
     {
-      id: 104,
-      title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
-      subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
-      features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
-      primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
-      secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
-    },
-    {
       id: 105,
       title: "반려견 교육의 미래를 함께 만들어갑니다",
       subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
@@ -297,15 +288,6 @@ export default function Home() {
       image: "/attached_assets/image_1746582251297.png",
       primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
       secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
-    },
-    {
-      id: 109,
-      title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
-      subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
-      features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
-      primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
-      secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
     },
     {
       id: 110,
