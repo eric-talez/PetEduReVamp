@@ -8,31 +8,31 @@ const banners = [
   {
     title: "전문 반려동물 교육 서비스",
     description: "TALEZ에서 반려동물과 함께하는 행복한 일상을 만들어보세요",
-    image: "/attached_assets/image_1746582251297.png",
+    image: "/attached_assets/stock_images/happy_dog_training_o_e67db05d.jpg",
     link: "/home"
   },
   {
     title: "전문 훈련사와 함께하는 맞춤형 교육",
     description: "국가자격 제1회 반려동물행동지도사와 함께 체계적인 교육을 받아보세요",
-    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
     link: "/courses"
   },
   {
     title: "왕짱 반려견스쿨 - 체계적인 훈련 프로그램",
     description: "제1회 국가자격 반려동물행동지도사가 운영하는 전문 교육기관입니다",
-    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
+    image: "/attached_assets/stock_images/professional_certifi_8e9795a3.jpg",
     link: "/trainers"
   },
   {
     title: "전국 지점 운영 - 가까운 곳에서 만나세요",
     description: "공평점 반려견스쿨과 석적점 독트레이닝 센터에서 전문 교육을 제공합니다",
-    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
+    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
     link: "/video-call"
   },
   {
     title: "AI 기반 행동 분석 서비스",
     description: "최신 AI 기술로 반려동물의 행동을 분석하고 맞춤형 케어 솔루션을 제공합니다",
-    image: "/attached_assets/image_1746582251297.png",
+    image: "/attached_assets/stock_images/online_pet_dog_train_c9e8e79a.jpg",
     link: "/ai-analysis"
   },
   {

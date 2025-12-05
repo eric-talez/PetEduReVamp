@@ -27,7 +27,7 @@ interface Banner {
   isActive: boolean;
 }
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { 
+import {
   TalezSection,
   TalezPageHeader,
   TalezCard,
@@ -139,14 +139,14 @@ export default function Home() {
     setUploadError('');
   };
 
-  // 기본 배너 데이터 (관리자 배너가 없을 때 사용) - 핵심 4개로 축소
+  // 기본 배너 데이터 (관리자 배너가 없을 때 사용)
   const defaultBannerSlides = [
     {
       id: 1,
       title: "AI 기반 맞춤형 반려동물 케어",
       subtitle: "TALEZ의 AI 대시보드로 반려동물의 행동을 분석하고 최적의 훈련 방법을 제공받으세요",
       features: ["AI 분석", "맞춤 훈련", "실시간 인사이트", "전문가 추천"],
-      image: "/attached_assets/stock_images/pet_owner_with_dog_t_a7acd251.jpg",
+      image: "/attached_assets/stock_images/online_pet_dog_train_c9e8e79a.jpg",
       primaryAction: { text: "AI 분석 시작", path: "/home" },
       secondaryAction: { text: "더 알아보기", path: "/about" }
     },
@@ -155,27 +155,72 @@ export default function Home() {
       title: "검증된 전문 훈련사와 함께하는 교육",
       subtitle: "TALEZ 인증 전문 훈련사가 직접 제공하는 1:1 맞춤형 훈련 프로그램",
       features: ["검증된 전문가", "디지털 코칭", "체계적 커리큘럼", "자격증 보유"],
-      image: "/attached_assets/stock_images/professional_certifi_9d203640.jpg",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       primaryAction: { text: "무료 체험하기", path: "/experience" },
       secondaryAction: { text: "훈련사 찾기", path: "/trainers" }
     },
     {
       id: 3,
-      title: "전국 교육기관과 함께하는 체계적 훈련",
-      subtitle: "공평점과 석적점에서 전문적인 반려견 교육 서비스를 만나보세요",
-      features: ["전국 지점", "전문 시설", "개별 맞춤", "온·오프라인"],
-      image: "/attached_assets/stock_images/modern_pet_training__82d46879.jpg",
-      primaryAction: { text: "교육기관 찾기", path: "/institutes" },
-      secondaryAction: { text: "화상 교육", path: "/video-training" }
+      title: "스마트한 반려동물 용품 쇼핑",
+      subtitle: "AI 추천 시스템으로 우리 반려동물에게 딱 맞는 용품을 찾아보세요",
+      features: ["AI 추천", "빠른 배송", "친환경 제품", "로열티 혜택"],
+      image: "/attached_assets/stock_images/eco-friendly_pet_pro_daa059e9.jpg",
+      primaryAction: { text: "쇼핑하기", path: "/shop" },
+      secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
     },
     {
       id: 4,
-      title: "스마트한 반려동물 용품 쇼핑",
-      subtitle: "AI 추천 시스템으로 우리 반려동물에게 딱 맞는 용품을 찾아보세요",
-      features: ["AI 추천", "빠른 배송", "훈련사 추천", "로열티 혜택"],
-      image: "/attached_assets/stock_images/pet_owner_shopping_o_86fedd4a.jpg",
+      title: "전국 지점 운영 - 편리한 접근성",
+      subtitle: "공평점과 석적점에서 전문적인 반려견 교육 서비스를 만나보세요",
+      features: ["전국 지점", "편리한 위치", "전문 시설", "개별 맞춤"],
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
+      primaryAction: { text: "화상 교육", path: "/video-training" },
+      secondaryAction: { text: "훈련사 보기", path: "/trainers" }
+    },
+    {
+      id: 5,
+      title: "반려견 건강 관리 & 기록",
+      subtitle: "반려견의 건강 상태를 체계적으로 관리하고 기록해보세요",
+      features: ["건강 기록", "예방접종 알림", "병원 예약", "전문 상담"],
+      image: "/attached_assets/stock_images/happy_healthy_dog_ge_4c9ac208.jpg",
+      primaryAction: { text: "건강 관리", path: "/health" },
+      secondaryAction: { text: "기록 시작", path: "/health-record" }
+    },
+    {
+      id: 6,
+      title: "반려견 교육 용품 쇼핑몰",
+      subtitle: "교육에 필요한 다양한 용품들을 한 곳에서 만나보세요",
+      features: ["훈련사 추천", "교육 연계 할인", "빠른 배송"],
+      image: "/attached_assets/stock_images/happy_dog_with_pet_s_08e2cb27.jpg",
       primaryAction: { text: "쇼핑하기", path: "/shop" },
       secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
+    },
+    {
+      id: 7,
+      title: "반려인 커뮤니티",
+      subtitle: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
+      features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
+      image: "/attached_assets/stock_images/pet_owner_with_dog_t_a7acd251.jpg",
+      primaryAction: { text: "커뮤니티", path: "/community" },
+      secondaryAction: { text: "게시글 작성", path: "/community/create" }
+    },
+    {
+      id: 8,
+      title: "전문 훈련사로 활동하기",
+      subtitle: "전문 지식과 경험을 바탕으로 TALEZ 플랫폼에서 훈련사로 활동하세요",
+      features: ["훈련사 등록", "고객 매칭", "안정적 수익"],
+      image: "/attached_assets/stock_images/professional_certifi_526f360a.jpg",
+      primaryAction: { text: "훈련사 등록", path: "/registration/trainer" },
+      secondaryAction: { text: "혜택 보기", path: "/trainer/benefits" }
+    },
+    {
+      id: 9,
+      title: "교육 기관 및 훈련소 등록",
+      subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 TALEZ와 함께하세요",
+      features: ["기관 등록", "코스 관리", "수익 창출"],
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
+      primaryAction: { text: "기관 등록", path: "/registration/institute" },
+      secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
   ];
 
@@ -244,13 +289,13 @@ export default function Home() {
     subtitle: banner.content || '',
     features: [],
     image: banner.imageUrl,
-    primaryAction: { 
-      text: banner.actionText || "자세히 보기", 
-      path: banner.actionUrl || "/" 
+    primaryAction: {
+      text: banner.actionText || "자세히 보기",
+      path: banner.actionUrl || "/"
     },
-    secondaryAction: { 
-      text: "더 알아보기", 
-      path: "/about" 
+    secondaryAction: {
+      text: "더 알아보기",
+      path: "/about"
     }
   });
 
@@ -332,9 +377,9 @@ export default function Home() {
     let mockUser = {
       id: 1,
       username: `demo-${role}`,
-      name: role === 'pet-owner' ? '반려인' : 
-            role === 'trainer' ? '훈련사' : 
-            role === 'institute-admin' ? '기관 관리자' : 
+      name: role === 'pet-owner' ? '반려인' :
+            role === 'trainer' ? '훈련사' :
+            role === 'institute-admin' ? '기관 관리자' :
             role === 'admin' ? '관리자' : `데모 사용자`,
       email: "test@example.com",
       role: role
@@ -342,7 +387,7 @@ export default function Home() {
 
     // 로그인 이벤트 발생 (hooks/useAuth.tsx에서 이 이벤트를 감지함)
     const loginEvent = new CustomEvent('login', {
-      detail: { 
+      detail: {
         role: mockUser.role,
         name: mockUser.name,
         userName: mockUser.name,
@@ -410,9 +455,9 @@ export default function Home() {
     return (
       <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
         {/* Hero Section - TALEZ Style */}
-        <TalezSection 
-          background="glass" 
-          className="relative py-16 md:py-20" 
+        <TalezSection
+          background="glass"
+          className="relative py-16 md:py-20"
           backgroundImage={DogTrainingBackground}
           backgroundOpacity={0.15}
         >
@@ -432,8 +477,8 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <TalezButton size="lg">
-                <Link 
-                  href="/institutes" 
+                <Link
+                  href="/institutes"
                   className="flex items-center"
                   onClick={() => setRouteLoading(true, '/institutes', '근처 교육기관 검색 중...')}
                 >
@@ -442,8 +487,8 @@ export default function Home() {
                 </Link>
               </TalezButton>
               <TalezButton variant="outline" size="lg">
-                <Link 
-                  href="/video-training" 
+                <Link
+                  href="/video-training"
                   className="flex items-center"
                   onClick={() => setRouteLoading(true, '/video-training', '온라인 교육 준비 중...')}
                 >
@@ -570,7 +615,7 @@ export default function Home() {
         <div className="mb-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300">
             {/* 헤더 영역 - 클릭 시 토글 */}
-            <div 
+            <div
               className="flex items-center justify-between px-4 py-3 cursor-pointer"
               onClick={toggleServiceStats}
             >
@@ -595,7 +640,7 @@ export default function Home() {
                       <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">등록 사용자</span>
                       <span className="text-lg font-bold">{systemStats?.totalUsers || 6}</span>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setLocation('/dashboard')}
                       className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="대시보드에서 자세히 보기"
@@ -609,7 +654,7 @@ export default function Home() {
                       <span className="text-sm font-semibold text-green-600 dark:text-green-400">인증 훈련사</span>
                       <span className="text-lg font-bold">1</span>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setLocation('/trainers')}
                       className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="훈련사 목록 보기"
@@ -623,7 +668,7 @@ export default function Home() {
                       <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">등록 반려견</span>
                       <span className="text-lg font-bold">3</span>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setLocation('/courses')}
                       className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="강좌 목록 보기"
@@ -679,8 +724,8 @@ export default function Home() {
                         <div className="flex items-end gap-1 mb-1 h-8">
                           {(weeklyStats?.userRegistrations || [1, 2, 1, 3, 2, 4, 3]).map((value, index) => (
                             <div key={index} className="flex-1 relative group">
-                              <div 
-                                className="bg-blue-200 dark:bg-blue-700 rounded-sm transition-colors hover:bg-blue-300 dark:hover:bg-blue-600" 
+                              <div
+                                className="bg-blue-200 dark:bg-blue-700 rounded-sm transition-colors hover:bg-blue-300 dark:hover:bg-blue-600"
                                 style={{height: `${Math.max(value * 8, 4)}px`}}
                               ></div>
                               <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -718,8 +763,8 @@ export default function Home() {
                         <div className="flex items-end gap-1 mb-1 h-8">
                           {(weeklyStats?.trainerCertifications || [0, 1, 0, 0, 1, 0, 0]).map((value, index) => (
                             <div key={index} className="flex-1 relative group">
-                              <div 
-                                className="bg-green-200 dark:bg-green-700 rounded-sm transition-colors hover:bg-green-300 dark:hover:bg-green-600" 
+                              <div
+                                className="bg-green-200 dark:bg-green-700 rounded-sm transition-colors hover:bg-green-300 dark:hover:bg-green-600"
                                 style={{height: `${Math.max(value * 20, 4)}px`}}
                               ></div>
                               <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -757,8 +802,8 @@ export default function Home() {
                         <div className="flex items-end gap-1 mb-1 h-8">
                           {(weeklyStats?.petRegistrations || [1, 0, 2, 0, 1, 1, 0]).map((value, index) => (
                             <div key={index} className="flex-1 relative group">
-                              <div 
-                                className="bg-purple-200 dark:bg-purple-700 rounded-sm transition-colors hover:bg-purple-300 dark:hover:bg-purple-600" 
+                              <div
+                                className="bg-purple-200 dark:bg-purple-700 rounded-sm transition-colors hover:bg-purple-300 dark:hover:bg-purple-600"
                                 style={{height: `${Math.max(value * 12, 4)}px`}}
                               ></div>
                               <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -786,9 +831,9 @@ export default function Home() {
                 <div>
                   <div className="flex justify-between items-start mb-1">
                     <h2 className="text-base font-semibold">오늘의 날씨</h2>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="text-xs h-6 px-2"
                       onClick={() => setIsWeatherModalOpen(true)}
                     >
@@ -843,8 +888,8 @@ export default function Home() {
           <div className="relative overflow-hidden rounded-xl min-h-[400px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
             {/* 배경 이미지 */}
             <div className="absolute inset-0 transition-all duration-500 ease-in-out">
-              <img 
-                src={bannerSlides[currentSlide].image} 
+              <img
+                src={bannerSlides[currentSlide].image}
                 alt={bannerSlides[currentSlide].title}
                 className="w-full h-full object-cover"
               />
@@ -864,8 +909,8 @@ export default function Home() {
                 {/* 주요 기능 태그 */}
                 <div className="flex flex-wrap gap-2 mb-6">
                   {bannerSlides[currentSlide].features.map((feature, idx) => (
-                    <span 
-                      key={idx} 
+                    <span
+                      key={idx}
                       className="inline-flex items-center text-sm bg-white/20 text-white px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20"
                     >
                       <span className="mr-1.5 text-yellow-300 text-lg">✓</span> {feature}
@@ -927,8 +972,8 @@ export default function Home() {
                 <button
                   key={index}
                   className={`w-3 h-3 rounded-full transition-all duration-200 hover:scale-125 border border-white/30 dark:border-gray-400/40 ${
-                    currentSlide === index 
-                      ? 'bg-white dark:bg-gray-200 shadow-lg' 
+                    currentSlide === index
+                      ? 'bg-white dark:bg-gray-200 shadow-lg'
                       : 'bg-white/50 dark:bg-gray-400/50 hover:bg-white/70 dark:hover:bg-gray-300/70'
                   }`}
                   onClick={(e) => {
@@ -947,7 +992,7 @@ export default function Home() {
         <div className="mb-8">
           <div className="relative bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-8 border border-emerald-200 dark:border-emerald-800 overflow-hidden">
             {/* 백그라운드 이미지 - 강아지와 AI 분석 테마 */}
-            <div 
+            <div
               className="absolute inset-0 opacity-10 bg-cover bg-center bg-no-repeat"
               style={{
                 backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
@@ -1026,7 +1071,7 @@ export default function Home() {
 
             {!showExperience ? (
               <div className="relative z-10 text-center">
-                <Button 
+                <Button
                   onClick={() => setShowExperience(true)}
                   className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700 text-white px-10 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
                 >
@@ -1054,11 +1099,11 @@ export default function Home() {
                     </div>
                     <div className="w-8 h-0.5 bg-gray-300"></div>
                     <div className={`flex items-center space-x-2 ${
-                      analysisStep === 'analyzing' ? 'text-blue-600' : 
+                      analysisStep === 'analyzing' ? 'text-blue-600' :
                       analysisStep === 'result' ? 'text-green-600' : 'text-gray-400'
                     }`}>
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        analysisStep === 'analyzing' ? 'bg-blue-100 text-blue-600' : 
+                        analysisStep === 'analyzing' ? 'bg-blue-100 text-blue-600' :
                         analysisStep === 'result' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
                       }`}>
                         {analysisStep === 'result' ? <CheckCircle className="h-5 w-5" /> : '2'}
@@ -1101,8 +1146,8 @@ export default function Home() {
                         </p>
                       </div>
 
-                      <Button 
-                        onClick={startAnalysis} 
+                      <Button
+                        onClick={startAnalysis}
                         disabled={!videoDescription || videoDescription.trim().length < 20}
                         className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
                       >
@@ -1203,14 +1248,14 @@ export default function Home() {
                               <div key={key}>
                                 <div className="flex justify-between text-sm mb-1">
                                   <span className="font-medium text-gray-700 dark:text-gray-300">
-                                    {key === 'activeness' ? '활동성' : 
-                                     key === 'sociability' ? '사교성' : 
+                                    {key === 'activeness' ? '활동성' :
+                                     key === 'sociability' ? '사교성' :
                                      key === 'obedience' ? '순응성' : '불안 수준'}
                                   </span>
                                   <span className="text-gray-600 dark:text-gray-400">{value}/10</span>
                                 </div>
                                 <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
-                                  <div 
+                                  <div
                                     className={`h-2.5 rounded-full ${
                                       key === 'anxiety' ? 'bg-orange-500' : 'bg-green-500'
                                     }`}
@@ -1303,8 +1348,8 @@ export default function Home() {
                 )}
 
                 <div className="text-center mt-4">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     onClick={() => {
                       setShowExperience(false);
                       resetExperience();
@@ -1352,7 +1397,7 @@ export default function Home() {
               지금 바로 시작해보세요
             </h2>
             <p className="text-xl mb-8 opacity-90">
-              우리 아이에게 맞는 최고의 교육을 찾아보세요. 
+              우리 아이에게 맞는 최고의 교육을 찾아보세요.
               전문가 상담부터 실제 교육까지, 모든 과정이 간단합니다.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
