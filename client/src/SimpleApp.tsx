@@ -95,6 +95,7 @@ import AIOptimizationDashboard from "./pages/admin/AIOptimizationDashboard";
 import MenuVisibilityControl from "./pages/admin/MenuVisibilityControl";
 import NavigationProgress from "./components/NavigationProgress";
 import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
+import { SplashScreen, useSplashScreen } from "./components/SplashScreen";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -2534,6 +2535,7 @@ function KeyboardShortcutsManager({ children }: { children: ReactNode }) {
  */
 function SimpleApp() {
   const auth = useAuth();
+  const { showSplash, handleSplashComplete } = useSplashScreen();
 
   // 디버깅: 현재 인증 상태 출력
   console.log('SimpleApp render - Auth state:', auth);
@@ -2546,12 +2548,11 @@ function SimpleApp() {
             <NotificationsProvider>
               <KeyboardShortcutsManager>
                 <>
+                  {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
                   <NavigationProgress />
                   {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
                   <DebugButton />
                   <Toaster />
-
-
                 </>
               </KeyboardShortcutsManager>
             </NotificationsProvider>

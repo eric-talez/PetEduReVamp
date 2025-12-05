@@ -369,6 +369,18 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             <Menu className="h-6 w-6" aria-hidden="true" />
           </button>
 
+          {/* Mobile Logo - 모바일에서만 표시 */}
+          <Link href="/" className="lg:hidden flex items-center ml-2" data-testid="mobile-logo">
+            <img 
+              src="/logo-symbol-new.png" 
+              alt="TALEZ" 
+              className="h-9 w-9 object-contain"
+            />
+            <span className="ml-2 text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              TALEZ
+            </span>
+          </Link>
+
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl ml-0">
             <div className="w-full relative">
