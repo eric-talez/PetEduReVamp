@@ -14,77 +14,91 @@
     /* 기본 배경 및 전경 색상 */
     --background: 0 0% 100%;
     --foreground: 240 10% 10%;
-    
+
     /* 카드 색상 */
     --card: 0 0% 100%;
     --card-foreground: 240 10% 10%;
-    
+
     /* 팝오버 색상 */
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
-    
+
     /* 주 색상 - TALEZ 코랄 (로고 기반) */
     --primary: 11 78% 65%;
     --primary-foreground: 0 0% 100%;
-    
+
     /* 보조 색상 - 따뜻한 옐로우 */
     --secondary: 43 96% 60%;
     --secondary-foreground: 240 10% 10%;
-    
+
     /* 뮤트 색상 */
     --muted: 240 10% 96%;
     --muted-foreground: 240 5% 45%;
-    
+
     /* 액센트 색상 - 오렌지 액센트 */
     --accent: 24 92% 58%;
     --accent-foreground: 0 0% 100%;
-    
+
     /* 파괴적 액션 색상 - Danger (#E74D3C) */
     --destructive: 5 78% 57%;
     --destructive-foreground: 0 0% 100%;
-    
+
     /* 경계선 및 입력 */
     --border: 240 10% 88%;
     --input: 240 10% 96%;
     --ring: 141 56% 50%;
-    
+
     /* 모서리 둥글기 */
     --radius: 0.5rem;
+
+    /* Typography - Optimized for Modern/Young Users */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Courier New', monospace;
+
+    /* Font sizes - Compact & Modern */
+    --text-xs: 0.6875rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1.0625rem;
+    --text-xl: 1.1875rem;
+    --text-2xl: 1.375rem;
+    --text-3xl: 1.75rem;
+    --text-4xl: 2rem;
   }
-  
+
   .dark {
     /* 다크 모드 기본 색상 */
     --background: 240 10% 8%;
     --foreground: 0 0% 95%;
-    
+
     /* 다크 모드 카드 */
     --card: 240 10% 12%;
     --card-foreground: 0 0% 95%;
-    
+
     /* 다크 모드 팝오버 */
     --popover: 240 10% 12%;
     --popover-foreground: 0 0% 95%;
-    
+
     /* 다크 모드 주 색상 - TALEZ 코랄 밝게 */
     --primary: 11 78% 70%;
     --primary-foreground: 0 0% 10%;
-    
+
     /* 다크 모드 보조 색상 - 옐로우 */
     --secondary: 43 96% 65%;
     --secondary-foreground: 0 0% 10%;
-    
+
     /* 다크 모드 뮤트 */
     --muted: 240 10% 18%;
     --muted-foreground: 240 5% 65%;
-    
+
     /* 다크 모드 액센트 - 오렌지 */
     --accent: 24 92% 65%;
     --accent-foreground: 0 0% 10%;
-    
+
     /* 다크 모드 파괴적 액션 */
     --destructive: 5 78% 65%;
     --destructive-foreground: 0 0% 10%;
-    
+
     /* 다크 모드 경계선 및 입력 */
     --border: 240 10% 20%;
     --input: 240 10% 15%;
@@ -99,7 +113,7 @@
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
   }
-  
+
   body {
     font-size: 1rem;
     line-height: 1.6;
@@ -114,56 +128,56 @@
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
   }
-  
+
   /* 반응형 기본 폰트 크기 */
   @media (max-width: 640px) {
     html {
       font-size: 14px;
     }
   }
-  
+
   @media (min-width: 1024px) {
     html {
       font-size: 16px;
     }
   }
-  
+
   @media (min-width: 1280px) {
     html {
       font-size: 17px;
     }
   }
-  
+
   /* 헤딩 기본 스타일 */
   h1 {
     @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight;
   }
-  
+
   h2 {
     @apply text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight;
   }
-  
+
   h3 {
     @apply text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight;
   }
-  
+
   h4 {
     @apply text-lg md:text-xl lg:text-2xl font-medium tracking-tight;
   }
-  
+
   h5 {
     @apply text-base md:text-lg lg:text-xl font-medium tracking-tight;
   }
-  
+
   h6 {
     @apply text-sm md:text-base lg:text-lg font-medium tracking-tight;
   }
-  
+
   /* 본문 텍스트 */
   p {
     @apply text-base leading-relaxed;
   }
-  
+
   /* 작은 텍스트 */
   .text-caption {
     @apply text-sm text-muted-foreground leading-normal;
@@ -188,7 +202,7 @@
       --border: 240 5.9% 20%;
       --input: 240 5.9% 20%;
     }
-    
+
     .dark {
       --border: 240 5.9% 80%;
       --input: 240 5.9% 80%;
@@ -206,12 +220,12 @@
       scroll-behavior: auto !important;
     }
   }
-  
+
   /* 라벨 텍스트 */
   .text-label {
     @apply text-sm font-medium tracking-wide;
   }
-  
+
   /* 오버라인 텍스트 */
   .text-overline {
     @apply text-xs font-semibold uppercase tracking-widest;
@@ -223,25 +237,25 @@
   .btn-sm {
     @apply px-3 py-2 text-sm min-h-[2.25rem];
   }
-  
+
   .btn-md {
     @apply px-4 py-2.5 text-base min-h-[2.75rem];
   }
-  
+
   .btn-lg {
     @apply px-6 py-3 text-lg min-h-[3rem];
   }
-  
+
   /* 카드 컴포넌트 개선 */
   .card-enhanced {
     @apply bg-card text-card-foreground rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200;
   }
-  
+
   /* 폼 요소 개선 */
   .form-input-enhanced {
     @apply min-h-[2.75rem] px-3 py-2 text-base border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors;
   }
-  
+
   /* 메뉴 아이템 크기 개선 */
   .menu-item-enhanced {
     @apply min-h-[2.75rem] px-3 py-2 text-base flex items-center gap-3 transition-colors duration-200;
@@ -373,13 +387,13 @@
 
 /* 향상된 애니메이션 */
 @keyframes pulse-soft {
-  0%, 100% { 
-    opacity: 1; 
-    transform: scale(1); 
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
   }
-  50% { 
-    opacity: 0.9; 
-    transform: scale(1.02); 
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
   }
 }
 
@@ -464,7 +478,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    background-image: 
+    background-image:
       radial-gradient(circle at 25% 5%, rgba(255, 255, 255, 0.4) 0.5px, transparent 0.5px),
       radial-gradient(circle at 75% 15%, rgba(255, 255, 255, 0.4) 0.75px, transparent 0.75px),
       radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.4) 0.5px, transparent 0.5px),
@@ -489,7 +503,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    background-image: 
+    background-image:
       radial-gradient(circle at 25% 10%, rgba(255, 183, 197, 0.5) 1px, transparent 1px),
       radial-gradient(circle at 75% 25%, rgba(255, 183, 197, 0.5) 1.25px, transparent 1.25px),
       radial-gradient(circle at 50% 40%, rgba(255, 183, 197, 0.5) 1px, transparent 1px),
@@ -512,7 +526,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    background-image: 
+    background-image:
       radial-gradient(circle at 10% 20%, rgba(203, 111, 0, 0.4) 1px, transparent 1px),
       radial-gradient(circle at 65% 15%, rgba(157, 89, 0, 0.4) 1.5px, transparent 1.5px),
       radial-gradient(circle at 40% 45%, rgba(209, 117, 0, 0.4) 1px, transparent 1px),
@@ -535,7 +549,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    background-image: 
+    background-image:
       radial-gradient(circle at 15% 10%, rgba(255, 0, 0, 0.5) 1px, transparent 1px),
       radial-gradient(circle at 45% 25%, rgba(0, 150, 255, 0.5) 1.5px, transparent 1.5px),
       radial-gradient(circle at 75% 5%, rgba(255, 240, 0, 0.5) 1px, transparent 1px),
@@ -560,7 +574,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    background-image: 
+    background-image:
       radial-gradient(circle at 15% 15%, rgba(255, 150, 0, 0.4) 1px, transparent 1px),
       radial-gradient(circle at 75% 35%, rgba(255, 150, 0, 0.4) 1.5px, transparent 1.5px),
       radial-gradient(circle at 45% 55%, rgba(255, 150, 0, 0.4) 1px, transparent 1px),
@@ -618,26 +632,26 @@
 
   /* 상태 표시 스타일 - 높은 대비 */
   .status-success {
-    @apply bg-green-50 text-green-800 dark:bg-green-900/50 dark:text-green-300 
-           border border-green-200 dark:border-green-700 
+    @apply bg-green-50 text-green-800 dark:bg-green-900/50 dark:text-green-300
+           border border-green-200 dark:border-green-700
            px-2 py-1 rounded-md text-xs font-medium;
   }
 
   .status-info {
-    @apply bg-blue-50 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 
-           border border-blue-200 dark:border-blue-700 
+    @apply bg-blue-50 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300
+           border border-blue-200 dark:border-blue-700
            px-2 py-1 rounded-md text-xs font-medium;
   }
 
   .status-warning {
-    @apply bg-yellow-50 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 
-           border border-yellow-200 dark:border-yellow-700 
+    @apply bg-yellow-50 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300
+           border border-yellow-200 dark:border-yellow-700
            px-2 py-1 rounded-md text-xs font-medium;
   }
 
   .status-error {
-    @apply bg-red-50 text-red-800 dark:bg-red-900/50 dark:text-red-300 
-           border border-red-200 dark:border-red-700 
+    @apply bg-red-50 text-red-800 dark:bg-red-900/50 dark:text-red-300
+           border border-red-200 dark:border-red-700
            px-2 py-1 rounded-md text-xs font-medium;
   }
 
@@ -821,46 +835,46 @@
     @apply bg-background text-foreground font-sans transition-colors duration-300;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'system-ui', 'Roboto', 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
   }
-  
+
   /* 다크모드 스타일 강화 */
   .dark {
     color-scheme: dark;
   }
-  
+
   /* 입력 필드 다크모드 스타일 */
   input, textarea, select {
     @apply bg-input border-border text-foreground;
   }
-  
+
   /* 버튼 다크모드 스타일 */
   button {
     @apply transition-colors duration-200;
   }
-  
+
   /* 카드 다크모드 스타일 */
   .card {
     @apply bg-card text-card-foreground border-border;
   }
-  
+
   /* 모달 다크모드 스타일 */
   .modal, .dialog {
     @apply bg-card text-card-foreground border-border;
   }
-  
+
   /* 스크롤바 다크모드 스타일 */
   .dark ::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   .dark ::-webkit-scrollbar-track {
     background: hsl(var(--background));
   }
-  
+
   .dark ::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
     border-radius: 4px;
   }
-  
+
   .dark ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--accent));
   }
@@ -886,7 +900,7 @@
     --talez-primary-light: 11 78% 80%;
     --talez-secondary: 43 96% 60%;    /* 옐로우 (로고 서브) */
     --talez-accent: 24 92% 58%;       /* 오렌지 (로고 액센트) */
-    
+
     /* 타일 색상 시스템 */
     --tile-primary: #FFE8E0;          /* 코랄 틴트 */
     --tile-secondary: #FFF6D6;        /* 옐로우 틴트 */
@@ -895,48 +909,48 @@
     --tile-cream: #FFF8E8;            /* 크림 틴트 */
     --tile-warm: #FFE8D8;             /* 웜 틴트 */
     --tile-gray: #F8FAFC;             /* 그레이 틴트 */
-    
+
     /* 텍스트 컬러 시스템 */
     --txt-strong: #0D1321;            /* 강한 텍스트 */
     --txt-primary: #232B3A;           /* 기본 텍스트 */
     --txt-secondary: #6B7486;         /* 보조 텍스트 */
     --txt-muted: #9CA3AF;             /* 뮤트 텍스트 */
-    
+
     /* 상태 색상 */
     --status-success: #23C552;
     --status-warning: #FFB020;
     --status-danger: #FF5D5D;
     --status-info: #29B5F6;
-    
+
     /* 레이아웃 */
     --border-color: #E6E8ED;
     --card-bg: #FFFFFF;
     --page-bg: #FAFBFE;
-    
+
     /* 반지름 */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 24px;
     --radius-full: 9999px;
-    
+
     /* 그림자 */
     --shadow-soft: 0 6px 20px rgba(18, 25, 38, 0.06);
     --shadow-medium: 0 10px 30px rgba(18, 25, 38, 0.08);
     --shadow-strong: 0 20px 40px rgba(18, 25, 38, 0.12);
   }
-  
+
   .dark {
     /* 다크모드 디자인 토큰 */
     --txt-strong: #F8FAFC;
     --txt-primary: #E2E8F0;
     --txt-secondary: #94A3B8;
     --txt-muted: #64748B;
-    
+
     --border-color: #334155;
     --card-bg: #1E293B;
     --page-bg: #0F172A;
-    
+
     --tile-emerald: rgba(6, 95, 70, 0.15);
     --tile-orange: rgba(234, 88, 12, 0.15);
     --tile-blue: rgba(59, 130, 246, 0.15);
@@ -944,7 +958,7 @@
     --tile-yellow: rgba(245, 158, 11, 0.15);
     --tile-pink: rgba(236, 72, 153, 0.15);
     --tile-gray: rgba(148, 163, 184, 0.15);
-    
+
     --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.25);
     --shadow-medium: 0 10px 30px rgba(0, 0, 0, 0.35);
     --shadow-strong: 0 20px 40px rgba(0, 0, 0, 0.45);
@@ -958,12 +972,12 @@
     box-shadow: var(--shadow-soft);
     transition: all 0.2s ease;
   }
-  
+
   .talez-tile:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-medium);
   }
-  
+
   /* 타일 색상 변형 */
   .talez-tile-emerald { background: var(--tile-emerald); }
   .talez-tile-orange { background: var(--tile-orange); }
@@ -972,7 +986,7 @@
   .talez-tile-yellow { background: var(--tile-yellow); }
   .talez-tile-pink { background: var(--tile-pink); }
   .talez-tile-gray { background: var(--tile-gray); }
-  
+
   /* TALEZ 버튼 시스템 - 통합 스타일 */
   .talez-btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold transition-all duration-200;
@@ -982,72 +996,72 @@
     min-height: 44px;
     padding: 10px 24px;
   }
-  
+
   .talez-btn-primary {
     @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg;
     @apply dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90;
   }
-  
+
   .talez-btn-secondary {
     @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
     @apply dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80;
   }
-  
+
   .talez-btn-ghost {
     @apply text-primary hover:bg-primary/10;
     @apply dark:text-primary dark:hover:bg-primary/20;
   }
-  
+
   .talez-btn-outline {
     @apply border-2 border-primary/30 bg-background text-primary hover:bg-primary/10 hover:border-primary;
     @apply dark:border-primary/30 dark:text-primary dark:hover:bg-primary/20;
   }
-  
+
   /* 아이콘 래퍼 */
   .talez-icon-wrap {
     @apply talez-tile flex items-center justify-center transition-transform;
     width: 64px;
     height: 64px;
   }
-  
+
   .talez-icon-wrap:hover {
     transform: translateY(-2px) scale(1.02);
   }
-  
+
   /* 상태 배지 */
   .talez-status-badge {
     @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold;
     border: 1px solid var(--border-color);
     background: var(--card-bg);
   }
-  
+
   .talez-status-success {
     color: var(--status-success);
     background: rgba(35, 197, 82, 0.1);
     border-color: rgba(35, 197, 82, 0.3);
   }
-  
+
   .talez-status-info {
     color: var(--status-info);
     background: rgba(41, 181, 246, 0.1);
     border-color: rgba(41, 181, 246, 0.3);
   }
-  
+
   .talez-status-warning {
     color: var(--status-warning);
     background: rgba(255, 176, 32, 0.1);
     border-color: rgba(255, 176, 32, 0.3);
   }
-  
+
   /* 현대적인 카드 시스템 */
   .talez-feature-card {
     @apply talez-tile flex items-start gap-4;
   }
-  
+
   .talez-pricing-card {
     @apply talez-tile relative overflow-hidden;
   }
-  
+
   .talez-pricing-card::before {
     content: '';
     position: absolute;
@@ -1057,35 +1071,35 @@
     height: 4px;
     background: linear-gradient(90deg, hsl(var(--talez-primary)), hsl(var(--talez-secondary)));
   }
-  
+
   /* 그리드 시스템 */
   .talez-grid-2 {
     @apply grid gap-4 md:grid-cols-2;
   }
-  
+
   .talez-grid-3 {
     @apply grid gap-4 md:grid-cols-3;
   }
-  
+
   .talez-grid-4 {
     @apply grid gap-4 md:grid-cols-2 lg:grid-cols-4;
   }
-  
+
   /* 애니메이션 효과 */
   .talez-pulse {
     animation: talezPulse 1s ease-out 1;
   }
-  
+
   @keyframes talezPulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.06); }
     100% { transform: scale(1); }
   }
-  
+
   .talez-fade-in {
     animation: talezFadeIn 0.6s ease-out;
   }
-  
+
   @keyframes talezFadeIn {
     from {
       opacity: 0;
@@ -1096,7 +1110,7 @@
       transform: translateY(0);
     }
   }
-  
+
   /* 유틸리티 클래스 */
   .talez-text-gradient {
     background: linear-gradient(135deg, hsl(var(--talez-primary)), hsl(var(--talez-secondary)));
@@ -1104,17 +1118,17 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .talez-bg-gradient {
     background: linear-gradient(135deg, hsl(var(--talez-primary)) 0%, hsl(var(--talez-secondary)) 100%);
   }
-  
+
   .talez-glass {
     backdrop-filter: blur(10px);
     background: rgba(255, 255, 255, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
-  
+
   .dark .talez-glass {
     background: rgba(30, 41, 59, 0.8);
     border: 1px solid rgba(51, 65, 85, 0.3);
@@ -1134,7 +1148,7 @@
 }
 
 /* 이미지 필터링 방지 - 라이트 모드에서 이미지가 변경되지 않도록 보장 */
-html:not(.dark) img, 
+html:not(.dark) img,
 html:not(.dark) svg,
 body:not(.dark) img,
 body:not(.dark) svg,
@@ -1172,7 +1186,7 @@ html:not(.dark) * {
 }
 
 /* 다크 모드에서만 필요한 경우 이미지 필터 적용 */
-.dark img[data-invert="true"], 
+.dark img[data-invert="true"],
 .dark svg[data-invert="true"] {
   filter: invert(1) hue-rotate(180deg) !important;
 }

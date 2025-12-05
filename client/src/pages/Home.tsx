@@ -520,29 +520,32 @@ export default function Home() {
         {/* Hero Section - TALEZ Style */}
         <TalezSection 
           background="glass" 
-          className="relative py-20" 
+          className="relative py-16 md:py-20" 
           backgroundImage={DogTrainingBackground}
           backgroundOpacity={0.15}
         >
           <div className="text-center talez-fade-in">
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+            <TalezBadge variant="success" className="mb-3">
+              🐕 한국 최고의 반려동물 교육 플랫폼
+            </TalezBadge>
+
+            <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">
               우리 아이를 위한<br />
               <span className="talez-text-gradient">최고의 교육</span>을 찾아보세요
             </h1>
 
-            <p className="text-xl mb-8 max-w-2xl mx-auto" style={{ color: 'var(--txt-secondary)' }}>
-              전문 훈련사와 함께하는 맞춤형 반려동물 교육 서비스. 
-              온라인 상담부터 실시간 화상교육까지, 모든 것이 한 곳에서.
+            <p className="text-base md:text-lg mb-6 max-w-2xl mx-auto" style={{ color: 'var(--txt-secondary)' }}>
+              전문 훈련사와 함께하는 맞춤형 반려동물 교육 서비스
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <TalezButton size="lg">
                 <Link 
                   href="/institutes" 
                   className="flex items-center"
                   onClick={() => setRouteLoading(true, '/institutes', '근처 교육기관 검색 중...')}
                 >
-                  <MapPin className="mr-2 h-5 w-5" />
+                  <MapPin className="mr-2 h-4 w-4" />
                   근처 교육기관 찾기
                 </Link>
               </TalezButton>
@@ -552,7 +555,7 @@ export default function Home() {
                   className="flex items-center"
                   onClick={() => setRouteLoading(true, '/video-training', '온라인 교육 준비 중...')}
                 >
-                  <Video className="mr-2 h-5 w-5" />
+                  <Video className="mr-2 h-4 w-4" />
                   온라인 교육 체험
                 </Link>
               </TalezButton>
@@ -560,15 +563,15 @@ export default function Home() {
           </div>
         </TalezSection>
 
-        {/* Stats Section - TALEZ Style */}
-        <TalezSection className="py-16">
-          <TalezGrid cols={4}>
+        {/* Stats Section - Compact */}
+        <TalezSection className="py-8">
+          <TalezGrid cols={3}>
             {stats.map((stat, index) => (
-              <TalezCard key={index} className="text-center p-6">
-                <div className="text-3xl font-bold mb-2 talez-text-gradient">
+              <TalezCard key={index} className="text-center p-4">
+                <div className="text-2xl font-bold mb-1 talez-text-gradient">
                   {stat.value.toLocaleString()}
                 </div>
-                <div className="text-sm" style={{ color: 'var(--txt-secondary)' }}>
+                <div className="text-xs" style={{ color: 'var(--txt-secondary)' }}>
                   {stat.label}
                 </div>
               </TalezCard>
@@ -576,18 +579,15 @@ export default function Home() {
           </TalezGrid>
         </TalezSection>
 
-        {/* Features Section - TALEZ Style */}
-        <TalezSection className="py-16" background="glass">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4" style={{ color: 'var(--txt-strong)' }}>
+        {/* Features Section - Compact */}
+        <TalezSection className="py-12" background="glass">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--txt-strong)' }}>
               TALEZ만의 특별한 서비스
             </h2>
-            <p className="text-lg" style={{ color: 'var(--txt-secondary)' }}>
-              반려동물과 가족 모두가 행복한 교육 경험을 제공합니다
-            </p>
           </div>
 
-          <TalezGrid cols={3}>
+          <TalezGrid cols={2}>
             <TalezCard variant="feature">
               <TalezIcon bg="var(--tile-emerald)">
                 <IconPetCare />
@@ -1191,7 +1191,7 @@ export default function Home() {
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                       강아지의 행동을 자세히 설명해주세요. AI가 행동 패턴을 분석하고 맞춤형 훈련 프로그램을 추천합니다.
                     </p>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1269,7 +1269,7 @@ export default function Home() {
                           </svg>
                           훈련 수준 평가
                         </h4>
-                        
+
                         <div className="text-center mb-4">
                           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg mb-2">
                             <span className="text-3xl font-bold">{analysisResult.trainingAssessment?.overallScore || 0}</span>
@@ -1300,7 +1300,7 @@ export default function Home() {
                           </svg>
                           성격 프로필
                         </h4>
-                        
+
                         <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
                           {analysisResult.personalityProfile?.description}
                         </p>
@@ -1358,7 +1358,7 @@ export default function Home() {
                           </svg>
                           맞춤형 훈련 추천
                         </h4>
-                        
+
                         <div className="space-y-2 mb-4">
                           <p className="text-sm font-medium text-green-800 dark:text-green-200">우선 훈련 항목:</p>
                           <ul className="list-disc list-inside space-y-1">

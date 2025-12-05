@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Dog, BookOpen, Award, MapPin, Video, Shield } from 'lucide-react';
@@ -7,15 +6,15 @@ import { Dog, BookOpen, Award, MapPin, Video, Shield } from 'lucide-react';
 // TALEZ 듀오톤 아이콘 시스템
 // =====================
 
-export const TalezIcon: React.FC<{ 
-  bg?: string; 
+export const TalezIcon: React.FC<{
+  bg?: string;
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
   className?: string;
 }> = ({ bg = 'var(--tile-primary)', size = 'md', children, className }) => {
   const sizeClasses = {
     sm: 'h-12 w-12',
-    md: 'h-16 w-16', 
+    md: 'h-16 w-16',
     lg: 'h-20 w-20'
   };
 
@@ -64,13 +63,13 @@ export const TalezButton: React.FC<{
   className?: string;
   onClick?: () => void;
   disabled?: boolean;
-}> = ({ 
-  variant = 'primary', 
-  size = 'md', 
-  children, 
-  className, 
-  onClick, 
-  disabled = false 
+}> = ({
+  variant = 'primary',
+  size = 'md',
+  children,
+  className,
+  onClick,
+  disabled = false
 }) => {
   const variantClasses = {
     primary: 'talez-btn-primary',
@@ -78,7 +77,7 @@ export const TalezButton: React.FC<{
     ghost: 'talez-btn-ghost',
     outline: 'talez-btn-outline'
   };
-  
+
   const sizeClasses = {
     sm: 'h-9 px-4 text-sm',
     md: 'h-11 px-6 text-base',
@@ -139,7 +138,7 @@ export const TalezBadge: React.FC<{
   const variantClasses = {
     default: 'talez-status-badge',
     success: 'talez-status-badge talez-status-success',
-    info: 'talez-status-badge talez-status-info', 
+    info: 'talez-status-badge talez-status-info',
     warning: 'talez-status-badge talez-status-warning'
   };
 
@@ -161,7 +160,7 @@ export const TalezGrid: React.FC<{
 }> = ({ cols = 3, children, className }) => {
   const colClasses = {
     2: 'talez-grid-2',
-    3: 'talez-grid-3', 
+    3: 'talez-grid-3',
     4: 'talez-grid-4'
   };
 
@@ -225,14 +224,14 @@ export const TalezSection: React.FC<{
   };
 
   return (
-    <section 
+    <section
       className={cn('py-16 px-4 relative overflow-hidden', bgClasses[background], className)}
       style={backgroundImage ? {
         position: 'relative'
       } : undefined}
     >
       {backgroundImage && (
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
           style={{
             backgroundImage: `url(${backgroundImage})`,
