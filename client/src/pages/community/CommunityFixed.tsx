@@ -248,6 +248,104 @@ const PostCardSkeleton = () => (
   </Card>
 );
 
+// 뉴스 아티클 타입
+interface NewsArticle {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  image: string | null;
+  source: string;
+  publishedAt: string;
+  category: string;
+}
+
+// 뉴스 카드 컴포넌트
+const NewsCard = ({ article }: { article: NewsArticle }) => {
+  const formatDate = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: ko });
+    } catch {
+      return '최근';
+    }
+  };
+
+  const handleClick = () => {
+    window.open(article.url, '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <Card 
+      className="h-full cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-primary/20" 
+      onClick={handleClick}
+      data-testid={`news-card-${article.id}`}
+    >
+      {/* 뉴스 이미지 영역 */}
+      <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
+        {article.image ? (
+          <img 
+            src={article.image} 
+            alt={article.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <ExternalLink className="h-16 w-16 text-gray-400 dark:text-gray-500" />
+          </div>
+        )}
+        <div className="absolute top-2 left-2">
+          <Badge variant="secondary" className="bg-blue-600 text-white">
+            뉴스
+          </Badge>
+        </div>
+        <div className="absolute top-2 right-2">
+          <Badge variant="outline" className="bg-white/90 dark:bg-gray-800/90 text-xs">
+            <ExternalLink className="h-3 w-3 mr-1" />
+            외부 링크
+          </Badge>
+        </div>
+      </div>
+      
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg line-clamp-2">{article.title}</CardTitle>
+        <CardDescription className="flex items-center gap-2 text-xs">
+          <span className="text-primary font-medium">{article.source}</span>
+          <span>•</span>
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>{formatDate(article.publishedAt)}</span>
+          </div>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pb-4">
+        <p className="text-sm text-gray-600 line-clamp-3">{article.description}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
+// 뉴스 섹션 스켈레톤
+const NewsCardSkeleton = () => (
+  <Card className="h-full">
+    <div className="h-48 bg-gray-200 animate-pulse rounded-t-lg" />
+    <CardHeader className="pb-2">
+      <Skeleton className="h-6 w-full mb-2" />
+      <Skeleton className="h-4 w-1/2" />
+    </CardHeader>
+    <CardContent className="pb-4">
+      <Skeleton className="h-4 w-full mb-2" />
+      <Skeleton className="h-4 w-full mb-2" />
+      <Skeleton className="h-4 w-2/3" />
+    </CardContent>
+  </Card>
+);
+
+// 뉴스 탭 확인 함수
+const isNewsTab = (tab: string) => ['training', 'survey', 'info', 'events'].includes(tab);
+
 // 메인 커뮤니티 페이지 컴포넌트
 function CommunityPage() {
   const [, setLocation] = useLocation();
@@ -417,6 +515,30 @@ function CommunityPage() {
     // API에서 이미 검색 필터링이 적용되어 있으므로 그대로 반환
     return postsData;
   }, [postsData]);
+
+  // 뉴스 API 조회 (뉴스 탭일 때만)
+  const { data: newsData, isLoading: newsLoading } = useQuery({
+    queryKey: ['/api/news/search', activeTab],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/news/search?category=${activeTab}`);
+        if (!response.ok) {
+          throw new Error('뉴스를 불러올 수 없습니다');
+        }
+        const data = await response.json();
+        console.log(`뉴스 API 응답 (${activeTab}):`, data);
+        return data;
+      } catch (error) {
+        console.error('뉴스 조회 오류:', error);
+        return { articles: [], success: false };
+      }
+    },
+    enabled: isNewsTab(activeTab),
+    staleTime: 10 * 60 * 1000, // 10분간 캐시
+  });
+
+  // 뉴스 아티클 목록
+  const newsArticles: NewsArticle[] = newsData?.articles || [];
 
   // 페이지네이션
   const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
@@ -1218,6 +1340,49 @@ function CommunityPage() {
         {/* 모든 탭에서 사용할 공통 콘텐츠 */}
         {['latest', 'popular', 'training', 'survey', 'info', 'events', 'notices'].map(tabValue => (
           <TabsContent key={tabValue} value={tabValue} className="mt-6">
+            {/* 뉴스 섹션 - 뉴스 탭(훈련팁, 설문, 정보공유, 이벤트)에서만 표시 */}
+            {isNewsTab(tabValue) && (
+              <div className="mb-8" data-testid={`news-section-${tabValue}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                    <ExternalLink className="h-5 w-5 text-primary" />
+                    관련 뉴스
+                  </h3>
+                  {newsData?.message && (
+                    <span className="text-xs text-gray-500">{newsData.message}</span>
+                  )}
+                </div>
+                
+                {newsLoading && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <NewsCardSkeleton key={i} />
+                    ))}
+                  </div>
+                )}
+
+                {!newsLoading && newsArticles.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {newsArticles.map((article: NewsArticle) => (
+                      <NewsCard key={article.id} article={article} />
+                    ))}
+                  </div>
+                )}
+
+                {!newsLoading && newsArticles.length === 0 && (
+                  <div className="text-center py-6 bg-gray-50 rounded-lg">
+                    <ExternalLink className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">관련 뉴스가 없습니다</p>
+                  </div>
+                )}
+
+                {/* 구분선 */}
+                <div className="border-t border-gray-200 mt-6 pt-6">
+                  <h3 className="text-xl font-bold mb-4">커뮤니티 게시글</h3>
+                </div>
+              </div>
+            )}
+
             {isLoading && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
