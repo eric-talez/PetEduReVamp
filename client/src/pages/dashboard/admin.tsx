@@ -97,10 +97,14 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
     },
   });
 
-  // 시스템 상태 데이터 로드
+  // 시스템 상태 데이터 로드 (캐싱 포함)
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/dashboard/admin/stats');
+      const response = await fetch('/api/dashboard/admin/stats', {
+        headers: {
+          'Cache-Control': 'max-age=30',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         console.log('[Admin] 시스템 상태 로드:', data);

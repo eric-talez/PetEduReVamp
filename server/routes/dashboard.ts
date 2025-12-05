@@ -1,3 +1,7 @@
+
+// 이 파일은 기존 dashboard.ts의 주간 통계 부분을 개선합니다.
+// 실제 구현은 기존 파일의 해당 라우트에 캐싱 로직을 추가하는 방식으로 진행됩니다.
+
 import type { Express } from "express";
 import { storage } from "../storage";
 
@@ -188,6 +192,16 @@ export function registerDashboardRoutes(app: Express) {
   let systemStatusCache: any = null;
   let cacheTimestamp = 0;
   const CACHE_DURATION = 30000; // 30초
+
+  // 주간 통계 캐시
+  let weeklyStatsCache: any = null;
+  let weeklyStatsCacheTimestamp = 0;
+  const WEEKLY_STATS_CACHE_DURATION = 60000; // 60초
+
+  // 인기 통계 캐시
+  let popularStatsCache: any = null;
+  let popularStatsCacheTimestamp = 0;
+  const POPULAR_STATS_CACHE_DURATION = 60000; // 60초
 
   // 시스템 상태 API (실시간 서비스 현황용) - 캐싱 적용
   app.get('/api/dashboard/system/status', asyncHandler(async (req: any, res: any) => {
