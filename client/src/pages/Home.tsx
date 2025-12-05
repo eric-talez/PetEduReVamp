@@ -525,10 +525,6 @@ export default function Home() {
           backgroundOpacity={0.15}
         >
           <div className="text-center talez-fade-in">
-            <TalezBadge variant="success" className="mb-4">
-              🐕 한국 최고의 반려동물 교육 플랫폼
-            </TalezBadge>
-
             <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
               우리 아이를 위한<br />
               <span className="talez-text-gradient">최고의 교육</span>을 찾아보세요
