@@ -58,7 +58,7 @@ interface NotebookDialogProps {
 // 활동 데이터를 텍스트로 변환하는 함수
 const generateActivityText = (activities: Activity): string => {
   const parts: string[] = [];
-  
+
   // 식사 활동 텍스트 생성
   if (activities.meal) {
     const mealParts = [];
@@ -67,19 +67,19 @@ const generateActivityText = (activities: Activity): string => {
     if (activities.meal.dinner) mealParts.push('저녁');
     if (activities.meal.snack) mealParts.push('간식');
     if (activities.meal.water) mealParts.push('물');
-    
+
     if (mealParts.length > 0) {
       parts.push(`[식사] ${mealParts.join(', ')} 식사를 했습니다.`);
       if (activities.meal.custom) parts.push(`특이사항: ${activities.meal.custom}`);
     }
   }
-  
+
   // 배변 활동 텍스트 생성
   if (activities.potty) {
     const pottyParts = [];
     if (activities.potty.pee) pottyParts.push('소변');
     if (activities.potty.poop) pottyParts.push('대변');
-    
+
     if (pottyParts.length > 0) {
       let text = `[배변] ${pottyParts.join(', ')}`;
       if (activities.potty.count) text += `, ${activities.potty.count}회`;
@@ -94,14 +94,14 @@ const generateActivityText = (activities: Activity): string => {
       parts.push(text);
     }
   }
-  
+
   // 산책 활동 텍스트 생성
   if (activities.walk) {
     const walkParts = [];
     if (activities.walk.morning) walkParts.push('아침');
     if (activities.walk.afternoon) walkParts.push('오후');
     if (activities.walk.evening) walkParts.push('저녁');
-    
+
     if (walkParts.length > 0 || activities.walk.duration || activities.walk.distance) {
       let text = '[산책]';
       if (walkParts.length > 0) text += ` ${walkParts.join(', ')} 산책했습니다.`;
@@ -110,7 +110,7 @@ const generateActivityText = (activities: Activity): string => {
       parts.push(text);
     }
   }
-  
+
   // 훈련 활동 텍스트 생성
   if (activities.training) {
     const trainingParts = [];
@@ -119,13 +119,13 @@ const generateActivityText = (activities: Activity): string => {
     if (activities.training.come) trainingParts.push('이리와');
     if (activities.training.down) trainingParts.push('엎드려');
     if (activities.training.paw) trainingParts.push('손');
-    
+
     if (trainingParts.length > 0) {
       parts.push(`[훈련] ${trainingParts.join(', ')} 훈련을 했습니다.`);
       if (activities.training.custom) parts.push(`추가 훈련: ${activities.training.custom}`);
     }
   }
-  
+
   // 놀이 활동 텍스트 생성
   if (activities.play) {
     const playParts = [];
@@ -133,13 +133,13 @@ const generateActivityText = (activities: Activity): string => {
     if (activities.play.tug) playParts.push('터그놀이');
     if (activities.play.chase) playParts.push('쫓기 놀이');
     if (activities.play.puzzle) playParts.push('퍼즐 장난감');
-    
+
     if (playParts.length > 0) {
       parts.push(`[놀이] ${playParts.join(', ')} 놀이를 했습니다.`);
       if (activities.play.custom) parts.push(`기타 놀이: ${activities.play.custom}`);
     }
   }
-  
+
   return parts.join('\n');
 };
 
@@ -166,15 +166,15 @@ export default function NotebookDialog({
     ownerId: null as number | null,  // 공유 대상 견주 ID
     ownerName: '' as string // 공유 대상 견주 이름
   });
-  
+
   const [tagInput, setTagInput] = useState('');
   const [mediaPreview, setMediaPreview] = useState<{photos: string[], videos: string[]}>({photos: [], videos: []});
   const [useAIMode, setUseAIMode] = useState(false);
   const [activeTab, setActiveTab] = useState<'basic' | 'activities' | 'media' | 'ai'>('basic');
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-  
+
   // 초기 데이터로 폼 초기화
   useEffect(() => {
     console.log('NotebookDialog useEffect - Dialog open:', open, 'activeTab:', activeTab);
@@ -193,7 +193,7 @@ export default function NotebookDialog({
   useEffect(() => {
     console.log('NotebookDialog activeTab changed to:', activeTab);
   }, [activeTab]);
-  
+
   // 폼 초기화
   const resetForm = () => {
     setForm({
@@ -213,7 +213,7 @@ export default function NotebookDialog({
     setTagInput('');
     setUseAIMode(false);
   };
-  
+
   // 폼 제출
   const handleSubmit = () => {
     if (!form.title.trim()) {
@@ -223,7 +223,7 @@ export default function NotebookDialog({
       });
       return;
     }
-    
+
     if (!form.petId) {
       toast({
         title: "반려견을 선택해주세요",
@@ -231,31 +231,31 @@ export default function NotebookDialog({
       });
       return;
     }
-    
+
     onSubmit(form);
     resetForm();
     onOpenChange(false);
   };
-  
+
   // 사진 파일 선택
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       const newPhotos: string[] = [];
-      
+
       files.forEach(file => {
         const reader = new FileReader();
         reader.onload = (event) => {
           if (event.target?.result) {
             const photoUrl = event.target.result.toString();
             newPhotos.push(photoUrl);
-            
+
             if (newPhotos.length === files.length) {
               setForm(prev => ({
                 ...prev,
                 photos: [...prev.photos, ...newPhotos]
               }));
-              
+
               setMediaPreview(prev => ({
                 ...prev,
                 photos: [...prev.photos, ...newPhotos]
@@ -265,33 +265,33 @@ export default function NotebookDialog({
         };
         reader.readAsDataURL(file);
       });
-      
+
       // 파일 입력 초기화
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     }
   };
-  
+
   // 동영상 파일 선택
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       const newVideos: string[] = [];
-      
+
       files.forEach(file => {
         const reader = new FileReader();
         reader.onload = (event) => {
           if (event.target?.result) {
             const videoUrl = event.target.result.toString();
             newVideos.push(videoUrl);
-            
+
             if (newVideos.length === files.length) {
               setForm(prev => ({
                 ...prev,
                 videos: [...prev.videos, ...newVideos]
               }));
-              
+
               setMediaPreview(prev => ({
                 ...prev,
                 videos: [...prev.videos, ...newVideos]
@@ -301,31 +301,31 @@ export default function NotebookDialog({
         };
         reader.readAsDataURL(file);
       });
-      
+
       // 파일 입력 초기화
       if (videoInputRef.current) {
         videoInputRef.current.value = '';
       }
     }
   };
-  
-  // AI 콘텐츠 생성 함수
+
+  // AI 콘텐츠 생성 함수 (기본)
   const generateAIContent = () => {
     toast({
       title: "AI 콘텐츠 생성 중",
       description: "AI가 알림장 내용을 생성하고 있습니다..."
     });
-    
+
     // AI 콘텐츠 생성 로직을 여기에 추가
     // 현재는 기본 텍스트로 설정
     const aiContent = "AI가 생성한 알림장 내용입니다. 오늘 반려견이 활발하고 건강한 모습을 보였습니다.";
-    
+
     setTimeout(() => {
       setForm(prev => ({
         ...prev,
         content: prev.content ? `${prev.content}\n\n${aiContent}` : aiContent
       }));
-      
+
       toast({
         title: "AI 콘텐츠 생성 완료",
         description: "AI가 생성한 내용이 추가되었습니다."
@@ -340,7 +340,7 @@ export default function NotebookDialog({
         ...prev,
         photos: prev.photos.filter((_, i) => i !== index)
       }));
-      
+
       setMediaPreview(prev => ({
         ...prev,
         photos: prev.photos.filter((_, i) => i !== index)
@@ -350,16 +350,16 @@ export default function NotebookDialog({
         ...prev,
         videos: prev.videos.filter((_, i) => i !== index)
       }));
-      
+
       setMediaPreview(prev => ({
         ...prev,
         videos: prev.videos.filter((_, i) => i !== index)
       }));
     }
   };
-  
-  // AI로 내용 생성
-  const generateAIContent = async () => {
+
+  // AI로 내용 생성 (개선된 함수)
+  const handleGenerateAIContent = async () => {
     if (!form.petId) {
       toast({
         title: "반려견을 선택해주세요",
@@ -367,16 +367,16 @@ export default function NotebookDialog({
       });
       return;
     }
-    
+
     try {
       const pet = pets.find(p => p.id === form.petId);
       if (!pet) return;
-      
+
       toast({
         title: "AI로 내용 생성 중...",
         description: "잠시만 기다려주세요."
       });
-      
+
       const { generateNotebookEntry } = await import('@/lib/notebook-ai');
       const result = await generateNotebookEntry(
         pet.name,
@@ -384,13 +384,13 @@ export default function NotebookDialog({
         form.activities,
         form.content
       );
-      
+
       setForm(prev => ({
         ...prev,
         title: result.title,
         content: result.content
       }));
-      
+
       toast({
         title: "AI 생성 완료",
         description: "내용이 자동으로 생성되었습니다."
@@ -404,7 +404,7 @@ export default function NotebookDialog({
       });
     }
   };
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -414,7 +414,7 @@ export default function NotebookDialog({
             {initialData ? '알림장을 수정합니다.' : '새로운 알림장을 작성합니다.'}
           </DialogDescription>
         </DialogHeader>
-        
+
         {/* Tab Navigation */}
         <div className="mb-4 p-2 bg-yellow-100 border-2 border-yellow-400 rounded-lg">
           <div className="text-xs text-blue-600 font-medium mb-1 text-center">탭 네비게이션 시스템</div>
@@ -474,7 +474,7 @@ export default function NotebookDialog({
             </button>
           </div>
         </div>
-        
+
         {/* Tab Content */}
         <div className="grid gap-4 py-4">
           {activeTab === 'basic' && (
@@ -502,7 +502,7 @@ export default function NotebookDialog({
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="title">제목</Label>
             <div className="flex gap-2">
@@ -526,17 +526,17 @@ export default function NotebookDialog({
               </Button>
             </div>
           </div>
-          
+
           {useAIMode && (
             <ActivityRecorder 
               value={form.activities} 
               onChange={(activities) => {
                 // 활동 정보를 텍스트로 변환
                 const activityText = generateActivityText(activities);
-                
+
                 // 기존 내용에서 활동 관련 텍스트 제거 (중복 방지)
                 let cleanContent = form.content;
-                
+
                 // [식사], [배변], [산책], [훈련], [놀이] 태그로 시작하는 줄 제거
                 const activityLabels = ['[식사]', '[배변]', '[산책]', '[훈련]', '[놀이]'];
                 const contentLines = cleanContent.split('\n');
@@ -545,14 +545,14 @@ export default function NotebookDialog({
                   const isActivityRelated = line.trim().startsWith('특이사항:') 
                     || line.trim().startsWith('추가 훈련:') 
                     || line.trim().startsWith('기타 놀이:');
-                    
+
                   // 활동 라벨로 시작하거나 부가 설명인 경우 제거
                   return !activityLabels.some(label => line.trim().startsWith(label)) && !isActivityRelated;
                 });
-                
+
                 // 정제된 내용 사용
                 cleanContent = filteredLines.join('\n');
-                
+
                 // 폼 업데이트
                 setForm(prev => ({
                   ...prev,
@@ -563,7 +563,7 @@ export default function NotebookDialog({
                     (cleanContent.trim() ? `${cleanContent.trim()}\n\n${activityText}` : activityText) : 
                     cleanContent
                 }));
-                
+
                 // 알림 표시
                 toast({
                   title: "활동 정보가 추가되었습니다",
@@ -572,7 +572,7 @@ export default function NotebookDialog({
               }}
             />
           )}
-          
+
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="content">내용</Label>
@@ -711,7 +711,7 @@ export default function NotebookDialog({
           </div>
             </div>
           )}
-          
+
           {activeTab === 'activities' && (
             <div className="space-y-4">
               <div className="text-center py-8">
@@ -723,19 +723,19 @@ export default function NotebookDialog({
                 onChange={(activities) => {
                   const activityText = generateActivityText(activities);
                   let cleanContent = form.content;
-                  
+
                   const activityLabels = ['[식사]', '[배변]', '[산책]', '[훈련]', '[놀이]'];
                   const contentLines = cleanContent.split('\n');
                   const filteredLines = contentLines.filter(line => {
                     const isActivityRelated = line.trim().startsWith('특이사항:') 
                       || line.trim().startsWith('추가 훈련:') 
                       || line.trim().startsWith('기타 놀이:');
-                      
+
                     return !activityLabels.some(label => line.trim().startsWith(label)) && !isActivityRelated;
                   });
-                  
+
                   cleanContent = filteredLines.join('\n');
-                  
+
                   setForm(prev => ({
                     ...prev,
                     activities,
@@ -743,7 +743,7 @@ export default function NotebookDialog({
                       (cleanContent.trim() ? `${cleanContent.trim()}\n\n${activityText}` : activityText) : 
                       cleanContent
                   }));
-                  
+
                   toast({
                     title: "활동 정보가 추가되었습니다",
                     description: "선택한 활동이 알림장 내용에 반영되었습니다."
@@ -752,7 +752,7 @@ export default function NotebookDialog({
               />
             </div>
           )}
-          
+
           {activeTab === 'media' && (
             <div className="space-y-4">
               <div className="text-center py-8">
@@ -856,51 +856,45 @@ export default function NotebookDialog({
               </div>
             </div>
           )}
-          
+
           {activeTab === 'ai' && (
             <div className="space-y-4">
-              <div className="text-center py-8">
-                <h3 className="text-lg font-medium mb-2">🤖 AI 도우미</h3>
-                <p className="text-gray-600 mb-4">AI의 도움을 받아 더욱 풍성한 알림장을 작성해보세요.</p>
-              </div>
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    onClick={() => setUseAIMode(!useAIMode)}
-                    className={useAIMode ? "bg-primary/20" : ""}
-                  >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    AI 모드 {useAIMode ? '끄기' : '켜기'}
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={onShowTemplateDialog}
-                  >
-                    <ClipboardList className="mr-2 h-4 w-4" />
-                    템플릿 사용
-                  </Button>
-                  {useAIMode && (
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={generateAIContent}
-                    >
-                      <Brain className="mr-2 h-4 w-4" />
-                      AI로 내용 생성
-                    </Button>
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+                <div className="text-center">
+                  <Sparkles className="h-12 w-12 mx-auto mb-3 text-yellow-500" />
+                  <h3 className="text-lg font-medium mb-2">AI 알림장 도우미</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    입력한 반려견 정보와 활동 내용을 바탕으로 AI가 자동으로 알림장을 작성해드립니다.
+                  </p>
+
+                  {!form.petId ? (
+                    <div className="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-md p-3 mb-4">
+                      <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                        ⚠️ AI 생성을 위해서는 먼저 반려견을 선택해주세요.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="bg-white dark:bg-gray-800 rounded-md p-3 text-left">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">AI가 다음 정보를 활용합니다:</p>
+                        <ul className="text-xs space-y-1 text-gray-700 dark:text-gray-300">
+                          <li>✓ 반려견 정보</li>
+                          <li>✓ 활동 기록</li>
+                          <li>✓ 기존 작성 내용</li>
+                        </ul>
+                      </div>
+                      <Button
+                        onClick={handleGenerateAIContent}
+                        size="lg"
+                        className="w-full gap-2"
+                        disabled={!form.petId}
+                      >
+                        <Brain className="h-5 w-5" />
+                        AI로 알림장 생성하기
+                      </Button>
+                    </div>
                   )}
                 </div>
-                {useAIMode && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-blue-700 mb-2">AI 모드가 활성화되었습니다.</p>
-                    <p className="text-xs text-blue-600">활동 기록 탭에서 활동을 선택하면 AI가 자동으로 내용을 생성합니다.</p>
-                  </div>
-                )}
               </div>
             </div>
           )}
