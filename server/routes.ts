@@ -15622,6 +15622,212 @@ export function registerTrainerCertificationRoutes(app: Express) {
     console.error('[Database Test] 라우트 등록 실패:', error);
   });
 
+  // =============================================================================
+  // 구글 뉴스 검색 API (Google Custom Search API)
+  // =============================================================================
+  
+  // 탭별 검색 쿼리 매핑
+  const newsSearchQueries: Record<string, string> = {
+    training: '강아지 훈련 팁 OR 반려견 교육 방법',
+    survey: '반려동물 설문조사 OR 반려견 통계',
+    info: '강아지 건강 정보 OR 반려견 관리',
+    events: '반려동물 행사 OR 반려견 이벤트 축제'
+  };
+
+  app.get('/api/news/search', async (req, res) => {
+    try {
+      const { category, page = '1' } = req.query;
+      const categoryStr = String(category || 'training');
+      const pageNum = parseInt(String(page), 10) || 1;
+      
+      // 환경 변수 확인
+      const apiKey = process.env.GOOGLE_CUSTOM_SEARCH_API_KEY;
+      const searchEngineId = process.env.GOOGLE_CUSTOM_SEARCH_ENGINE_ID;
+      
+      if (!apiKey || !searchEngineId) {
+        console.warn('[News API] Google Custom Search 환경 변수가 설정되지 않았습니다.');
+        // 환경 변수가 없으면 샘플 데이터 반환
+        return res.json({
+          success: true,
+          articles: getSampleNewsArticles(categoryStr),
+          totalResults: 10,
+          page: pageNum,
+          message: 'Google Custom Search API가 설정되지 않아 샘플 뉴스를 표시합니다.'
+        });
+      }
+      
+      const query = newsSearchQueries[categoryStr] || newsSearchQueries.training;
+      const start = (pageNum - 1) * 10 + 1; // Google CSE는 1부터 시작
+      
+      // Google Custom Search API 호출
+      const searchUrl = new URL('https://www.googleapis.com/customsearch/v1');
+      searchUrl.searchParams.set('key', apiKey);
+      searchUrl.searchParams.set('cx', searchEngineId);
+      searchUrl.searchParams.set('q', query);
+      searchUrl.searchParams.set('start', String(start));
+      searchUrl.searchParams.set('num', '10');
+      searchUrl.searchParams.set('lr', 'lang_ko'); // 한국어 결과
+      searchUrl.searchParams.set('dateRestrict', 'm3'); // 최근 3개월
+      searchUrl.searchParams.set('sort', 'date'); // 최신순
+      
+      const response = await fetch(searchUrl.toString());
+      
+      if (!response.ok) {
+        console.error('[News API] Google API 오류:', response.status);
+        return res.json({
+          success: true,
+          articles: getSampleNewsArticles(categoryStr),
+          totalResults: 10,
+          page: pageNum,
+          message: 'API 오류로 인해 샘플 뉴스를 표시합니다.'
+        });
+      }
+      
+      const data = await response.json();
+      
+      // 결과 변환
+      const articles = (data.items || []).map((item: any, index: number) => ({
+        id: `news-${Date.now()}-${index}`,
+        title: item.title,
+        description: item.snippet,
+        url: item.link,
+        image: item.pagemap?.cse_thumbnail?.[0]?.src || 
+               item.pagemap?.cse_image?.[0]?.src || 
+               item.pagemap?.metatags?.[0]?.['og:image'] ||
+               null,
+        source: item.displayLink,
+        publishedAt: item.pagemap?.metatags?.[0]?.['article:published_time'] || 
+                     item.pagemap?.metatags?.[0]?.['og:updated_time'] ||
+                     new Date().toISOString(),
+        category: categoryStr
+      }));
+      
+      res.json({
+        success: true,
+        articles,
+        totalResults: parseInt(data.searchInformation?.totalResults || '0', 10),
+        page: pageNum
+      });
+      
+    } catch (error: any) {
+      console.error('[News API] 뉴스 검색 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '뉴스를 검색하는 중 오류가 발생했습니다.',
+        error: error.message
+      });
+    }
+  });
+  
+  // 샘플 뉴스 데이터 생성 함수
+  function getSampleNewsArticles(category: string) {
+    const sampleData: Record<string, any[]> = {
+      training: [
+        {
+          id: 'sample-1',
+          title: '강아지 훈련의 황금시기, 생후 3~6개월이 중요한 이유',
+          description: '전문가들은 강아지의 사회화 교육이 생후 3개월부터 시작되어야 한다고 조언합니다. 이 시기에 형성된 습관이 평생을 좌우합니다.',
+          url: 'https://example.com/news/training-1',
+          image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date().toISOString(),
+          category: 'training'
+        },
+        {
+          id: 'sample-2',
+          title: '긍정 강화 훈련법, 올바른 보상 타이밍이 핵심',
+          description: '행동 직후 0.5초 이내에 보상을 제공해야 강아지가 정확히 어떤 행동에 대한 칭찬인지 이해할 수 있습니다.',
+          url: 'https://example.com/news/training-2',
+          image: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date(Date.now() - 86400000).toISOString(),
+          category: 'training'
+        },
+        {
+          id: 'sample-3',
+          title: '산책 중 당김 교정, 전문가가 알려주는 효과적인 방법',
+          description: '줄을 당기면 멈추고, 느슨해지면 다시 걷는 방식을 반복하면 2주 내에 개선 효과를 볼 수 있습니다.',
+          url: 'https://example.com/news/training-3',
+          image: 'https://images.unsplash.com/photo-1558929996-da64ba858215?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date(Date.now() - 172800000).toISOString(),
+          category: 'training'
+        }
+      ],
+      survey: [
+        {
+          id: 'sample-4',
+          title: '2024 반려동물 양육 현황 조사 결과 발표',
+          description: '국내 반려동물 양육 가구가 600만을 돌파했으며, 반려견의 평균 양육 비용은 월 25만원으로 조사되었습니다.',
+          url: 'https://example.com/news/survey-1',
+          image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date().toISOString(),
+          category: 'survey'
+        },
+        {
+          id: 'sample-5',
+          title: '반려인 70% "훈련 교육 필요성 느껴"',
+          description: '설문조사 결과, 반려인 10명 중 7명이 전문 훈련의 필요성을 느끼고 있으며, 주요 관심사는 기본 복종과 사회화였습니다.',
+          url: 'https://example.com/news/survey-2',
+          image: 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date(Date.now() - 86400000).toISOString(),
+          category: 'survey'
+        }
+      ],
+      info: [
+        {
+          id: 'sample-6',
+          title: '여름철 반려견 건강 관리 필수 가이드',
+          description: '무더운 여름, 반려견의 열사병 예방을 위해 산책 시간과 수분 섭취에 주의해야 합니다.',
+          url: 'https://example.com/news/info-1',
+          image: 'https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date().toISOString(),
+          category: 'info'
+        },
+        {
+          id: 'sample-7',
+          title: '노령견 케어, 달라지는 건강 관리 포인트',
+          description: '7세 이상 노령견은 정기 건강검진과 함께 관절, 치아, 인지 기능에 대한 관리가 필요합니다.',
+          url: 'https://example.com/news/info-2',
+          image: 'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date(Date.now() - 86400000).toISOString(),
+          category: 'info'
+        }
+      ],
+      events: [
+        {
+          id: 'sample-8',
+          title: '2024 대한민국 반려동물 박람회 개최 안내',
+          description: '오는 12월 서울 코엑스에서 국내 최대 규모의 반려동물 박람회가 개최됩니다. 다양한 체험 프로그램도 준비되어 있습니다.',
+          url: 'https://example.com/news/events-1',
+          image: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date().toISOString(),
+          category: 'events'
+        },
+        {
+          id: 'sample-9',
+          title: '반려견과 함께하는 마라톤 대회 참가자 모집',
+          description: '반려견과 함께 달리는 5km 마라톤 대회가 열립니다. 완주자 전원에게 기념품이 제공됩니다.',
+          url: 'https://example.com/news/events-2',
+          image: 'https://images.unsplash.com/photo-1558929996-da64ba858215?w=400',
+          source: 'TALEZ 뉴스',
+          publishedAt: new Date(Date.now() - 86400000).toISOString(),
+          category: 'events'
+        }
+      ]
+    };
+    
+    return sampleData[category] || sampleData.training;
+  }
+  
+  console.log('[News API] 구글 뉴스 검색 API 엔드포인트가 등록되었습니다.');
+  console.log('  - GET /api/news/search (카테고리별 뉴스 검색)');
+
   // FCM 푸시 알림 라우트
   import('./routes/fcm').then(fcmModule => {
     app.use('/api/fcm', fcmModule.default);
