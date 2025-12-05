@@ -12,7 +12,7 @@ export const TalezIcon: React.FC<{
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
   className?: string;
-}> = ({ bg = 'var(--tile-emerald)', size = 'md', children, className }) => {
+}> = ({ bg = 'var(--tile-primary)', size = 'md', children, className }) => {
   const sizeClasses = {
     sm: 'h-12 w-12',
     md: 'h-16 w-16', 

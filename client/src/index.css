@@ -23,20 +23,20 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
     
-    /* 주 색상 - TALEZ 그린 (#2BAA61) */
-    --primary: 141 56% 42%;
+    /* 주 색상 - TALEZ 코랄 (로고 기반) */
+    --primary: 11 78% 65%;
     --primary-foreground: 0 0% 100%;
     
-    /* 보조 색상 - 그레이 톤으로 단순화 */
-    --secondary: 240 10% 96%;
+    /* 보조 색상 - 따뜻한 옐로우 */
+    --secondary: 43 96% 60%;
     --secondary-foreground: 240 10% 10%;
     
     /* 뮤트 색상 */
     --muted: 240 10% 96%;
     --muted-foreground: 240 5% 45%;
     
-    /* 액센트 색상 - Primary와 동일하게 통일 */
-    --accent: 141 56% 42%;
+    /* 액센트 색상 - 오렌지 액센트 */
+    --accent: 24 92% 58%;
     --accent-foreground: 0 0% 100%;
     
     /* 파괴적 액션 색상 - Danger (#E74D3C) */
@@ -65,20 +65,20 @@
     --popover: 240 10% 12%;
     --popover-foreground: 0 0% 95%;
     
-    /* 다크 모드 주 색상 - TALEZ 그린 밝게 */
-    --primary: 141 56% 55%;
+    /* 다크 모드 주 색상 - TALEZ 코랄 밝게 */
+    --primary: 11 78% 70%;
     --primary-foreground: 0 0% 10%;
     
-    /* 다크 모드 보조 색상 - 그레이 톤 */
-    --secondary: 240 10% 18%;
-    --secondary-foreground: 0 0% 95%;
+    /* 다크 모드 보조 색상 - 옐로우 */
+    --secondary: 43 96% 65%;
+    --secondary-foreground: 0 0% 10%;
     
     /* 다크 모드 뮤트 */
     --muted: 240 10% 18%;
     --muted-foreground: 240 5% 65%;
     
-    /* 다크 모드 액센트 - Primary와 동일 */
-    --accent: 141 56% 55%;
+    /* 다크 모드 액센트 - 오렌지 */
+    --accent: 24 92% 65%;
     --accent-foreground: 0 0% 10%;
     
     /* 다크 모드 파괴적 액션 */
@@ -881,19 +881,19 @@
 /* TALEZ 디자인 토큰 시스템 - 모던 스타일 */
 @layer base {
   :root {
-    /* TALEZ 브랜드 색상 - 모던 팔레트 */
-    --talez-primary: 250 70% 50%;     /* 모던 인디고 */
-    --talez-primary-light: 250 70% 70%;
-    --talez-secondary: 10 80% 65%;    /* 따뜻한 코랄 */
-    --talez-accent: 170 60% 45%;      /* 프레시 민트 */
+    /* TALEZ 브랜드 색상 - 로고 기반 팔레트 */
+    --talez-primary: 11 78% 65%;      /* 코랄 (로고 메인) */
+    --talez-primary-light: 11 78% 80%;
+    --talez-secondary: 43 96% 60%;    /* 옐로우 (로고 서브) */
+    --talez-accent: 24 92% 58%;       /* 오렌지 (로고 액센트) */
     
     /* 타일 색상 시스템 */
-    --tile-primary: #F0EBFF;          /* 인디고 틴트 */
-    --tile-secondary: #FFE8E8;        /* 코랄 틴트 */
-    --tile-blue: #E8F1FF;             /* 블루 틴트 */
-    --tile-purple: #EEE7FF;           /* 퍼플 틴트 */
-    --tile-yellow: #FFF6D6;           /* 옐로우 틴트 */
-    --tile-pink: #FFE4EA;             /* 핑크 틴트 */
+    --tile-primary: #FFE8E0;          /* 코랄 틴트 */
+    --tile-secondary: #FFF6D6;        /* 옐로우 틴트 */
+    --tile-orange: #FFE4D0;           /* 오렌지 틴트 */
+    --tile-peach: #FFEEE8;            /* 피치 틴트 */
+    --tile-cream: #FFF8E8;            /* 크림 틴트 */
+    --tile-warm: #FFE8D8;             /* 웜 틴트 */
     --tile-gray: #F8FAFC;             /* 그레이 틴트 */
     
     /* 텍스트 컬러 시스템 */
