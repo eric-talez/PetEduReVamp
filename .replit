@@ -145,3 +145,9 @@ integrations = [
   "javascript_openai:1.0.0",
   "javascript_gemini:1.0.0",
 ]
+
+[userenv]
+
+[userenv.shared]
+GOOGLE_CSE_ID = "f343e762f44de42db"
+GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "f343e762f44de42db"

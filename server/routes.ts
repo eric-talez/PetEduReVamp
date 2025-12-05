@@ -15640,7 +15640,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const categoryStr = String(category || 'training');
       const pageNum = parseInt(String(page), 10) || 1;
       
-      // 환경 변수 확인
+      // 환경 변수 확인 (Google Custom Search 전용 API 키 사용)
       const apiKey = process.env.GOOGLE_CUSTOM_SEARCH_API_KEY;
       const searchEngineId = process.env.GOOGLE_CUSTOM_SEARCH_ENGINE_ID;
       
