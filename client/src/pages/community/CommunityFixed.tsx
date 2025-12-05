@@ -1413,11 +1413,19 @@ function CommunityPage() {
                 )}
 
                 {!newsLoading && newsArticles.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {newsArticles.map((article: NewsArticle) => (
-                      <NewsCard key={article.id} article={article} />
-                    ))}
-                  </div>
+                  viewType === 'card' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {newsArticles.map((article: NewsArticle) => (
+                        <NewsCard key={article.id} article={article} viewType="card" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {newsArticles.map((article: NewsArticle) => (
+                        <NewsCard key={article.id} article={article} viewType="list" />
+                      ))}
+                    </div>
+                  )
                 )}
 
                 {!newsLoading && newsArticles.length === 0 && (
