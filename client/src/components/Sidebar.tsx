@@ -177,7 +177,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center min-h-[44px] py-3 text-base font-medium rounded-lg transition-all duration-200 ease-in-out px-3 group md:text-sm md:min-h-[40px]",
+        "sidebar-link flex items-center min-h-[48px] py-3.5 text-base font-medium rounded-lg transition-all duration-200 ease-in-out px-3 group",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900",
         active 
           ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
@@ -189,10 +189,10 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
       role="button"
       aria-current={active ? "page" : undefined}
     >
-      <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3 w-6 h-6 flex items-center justify-center">
+      <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3.5 w-6 h-6 flex items-center justify-center flex-shrink-0">
         {icon}
       </div>
-      <span className="transition-all duration-200 group-hover:translate-x-1">{children}</span>
+      <span className="transition-all duration-200 group-hover:translate-x-1 text-base leading-relaxed">{children}</span>
     </a>
   );
 }
