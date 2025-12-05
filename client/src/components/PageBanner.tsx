@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 
 interface PageBannerProps {
@@ -39,7 +39,7 @@ export function PageBanner({
         {actions && actions.length > 0 && (
           <div className="flex flex-wrap gap-4 md:gap-6 justify-center">
             {actions.map((action, index) => (
-              <Link key={index} to={action.href}>
+              <Link key={index} href={action.href}>
                 <Button
                   variant={index === 0 ? "default" : "outline"}
                   size="lg"
