@@ -57,27 +57,27 @@ export function BannerSlider() {
 
   return (
     <div 
-      className="relative overflow-hidden rounded-2xl shadow-2xl"
+      className="relative overflow-hidden rounded-xl shadow-lg"
       role="region"
       aria-label="배너 슬라이더" 
       aria-roledescription="carousel">
-      <Card className="relative h-[450px] overflow-hidden border-0">
+      <Card className="relative h-[320px] md:h-[360px] overflow-hidden border-0">
         <img
           src={banners[currentIndex].image}
           alt={`${banners[currentIndex].title} - ${banners[currentIndex].description}`}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
           aria-hidden="true"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent">
-          <div className="absolute bottom-0 left-0 p-10 text-white max-w-2xl">
-            <h2 className="text-4xl font-bold mb-3 drop-shadow-lg leading-tight">{banners[currentIndex].title}</h2>
-            <p className="text-xl mb-6 drop-shadow-md font-medium leading-relaxed opacity-95">{banners[currentIndex].description}</p>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-transparent">
+          <div className="absolute bottom-0 left-0 p-6 md:p-8 text-white max-w-xl">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-md leading-tight">{banners[currentIndex].title}</h2>
+            <p className="text-sm md:text-base mb-4 drop-shadow-sm font-medium leading-relaxed opacity-90 line-clamp-2">{banners[currentIndex].description}</p>
             <Button 
               variant="default" 
-              size="lg"
+              size="default"
               asChild
-              className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-xl hover:shadow-2xl border-0 px-8 py-3"
+              className="bg-[#EB967C] hover:bg-[#E17A5E] text-white shadow-md hover:shadow-lg border-0 px-6 py-2"
             >
               <a href={banners[currentIndex].link}>자세히 보기</a>
             </Button>
@@ -88,31 +88,31 @@ export function BannerSlider() {
       <Button
         variant="ghost"
         size="icon"
-        className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-emerald-700 hover:text-emerald-800 shadow-lg backdrop-blur-sm rounded-full h-12 w-12 border border-white/20"
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#EB967C] hover:text-[#E17A5E] shadow-md backdrop-blur-sm rounded-full h-10 w-10"
         onClick={prevSlide}
         aria-label="이전 배너"
       >
-        <ChevronLeft className="h-6 w-6" />
+        <ChevronLeft className="h-5 w-5" />
       </Button>
 
       <Button
         variant="ghost"
         size="icon"
-        className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-emerald-700 hover:text-emerald-800 shadow-lg backdrop-blur-sm rounded-full h-12 w-12 border border-white/20"
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#EB967C] hover:text-[#E17A5E] shadow-md backdrop-blur-sm rounded-full h-10 w-10"
         onClick={nextSlide}
         aria-label="다음 배너"
       >
-        <ChevronRight className="h-6 w-6" />
+        <ChevronRight className="h-5 w-5" />
       </Button>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3" role="tablist">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2" role="tablist">
         {banners.map((banner, index) => (
           <button
             key={index}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-1.5 rounded-full transition-all duration-300 ${
               index === currentIndex 
-                ? "bg-white w-8 shadow-lg" 
-                : "bg-white/60 w-2 hover:bg-white/80"
+                ? "bg-white w-6" 
+                : "bg-white/50 w-1.5 hover:bg-white/70"
             }`}
             onClick={() => setCurrentIndex(index)}
             aria-label={`${banner.title} 배너로 이동`}
