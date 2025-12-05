@@ -29,28 +29,35 @@ interface Request extends ExpressRequest {
 }
 
 export function registerMenuRoutes(app: Express) {
-  // 메뉴 설정 가져오기 - 권한별 필터링 추가
+  // 메뉴 설정 가져오기 - 권한별 필터링
   app.get('/api/menu-configuration', async (req: Request, res: Response) => {
     try {
-      console.log('[메뉴API] GET /api/menu-configuration 요청');
-      const userRole = req.user?.role || 'user';
-      const instituteId = req.query.instituteId;
+      const userRole = req.user?.role || 'pet-owner';
       
-      console.log('[메뉴API] 사용자 역할:', userRole, '기관ID:', instituteId);
+      // 역할에 따른 메뉴 필터링 (간소화)
+      const filteredItems = DEFAULT_MENU_CONFIGURATION.items.filter(item => 
+        item.isPublic || item.roles.includes(userRole as any)
+      );
       
-      // 사용자 역할에 따른 메뉴 필터링
-      const filteredMenuConfig = {
-        ...DEFAULT_MENU_CONFIGURATION,
-        items: DEFAULT_MENU_CONFIGURATION.items.filter(item => 
-          item.roles.includes(userRole as any) || item.isPublic
-        ),
-        groups: DEFAULT_MENU_CONFIGURATION.groups.filter(group => 
-          group.roles.includes(userRole as any) || group.isPublic
-        )
-      };
+      const filteredGroups = DEFAULT_MENU_CONFIGURATION.groups.filter(group => 
+        group.isPublic || group.roles.includes(userRole as any)
+      );
       
-      console.log('[메뉴API] 필터링된 메뉴 항목 수:', filteredMenuConfig.items.length);
-      return res.json(filteredMenuConfig);
+      // 카테고리별로 정렬
+      const sortedItems = filteredItems.sort((a, b) => {
+        if (a.category === b.category) {
+          return a.orderIndex - b.orderIndex;
+        }
+        const categoryOrder = ['main', 'learning', 'management', 'tools', 'admin'];
+        return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category);
+      });
+      
+      return res.json({
+        groups: filteredGroups,
+        items: sortedItems,
+        lastUpdated: DEFAULT_MENU_CONFIGURATION.lastUpdated,
+        updatedBy: DEFAULT_MENU_CONFIGURATION.updatedBy
+      });
     } catch (error) {
       console.error('❌ 메뉴 설정 조회 오류:', error);
       res.status(500).json({ error: '메뉴 설정을 가져오는데 실패했습니다.' });

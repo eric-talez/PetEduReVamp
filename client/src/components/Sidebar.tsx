@@ -247,19 +247,22 @@ export function Sidebar({
   }, [onToggleExpand]);
 
   // 메인 메뉴는 기본적으로 열린 상태, 나머지는 닫힌 상태로 시작
-  const [menuGroups, setMenuGroups] = useState(() => {
-    return {
-      main: true,         // 메인 메뉴 - 기본 열림
-      learning: false,    // 학습 메뉴
-      management: false,  // 운영 관리 메뉴
-      tools: false,       // 도구 메뉴
-      adminDashboard: false, // 관리자 대시보드
-      admin: false,       // 시스템 관리 메뉴
-      trainer: false,     // 훈련사 메뉴
-      institute: false,   // 기관 메뉴
-      myLearning: false,  // 나의 학습 메뉴
-      features: false     // 기능 메뉴
-    };
+  // 메뉴 설정 API에서 가져오기
+  const { data: menuConfig } = useQuery({
+    queryKey: ['/api/menu-configuration'],
+    queryFn: async () => {
+      const response = await fetch('/api/menu-configuration');
+      if (!response.ok) throw new Error('Failed to fetch menu');
+      return response.json();
+    }
+  });
+
+  const [menuGroups, setMenuGroups] = useState<Record<string, boolean>>({
+    main: true,
+    learning: false,
+    management: false,
+    tools: false,
+    admin: false
   });
 
   useEffect(() => {
