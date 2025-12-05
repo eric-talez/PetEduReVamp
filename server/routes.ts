@@ -15673,7 +15673,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const response = await fetch(searchUrl.toString());
       
       if (!response.ok) {
-        console.error('[News API] Google API 오류:', response.status);
+        const errorBody = await response.text();
+        console.error('[News API] Google API 오류:', response.status, errorBody);
         return res.json({
           success: true,
           articles: getSampleNewsArticles(categoryStr),
