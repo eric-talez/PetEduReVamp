@@ -139,7 +139,7 @@ export default function Home() {
     setUploadError('');
   };
 
-  // 기본 배너 데이터 (관리자 배너가 없을 때 사용)
+  // 기본 배너 데이터 (관리자 배너가 없을 때 사용) - 핵심 4개로 축소
   const defaultBannerSlides = [
     {
       id: 1,
@@ -161,70 +161,25 @@ export default function Home() {
     },
     {
       id: 3,
-      title: "스마트한 반려동물 용품 쇼핑",
-      subtitle: "AI 추천 시스템으로 우리 반려동물에게 딱 맞는 용품을 찾아보세요",
-      features: ["AI 추천", "빠른 배송", "친환경 제품", "로열티 혜택"],
-      image: "/attached_assets/stock_images/pet_owner_shopping_o_86fedd4a.jpg",
-      primaryAction: { text: "쇼핑하기", path: "/shop" },
-      secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
+      title: "전국 교육기관과 함께하는 체계적 훈련",
+      subtitle: "공평점과 석적점에서 전문적인 반려견 교육 서비스를 만나보세요",
+      features: ["전국 지점", "전문 시설", "개별 맞춤", "온·오프라인"],
+      image: "/attached_assets/stock_images/modern_pet_training__82d46879.jpg",
+      primaryAction: { text: "교육기관 찾기", path: "/institutes" },
+      secondaryAction: { text: "화상 교육", path: "/video-training" }
     },
     {
       id: 4,
-      title: "전국 지점 운영 - 편리한 접근성",
-      subtitle: "공평점과 석적점에서 전문적인 반려견 교육 서비스를 만나보세요",
-      features: ["전국 지점", "편리한 위치", "전문 시설", "개별 맞춤"],
-      image: "/attached_assets/stock_images/modern_pet_training__82d46879.jpg",
-      primaryAction: { text: "화상 교육", path: "/video-training" },
-      secondaryAction: { text: "훈련사 보기", path: "/trainers" }
-    },
-    {
-      id: 5,
-      title: "반려견 건강 관리 & 기록",
-      subtitle: "반려견의 건강 상태를 체계적으로 관리하고 기록해보세요",
-      features: ["건강 기록", "예방접종 알림", "병원 예약", "전문 상담"],
-      image: "/attached_assets/stock_images/happy_healthy_dog_ge_4c9ac208.jpg",
-      primaryAction: { text: "건강 관리", path: "/health" },
-      secondaryAction: { text: "기록 시작", path: "/health-record" }
-    },
-    {
-      id: 6,
-      title: "반려견 교육 용품 쇼핑몰",
-      subtitle: "교육에 필요한 다양한 용품들을 한 곳에서 만나보세요",
-      features: ["훈련사 추천", "교육 연계 할인", "빠른 배송"],
-      image: "/attached_assets/stock_images/professional_dog_tra_64c29073.jpg",
+      title: "스마트한 반려동물 용품 쇼핑",
+      subtitle: "AI 추천 시스템으로 우리 반려동물에게 딱 맞는 용품을 찾아보세요",
+      features: ["AI 추천", "빠른 배송", "훈련사 추천", "로열티 혜택"],
+      image: "/attached_assets/stock_images/pet_owner_shopping_o_86fedd4a.jpg",
       primaryAction: { text: "쇼핑하기", path: "/shop" },
       secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
-    },
-    {
-      id: 7,
-      title: "반려인 커뮤니티",
-      subtitle: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
-      features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
-      image: "/attached_assets/stock_images/certified_dog_traine_77d3de76.jpg",
-      primaryAction: { text: "커뮤니티", path: "/community" },
-      secondaryAction: { text: "게시글 작성", path: "/community/create" }
-    },
-    {
-      id: 8,
-      title: "전문 훈련사로 활동하기",
-      subtitle: "전문 지식과 경험을 바탕으로 TALEZ 플랫폼에서 훈련사로 활동하세요",
-      features: ["훈련사 등록", "고객 매칭", "안정적 수익"],
-      image: "/attached_assets/stock_images/certified_dog_traine_a553a840.jpg",
-      primaryAction: { text: "훈련사 등록", path: "/registration/trainer" },
-      secondaryAction: { text: "혜택 보기", path: "/trainer/benefits" }
-    },
-    {
-      id: 9,
-      title: "교육 기관 및 훈련소 등록",
-      subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 TALEZ와 함께하세요",
-      features: ["기관 등록", "코스 관리", "수익 창출"],
-      image: "/attached_assets/stock_images/happy_healthy_dog_ge_afc0c66b.jpg",
-      primaryAction: { text: "기관 등록", path: "/registration/institute" },
-      secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
   ];
 
-  // 훈련사 전용 배너 슬라이드
+  // 훈련사 전용 배너 슬라이드 - 핵심 6개로 축소
   const trainerBannerSlides = [
     {
       id: 101,
@@ -246,7 +201,7 @@ export default function Home() {
     },
     {
       id: 103,
-      title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
+      title: "온·오프라인 통합 교육 시스템",
       subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
       features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
       image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
@@ -254,92 +209,29 @@ export default function Home() {
       secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
     },
     {
-      id: 105,
-      title: "반려견 교육의 미래를 함께 만들어갑니다",
-      subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
-      features: ["업계 선도", "혁신 기술", "미래 교육"],
-      image: "/attached_assets/image_1746582251297.png",
-      primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
-      secondaryAction: { text: "미래 교육", path: "/trainer/future-education" }
-    },
-    {
-      id: 106,
-      title: "더 많은 반려인들이 당신을 찾고 있습니다",
-      subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
-      features: ["전국 고객 연결", "안정적 수익", "브랜드 인지도"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
-      primaryAction: { text: "고객 연결", path: "/trainer/customer-connect" },
-      secondaryAction: { text: "성공 사례", path: "/trainer/success-stories" }
-    },
-    {
-      id: 107,
-      title: "전문 훈련사의 가치를 제대로 인정받으세요",
-      subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
-      features: ["공정한 보상", "투명한 정산", "전문가 대우"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
-      primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
-      secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
-    },
-    {
-      id: 108,
-      title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
-      subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
-      features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
-      image: "/attached_assets/image_1746582251297.png",
-      primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
-      secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
-    },
-    {
-      id: 110,
-      title: "반려견 교육의 미래를 함께 만들어갑니다",
-      subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
-      features: ["업계 선도", "혁신 기술", "미래 교육"],
-      image: "/attached_assets/image_1746582251297.png",
-      primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
-      secondaryAction: { text: "미래 교육", path: "/trainer/future-education" }
-    },
-    {
-      id: 111,
-      title: "성공하는 훈련사들의 비밀, TALEZ가 알려드립니다.",
-      subtitle: "검증된 성공 사례와 전략으로 당신의 훈련사 비즈니스를 성장시키세요",
-      features: ["성공 전략", "사례 분석", "비즈니스 멘토링"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
-      primaryAction: { text: "성공 전략", path: "/trainer/success-strategies" },
-      secondaryAction: { text: "멘토링 신청", path: "/trainer/mentoring" }
-    },
-    {
-      id: 112,
-      title: "24시간 언제든지 상담 예약이 들어옵니다.",
-      subtitle: "TALEZ 플랫폼으로 시간과 장소에 구애받지 않고 더 많은 수익을 창출하세요",
+      id: 104,
+      title: "24시간 자동 예약 시스템",
+      subtitle: "시간과 장소에 구애받지 않고 더 많은 수익을 창출하세요",
       features: ["24시간 예약", "자동 스케줄링", "수익 극대화"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
       primaryAction: { text: "예약 시스템", path: "/trainer/booking-system" },
       secondaryAction: { text: "수익 통계", path: "/trainer/revenue" }
     },
     {
-      id: 113,
-      title: "전국 어디서든 당신의 전문성을 인정받으세요.",
-      subtitle: "지역 제약 없이 전국의 반려인들에게 서비스를 제공할 수 있습니다",
-      features: ["전국 서비스", "원격 상담", "무제한 고객"],
-      image: "/attached_assets/image_1746582251297.png",
-      primaryAction: { text: "서비스 확장", path: "/trainer/expand-service" },
-      secondaryAction: { text: "원격 상담", path: "/trainer/remote-consulting" }
-    },
-    {
-      id: 114,
-      title: "프리미엄 훈련사로 차별화된 서비스를 제공하세요.",
-      subtitle: "고급 인증과 특별한 혜택으로 더 높은 수준의 서비스를 제공할 수 있습니다",
+      id: 105,
+      title: "프리미엄 훈련사 인증 프로그램",
+      subtitle: "고급 인증과 특별한 혜택으로 더 높은 수준의 서비스를 제공하세요",
       features: ["프리미엄 인증", "차별화 서비스", "높은 수수료"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
       primaryAction: { text: "프리미엄 등급", path: "/trainer/premium-tier" },
       secondaryAction: { text: "인증 신청", path: "/trainer/certification-apply" }
     },
     {
-      id: 115,
-      title: "AI 기술로 더 효과적인 훈련 결과를 만들어보세요.",
+      id: 106,
+      title: "AI 기반 훈련 효과 분석",
       subtitle: "최신 AI 분석 도구와 데이터를 활용해 훈련 효과를 극대화하세요",
       features: ["AI 분석", "데이터 활용", "효과 최적화"],
-      image: "/attached_assets/image_1746582251297.png",
+      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
       primaryAction: { text: "AI 도구", path: "/trainer/ai-tools" },
       secondaryAction: { text: "분석 리포트", path: "/trainer/analytics-report" }
     }
@@ -1432,55 +1324,6 @@ export default function Home() {
           <RealTimePopularChart />
         </div>
 
-
-        {/* 서비스 소개 섹션 */}
-        <TalezSection className="py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4" style={{ color: 'var(--txt-strong)' }}>
-              우리의 서비스
-            </h2>
-          </div>
-          <TalezGrid cols={3}>
-            <TalezCard variant="default">
-              <TalezIcon bg="var(--tile-blue)">
-                <BookOpen className="h-6 w-6" />
-              </TalezIcon>
-              <div>
-                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>교육 프로그램</h3>
-                <p style={{ color: 'var(--txt-secondary)' }}>다양한 상황에 맞는 교육 프로그램으로 반려견의 행동 개선을 도와드립니다.</p>
-                <TalezButton variant="ghost" size="sm" className="mt-3">
-                  <Link href="/courses">프로그램 보기</Link>
-                </TalezButton>
-              </div>
-            </TalezCard>
-
-            <TalezCard variant="default">
-              <TalezIcon bg="var(--tile-green)">
-                <LucideUsers className="h-6 w-6" />
-              </TalezIcon>
-              <div>
-                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>전문 트레이너</h3>
-                <p style={{ color: 'var(--txt-secondary)' }}>반려견의 개별 특성과 성향에 맞춘 맞춤형 교육 솔루션을 제공합니다.</p>
-                <TalezButton variant="ghost" size="sm" className="mt-3">
-                  <Link href="/trainers">트레이너 찾기</Link>
-                </TalezButton>
-              </div>
-            </TalezCard>
-
-            <TalezCard variant="default">
-              <TalezIcon bg="var(--tile-purple)">
-                <Video className="h-6 w-6" />
-              </TalezIcon>
-              <div>
-                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>온라인 화상 교육</h3>
-                <p style={{ color: 'var(--txt-secondary)' }}>언제 어디서나 편리하게 전문가와 실시간 화상 교육을 통해 훈련할 수 있습니다.</p>
-                <TalezButton variant="ghost" size="sm" className="mt-3">
-                  <Link href="/video-call">화상 교육 체험하기</Link>
-                </TalezButton>
-              </div>
-            </TalezCard>
-          </TalezGrid>
-        </TalezSection>
 
         {/* 쇼핑 페이지 접근 컴포넌트 */}
         <ShopPreview />
