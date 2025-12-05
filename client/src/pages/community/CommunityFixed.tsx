@@ -260,8 +260,8 @@ interface NewsArticle {
   category: string;
 }
 
-// 뉴스 카드 컴포넌트
-const NewsCard = ({ article }: { article: NewsArticle }) => {
+// 뉴스 카드 컴포넌트 (카드형/리스트형 지원)
+const NewsCard = ({ article, viewType = 'card' }: { article: NewsArticle; viewType?: 'card' | 'list' }) => {
   const formatDate = (dateString: string) => {
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: ko });
@@ -274,6 +274,57 @@ const NewsCard = ({ article }: { article: NewsArticle }) => {
     window.open(article.url, '_blank', 'noopener,noreferrer');
   };
 
+  // 리스트형 뷰
+  if (viewType === 'list') {
+    return (
+      <Card 
+        className="cursor-pointer hover:shadow-md transition-shadow" 
+        onClick={handleClick}
+        data-testid={`news-list-${article.id}`}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start gap-4">
+            {/* 썸네일 이미지 */}
+            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
+              {article.image ? (
+                <img 
+                  src={article.image} 
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ExternalLink className="h-8 w-8 text-gray-400" />
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary" className="bg-blue-600 text-white text-xs">
+                  뉴스
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  외부 링크
+                </Badge>
+                <span className="text-xs text-gray-500">
+                  {article.source} • {formatDate(article.publishedAt)}
+                </span>
+              </div>
+              <h3 className="font-semibold text-lg mb-2 line-clamp-1">{article.title}</h3>
+              <p className="text-gray-600 text-sm line-clamp-2">{article.description}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // 카드형 뷰 (기본)
   return (
     <Card 
       className="h-full cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-primary/20" 
