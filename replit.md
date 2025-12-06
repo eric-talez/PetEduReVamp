@@ -3,7 +3,16 @@
 ## Overview
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
-## Recent Changes (November 15, 2025)
+## Recent Changes (December 6, 2025)
+### Sidebar Menu Structure Optimization
+- **Role-based Menu Organization**: Consolidated management menus under "운영 관리" group
+  - Trainer-specific menus: `/trainer/my-points`, `/trainer/rest-management`, `/trainer/substitute-board`, `/trainer/notebook`, `/trainer/settings`
+  - Institute-admin-specific menus: `/institute/my-points`, `/institute/rest-management`, `/institute/substitute-management`, `/institute/notebook-monitor`, `/institute/trainers`, `/institute/facility`
+  - Shared menus: `/trainer/courses`, `/trainer/students`, `/trainer/earnings` (visible to both roles)
+- **Admin Multi-role Access**: Admin users see both trainer and institute-admin menus simultaneously via existing showTrainerMenu/showInstituteMenu flags
+- **Route Preservation**: Maintained separate legacy routes for each role to preserve component-specific functionality
+
+## Previous Changes (November 15, 2025)
 ### Banner Images & UI Consistency
 - **All Pages Banner Update**: Replaced external Unsplash images with custom TALEZ Green branded banner images
   - Pages updated: Home (3 banners), Video Call, Shop, Trainers, Courses, Notebook, Institutes
