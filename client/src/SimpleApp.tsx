@@ -768,8 +768,6 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/trainer/substitute-board" component={SubstituteClassBoard} />
                   <Route path="/trainer/substitute-class-board" component={SubstituteClassBoard} />
 
-
-
                   {/* 기관 관리자 메뉴 */}
                   <Route path="/institute/dashboard">
                     {() => {
