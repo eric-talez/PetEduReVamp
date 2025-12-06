@@ -397,8 +397,8 @@ const NewsCardSkeleton = () => (
   </Card>
 );
 
-// 뉴스 탭 확인 함수
-const isNewsTab = (tab: string) => ['training', 'survey', 'info', 'events'].includes(tab);
+// 뉴스 탭 확인 함수 (최신글, 인기글에서도 뉴스 포함)
+const isNewsTab = (tab: string) => ['latest', 'popular', 'training', 'survey', 'info', 'events'].includes(tab);
 
 // 메인 커뮤니티 페이지 컴포넌트
 function CommunityPage() {
@@ -589,7 +589,9 @@ function CommunityPage() {
     queryKey: ['/api/news/search', activeTab],
     queryFn: async () => {
       try {
-        const response = await fetch(`/api/news/search?category=${activeTab}`);
+        // 최신글/인기글 탭에서는 다양한 카테고리의 뉴스를 가져옴
+        const category = (activeTab === 'latest' || activeTab === 'popular') ? 'all' : activeTab;
+        const response = await fetch(`/api/news/search?category=${category}`);
         if (!response.ok) {
           throw new Error('뉴스를 불러올 수 없습니다');
         }
@@ -608,9 +610,47 @@ function CommunityPage() {
   // 뉴스 아티클 목록
   const newsArticles: NewsArticle[] = newsData?.articles || [];
 
-  // 페이지네이션
-  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
-  const paginatedPosts = filteredPosts.slice(
+  // 최신글/인기글 탭에서는 게시글과 뉴스를 통합하여 날짜순 정렬
+  const combinedPosts = useMemo(() => {
+    // 최신글이나 인기글 탭일 경우에만 뉴스를 게시글과 통합
+    if ((activeTab === 'latest' || activeTab === 'popular') && newsArticles.length > 0) {
+      // 뉴스를 게시글 형태로 변환
+      const newsAsPosts = newsArticles.map((article, index) => ({
+        id: `news-${article.url?.replace(/[^a-zA-Z0-9]/g, '-')}-${index}`,
+        title: article.title,
+        content: article.description,
+        tag: '뉴스',
+        category: '뉴스',
+        isNews: true,
+        newsData: article,
+        author: { name: article.source || '뉴스', image: '' },
+        createdAt: article.publishedAt,
+        likes: 0,
+        comments: 0,
+        views: 0,
+        linkInfo: {
+          url: article.url,
+          title: article.title,
+          description: article.description,
+          image: article.image
+        }
+      }));
+
+      // 게시글과 뉴스를 합친 후 날짜순 정렬 (최신순)
+      const combined = [...filteredPosts, ...newsAsPosts].sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA; // 최신순
+      });
+
+      return combined;
+    }
+    return filteredPosts;
+  }, [filteredPosts, newsArticles, activeTab]);
+
+  // 페이지네이션 (통합된 게시글 기준)
+  const totalPages = Math.ceil(combinedPosts.length / itemsPerPage);
+  const paginatedPosts = combinedPosts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -727,10 +767,16 @@ function CommunityPage() {
     },
   });
 
-  // 게시글 상세 보기
+  // 게시글 상세 보기 (뉴스인 경우 뉴스 모달 열기)
   const handlePostClick = (post: any) => {
-    setSelectedPost(post);
-    setIsPostDetailOpen(true);
+    if (post.isNews && post.newsData) {
+      // 뉴스 게시글인 경우 뉴스 상세 모달 열기
+      setSelectedNewsArticle(post.newsData);
+      setIsNewsDetailOpen(true);
+    } else {
+      setSelectedPost(post);
+      setIsPostDetailOpen(true);
+    }
   };
 
   // 뉴스 상세 보기

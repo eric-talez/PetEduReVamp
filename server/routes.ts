@@ -15628,6 +15628,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
   
   // 탭별 검색 쿼리 매핑
   const newsSearchQueries: Record<string, string> = {
+    all: '반려동물 뉴스 OR 반려견 소식 OR 펫 정보',
     training: '강아지 훈련 팁 OR 반려견 교육 방법',
     survey: '반려동물 설문조사 OR 반려견 통계',
     info: '강아지 건강 정보 OR 반려견 관리',
@@ -15822,6 +15823,19 @@ export function registerTrainerCertificationRoutes(app: Express) {
         }
       ]
     };
+    
+    // 'all' 카테고리인 경우 모든 카테고리에서 최신순으로 가져오기
+    if (category === 'all') {
+      const allArticles = [
+        ...sampleData.training,
+        ...sampleData.survey,
+        ...sampleData.info,
+        ...sampleData.events
+      ].sort((a, b) => 
+        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+      );
+      return allArticles;
+    }
     
     return sampleData[category] || sampleData.training;
   }
