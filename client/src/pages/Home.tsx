@@ -467,8 +467,11 @@ export default function Home() {
               <span className="talez-text-gradient">최고의 교육</span>을 찾아보세요
             </h1>
 
-            <p className="text-base md:text-lg mb-6 max-w-2xl mx-auto" style={{ color: 'var(--txt-secondary)' }}>
+            <p className="text-base md:text-lg mb-2 max-w-2xl mx-auto" style={{ color: 'var(--txt-secondary)' }}>
               전문 훈련사와 함께하는 맞춤형 반려동물 교육 서비스
+            </p>
+            <p className="text-sm md:text-base mb-6 max-w-2xl mx-auto" style={{ color: 'var(--txt-secondary)' }}>
+              가벼운 우리아이 상태에 대한 상담부터 훈련 컨설팅까지
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
