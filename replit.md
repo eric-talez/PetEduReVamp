@@ -4,6 +4,20 @@
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
 ## Recent Changes (December 6, 2025)
+### Comprehensive Notification System Integration
+- **All Major Actions Now Trigger Notifications**: 
+  - Event registration: Sends notification to user on successful event signup (`server/events/routes.ts`)
+  - Message reception: Dual delivery via WebSocket (real-time) + FCM (background) (`server/routes/messaging.ts`)
+  - Course enrollment: Notification on successful payment and enrollment (`server/routes.ts`)
+  - Order completion: Notification when product purchase is confirmed (`server/routes.ts`)
+  - Post likes: Notifies post author when their content receives likes (`server/routes/social.ts`)
+  - Post comments: Notifies post author when new comments are added (`server/routes/social.ts`)
+- **NotificationService Integration**: Centralized notification handling via `server/notifications/notification-service.ts`
+  - WebSocket delivery for online users
+  - FCM push notifications for background/offline users
+  - Database persistence for notification history
+- **Messaging System**: Fixed REST API polling with proper queryFn for conversation messages (10s polling for list, 3s for active conversation)
+
 ### Sidebar Menu Structure Optimization
 - **Role-based Menu Organization**: Consolidated management menus under "운영 관리" group
   - Trainer-specific menus: `/trainer/my-points`, `/trainer/rest-management`, `/trainer/substitute-board`, `/trainer/notebook`, `/trainer/settings`
