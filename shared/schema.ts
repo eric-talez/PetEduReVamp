@@ -1053,18 +1053,32 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  participant1Id: integer("participant1_id").references(() => users.id).notNull(),
+  participant2Id: integer("participant2_id").references(() => users.id).notNull(),
+  lastMessageAt: timestamp("last_message_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
   senderId: integer("sender_id").references(() => users.id).notNull(),
   receiverId: integer("receiver_id").references(() => users.id).notNull(),
   content: text("content").notNull(),
   isRead: boolean("is_read").default(false),
-  conversationId: integer("conversation_id"),
+  conversationId: integer("conversation_id").references(() => conversations.id),
   recipientId: integer("recipient_id").references(() => users.id),
   messageType: text("message_type").default("text"),
   attachments: text("attachments"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = typeof conversations.$inferInsert;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = typeof messages.$inferInsert;
 
 export const files = pgTable("files", {
   id: serial("id").primaryKey(),
