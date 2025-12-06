@@ -1,6 +1,6 @@
 import { db } from './db/index';
-import { logoSettings, users, products } from '../shared/schema';
-import { eq, desc } from 'drizzle-orm';
+import { logoSettings, users, products, conversations, messages } from '../shared/schema';
+import { eq, desc, or, and, sql } from 'drizzle-orm';
 
 class Storage {
   users: any[] = [];
@@ -5295,6 +5295,229 @@ class HybridStorage extends Storage {
       const vaccineDate = new Date(v.vaccineDate);
       return vaccineDate >= today && vaccineDate <= futureDate;
     }).sort((a, b) => new Date(a.vaccineDate).getTime() - new Date(b.vaccineDate).getTime());
+  }
+
+  // ==================== 메시징 시스템 ====================
+
+  async getOrCreateConversation(participant1Id: number, participant2Id: number): Promise<any> {
+    try {
+      const [id1, id2] = participant1Id < participant2Id 
+        ? [participant1Id, participant2Id] 
+        : [participant2Id, participant1Id];
+      
+      const existing = await db.select().from(conversations).where(
+        and(
+          eq(conversations.participant1Id, id1),
+          eq(conversations.participant2Id, id2)
+        )
+      ).limit(1);
+
+      if (existing.length > 0) {
+        return existing[0];
+      }
+
+      const newConversation = await db.insert(conversations).values({
+        participant1Id: id1,
+        participant2Id: id2,
+        lastMessageAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+
+      return newConversation[0];
+    } catch (error) {
+      console.error('[Storage] getOrCreateConversation 오류:', error);
+      throw error;
+    }
+  }
+
+  async getConversationsForUser(userId: number): Promise<any[]> {
+    try {
+      const userConversations = await db.select().from(conversations).where(
+        or(
+          eq(conversations.participant1Id, userId),
+          eq(conversations.participant2Id, userId)
+        )
+      ).orderBy(desc(conversations.lastMessageAt));
+
+      const conversationsWithDetails = await Promise.all(
+        userConversations.map(async (conv) => {
+          const otherUserId = conv.participant1Id === userId 
+            ? conv.participant2Id 
+            : conv.participant1Id;
+
+          const otherUser = await db.select({
+            id: users.id,
+            name: users.name,
+            role: users.role,
+            avatar: users.avatar
+          }).from(users).where(eq(users.id, otherUserId)).limit(1);
+
+          const lastMessage = await db.select().from(messages)
+            .where(eq(messages.conversationId, conv.id))
+            .orderBy(desc(messages.createdAt))
+            .limit(1);
+
+          const unreadCount = await db.select({
+            count: sql<number>`count(*)`
+          }).from(messages).where(
+            and(
+              eq(messages.conversationId, conv.id),
+              eq(messages.receiverId, userId),
+              eq(messages.isRead, false)
+            )
+          );
+
+          return {
+            id: conv.id,
+            participant: otherUser[0] || { id: otherUserId, name: '알 수 없음', role: 'user' },
+            lastMessage: lastMessage[0] || null,
+            unreadCount: Number(unreadCount[0]?.count) || 0,
+            lastMessageAt: conv.lastMessageAt,
+            createdAt: conv.createdAt
+          };
+        })
+      );
+
+      return conversationsWithDetails;
+    } catch (error) {
+      console.error('[Storage] getConversationsForUser 오류:', error);
+      return [];
+    }
+  }
+
+  async getMessagesForConversation(conversationId: number, page: number = 1, limit: number = 50): Promise<any> {
+    try {
+      const offset = (page - 1) * limit;
+      
+      const messageList = await db.select().from(messages)
+        .where(eq(messages.conversationId, conversationId))
+        .orderBy(desc(messages.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      const totalResult = await db.select({
+        count: sql<number>`count(*)`
+      }).from(messages).where(eq(messages.conversationId, conversationId));
+
+      const total = Number(totalResult[0]?.count) || 0;
+
+      const messagesWithSender = await Promise.all(
+        messageList.map(async (msg) => {
+          const sender = await db.select({
+            id: users.id,
+            name: users.name,
+            role: users.role,
+            avatar: users.avatar
+          }).from(users).where(eq(users.id, msg.senderId)).limit(1);
+
+          return {
+            ...msg,
+            sender: sender[0] || { id: msg.senderId, name: '알 수 없음', role: 'user' }
+          };
+        })
+      );
+
+      return {
+        messages: messagesWithSender.reverse(),
+        pagination: {
+          page,
+          limit,
+          total,
+          hasMore: offset + limit < total
+        }
+      };
+    } catch (error) {
+      console.error('[Storage] getMessagesForConversation 오류:', error);
+      return { messages: [], pagination: { page, limit, total: 0, hasMore: false } };
+    }
+  }
+
+  async createMessage(senderId: number, receiverId: number, content: string, messageType: string = 'text'): Promise<any> {
+    try {
+      const conversation = await this.getOrCreateConversation(senderId, receiverId);
+
+      const newMessage = await db.insert(messages).values({
+        senderId,
+        receiverId,
+        content,
+        messageType,
+        conversationId: conversation.id,
+        isRead: false,
+        createdAt: new Date()
+      }).returning();
+
+      await db.update(conversations)
+        .set({ lastMessageAt: new Date(), updatedAt: new Date() })
+        .where(eq(conversations.id, conversation.id));
+
+      const sender = await db.select({
+        id: users.id,
+        name: users.name,
+        role: users.role,
+        avatar: users.avatar
+      }).from(users).where(eq(users.id, senderId)).limit(1);
+
+      return {
+        ...newMessage[0],
+        sender: sender[0] || { id: senderId, name: '알 수 없음', role: 'user' },
+        conversationId: conversation.id
+      };
+    } catch (error) {
+      console.error('[Storage] createMessage 오류:', error);
+      throw error;
+    }
+  }
+
+  async markMessageAsRead(messageId: number, userId: number): Promise<boolean> {
+    try {
+      await db.update(messages)
+        .set({ isRead: true })
+        .where(
+          and(
+            eq(messages.id, messageId),
+            eq(messages.receiverId, userId)
+          )
+        );
+      return true;
+    } catch (error) {
+      console.error('[Storage] markMessageAsRead 오류:', error);
+      return false;
+    }
+  }
+
+  async markAllMessagesAsRead(conversationId: number, userId: number): Promise<boolean> {
+    try {
+      await db.update(messages)
+        .set({ isRead: true })
+        .where(
+          and(
+            eq(messages.conversationId, conversationId),
+            eq(messages.receiverId, userId)
+          )
+        );
+      return true;
+    } catch (error) {
+      console.error('[Storage] markAllMessagesAsRead 오류:', error);
+      return false;
+    }
+  }
+
+  async getUnreadMessageCount(userId: number): Promise<number> {
+    try {
+      const result = await db.select({
+        count: sql<number>`count(*)`
+      }).from(messages).where(
+        and(
+          eq(messages.receiverId, userId),
+          eq(messages.isRead, false)
+        )
+      );
+      return Number(result[0]?.count) || 0;
+    } catch (error) {
+      console.error('[Storage] getUnreadMessageCount 오류:', error);
+      return 0;
+    }
   }
 }
 
