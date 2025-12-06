@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 import { logger } from "../monitoring/logger";
+import { notificationService } from '../notifications/notification-service';
 
 export function registerEducationRoutes(app: Express) {
   // 강의 목록 가져오기 (검색 및 필터링 포함)
@@ -82,6 +83,21 @@ export function registerEducationRoutes(app: Express) {
 
       // 등록 처리
       const enrollment = await storage.enrollUserInCourse(userId, courseId);
+      
+      // 사용자에게 강좌 등록 알림 발송
+      try {
+        await notificationService.sendNotification({
+          userId,
+          type: 'course',
+          title: '강좌 등록 완료',
+          message: `"${course.title}" 강좌에 성공적으로 등록되었습니다.`,
+          actionUrl: `/courses/${courseId}`,
+          data: { courseId, courseTitle: course.title }
+        });
+      } catch (notifyError) {
+        logger.error('강좌 등록 알림 발송 실패:', notifyError);
+      }
+      
       res.status(201).json(enrollment);
     } catch (error) {
       logger.error('Error enrolling in course:', error);

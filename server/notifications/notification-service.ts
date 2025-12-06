@@ -1,6 +1,6 @@
 import { WebSocket } from 'ws';
 import { db } from '../db';
-import { notifications, fcmTokens } from '@shared/schema';
+import { notifications, fcmTokens } from '../../shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { fcmService } from '../services/fcm-service';
 

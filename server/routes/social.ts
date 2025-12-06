@@ -1,4 +1,5 @@
 import { Express } from 'express';
+import { notificationService } from '../notifications/notification-service';
 
 export function setupSocialRoutes(app: Express) {
   // 메모리 저장소 (임시 데이터)
@@ -1120,7 +1121,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 게시글 좋아요 토글
-  app.post('/api/community/posts/:id/like', (req, res) => {
+  app.post('/api/community/posts/:id/like', async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
       const post = posts.find(p => p.id === postId);
@@ -1131,6 +1132,22 @@ export function setupSocialRoutes(app: Express) {
 
       // 간단한 좋아요 토글 (실제로는 사용자별 좋아요 상태 관리 필요)
       post.likes = Math.max(0, (post.likes || 0) + 1);
+
+      // 게시글 작성자에게 좋아요 알림 발송
+      if (post.authorId && post.authorId !== 1) {
+        try {
+          await notificationService.sendNotification({
+            userId: post.authorId,
+            type: 'system',
+            title: '새로운 좋아요',
+            message: `회원님의 게시글 "${post.title.substring(0, 30)}${post.title.length > 30 ? '...' : ''}"에 좋아요가 추가되었습니다.`,
+            actionUrl: `/community/posts/${post.id}`,
+            data: { postId: post.id }
+          });
+        } catch (notifyError) {
+          console.error('[좋아요] 알림 발송 실패:', notifyError);
+        }
+      }
 
       res.json({ 
         message: '좋아요가 추가되었습니다.',
@@ -1198,7 +1215,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 댓글 작성
-  app.post('/api/community/posts/:id/comments', (req, res) => {
+  app.post('/api/community/posts/:id/comments', async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
       const { content, parentId } = req.body;
@@ -1246,6 +1263,22 @@ export function setupSocialRoutes(app: Express) {
         }
       } else {
         post.comments.push(newComment);
+      }
+
+      // 게시글 작성자에게 댓글 알림 발송
+      if (post.authorId && post.authorId !== 1 && post.authorId !== newComment.authorId) {
+        try {
+          await notificationService.sendNotification({
+            userId: post.authorId,
+            type: 'system',
+            title: '새로운 댓글',
+            message: `회원님의 게시글 "${post.title.substring(0, 30)}${post.title.length > 30 ? '...' : ''}"에 새 댓글이 달렸습니다.`,
+            actionUrl: `/community/posts/${post.id}`,
+            data: { postId: post.id, commentId: newComment.id }
+          });
+        } catch (notifyError) {
+          console.error('[댓글] 알림 발송 실패:', notifyError);
+        }
       }
 
       res.status(201).json({ 
