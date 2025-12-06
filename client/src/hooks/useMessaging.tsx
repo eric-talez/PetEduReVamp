@@ -121,10 +121,12 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   // 메시지 전송 뮤테이션
   const sendMessageMutation = useMutation({
     mutationFn: async ({ receiverId, content }: { receiverId: number; content: string }) => {
-      return apiRequest('/api/messages/send', {
-        method: 'POST',
-        body: JSON.stringify({ receiverId, content, userId: currentUserId })
+      const response = await apiRequest('POST', '/api/messages/send', { 
+        receiverId, 
+        content, 
+        userId: currentUserId 
       });
+      return response.json();
     },
     onSuccess: () => {
       refreshMessages();
@@ -135,10 +137,11 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   // 대화 생성 뮤테이션
   const createConversationMutation = useMutation({
     mutationFn: async (participantId: number) => {
-      return apiRequest('/api/messages/conversations', {
-        method: 'POST',
-        body: JSON.stringify({ participantId, userId: currentUserId })
+      const response = await apiRequest('POST', '/api/messages/conversations', { 
+        participantId, 
+        userId: currentUserId 
       });
+      return response.json();
     },
     onSuccess: (data: any) => {
       refreshConversations();
@@ -247,10 +250,7 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   // 읽음 표시 함수
   const markAsRead = useCallback(async (messageId: number) => {
     try {
-      await apiRequest(`/api/messages/${messageId}/read`, {
-        method: 'PUT',
-        body: JSON.stringify({ userId: currentUserId })
-      });
+      await apiRequest('PUT', `/api/messages/${messageId}/read`, { userId: currentUserId });
     } catch (error) {
       console.error('읽음 표시 실패:', error);
     }

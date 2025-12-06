@@ -1,16 +1,12 @@
 import { useEffect, useRef, useMemo } from 'react';
-import { format } from 'date-fns';
 import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 import { Message, useMessaging } from '@/hooks/useMessaging';
-import { ko } from 'date-fns/locale';
 import { MessageItem } from './MessageItem';
+import { Loader2 } from 'lucide-react';
 
 export function MessageList() {
   const { userName } = useGlobalAuth();
-  // The MessageList and other messaging components assume that the current user has ID 1
-  // This matches the assumption in the MessagingProvider
-  const user = { id: 1, name: userName || '사용자' };
-  const { messages, activeConversation, markAsRead } = useMessaging();
+  const { messages, activeConversation, markAsRead, isLoadingMessages } = useMessaging();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 새 메시지가 추가되면 스크롤 아래로 이동
@@ -23,33 +19,31 @@ export function MessageList() {
   // 안 읽은 메시지 읽음 표시
   useEffect(() => {
     messages.forEach(message => {
-      if (!message.isRead && message.sender.id !== user?.id) {
+      if (!message.isRead && message.sender?.id !== message.senderId) {
         markAsRead(message.id);
       }
     });
-  }, [messages, markAsRead, user]);
+  }, [messages, markAsRead]);
 
   // 메시지 그룹화 (메모이제이션 적용)
-  // 날짜별 그룹화에서 발신자 기준 세부 그룹화로 변경
   const processedMessages = useMemo(() => {
     if (!messages.length) return [];
     
-    // 날짜 및 발신자 변경 여부에 따라 메시지 처리
     return messages.map((message, index) => {
       const prevMessage = index > 0 ? messages[index - 1] : null;
       const nextMessage = index < messages.length - 1 ? messages[index + 1] : null;
       
       // 날짜 변경 여부 확인
-      const messageDate = new Date(message.timestamp).toDateString();
-      const prevMessageDate = prevMessage ? new Date(prevMessage.timestamp).toDateString() : null;
+      const messageDate = new Date(message.createdAt).toDateString();
+      const prevMessageDate = prevMessage ? new Date(prevMessage.createdAt).toDateString() : null;
       const showDate = !prevMessageDate || messageDate !== prevMessageDate;
       
       // 발신자 변경 여부 확인
-      const sameSenderAsPrev = prevMessage && prevMessage.sender.id === message.sender.id;
-      const sameSenderAsNext = nextMessage && nextMessage.sender.id === message.sender.id;
+      const sameSenderAsPrev = prevMessage && prevMessage.senderId === message.senderId;
+      const sameSenderAsNext = nextMessage && nextMessage.senderId === message.senderId;
       
       // 시스템 메시지는 항상 분리
-      const isSystemMessage = message.type === 'notification';
+      const isSystemMessage = message.messageType === 'notification';
       
       return {
         message,
@@ -71,6 +65,25 @@ export function MessageList() {
     );
   }
 
+  if (isLoadingMessages) {
+    return (
+      <div className="flex items-center justify-center h-full p-4">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full p-4 text-center text-gray-500">
+        <div>
+          <p className="mb-2">아직 메시지가 없습니다.</p>
+          <p className="text-sm">첫 메시지를 보내보세요!</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-4 relative message-timeline">
       {processedMessages.map(({ 
@@ -85,14 +98,14 @@ export function MessageList() {
         <MessageItem 
           key={message.id}
           message={message}
-          isCurrentUser={message.sender.id === user?.id}
+          isCurrentUser={message.senderId === activeConversation.participant?.id ? false : true}
           showAvatar={showAvatar}
           showSender={showSender}
           showDate={showDate}
           previousMessage={previousMessage}
         />
       ))}
-      <div ref={messagesEndRef} className="h-4" /> {/* 스크롤 여백 확보 */}
+      <div ref={messagesEndRef} className="h-4" />
     </div>
   );
 }

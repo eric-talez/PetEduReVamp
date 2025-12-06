@@ -39,49 +39,59 @@ const getInitials = (name: string) => {
 const getPreviewText = (conversation: Conversation) => {
   if (!conversation.lastMessage) return '새 대화';
   
-  const { type, content } = conversation.lastMessage;
+  const { messageType, content } = conversation.lastMessage;
   
-  if (type === 'image') return '🖼️ 이미지';
-  if (type === 'notification') return '📢 알림';
+  if (messageType === 'image') return '🖼️ 이미지';
+  if (messageType === 'notification') return '📢 알림';
   
   return content.length > 25 ? content.substring(0, 25) + '...' : content;
 };
 
 // 상대적 시간 가져오기
 const getRelativeTime = (conversation: Conversation) => {
-  if (!conversation.lastMessage) return '';
+  if (!conversation.lastMessage?.createdAt) {
+    if (conversation.lastMessageAt) {
+      return formatDistanceToNow(new Date(conversation.lastMessageAt), {
+        addSuffix: true,
+        locale: ko
+      });
+    }
+    return '';
+  }
   
-  return formatDistanceToNow(new Date(conversation.lastMessage.timestamp), {
+  return formatDistanceToNow(new Date(conversation.lastMessage.createdAt), {
     addSuffix: true,
     locale: ko
   });
 };
 
 function ConversationItemComponent({ conversation, isActive, onClick }: ConversationItemProps) {
+  const participant = conversation.participant;
+  const participantName = participant?.name || '알 수 없음';
+  const participantAvatar = participant?.avatar;
+
   return (
     <div
       className={`flex items-start p-3 rounded-lg cursor-pointer transition-colors
         ${isActive ? 'bg-secondary' : 'hover:bg-secondary/50'}`}
       onClick={onClick}
+      data-testid={`conversation-item-${conversation.id}`}
     >
       <div className="relative flex-shrink-0">
         <Avatar>
-          {conversation.userAvatar ? (
-            <AvatarImage src={conversation.userAvatar} alt={conversation.userName} />
+          {participantAvatar ? (
+            <AvatarImage src={participantAvatar} alt={participantName} />
           ) : (
-            <AvatarFallback className={getInitialsColor(conversation.userName)}>
-              {getInitials(conversation.userName)}
+            <AvatarFallback className={getInitialsColor(participantName)}>
+              {getInitials(participantName)}
             </AvatarFallback>
           )}
         </Avatar>
-        {conversation.isOnline && (
-          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900" />
-        )}
       </div>
       
       <div className="ml-3 flex-1 overflow-hidden">
         <div className="flex justify-between items-center">
-          <div className="font-medium">{conversation.userName}</div>
+          <div className="font-medium">{participantName}</div>
           <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
             {getRelativeTime(conversation)}
           </div>
@@ -103,12 +113,10 @@ function ConversationItemComponent({ conversation, isActive, onClick }: Conversa
 
 // 메모이제이션 처리 (불필요한 리렌더링 방지)
 export const ConversationItem = memo(ConversationItemComponent, (prevProps, nextProps) => {
-  // 같은 대화이고 활성화 상태, 읽지 않은 메시지 수, 마지막 메시지, 온라인 상태가 변경되지 않은 경우 리렌더링 방지
   return (
-    prevProps.conversation.userId === nextProps.conversation.userId &&
+    prevProps.conversation.id === nextProps.conversation.id &&
     prevProps.isActive === nextProps.isActive &&
     prevProps.conversation.unreadCount === nextProps.conversation.unreadCount &&
-    prevProps.conversation.isOnline === nextProps.conversation.isOnline &&
     prevProps.conversation.lastMessage?.id === nextProps.conversation.lastMessage?.id
   );
 });

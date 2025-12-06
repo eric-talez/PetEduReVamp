@@ -1,4 +1,4 @@
-import { MessagingProvider, useMessaging } from '@/hooks/useMessaging';
+import { MessagingProvider, useMessaging, Conversation } from '@/hooks/useMessaging';
 import { ConversationList } from '@/components/messaging/ConversationList';
 import { MessageList } from '@/components/messaging/MessageList';
 import { MessageInput } from '@/components/messaging/MessageInput';
@@ -10,20 +10,12 @@ import { MessagesSquare, ArrowLeft, Users, MessageCircle } from 'lucide-react';
 
 interface ConversationHeaderProps {
   onBackClick: () => void;
-  activeConversation: {
-    id: string;
-    userId: number;
-    userName: string;
-    lastMessage?: string;
-    timestamp?: Date;
-    unreadCount?: number;
-  } | null;
+  activeConversation: Conversation | null;
 }
 
-/**
- * 모바일용 대화 헤더 컴포넌트
- */
 function ConversationHeader({ onBackClick, activeConversation }: ConversationHeaderProps) {
+  const participantName = activeConversation?.participant?.name || '알 수 없음';
+  
   return (
     <div className="p-3 border-b dark:border-gray-700 flex items-center bg-background">
       <Button 
@@ -32,6 +24,7 @@ function ConversationHeader({ onBackClick, activeConversation }: ConversationHea
         onClick={onBackClick} 
         className="mr-2"
         aria-label="대화 목록으로 돌아가기"
+        data-testid="button-back"
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
@@ -43,7 +36,7 @@ function ConversationHeader({ onBackClick, activeConversation }: ConversationHea
               <Users className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <div className="font-medium">{activeConversation.userName}</div>
+              <div className="font-medium">{participantName}</div>
             </div>
           </div>
         ) : (
@@ -54,22 +47,17 @@ function ConversationHeader({ onBackClick, activeConversation }: ConversationHea
   );
 }
 
-/**
- * 메시지 앱 컴포넌트
- */
 function MessagesContent() {
   const { isAuthenticated } = useGlobalAuth();
   const { activeConversation, isConnected } = useMessaging();
   const [isMobile, setIsMobile] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
 
-  // 모바일 화면 감지
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       
-      // 모바일이 아닐 경우 항상 대화 목록 표시
       if (!mobile) {
         setShowConversationList(true);
       }
@@ -83,14 +71,12 @@ function MessagesContent() {
     };
   }, []);
 
-  // 대화가 활성화되면 모바일에서 대화 화면으로 전환
   useEffect(() => {
     if (isMobile && activeConversation) {
       setShowConversationList(false);
     }
   }, [activeConversation, isMobile]);
 
-  // 로그인 필요 화면
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center h-full p-8 text-center">
@@ -107,7 +93,6 @@ function MessagesContent() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* 대화 목록 영역 */}
       <div 
         className={`${
           isMobile ? (showConversationList ? 'w-full' : 'hidden') : 'w-1/3 lg:w-1/4'
@@ -132,13 +117,11 @@ function MessagesContent() {
         <ConversationList />
       </div>
       
-      {/* 메시지 영역 */}
       <div 
         className={`${
           isMobile ? (showConversationList ? 'hidden' : 'flex w-full') : 'flex flex-grow'
         } flex-col h-full`}
       >
-        {/* 모바일 뒤로가기 헤더 */}
         {isMobile && (
           <ConversationHeader 
             onBackClick={() => setShowConversationList(true)} 
@@ -156,9 +139,6 @@ function MessagesContent() {
   );
 }
 
-/**
- * 메시지 페이지 컴포넌트
- */
 export default function MessagesPage() {
   return (
     <div className="container mx-auto py-4 px-2 sm:px-4 flex-grow flex flex-col">

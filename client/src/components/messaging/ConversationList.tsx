@@ -1,13 +1,13 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Conversation, useMessaging } from '@/hooks/useMessaging';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, MessagesSquare } from 'lucide-react';
+import { Search, MessagesSquare, Loader2 } from 'lucide-react';
 import { ConversationItem } from './ConversationItem';
 import { NewConversationButton } from './NewConversationDialog';
 
 export function ConversationList() {
-  const { conversations, activeConversation, setActiveConversation, getMessages, isConnected } = useMessaging();
+  const { conversations, activeConversation, setActiveConversation, isLoadingConversations, refreshMessages } = useMessaging();
   const [searchTerm, setSearchTerm] = useState('');
   
   // 검색어에 따라 대화 필터링 (메모이제이션 적용)
@@ -17,15 +17,15 @@ export function ConversationList() {
     }
     
     return conversations.filter(conversation => 
-      conversation.userName.toLowerCase().includes(searchTerm.toLowerCase())
+      conversation.participant?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, conversations]);
   
   // 대화 선택 핸들러
   const handleSelectConversation = useCallback((conversation: Conversation) => {
     setActiveConversation(conversation);
-    getMessages(conversation.userId);
-  }, [setActiveConversation, getMessages]);
+    refreshMessages();
+  }, [setActiveConversation, refreshMessages]);
 
   return (
     <div className="h-full flex flex-col border-r dark:border-gray-700">
@@ -45,15 +45,16 @@ export function ConversationList() {
             className="pl-8"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            disabled={!isConnected}
+            data-testid="input-search-conversations"
           />
         </div>
       </div>
       
       <ScrollArea className="flex-1">
-        {!isConnected ? (
+        {isLoadingConversations ? (
           <div className="p-4 text-center text-gray-500">
-            <div className="animate-pulse">연결 중...</div>
+            <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+            <div>대화 목록 불러오는 중...</div>
           </div>
         ) : filteredConversations.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
@@ -68,9 +69,9 @@ export function ConversationList() {
           <div className="space-y-1 p-2">
             {filteredConversations.map((conversation) => (
               <ConversationItem
-                key={conversation.userId}
+                key={conversation.id}
                 conversation={conversation}
-                isActive={activeConversation?.userId === conversation.userId}
+                isActive={activeConversation?.id === conversation.id}
                 onClick={() => handleSelectConversation(conversation)}
               />
             ))}

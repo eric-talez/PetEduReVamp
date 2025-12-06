@@ -5,35 +5,25 @@ import { useMessaging } from "@/hooks/useMessaging";
 import { Paperclip, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// 파일을 Base64로 변환하는 유틸리티 함수
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-};
-
 // 자동 크기 조절 텍스트 영역 컴포넌트
 const AutoResizeTextarea = memo(({ 
   value, 
   onChange, 
   onKeyDown,
-  placeholder
+  placeholder,
+  disabled
 }: {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   placeholder: string;
+  disabled?: boolean;
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
-      // 높이 초기화
       textareaRef.current.style.height = 'auto';
-      // 스크롤 높이에 맞게 조절 (최대 5줄)
       const newHeight = Math.min(textareaRef.current.scrollHeight, 24 * 5);
       textareaRef.current.style.height = `${newHeight}px`;
     }
@@ -46,28 +36,42 @@ const AutoResizeTextarea = memo(({
       onChange={onChange}
       onKeyDown={onKeyDown}
       placeholder={placeholder}
-      className="min-h-[40px] resize-none transition-height duration-200"
+      disabled={disabled}
+      className="min-h-[40px] resize-none transition-height duration-200 flex-1"
       rows={1}
+      data-testid="input-message"
     />
   );
 });
 
 function MessageInputComponent() {
   const [message, setMessage] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { activeConversation, sendMessage, isConnected } = useMessaging();
+  const [isSending, setIsSending] = useState(false);
+  const { activeConversation, sendMessage, sendTypingIndicator, isConnected } = useMessaging();
   const { toast } = useToast();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 텍스트 메시지 전송 핸들러
-  const handleSendMessage = useCallback((e?: FormEvent) => {
+  const handleSendMessage = useCallback(async (e?: FormEvent) => {
     e?.preventDefault();
     
-    if (!message.trim() || !activeConversation || !isConnected) return;
+    if (!message.trim() || !activeConversation || isSending) return;
     
-    sendMessage(activeConversation.userId, message.trim());
-    setMessage("");
-  }, [message, activeConversation, isConnected, sendMessage]);
+    setIsSending(true);
+    try {
+      await sendMessage(activeConversation.participant.id, message.trim());
+      setMessage("");
+    } catch (error) {
+      console.error('메시지 전송 실패:', error);
+      toast({
+        title: "메시지 전송 실패",
+        description: "메시지를 전송하는 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }, [message, activeConversation, isSending, sendMessage, toast]);
 
   // 엔터키 처리 (Shift+Enter는 줄바꿈)
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -77,131 +81,50 @@ function MessageInputComponent() {
     }
   }, [handleSendMessage]);
 
-  // 파일 선택 핸들러
-  const handleFileSelect = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  // 파일 업로드 핸들러
-  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0 || !activeConversation || !isConnected) return;
-
-    const file = files[0];
-    
-    // 이미지 파일만 허용
-    if (!file.type.startsWith("image/")) {
-      toast({
-        title: "이미지 업로드 실패",
-        description: "이미지 파일만 업로드할 수 있습니다.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // 파일 크기 제한 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "이미지 업로드 실패",
-        description: "5MB 이하의 이미지만 업로드할 수 있습니다.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-      
-      // 파일을 Base64로 인코딩
-      const base64 = await fileToBase64(file);
-      
-      // 이미지 메시지 전송
-      sendMessage(activeConversation.userId, base64, "image");
-      
-      toast({
-        title: "이미지 전송 완료",
-        description: "이미지가 성공적으로 전송되었습니다.",
-        variant: "default"
-      });
-    } catch (error) {
-      console.error("이미지 업로드 오류:", error);
-      toast({
-        title: "이미지 업로드 실패",
-        description: "이미지 업로드 중 오류가 발생했습니다.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsUploading(false);
-      // 파일 입력 초기화
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  }, [activeConversation, isConnected, sendMessage, toast]);
-
   const handleMessageChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
-  }, []);
+    
+    // 타이핑 표시 전송 (디바운스)
+    if (activeConversation && sendTypingIndicator) {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        sendTypingIndicator(activeConversation.participant.id);
+      }, 300);
+    }
+  }, [activeConversation, sendTypingIndicator]);
 
   if (!activeConversation) {
     return null;
   }
 
-  // 대화 상대 사용자 이름
-  const receiverName = activeConversation.userName;
+  const participantName = activeConversation.participant?.name || '상대방';
   
   return (
     <div className="p-4 border-t dark:border-gray-700">
-      {/* 상대방 타이핑 표시 (추후 WebSocket으로 구현) */}
-      {/* <div className="mb-2">
-        <div className="typing-dots inline-flex justify-center items-center space-x-1">
-          <span className="dot"></span>
-          <span className="dot"></span>
-          <span className="dot"></span>
-        </div>
-        <span className="text-xs text-muted-foreground ml-2">{receiverName}님이 입력 중...</span>
-      </div> */}
-      
       <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileUpload}
-          className="hidden"
-          accept="image/*"
-        />
-        
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={handleFileSelect}
-          disabled={isUploading || !isConnected}
-          className="flex-shrink-0"
-          title="이미지 첨부"
-        >
-          {isUploading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Paperclip className="h-5 w-5" />
-          )}
-        </Button>
-        
         <AutoResizeTextarea
           value={message}
           onChange={handleMessageChange}
           onKeyDown={handleKeyDown}
-          placeholder={isConnected ? "메시지를 입력하세요..." : "연결 중..."}
+          placeholder={`${participantName}님에게 메시지 보내기...`}
+          disabled={isSending}
         />
         
         <Button
           type="submit"
           size="icon"
-          disabled={!message.trim() || isUploading || !isConnected}
+          disabled={!message.trim() || isSending}
           className="flex-shrink-0"
           title="메시지 보내기"
+          data-testid="button-send-message"
         >
-          <Send className="h-5 w-5" />
+          {isSending ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Send className="h-5 w-5" />
+          )}
         </Button>
       </form>
 
@@ -215,5 +138,4 @@ function MessageInputComponent() {
   );
 }
 
-// 메모이제이션 적용
 export const MessageInput = memo(MessageInputComponent);
