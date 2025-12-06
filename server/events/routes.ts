@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { storage } from "../storage";
 import { csrfProtection } from '../middleware/csrf';
+import { notificationService } from '../notifications/notification-service';
 
 // 이벤트 스키마 정의
 const eventSchema = z.object({
@@ -164,6 +165,20 @@ export function registerEventRoutes(app: Express) {
       
       // 참가 신청 처리
       const attendance = await storage.attendEvent(userId, eventId);
+      
+      // 사용자에게 이벤트 참가 신청 알림 발송
+      try {
+        await notificationService.sendNotification({
+          userId,
+          type: 'event',
+          title: '이벤트 참가 신청 완료',
+          message: `"${event.title}" 이벤트 참가 신청이 완료되었습니다.`,
+          actionUrl: `/events/${eventId}`,
+          data: { eventId, eventTitle: event.title }
+        });
+      } catch (notifyError) {
+        console.error('[이벤트] 알림 발송 실패:', notifyError);
+      }
       
       return res.status(201).json(attendance);
     } catch (error) {

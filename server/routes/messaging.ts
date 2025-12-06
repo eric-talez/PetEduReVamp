@@ -3,6 +3,7 @@ import type { Server } from "http";
 import { WebSocketServer, WebSocket } from 'ws';
 import { storage } from '../storage';
 import { asyncHandler, AppError } from '../middleware/error-handler';
+import { notificationService } from '../notifications/notification-service';
 
 // WebSocket 클라이언트 관리
 interface AuthenticatedWebSocket extends WebSocket {
@@ -246,6 +247,23 @@ export function registerMessagingRoutes(app: Express, server: Server) {
         type: 'new_message',
         message
       }));
+    }
+
+    // 수신자에게 푸시 알림 발송 (오프라인 또는 백그라운드 사용자용)
+    try {
+      const sender = await storage.getUserById(userId);
+      const senderName = sender?.name || sender?.username || '알 수 없는 사용자';
+      
+      await notificationService.sendNotification({
+        userId: parseInt(receiverId),
+        type: 'message',
+        title: '새 메시지',
+        message: `${senderName}님이 메시지를 보냈습니다: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`,
+        actionUrl: '/messages',
+        data: { senderId: userId, senderName }
+      });
+    } catch (notifyError) {
+      console.error('[메시지] 알림 발송 실패:', notifyError);
     }
 
     return res.status(201).json({ 
