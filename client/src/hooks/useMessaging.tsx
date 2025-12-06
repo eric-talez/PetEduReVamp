@@ -1,37 +1,39 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useGlobalAuth } from './useGlobalAuth';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 // 메시지 타입 정의
 export interface Message {
-  id: string;
+  id: number;
+  senderId: number;
+  receiverId: number;
+  content: string;
+  createdAt: string;
+  isRead: boolean;
+  messageType: string;
+  conversationId: number;
   sender: {
     id: number;
     name: string;
     role: string;
     avatar?: string | null;
   };
-  receiver: {
-    id: number;
-    name: string;
-    role?: string;
-    avatar?: string | null;
-  };
-  content: string;
-  timestamp: Date;
-  isRead: boolean;
-  type: 'text' | 'image' | 'notification';
-  metadata?: any;
 }
 
 // 대화 상대 타입 정의
 export interface Conversation {
-  userId: number;
-  userName: string;
-  userRole: string;
-  userAvatar?: string | null;
-  lastMessage?: Message | null;
+  id: number;
+  participant: {
+    id: number;
+    name: string;
+    role: string;
+    avatar?: string | null;
+  };
+  lastMessage: Message | null;
   unreadCount: number;
-  isOnline: boolean;
+  lastMessageAt: string;
+  createdAt: string;
 }
 
 // 메시징 컨텍스트 타입 정의
@@ -41,12 +43,14 @@ interface MessagingContextType {
   messages: Message[];
   isConnected: boolean;
   isLoadingMessages: boolean;
-  typingUsers: Record<number, { name: string; timestamp: Date }>;
-  sendMessage: (receiverId: number, content: string, type?: 'text' | 'image') => void;
-  markAsRead: (messageId: string) => void;
-  startConversation: (userId: number) => void;
-  getMessages: (conversationId: number) => Message[];
+  isLoadingConversations: boolean;
+  sendMessage: (receiverId: number, content: string) => Promise<void>;
+  markAsRead: (messageId: number) => void;
+  startConversation: (userId: number) => Promise<void>;
   setActiveConversation: (conversation: Conversation | null) => void;
+  refreshConversations: () => void;
+  refreshMessages: () => void;
+  typingUsers: Record<number, { name: string; timestamp: Date }>;
   sendTypingIndicator: (receiverId: number) => void;
 }
 
@@ -55,553 +59,225 @@ const MessagingContext = createContext<MessagingContextType | null>(null);
 // 메시징 제공자 컴포넌트
 export function MessagingProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, userName, userRole } = useGlobalAuth();
-  // userName을 user 정보로 활용
-  const user = isAuthenticated ? { id: 1, name: userName || '사용자', role: userRole || 'user' } : null;
-  const [isConnected, setIsConnected] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const queryClient = useQueryClient();
+  
+  // 현재 사용자 ID (세션에서 가져오기 - 실제 구현에서는 세션에서 가져와야 함)
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Record<number, { name: string; timestamp: Date }>>({});
-  const messageHistoryRef = useRef<Record<string, Message[]>>({});
-  const typingTimeoutRef = useRef<Record<number, NodeJS.Timeout>>({});
+  const wsRef = useRef<WebSocket | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 재연결 시도 횟수 및 타이머 참조
-  const reconnectAttemptsRef = useRef(0);
-  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const MAX_RECONNECT_ATTEMPTS = 3;
-  const RECONNECT_INTERVAL = 30000; // 30초마다 재시도 (더 긴 간격)
+  // 사용자 ID 가져오기
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user?.id) {
+            setCurrentUserId(data.user.id);
+          }
+        }
+      } catch (error) {
+        console.error('사용자 정보 가져오기 실패:', error);
+      }
+    };
 
-  // WebSocket 연결 함수
-  const connectWebSocket = useCallback((isReconnect = false) => {
-    if (!user || !isAuthenticated) return false;
+    if (isAuthenticated) {
+      fetchCurrentUser();
+    }
+  }, [isAuthenticated]);
 
-    // WebSocket 프로토콜 결정 (HTTPS인 경우 WSS)
+  // 대화 목록 조회
+  const { 
+    data: conversationsData, 
+    isLoading: isLoadingConversations,
+    refetch: refreshConversations 
+  } = useQuery({
+    queryKey: ['/api/messages/conversations', currentUserId],
+    enabled: isAuthenticated && !!currentUserId,
+    refetchInterval: 10000, // 10초마다 폴링
+    select: (data: any) => data?.data || []
+  });
+
+  const conversations: Conversation[] = conversationsData || [];
+
+  // 메시지 목록 조회
+  const { 
+    data: messagesData, 
+    isLoading: isLoadingMessages,
+    refetch: refreshMessages 
+  } = useQuery({
+    queryKey: ['/api/messages/conversations', activeConversation?.id],
+    enabled: isAuthenticated && !!activeConversation?.id && !!currentUserId,
+    refetchInterval: 3000, // 3초마다 폴링 (활성 대화)
+    select: (data: any) => data?.data?.messages || []
+  });
+
+  const messages: Message[] = messagesData || [];
+
+  // 메시지 전송 뮤테이션
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ receiverId, content }: { receiverId: number; content: string }) => {
+      return apiRequest('/api/messages/send', {
+        method: 'POST',
+        body: JSON.stringify({ receiverId, content, userId: currentUserId })
+      });
+    },
+    onSuccess: () => {
+      refreshMessages();
+      refreshConversations();
+    }
+  });
+
+  // 대화 생성 뮤테이션
+  const createConversationMutation = useMutation({
+    mutationFn: async (participantId: number) => {
+      return apiRequest('/api/messages/conversations', {
+        method: 'POST',
+        body: JSON.stringify({ participantId, userId: currentUserId })
+      });
+    },
+    onSuccess: (data: any) => {
+      refreshConversations();
+      if (data?.data) {
+        setActiveConversation(data.data);
+      }
+    }
+  });
+
+  // WebSocket 연결
+  useEffect(() => {
+    if (!isAuthenticated || !currentUserId) {
+      setIsConnected(false);
+      return;
+    }
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
 
-    console.log(`WebSocket ${isReconnect ? '재' : ''}연결 시도:`, wsUrl);
+    try {
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
 
-    // 기존 연결이 있으면 닫기
-    if (wsRef.current) {
-      try {
-        wsRef.current.close();
-      } catch (err) {
-        console.error('이전 WebSocket 연결 종료 중 오류:', err);
-      }
-    }
-
-    // WebSocket 서버가 비활성화되어 있어 연결하지 않음
-    console.log('WebSocket 연결 건너뜀: 서버에서 비활성화됨');
-    setIsConnected(false);
-    return false;
-    
-    // 새 연결 생성 (주석 처리)
-    // wsRef.current = new WebSocket(wsUrl);
-
-    // 연결 이벤트 핸들러
-    wsRef.current.onopen = () => {
-      console.log('WebSocket 연결 성공');
-      setIsConnected(true);
-      reconnectAttemptsRef.current = 0; // 연결 성공 시 재시도 카운터 초기화
-
-      // 인증 메시지 전송
-      if (wsRef.current && user) {
-        wsRef.current.send(JSON.stringify({
+      ws.onopen = () => {
+        console.log('[WS] Connected');
+        setIsConnected(true);
+        
+        // 인증 메시지 전송
+        ws.send(JSON.stringify({
           type: 'authenticate',
-          userId: user.id,
-          token: 'dummy-token', // 실제 구현에서는 JWT 토큰 사용
-          reconnect: isReconnect // 재연결 여부 전달
+          userId: currentUserId
         }));
-      }
-    };
-
-    // 메시지 수신 핸들러
-    wsRef.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        handleIncomingMessage(data);
-      } catch (error) {
-        console.error('WebSocket 메시지 처리 오류:', error);
-      }
-    };
-
-    // 연결 종료 핸들러
-    wsRef.current.onclose = (event) => {
-      console.log(`WebSocket 연결 종료: ${event.code} ${event.reason}`);
-      setIsConnected(false);
-
-      // 비정상적인 종료인 경우에만 재연결 시도
-      // 1000: 정상 종료, 1001: 페이지 이동, 1005: 특별한 상태 코드 없음
-      if (event.code !== 1000 && event.code !== 1001) {
-        // 재연결 시도
-        if (reconnectTimerRef.current) {
-          clearTimeout(reconnectTimerRef.current);
-        }
-
-        reconnectTimerRef.current = setTimeout(() => {
-          attemptReconnect();
-        }, RECONNECT_INTERVAL);
-      }
-    };
-
-    // 오류 핸들러
-    wsRef.current.onerror = (error) => {
-      console.error('WebSocket 오류:', error);
-      setIsConnected(false);
-    };
-
-    return true;
-  }, [isAuthenticated, user]);
-
-  // 재연결 함수
-  const attemptReconnect = useCallback(() => {
-    if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
-      console.error(`최대 재연결 시도 횟수(${MAX_RECONNECT_ATTEMPTS})를 초과했습니다.`);
-      setIsConnected(false);
-      return;
-    }
-
-    reconnectAttemptsRef.current++;
-    console.log(`WebSocket 재연결 시도 ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS}...`);
-
-    connectWebSocket(true);
-  }, [connectWebSocket]);
-
-  // WebSocket 연결 설정
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      setIsConnected(false);
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-
-      // 재연결 타이머 정리
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
-      return;
-    }
-
-    // 최초 연결 시도
-    connectWebSocket(false);
-
-    // 컴포넌트 언마운트시 연결 종료 및 타이머 정리
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
-    };
-  }, [isAuthenticated, user, connectWebSocket]);
-
-  // 수신 메시지 처리 함수
-  const handleIncomingMessage = (data: any) => {
-    switch (data.type) {
-      case 'authentication_success':
-        console.log('인증 성공:', data.user);
-        if (data.reconnected) {
-          console.log('재연결 성공 - 대화 기록 복원됨');
-        }
-        break;
-
-      case 'new_message':
-        handleNewMessage(data.message);
-        break;
-
-      case 'message_sent':
-        handleSentMessage(data.message);
-        break;
-
-      case 'unread_messages':
-        handleUnreadMessages(data.messages);
-        break;
-
-      case 'conversation_history':
-        handleConversationHistory(data.conversations);
-        break;
-
-      case 'user_status':
-        handleUserStatusChange(data.userId, data.status);
-        break;
-
-      case 'read_receipt':
-        handleReadReceipt(data.messageId);
-        break;
-
-      case 'typing_indicator':
-        handleTypingIndicator(data.userId, data.userName);
-        break;
-
-      case 'system_notification':
-        handleNewMessage(data.message);
-        break;
-
-      case 'error':
-        console.error('WebSocket 에러 메시지:', data.message);
-        break;
-    }
-  };
-
-  // 새 메시지 처리
-  const handleNewMessage = (message: Message) => {
-    if (!message || !message.id) return;
-
-    // 타임스탬프를 Date 객체로 변환
-    message.timestamp = new Date(message.timestamp);
-
-    // 메시지 이력에 추가
-    const conversationId = getConversationId(message.sender.id, message.receiver.id);
-    if (!messageHistoryRef.current[conversationId]) {
-      messageHistoryRef.current[conversationId] = [];
-    }
-    messageHistoryRef.current[conversationId].push(message);
-
-    // 현재 활성화된 대화에 해당하는 메시지인 경우 메시지 목록 업데이트
-    if (activeConversation && 
-        (activeConversation.userId === message.sender.id || 
-         activeConversation.userId === message.receiver.id)) {
-      setMessages(prev => [...prev, message]);
-    }
-
-    // 대화 목록 업데이트
-    updateConversation(message);
-  };
-
-  // 대화 목록 업데이트
-  const updateConversation = (message: Message) => {
-    // 현재 사용자 ID
-    const currentUserId = user?.id;
-    if (!currentUserId) return;
-
-    // 상대방 정보 (발신자 또는 수신자)
-    const isReceiver = message.sender.id !== currentUserId;
-
-    // 메시지 수신자 정보가 제한적일 수 있으므로 기본값 확장
-    const receiver = {
-      ...message.receiver,
-      role: (message.receiver as any).role || 'user',
-      avatar: (message.receiver as any).avatar || null
-    };
-
-    const otherParty = isReceiver ? message.sender : receiver;
-
-    setConversations(prev => {
-      // 이미 대화 목록에 있는지 확인
-      const existingConversationIndex = prev.findIndex(c => c.userId === otherParty.id);
-
-      if (existingConversationIndex !== -1) {
-        // 기존 대화 업데이트
-        const updatedConversations = [...prev];
-        const existingConversation = {...updatedConversations[existingConversationIndex]};
-
-        existingConversation.lastMessage = message;
-
-        // 새 메시지가 읽지 않은 것이고, 현재 활성화된 대화가 아닌 경우 읽지 않은 메시지 카운트 증가
-        if (!message.isRead && isReceiver && 
-            (!activeConversation || activeConversation.userId !== otherParty.id)) {
-          existingConversation.unreadCount += 1;
-        }
-
-        updatedConversations[existingConversationIndex] = existingConversation;
-        return updatedConversations;
-      } else {
-        // 새로운 대화 추가
-        return [...prev, {
-          userId: otherParty.id,
-          userName: otherParty.name,
-          userRole: otherParty.role,
-          userAvatar: otherParty.avatar,
-          lastMessage: message,
-          unreadCount: isReceiver ? 1 : 0,
-          isOnline: false // 온라인 상태는 나중에 업데이트
-        }];
-      }
-    });
-  };
-
-  // 발신 메시지 처리
-  const handleSentMessage = (message: Message) => {
-    if (!message || !message.id) return;
-
-    // 타임스탬프를 Date 객체로 변환
-    message.timestamp = new Date(message.timestamp);
-
-    // 메시지 이력에 추가
-    const conversationId = getConversationId(message.sender.id, message.receiver.id);
-    if (!messageHistoryRef.current[conversationId]) {
-      messageHistoryRef.current[conversationId] = [];
-    }
-    messageHistoryRef.current[conversationId].push(message);
-
-    // 현재 활성화된 대화에 해당하는 메시지인 경우 메시지 목록 업데이트
-    if (activeConversation && activeConversation.userId === message.receiver.id) {
-      setMessages(prev => [...prev, message]);
-    }
-
-    // 대화 목록 업데이트
-    updateConversation(message);
-  };
-
-  // 읽지 않은 메시지 처리
-  const handleUnreadMessages = (unreadMessages: Message[]) => {
-    if (!unreadMessages || !unreadMessages.length) return;
-
-    // 각 메시지 처리
-    unreadMessages.forEach(message => {
-      // 타임스탬프를 Date 객체로 변환
-      message.timestamp = new Date(message.timestamp);
-
-      // 메시지 이력에 추가
-      const conversationId = getConversationId(message.sender.id, message.receiver.id);
-      if (!messageHistoryRef.current[conversationId]) {
-        messageHistoryRef.current[conversationId] = [];
-      }
-      messageHistoryRef.current[conversationId].push(message);
-
-      // 대화 목록 업데이트
-      updateConversation(message);
-    });
-  };
-
-  // 전체 대화 목록 업데이트 함수
-  const updateConversationList = useCallback(() => {
-    const userId = user?.id;
-    if (!userId) return;
-
-    // 현재 메시지 기록에서 모든 대화 가져오기
-    const updatedConversations: Conversation[] = [];
-
-    // 메시지 기록에서 대화 정보 추출
-    Object.entries(messageHistoryRef.current).forEach(([conversationId, messages]) => {
-      // 대화 ID 파싱하여 사용자가 포함된 대화만 처리
-      const [id1, id2] = parseConversationId(conversationId);
-      const otherUserId = id1 === userId ? id2 : (id2 === userId ? id1 : null);
-
-      if (otherUserId !== null && messages.length > 0) {
-        // 마지막 메시지 가져오기
-        const lastMessage = messages[messages.length - 1];
-
-        // 상대방 정보 가져오기
-        const otherParty = lastMessage.sender.id === otherUserId 
-          ? lastMessage.sender 
-          : lastMessage.receiver;
-
-        // 읽지 않은 메시지 개수 계산
-        const unreadCount = messages.filter(
-          msg => msg.receiver.id === userId && !msg.isRead
-        ).length;
-
-        // 기존 대화가 있는지 확인
-        const existingIndex = updatedConversations.findIndex(c => c.userId === otherUserId);
-
-        if (existingIndex !== -1) {
-          // 기존 대화 업데이트
-          updatedConversations[existingIndex].lastMessage = lastMessage;
-          updatedConversations[existingIndex].unreadCount = unreadCount;
-        } else {
-          // 새 대화 추가
-          updatedConversations.push({
-            userId: otherUserId,
-            userName: otherParty.name,
-            userRole: (otherParty as any).role || 'user',
-            userAvatar: (otherParty as any).avatar,
-            lastMessage,
-            unreadCount,
-            isOnline: false // 기본값
-          });
-        }
-      }
-    });
-
-    // 대화 목록 업데이트
-    setConversations(updatedConversations);
-  }, [user]);
-
-  // 대화 기록 처리 (재연결 시)
-  const handleConversationHistory = (conversations: Record<string, Message[]>) => {
-    if (!conversations || Object.keys(conversations).length === 0) return;
-
-    console.log(`대화 기록 수신: ${Object.keys(conversations).length}개 대화`);
-
-    // 대화 기록 메모리에 저장
-    Object.entries(conversations).forEach(([conversationId, messages]) => {
-      // 기존 메시지 히스토리에 추가
-      if (!messageHistoryRef.current[conversationId]) {
-        messageHistoryRef.current[conversationId] = [];
-      }
-
-      // 중복 메시지 방지를 위해 ID 기반으로 필터링하여 병합
-      const existingMessageIds = new Set(
-        messageHistoryRef.current[conversationId].map(msg => msg.id)
-      );
-
-      const newMessages = messages.filter(msg => !existingMessageIds.has(msg.id));
-
-      // 타임스탬프를 Date 객체로 변환
-      newMessages.forEach(msg => {
-        msg.timestamp = new Date(msg.timestamp);
-      });
-
-      // 기존 메시지와 새 메시지 병합
-      messageHistoryRef.current[conversationId] = [
-        ...messageHistoryRef.current[conversationId],
-        ...newMessages
-      ];
-
-      // 타임스탬프 기준 정렬
-      messageHistoryRef.current[conversationId].sort((a, b) => {
-        return a.timestamp.getTime() - b.timestamp.getTime();
-      });
-    });
-
-    // 활성 대화가 있는 경우 메시지 업데이트
-    if (activeConversation) {
-      const userId = user?.id;
-      if (!userId) return;
-
-      const conversationId = getConversationId(userId, activeConversation.userId);
-      const conversationMessages = messageHistoryRef.current[conversationId] || [];
-      setMessages(conversationMessages);
-    }
-
-    // 대화 목록 업데이트
-    updateConversationList();
-  };
-
-  // 사용자 상태 변경 처리
-  const handleUserStatusChange = (userId: number, status: 'online' | 'offline') => {
-    setConversations(prev => 
-      prev.map(conversation => 
-        conversation.userId === userId
-          ? { ...conversation, isOnline: status === 'online' }
-          : conversation
-      )
-    );
-  };
-
-  // 읽음 확인 처리
-  const handleReadReceipt = (messageId: string) => {
-    // 메시지 이력에서 해당 메시지 찾아 읽음 표시
-    Object.keys(messageHistoryRef.current).forEach(conversationId => {
-      const conversationMessages = messageHistoryRef.current[conversationId];
-      const messageIndex = conversationMessages.findIndex(m => m.id === messageId);
-
-      if (messageIndex !== -1) {
-        conversationMessages[messageIndex].isRead = true;
-
-        // 활성화된 대화의 메시지인 경우 메시지 목록 업데이트
-        if (activeConversation) {
-          const [id1, id2] = parseConversationId(conversationId);
-          if (id1 === activeConversation.userId || id2 === activeConversation.userId) {
-            setMessages(prev => 
-              prev.map(message => 
-                message.id === messageId
-                  ? { ...message, isRead: true }
-                  : message
-              )
-            );
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          switch (data.type) {
+            case 'authentication_success':
+              console.log('[WS] Authenticated');
+              break;
+            case 'new_message':
+              // 새 메시지 수신 시 목록 새로고침
+              refreshMessages();
+              refreshConversations();
+              break;
+            case 'typing_indicator':
+              setTypingUsers(prev => ({
+                ...prev,
+                [data.userId]: { name: data.userName, timestamp: new Date() }
+              }));
+              // 3초 후 타이핑 표시 제거
+              setTimeout(() => {
+                setTypingUsers(prev => {
+                  const newState = { ...prev };
+                  delete newState[data.userId];
+                  return newState;
+                });
+              }, 3000);
+              break;
           }
+        } catch (error) {
+          console.error('[WS] Message parsing error:', error);
         }
-      }
-    });
-  };
+      };
+
+      ws.onclose = () => {
+        console.log('[WS] Disconnected');
+        setIsConnected(false);
+      };
+
+      ws.onerror = (error) => {
+        console.error('[WS] Error:', error);
+        setIsConnected(false);
+      };
+
+      return () => {
+        ws.close();
+        wsRef.current = null;
+      };
+    } catch (error) {
+      console.error('[WS] Connection error:', error);
+      setIsConnected(false);
+    }
+  }, [isAuthenticated, currentUserId, refreshMessages, refreshConversations]);
 
   // 메시지 전송 함수
-  const sendMessage = useCallback((receiverId: number, content: string, type: 'text' | 'image' = 'text') => {
-    if (!wsRef.current || !isConnected || !user) return;
+  const sendMessage = useCallback(async (receiverId: number, content: string) => {
+    if (!content.trim()) return;
 
-    wsRef.current.send(JSON.stringify({
-      type: 'message',
-      receiverId,
-      content,
-      messageType: type
-    }));
-  }, [isConnected, user]);
+    // WebSocket으로 전송 시도
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: 'message',
+        receiverId,
+        content: content.trim(),
+        messageType: 'text'
+      }));
+    } else {
+      // REST API로 전송
+      await sendMessageMutation.mutateAsync({ receiverId, content: content.trim() });
+    }
+  }, [sendMessageMutation]);
 
   // 읽음 표시 함수
-  const markAsRead = useCallback((messageId: string) => {
-    if (!wsRef.current || !isConnected || !user || !activeConversation) return;
-
-    wsRef.current.send(JSON.stringify({
-      type: 'read_receipt',
-      messageId,
-      senderId: activeConversation.userId
-    }));
-  }, [isConnected, user, activeConversation]);
+  const markAsRead = useCallback(async (messageId: number) => {
+    try {
+      await apiRequest(`/api/messages/${messageId}/read`, {
+        method: 'PUT',
+        body: JSON.stringify({ userId: currentUserId })
+      });
+    } catch (error) {
+      console.error('읽음 표시 실패:', error);
+    }
+  }, [currentUserId]);
 
   // 대화 시작 함수
-  const startConversation = useCallback((userId: number) => {
+  const startConversation = useCallback(async (userId: number) => {
     // 이미 대화 목록에 있는지 확인
-    const existingConversation = conversations.find(c => c.userId === userId);
-
+    const existingConversation = conversations.find(c => c.participant.id === userId);
+    
     if (existingConversation) {
       setActiveConversation(existingConversation);
     } else {
-      // 대화 상대 정보를 가져오는 API 호출 (실제 구현 필요)
-      // 예시 코드
-      fetch(`/api/users/${userId}`)
-        .then(res => res.json())
-        .then(userData => {
-          const newConversation: Conversation = {
-            userId: userData.id,
-            userName: userData.name,
-            userRole: userData.role,
-            userAvatar: userData.avatar,
-            unreadCount: 0,
-            isOnline: false // 온라인 상태는 나중에 업데이트
-          };
-
-          setConversations(prev => [...prev, newConversation]);
-          setActiveConversation(newConversation);
-        })
-        .catch(error => {
-          console.error('대화 상대 정보 가져오기 오류:', error);
-        });
+      await createConversationMutation.mutateAsync(userId);
     }
-  }, [conversations]);
+  }, [conversations, createConversationMutation]);
 
-  // 대화 메시지 가져오기 함수
-  const getMessages = useCallback((conversationUserId: number) => {
-    setIsLoadingMessages(true);
-
-    if (!user) {
-      setIsLoadingMessages(false);
-      return [];
+  // 타이핑 표시 전송
+  const sendTypingIndicator = useCallback((receiverId: number) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: 'typing_indicator',
+        receiverId,
+        userName: userName || '사용자'
+      }));
     }
-
-    const conversationId = getConversationId(user.id, conversationUserId);
-    const conversationMessages = messageHistoryRef.current[conversationId] || [];
-
-    // 메시지를 타임스탬프 순으로 정렬
-    const sortedMessages = [...conversationMessages].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
-    );
-
-    setMessages(sortedMessages);
-    setIsLoadingMessages(false);
-
-    return sortedMessages;
-  }, [user]);
-
-  // 대화 ID 생성 (작은 ID가 항상 앞에 오도록)
-  const getConversationId = useCallback((id1: number, id2: number): string => {
-    return id1 < id2 ? `${id1}-${id2}` : `${id2}-${id1}`;
-  }, []);
-
-  // 대화 ID 파싱
-  const parseConversationId = useCallback((conversationId: string): [number, number] => {
-    const [id1Str, id2Str] = conversationId.split('-');
-    return [parseInt(id1Str), parseInt(id2Str)];
-  }, []);
+  }, [userName]);
 
   // 컨텍스트 값
   const contextValue: MessagingContextType = {
@@ -610,11 +286,15 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     messages,
     isConnected,
     isLoadingMessages,
+    isLoadingConversations,
     sendMessage,
     markAsRead,
     startConversation,
-    getMessages,
-    setActiveConversation
+    setActiveConversation,
+    refreshConversations,
+    refreshMessages,
+    typingUsers,
+    sendTypingIndicator
   };
 
   return (
