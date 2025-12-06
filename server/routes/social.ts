@@ -1045,7 +1045,11 @@ export function setupSocialRoutes(app: Express) {
   // 게시글 작성
   app.post('/api/community/posts', (req, res) => {
     try {
-      const { title, content, category = '일반', tag, linkUrl, linkTitle, linkDescription, linkImage } = req.body;
+      const { 
+        title, content, category = '일반', tag, linkUrl, linkTitle, linkDescription, linkImage,
+        // 이벤트/행사 위치 정보
+        locationName, locationAddress, locationLatitude, locationLongitude 
+      } = req.body;
 
       if (!title || !content) {
         return res.status(400).json({ error: '제목과 내용을 입력해주세요.' });
@@ -1074,6 +1078,14 @@ export function setupSocialRoutes(app: Express) {
           description: linkDescription || '',
           image: linkImage || null
         };
+      }
+
+      // 이벤트/행사 위치 정보 추가
+      if (locationAddress || locationLatitude || locationLongitude) {
+        newPost.locationName = locationName || '';
+        newPost.locationAddress = locationAddress || '';
+        newPost.locationLatitude = locationLatitude || '';
+        newPost.locationLongitude = locationLongitude || '';
       }
 
       posts.unshift(newPost);
