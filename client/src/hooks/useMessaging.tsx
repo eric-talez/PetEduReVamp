@@ -110,9 +110,16 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     isLoading: isLoadingMessages,
     refetch: refreshMessages 
   } = useQuery({
-    queryKey: ['/api/messages/conversations', activeConversation?.id],
+    queryKey: ['/api/messages/conversation', activeConversation?.id, 'messages'],
     enabled: isAuthenticated && !!activeConversation?.id && !!currentUserId,
     refetchInterval: 3000, // 3초마다 폴링 (활성 대화)
+    queryFn: async () => {
+      const response = await fetch(`/api/messages/conversations/${activeConversation?.id}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      return response.json();
+    },
     select: (data: any) => data?.data?.messages || []
   });
 
