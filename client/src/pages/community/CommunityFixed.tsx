@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink, Users, UserCheck, MapPin, TrendingUp, BarChart3, Download, RefreshCw, Play, PlayCircle } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink, Users, UserCheck, MapPin, TrendingUp, BarChart3, Download, RefreshCw, Play, PlayCircle, Map } from 'lucide-react';
+import { GoogleMapView } from '@/components/GoogleMapView';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth-compat';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -499,10 +500,22 @@ function CommunityPage() {
     infoCategory: "",
     // 공지사항 전용 필드
     noticeType: "",
-    noticeEndDate: ""
+    noticeEndDate: "",
+    // 이벤트/행사 전용 필드
+    eventDate: "",
+    eventLocation: "",
+    organizer: "",
+    ticketPrice: "",
+    eventWebsite: "",
+    // 이벤트/행사 위치 정보 (지도 표시용)
+    locationName: "",
+    locationAddress: "",
+    locationLatitude: "",
+    locationLongitude: ""
   });
   const [showLinkSection, setShowLinkSection] = useState(false);
   const [isExtractingLink, setIsExtractingLink] = useState(false);
+  const [eventsViewMode, setEventsViewMode] = useState<'list' | 'map'>('list');
 
   const itemsPerPage = 8;
 
@@ -1178,6 +1191,73 @@ function CommunityPage() {
                         className="col-span-3"
                       />
                     </div>
+                    
+                    {/* 위치 정보 섹션 (지도 표시용) */}
+                    <div className="col-span-4 mt-4">
+                      <div className="border rounded-lg p-4 bg-blue-50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <MapPin className="h-5 w-5 text-blue-600" />
+                          <h4 className="font-semibold text-blue-800">위치 정보 (지도 표시용)</h4>
+                        </div>
+                        <p className="text-sm text-blue-700 mb-4">
+                          위치 정보를 입력하면 지도에서 이벤트 위치를 확인할 수 있습니다.
+                        </p>
+                        
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="locationName" className="text-right">장소명</Label>
+                            <Input
+                              id="locationName"
+                              value={newPost.locationName || ''}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, locationName: e.target.value }))}
+                              placeholder="예: 코엑스 A홀"
+                              className="col-span-3"
+                              data-testid="input-location-name"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="locationAddress" className="text-right">주소</Label>
+                            <Input
+                              id="locationAddress"
+                              value={newPost.locationAddress || ''}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, locationAddress: e.target.value }))}
+                              placeholder="예: 서울시 강남구 영동대로 513"
+                              className="col-span-3"
+                              data-testid="input-location-address"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="locationLatitude" className="text-right">위도</Label>
+                            <Input
+                              id="locationLatitude"
+                              type="number"
+                              step="any"
+                              value={newPost.locationLatitude || ''}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, locationLatitude: e.target.value }))}
+                              placeholder="예: 37.5112"
+                              className="col-span-3"
+                              data-testid="input-location-lat"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="locationLongitude" className="text-right">경도</Label>
+                            <Input
+                              id="locationLongitude"
+                              type="number"
+                              step="any"
+                              value={newPost.locationLongitude || ''}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, locationLongitude: e.target.value }))}
+                              placeholder="예: 127.0590"
+                              className="col-span-3"
+                              data-testid="input-location-lng"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 ml-4">
+                            💡 위도/경도는 선택사항입니다. Google Maps에서 위치를 검색하여 좌표를 확인할 수 있습니다.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </>
                 )}
 
@@ -1449,6 +1529,85 @@ function CommunityPage() {
                 <div className="border-t border-gray-200 mt-6 pt-6">
                   <h3 className="text-xl font-bold mb-4">커뮤니티 게시글</h3>
                 </div>
+              </div>
+            )}
+
+            {/* 이벤트/행사 탭 전용: 지도/리스트 뷰 토글 */}
+            {tabValue === 'events' && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    이벤트/행사 위치
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={eventsViewMode === 'list' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setEventsViewMode('list')}
+                      data-testid="events-list-view-btn"
+                    >
+                      <List className="h-4 w-4 mr-2" />
+                      리스트 보기
+                    </Button>
+                    <Button
+                      variant={eventsViewMode === 'map' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setEventsViewMode('map')}
+                      data-testid="events-map-view-btn"
+                    >
+                      <Map className="h-4 w-4 mr-2" />
+                      지도 보기
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 지도 모드일 때 GoogleMapView 표시 */}
+                {eventsViewMode === 'map' && (
+                  <div className="mb-6">
+                    <GoogleMapView
+                      locations={
+                        paginatedPosts
+                          .filter((post: any) => 
+                            post.locationLatitude && 
+                            post.locationLongitude &&
+                            !isNaN(parseFloat(post.locationLatitude)) &&
+                            !isNaN(parseFloat(post.locationLongitude))
+                          )
+                          .map((post: any) => ({
+                            id: post.id,
+                            name: post.locationName || post.title,
+                            address: post.locationAddress || post.eventLocation || '',
+                            type: 'event',
+                            coordinates: {
+                              lat: parseFloat(post.locationLatitude),
+                              lng: parseFloat(post.locationLongitude)
+                            }
+                          }))
+                      }
+                      onLocationSelect={(location) => {
+                        const post = paginatedPosts.find((p: any) => p.id === location.id);
+                        if (post) {
+                          handlePostClick(post);
+                        }
+                      }}
+                      height="400px"
+                      center={{ lat: 37.5665, lng: 126.9780 }}
+                    />
+                    {paginatedPosts.filter((post: any) => 
+                      post.locationLatitude && 
+                      post.locationLongitude
+                    ).length === 0 && (
+                      <div className="text-center py-4 bg-gray-50 rounded-lg mt-4">
+                        <MapPin className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500">위치 정보가 있는 이벤트가 없습니다</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          이벤트 작성 시 위치 정보를 추가하면 지도에 표시됩니다
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
