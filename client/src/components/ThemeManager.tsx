@@ -27,8 +27,8 @@ export function ThemeManager({ children }: { children: React.ReactNode }) {
       // 계절/이벤트 테마 색상을 CSS 변수로 설정
       updateCssVariable('--seasonal-accent', activeAccentColor);
       
-      // 계절/이벤트 효과 클래스 설정
-      setEffectClass(getSeasonalEffectClass());
+      // 계절/이벤트 효과 비활성화 (낙엽, 눈 등 배경 효과 제거)
+      setEffectClass('');
     } else {
       // 효과 제거
       setEffectClass('');
