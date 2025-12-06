@@ -261,7 +261,7 @@ interface NewsArticle {
 }
 
 // 뉴스 카드 컴포넌트 (카드형/리스트형 지원)
-const NewsCard = ({ article, viewType = 'card' }: { article: NewsArticle; viewType?: 'card' | 'list' }) => {
+const NewsCard = ({ article, viewType = 'card', onOpenDetail }: { article: NewsArticle; viewType?: 'card' | 'list'; onOpenDetail?: (article: NewsArticle) => void }) => {
   const formatDate = (dateString: string) => {
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: ko });
@@ -271,7 +271,9 @@ const NewsCard = ({ article, viewType = 'card' }: { article: NewsArticle; viewTy
   };
 
   const handleClick = () => {
-    window.open(article.url, '_blank', 'noopener,noreferrer');
+    if (onOpenDetail) {
+      onOpenDetail(article);
+    }
   };
 
   // 리스트형 뷰
@@ -464,6 +466,8 @@ function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
+  const [selectedNewsArticle, setSelectedNewsArticle] = useState<NewsArticle | null>(null);
+  const [isNewsDetailOpen, setIsNewsDetailOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<any[]>([]);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
@@ -714,6 +718,12 @@ function CommunityPage() {
   const handlePostClick = (post: any) => {
     setSelectedPost(post);
     setIsPostDetailOpen(true);
+  };
+
+  // 뉴스 상세 보기
+  const handleNewsDetailOpen = (article: NewsArticle) => {
+    setSelectedNewsArticle(article);
+    setIsNewsDetailOpen(true);
   };
 
   // 게시글 작성 핸들러
@@ -1416,13 +1426,13 @@ function CommunityPage() {
                   viewType === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {newsArticles.map((article: NewsArticle) => (
-                        <NewsCard key={article.id} article={article} viewType="card" />
+                        <NewsCard key={article.id} article={article} viewType="card" onOpenDetail={handleNewsDetailOpen} />
                       ))}
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {newsArticles.map((article: NewsArticle) => (
-                        <NewsCard key={article.id} article={article} viewType="list" />
+                        <NewsCard key={article.id} article={article} viewType="list" onOpenDetail={handleNewsDetailOpen} />
                       ))}
                     </div>
                   )
@@ -1809,6 +1819,67 @@ function CommunityPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 뉴스 상세 모달 */}
+      <Dialog open={isNewsDetailOpen} onOpenChange={setIsNewsDetailOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          {selectedNewsArticle && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="secondary" className="bg-blue-600 text-white">
+                    뉴스
+                  </Badge>
+                  <span className="text-sm text-gray-500">
+                    {selectedNewsArticle.source}
+                  </span>
+                  <span className="text-sm text-gray-400">•</span>
+                  <span className="text-sm text-gray-500">
+                    {formatDistanceToNow(new Date(selectedNewsArticle.publishedAt), { addSuffix: true, locale: ko })}
+                  </span>
+                </div>
+                <DialogTitle className="text-xl font-bold leading-tight">
+                  {selectedNewsArticle.title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              {/* 뉴스 이미지 */}
+              {selectedNewsArticle.image && (
+                <div className="my-4 rounded-lg overflow-hidden">
+                  <img 
+                    src={selectedNewsArticle.image} 
+                    alt={selectedNewsArticle.title}
+                    className="w-full h-auto max-h-80 object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+              
+              {/* 뉴스 내용 */}
+              <div className="space-y-4">
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  {selectedNewsArticle.description}
+                </p>
+                
+                {/* 원문 링크 */}
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.open(selectedNewsArticle.url, '_blank', 'noopener,noreferrer')}
+                    data-testid="news-detail-external-link"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    원문 기사 보기
+                  </Button>
                 </div>
               </div>
             </>
