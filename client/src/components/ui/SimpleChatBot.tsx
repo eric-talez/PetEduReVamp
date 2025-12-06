@@ -395,17 +395,40 @@ export function SimpleChatBot() {
           right: `${position.x}px`
         }}
       >
-        <Button
+        <div
           onClick={() => setIsOpen(true)}
           onMouseDown={handleDragStart}
-          className="w-14 h-14 rounded-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl border-2 border-white/20 cursor-move"
-          style={{ 
-            background: 'linear-gradient(135deg, #2BAA61 0%, #1e8b4f 100%)',
-            boxShadow: '0 8px 32px rgba(43, 170, 97, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)',
-          }}
+          className="relative cursor-move group"
+          data-testid="chatbot-coffee-button"
         >
-          <Coffee size={22} className="text-white drop-shadow-sm" />
-        </Button>
+          {/* 커피잔 본체 */}
+          <div 
+            className="w-14 h-12 rounded-b-[50%] rounded-t-lg relative overflow-hidden transition-transform group-hover:scale-105"
+            style={{ 
+              background: 'linear-gradient(135deg, #8B4513 0%, #5D3A1A 100%)',
+              boxShadow: '0 8px 32px rgba(139, 69, 19, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2)',
+            }}
+          >
+            {/* 커피 */}
+            <div 
+              className="absolute bottom-0 left-1 right-1 h-8 rounded-b-[45%]"
+              style={{ background: 'linear-gradient(180deg, #3E2723 0%, #1B0000 100%)' }}
+            />
+            {/* 거품 */}
+            <div className="absolute top-2 left-2 right-2 h-3 bg-gradient-to-b from-white/40 to-transparent rounded-full" />
+          </div>
+          {/* 손잡이 */}
+          <div 
+            className="absolute right-[-8px] top-3 w-4 h-6 border-4 border-[#8B4513] rounded-r-full bg-transparent"
+            style={{ borderLeft: 'none' }}
+          />
+          {/* 김 (steam) 효과 */}
+          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 flex gap-1">
+            <div className="w-1 h-3 bg-gray-300/60 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+            <div className="w-1 h-4 bg-gray-300/60 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
+            <div className="w-1 h-3 bg-gray-300/60 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
+          </div>
+        </div>
         
         {/* 툴팁 */}
         <div className="absolute bottom-16 right-0 bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 whitespace-nowrap hover:opacity-100 group-hover:opacity-100">
