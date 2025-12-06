@@ -14,6 +14,7 @@ import { productRoutes } from "./routes/products";
 import { simpleProductRoutes } from "./routes/simple-products";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
+import { notificationService } from "./notifications/notification-service";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
@@ -10063,6 +10064,22 @@ app.get('/api/search', async (req, res) => {
 
           console.log('[강의 등록] 결제 완료 후 강의 등록:', enrollment);
 
+          // 강의 등록 알림 발송
+          if (userId) {
+            try {
+              await notificationService.sendNotification({
+                userId: typeof userId === 'string' ? parseInt(userId) : userId,
+                type: 'system',
+                title: '강의 등록 완료',
+                message: `"${itemName}"강의에 성공적으로 등록되었습니다.`,
+                actionUrl: `/my-courses`,
+                data: { courseId: itemId, enrollmentId: enrollment.id }
+              });
+            } catch (notifyError) {
+              console.error('[강의 등록] 알림 발송 실패:', notifyError);
+            }
+          }
+
           res.json({
             success: true,
             message: '결제가 완료되어 강의에 등록되었습니다.',
@@ -10083,6 +10100,22 @@ app.get('/api/search', async (req, res) => {
           };
 
           console.log('[상품 주문] 결제 완료 후 주문 생성:', order);
+
+          // 주문 완료 알림 발송
+          if (userId) {
+            try {
+              await notificationService.sendNotification({
+                userId: typeof userId === 'string' ? parseInt(userId) : userId,
+                type: 'system',
+                title: '주문 완료',
+                message: `"${itemName}" 주문이 성공적으로 완료되었습니다.`,
+                actionUrl: `/my-orders`,
+                data: { orderId: order.id, productId: itemId }
+              });
+            } catch (notifyError) {
+              console.error('[주문 완료] 알림 발송 실패:', notifyError);
+            }
+          }
 
           res.json({
             success: true,
