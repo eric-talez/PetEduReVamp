@@ -229,6 +229,11 @@ export const posts = pgTable("posts", {
   videoThumbnail: text("video_thumbnail"), // 영상 썸네일 URL
   videoDuration: integer("video_duration"), // 영상 길이 (초)
   videoFileSize: integer("video_file_size"), // 파일 크기 (bytes)
+  // 이벤트/행사 위치 정보
+  locationName: varchar("location_name", { length: 200 }), // 장소 이름
+  locationAddress: text("location_address"), // 주소
+  locationLatitude: text("location_latitude"), // 위도
+  locationLongitude: text("location_longitude"), // 경도
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
