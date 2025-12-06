@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Bot, User } from 'lucide-react';
+import { X, Send, Loader2, Coffee, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/lib/auth-compat';
@@ -404,7 +404,7 @@ export function SimpleChatBot() {
             boxShadow: '0 8px 32px rgba(43, 170, 97, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)',
           }}
         >
-          <Bot size={22} className="text-white drop-shadow-sm" />
+          <Coffee size={22} className="text-white drop-shadow-sm" />
         </Button>
         
         {/* 툴팁 */}
@@ -434,7 +434,7 @@ export function SimpleChatBot() {
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-            <Bot size={18} />
+            <Coffee size={18} />
           </div>
           <div>
             <span className="font-semibold text-sm">TALEZ AI 도우미</span>
@@ -470,7 +470,7 @@ export function SimpleChatBot() {
             >
               {message.role === 'assistant' && (
                 <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-primary-foreground shadow-sm">
-                  <Bot size={16} />
+                  <Coffee size={16} />
                 </div>
               )}
               <div
@@ -495,7 +495,7 @@ export function SimpleChatBot() {
           {isLoading && (
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                <Bot size={18} />
+                <Coffee size={18} />
               </div>
               <div className="bg-muted rounded-lg rounded-tl-none px-4 py-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
