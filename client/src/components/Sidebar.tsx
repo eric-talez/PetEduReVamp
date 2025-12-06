@@ -822,16 +822,16 @@ export function Sidebar({
                   </>
                 )}
 
-                {/* 도구 */}
+                {/* 도구 - 역할별 표시 */}
                 <SidebarMenuGroup expanded={expanded} title="도구" groupName="tools" isOpen={menuGroups.tools} toggleGroup={toggleMenuGroup} icon={<Wrench className="w-5 h-5 text-gray-500" />} />
                 {menuGroups.tools && (
                   <>
-                    <AccessibleNavItem href="/video-training" icon={<Video className="w-5 h-5 mr-2" />} hoverIcon={<Presentation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-training")} onClick={handleItemClick} show={true}>영상 훈련</AccessibleNavItem>
-                    <AccessibleNavItem href="/video-call" icon={<VideoIcon className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-call")} onClick={handleItemClick} show={true}>화상 수업</AccessibleNavItem>
-                    <AccessibleNavItem href="/ai-analysis" icon={<Brain className="w-5 h-5 mr-2" />} hoverIcon={<Sparkles className="w-5 h-5 mr-2 text-primary" />} active={isActive("/ai-analysis")} onClick={handleItemClick} show={true}>AI 분석</AccessibleNavItem>
+                    <AccessibleNavItem href="/video-training" icon={<Video className="w-5 h-5 mr-2" />} hoverIcon={<Presentation className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-training")} onClick={handleItemClick} show={showTrainerMenu || showInstituteMenu}>영상 훈련</AccessibleNavItem>
+                    <AccessibleNavItem href="/video-call" icon={<VideoIcon className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-call")} onClick={handleItemClick} show={showTrainerMenu || showInstituteMenu}>화상 수업</AccessibleNavItem>
+                    <AccessibleNavItem href="/ai-analysis" icon={<Brain className="w-5 h-5 mr-2" />} hoverIcon={<Sparkles className="w-5 h-5 mr-2 text-primary" />} active={isActive("/ai-analysis")} onClick={handleItemClick} show={showPetOwnerMenu || showTrainerMenu || showInstituteMenu}>AI 분석</AccessibleNavItem>
                     <AccessibleNavItem href="/messages" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<ThumbsUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/messages")} onClick={handleItemClick} show={true}>메시지</AccessibleNavItem>
                     <AccessibleNavItem href="/alerts" icon={<Bell className="w-5 h-5 mr-2" />} hoverIcon={<Activity className="w-5 h-5 mr-2 text-primary" />} active={isActive("/alerts")} onClick={handleItemClick} show={true}>알림</AccessibleNavItem>
-                    <AccessibleNavItem href="/analytics" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/analytics")} onClick={handleItemClick} show={true}>분석 리포트</AccessibleNavItem>
+                    <AccessibleNavItem href="/analytics" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/analytics")} onClick={handleItemClick} show={showTrainerMenu || showInstituteMenu}>분석 리포트</AccessibleNavItem>
                   </>
                 )}
 
