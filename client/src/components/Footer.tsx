@@ -12,12 +12,9 @@ export default function Footer() {
             <div className="flex flex-col space-y-4">
               <div className="flex items-center">
                 <img 
-                  src="/logo.svg" 
+                  src="/logo-symbol-new.png" 
                   alt="TALEZ 로고" 
                   className="h-8 w-auto mr-3"
-                  onError={(e) => {
-                    e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='32' viewBox='0 0 100 32'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23333'%3ETALEZ%3C/text%3E%3C/svg%3E";
-                  }}
                 />
                 <span className="text-xl font-bold text-gray-900 dark:text-white">TALEZ</span>
               </div>
