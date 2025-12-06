@@ -262,39 +262,64 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
-        <img 
-          src="https://images.unsplash.com/photo-1551651653-c5186a1fbba2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="관리자 대시보드"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
-        />
+      {/* Graffiti Style Banner */}
+      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 shadow-2xl">
+        {/* 어두운 벽 배경 */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-zinc-900"></div>
         
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
+        {/* 그래피티 질감 효과 */}
+        <div className="absolute inset-0 opacity-30" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
+        }}></div>
         
-        <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
-          <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">
-            시스템 관리자 대시보드
+        {/* 네온 스프레이 효과들 */}
+        <div className="absolute top-4 right-8 w-32 h-32 bg-pink-500/30 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-8 left-16 w-40 h-40 bg-cyan-400/25 rounded-full blur-3xl"></div>
+        <div className="absolute top-12 left-1/3 w-24 h-24 bg-yellow-400/20 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-4 right-1/4 w-28 h-28 bg-purple-500/25 rounded-full blur-3xl"></div>
+        
+        {/* 드리핑 페인트 효과 */}
+        <div className="absolute top-0 left-20 w-1 h-16 bg-gradient-to-b from-pink-500 to-transparent opacity-60"></div>
+        <div className="absolute top-0 left-24 w-0.5 h-12 bg-gradient-to-b from-cyan-400 to-transparent opacity-50"></div>
+        <div className="absolute top-0 right-32 w-1 h-20 bg-gradient-to-b from-yellow-400 to-transparent opacity-40"></div>
+        
+        {/* 콘텐츠 */}
+        <div className="relative h-full flex flex-col justify-center px-8 md:px-12 z-10">
+          {/* 그래피티 스타일 제목 */}
+          <h1 className="text-3xl md:text-5xl font-black mb-2 md:mb-4 max-w-xl tracking-tight"
+              style={{
+                background: 'linear-gradient(135deg, #ff6b9d, #c44569, #ff9ff3, #54a0ff)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 0 40px rgba(255,107,157,0.5)',
+                fontFamily: '"Impact", "Arial Black", sans-serif',
+                letterSpacing: '-0.02em'
+              }}>
+            ADMIN DASHBOARD
           </h1>
-          <p className="text-white text-sm md:text-lg max-w-xl mb-6">
-            Talez의 모든 활동을 모니터링하고 관리하여 최상의 서비스 품질을 유지하세요.
+          <p className="text-cyan-300 text-sm md:text-lg max-w-xl mb-6 font-medium"
+             style={{ textShadow: '0 0 20px rgba(34,211,238,0.6)' }}>
+            🎨 Talez의 모든 활동을 모니터링하고 관리하세요
           </p>
-          <div>
+          <div className="flex flex-wrap gap-3">
             <Button
-              className="bg-white text-primary font-semibold hover:bg-gray-50 mr-3"
+              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold hover:from-pink-600 hover:to-purple-700 border-0 shadow-lg shadow-pink-500/30 transition-all hover:scale-105"
               onClick={() => window.location.href = '/admin/system-status'}
             >
-              시스템 상태 확인
+              ⚡ 시스템 상태
             </Button>
             <Button
-              variant="outline"
-              className="border-2 border-white text-white hover:bg-white/10"
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold hover:from-cyan-600 hover:to-blue-700 border-0 shadow-lg shadow-cyan-500/30 transition-all hover:scale-105"
               onClick={() => window.location.href = '/admin/backup'}
             >
-              백업 관리
+              💾 백업 관리
             </Button>
           </div>
         </div>
+        
+        {/* 스프레이 캔 장식 */}
+        <div className="absolute bottom-4 right-8 text-4xl opacity-60">🎨</div>
+        <div className="absolute top-6 right-16 text-2xl opacity-40 rotate-12">✨</div>
       </div>
       
       {/* Statistics */}
