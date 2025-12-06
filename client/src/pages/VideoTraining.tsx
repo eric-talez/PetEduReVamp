@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Video, Edit, Trash2, Plus, BookOpen, Clock, Users, Star, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getCSRFToken } from '@/lib/csrf';
 
 interface Course {
   id: string;
@@ -110,11 +111,14 @@ export default function VideoTraining() {
   // 강의 수정
   const handleEditCourse = async (courseId: string) => {
     try {
+      const csrfToken = await getCSRFToken();
       const response = await fetch(`/api/admin/curriculums/${courseId}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
         },
+        credentials: 'include',
         body: JSON.stringify(editFormData)
       });
 
@@ -128,9 +132,10 @@ export default function VideoTraining() {
         setEditFormData({});
         fetchCourses();
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: "오류",
-          description: "강의 수정에 실패했습니다.",
+          description: errorData.message || "강의 수정에 실패했습니다.",
           variant: "destructive"
         });
       }
@@ -147,8 +152,13 @@ export default function VideoTraining() {
   // 강의 삭제
   const handleDeleteCourse = async (courseId: string) => {
     try {
+      const csrfToken = await getCSRFToken();
       const response = await fetch(`/api/admin/curriculums/${courseId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-Token': csrfToken
+        },
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -158,9 +168,10 @@ export default function VideoTraining() {
         });
         fetchCourses();
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: "오류",
-          description: "강의 삭제에 실패했습니다.",
+          description: errorData.message || "강의 삭제에 실패했습니다.",
           variant: "destructive"
         });
       }
@@ -177,11 +188,14 @@ export default function VideoTraining() {
   // 강의 상태 변경
   const handleStatusChange = async (courseId: string, newStatus: string) => {
     try {
+      const csrfToken = await getCSRFToken();
       const response = await fetch(`/api/admin/curriculums/${courseId}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
         },
+        credentials: 'include',
         body: JSON.stringify({ status: newStatus })
       });
 
@@ -192,9 +206,10 @@ export default function VideoTraining() {
         });
         fetchCourses();
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: "오류",
-          description: "상태 변경에 실패했습니다.",
+          description: errorData.message || "상태 변경에 실패했습니다.",
           variant: "destructive"
         });
       }
