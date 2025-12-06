@@ -96,6 +96,8 @@ import MenuVisibilityControl from "./pages/admin/MenuVisibilityControl";
 import NavigationProgress from "./components/NavigationProgress";
 import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
 import { SplashScreen, useSplashScreen } from "./components/SplashScreen";
+import { WeatherProvider, useWeather } from "./contexts/WeatherContext";
+import { WeatherEffects } from "./components/WeatherEffects";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -2517,9 +2519,17 @@ function UnauthenticatedRoutes() {
  * 디버그 버튼 컴포넌트 - 챗봇 버튼 가시성을 위해 비활성화
  */
 function DebugButton() {
-  // 챗봇 버튼을 보이게 하기 위해 로그인 버튼들을 숨김 처리
   return null;
 }
+
+/**
+ * 날씨 효과 래퍼 컴포넌트 - WeatherContext 사용
+ */
+function WeatherEffectsWrapper() {
+  const { weather } = useWeather();
+  return <WeatherEffects weatherType={weather.type} />;
+}
+
 
 /**
  * 전역 단축키 관리 컴포넌트
@@ -2546,15 +2556,18 @@ function SimpleApp() {
         <UserPreferencesProvider>
           <AchievementsProvider>
             <NotificationsProvider>
-              <KeyboardShortcutsManager>
-                <>
-                  {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-                  <NavigationProgress />
-                  {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-                  <DebugButton />
-                  <Toaster />
-                </>
-              </KeyboardShortcutsManager>
+              <WeatherProvider>
+                <KeyboardShortcutsManager>
+                  <>
+                    <WeatherEffectsWrapper />
+                    {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+                    <NavigationProgress />
+                    {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+                    <DebugButton />
+                    <Toaster />
+                  </>
+                </KeyboardShortcutsManager>
+              </WeatherProvider>
             </NotificationsProvider>
           </AchievementsProvider>
         </UserPreferencesProvider>

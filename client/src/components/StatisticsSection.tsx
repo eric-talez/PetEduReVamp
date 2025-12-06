@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, ArrowUp, ChevronDown, ChevronRight, Droplets, Wind, Sun, AlertTriangle } from 'lucide-react';
+import { Activity, ArrowUp, ChevronDown, ChevronRight, Droplets, Wind, Sun, Cloud, CloudRain, CloudSnow, AlertTriangle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuery } from '@tanstack/react-query';
+import { useWeather } from '@/contexts/WeatherContext';
 
 interface StatisticsSectionProps {
   expanded: boolean;
@@ -34,6 +35,70 @@ interface SystemStatsData {
 interface SystemStatsResponse {
   success: boolean;
   data: SystemStatsData;
+}
+
+function WeatherSection() {
+  const { weather, setWeather } = useWeather();
+  
+  const weatherTypes = [
+    { type: 'clear', label: '맑음', icon: Sun, color: 'text-amber-500' },
+    { type: 'cloudy', label: '흐림', icon: Cloud, color: 'text-gray-500' },
+    { type: 'rain', label: '비', icon: CloudRain, color: 'text-blue-500' },
+    { type: 'snow', label: '눈', icon: CloudSnow, color: 'text-cyan-400' },
+  ] as const;
+  
+  const currentWeather = weatherTypes.find(w => w.type === weather.type) || weatherTypes[0];
+  const WeatherIcon = currentWeather.icon;
+  
+  const cycleWeather = () => {
+    const currentIndex = weatherTypes.findIndex(w => w.type === weather.type);
+    const nextIndex = (currentIndex + 1) % weatherTypes.length;
+    const nextWeather = weatherTypes[nextIndex];
+    setWeather({
+      ...weather,
+      type: nextWeather.type,
+      description: nextWeather.label
+    });
+  };
+  
+  return (
+    <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">현재 날씨</h4>
+      <div 
+        className="flex justify-between items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded p-1 -m-1 transition-colors"
+        onClick={cycleWeather}
+        data-testid="weather-toggle"
+      >
+        <div className="flex items-center">
+          <WeatherIcon className={`h-5 w-5 ${currentWeather.color} mr-2`} />
+          <span className="text-sm">{weather.description}</span>
+        </div>
+        <span className="text-sm font-medium">{weather.temperature}°C</span>
+      </div>
+      <div className="flex justify-between mt-1 text-xs text-gray-500">
+        <div className="flex items-center">
+          <Wind className="h-3 w-3 mr-1" />
+          <span>{weather.windSpeed}m/s</span>
+        </div>
+        <div className="flex items-center">
+          <Droplets className="h-3 w-3 mr-1" />
+          <span>습도 {weather.humidity}%</span>
+        </div>
+      </div>
+      <div className="flex gap-1 mt-2">
+        {weatherTypes.map(({ type, icon: Icon, color }) => (
+          <button
+            key={type}
+            onClick={() => setWeather({ ...weather, type, description: weatherTypes.find(w => w.type === type)?.label || '' })}
+            className={`p-1.5 rounded ${weather.type === type ? 'bg-primary/10 ring-1 ring-primary' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            data-testid={`weather-btn-${type}`}
+          >
+            <Icon className={`h-4 w-4 ${color}`} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function StatisticsSection({ expanded }: StatisticsSectionProps) {
@@ -230,26 +295,7 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
             )}
 
             {/* 날씨 정보 섹션 */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
-              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">현재 날씨</h4>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <Sun className="h-5 w-5 text-amber-500 mr-2" />
-                  <span className="text-sm">맑음</span>
-                </div>
-                <span className="text-sm font-medium">23°C</span>
-              </div>
-              <div className="flex justify-between mt-1 text-xs text-gray-500">
-                <div className="flex items-center">
-                  <Wind className="h-3 w-3 mr-1" />
-                  <span>3m/s</span>
-                </div>
-                <div className="flex items-center">
-                  <Droplets className="h-3 w-3 mr-1" />
-                  <span>습도 45%</span>
-                </div>
-              </div>
-            </div>
+            <WeatherSection />
           </div>
         )}
       </div>
