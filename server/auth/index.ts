@@ -196,6 +196,16 @@ function setupAuthRoutes(app: Express) {
           );
         }
         
+        // 세션에 사용자 정보 저장 (req.session.user로 접근 가능하도록)
+        req.session.user = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          instituteId: user.instituteId
+        };
+        
         // 세션 명시적 저장
         req.session.save((saveErr) => {
           if (saveErr) {
@@ -287,6 +297,16 @@ function setupAuthRoutes(app: Express) {
             '로그인 세션 생성 중 오류가 발생했습니다'
           );
         }
+        
+        // 세션에 사용자 정보 저장 (req.session.user로 접근 가능하도록)
+        req.session.user = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          instituteId: user.instituteId
+        };
         
         // 세션 명시적 저장
         req.session.save((saveErr) => {
