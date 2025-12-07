@@ -19,7 +19,7 @@ export function QuickLoginButtons() {
     if (isLoading) return;
     
     setIsLoading(true);
-    startLoading('로그인 중...');
+    startLoading('로그인 중...', true); // 페이지 새로고침 시에도 로딩 유지
     
     try {
       console.log('[QuickLogin] API 호출 시작:', role);
@@ -97,7 +97,7 @@ export function QuickLoginButtons() {
     if (isLoading) return;
     
     setIsLoading(true);
-    startLoading('로그아웃 중...');
+    startLoading('로그아웃 중...', true); // 페이지 새로고침 시에도 로딩 유지
     
     try {
       // CSRF 토큰 조회

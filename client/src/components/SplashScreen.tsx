@@ -10,7 +10,7 @@ interface SplashScreenProps {
 interface PageLoadingContextType {
   isLoading: boolean;
   loadingMessage: string;
-  startLoading: (message?: string) => void;
+  startLoading: (message?: string, persistAcrossReload?: boolean) => void;
   stopLoading: () => void;
 }
 
@@ -84,10 +84,31 @@ export function PageLoadingSplash({ isVisible, message }: { isVisible: boolean; 
 
 // 페이지 로딩 프로바이더
 export function PageLoadingProvider({ children }: { children: ReactNode }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  // 페이지 새로고침 중인지 체크 (로그인/로그아웃 등)
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const pendingLoad = sessionStorage.getItem('talez_pending_load');
+    return !!pendingLoad;
+  });
+  const [loadingMessage, setLoadingMessage] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return sessionStorage.getItem('talez_pending_load') || '';
+  });
   const [location] = useLocation();
   const prevLocationRef = useRef(location);
+
+  // 마운트 시 pending 로딩 처리
+  useEffect(() => {
+    const pendingLoad = sessionStorage.getItem('talez_pending_load');
+    if (pendingLoad) {
+      // 렌더링 완료 후 로딩 종료
+      const timer = setTimeout(() => {
+        sessionStorage.removeItem('talez_pending_load');
+        setIsLoading(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // 라우트 변경 시 로딩 표시
   useEffect(() => {
@@ -159,9 +180,14 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
     };
   }, [location]);
 
-  const startLoading = (message?: string) => {
-    setLoadingMessage(message || '로딩 중...');
+  const startLoading = (message?: string, persistAcrossReload = false) => {
+    const msg = message || '로딩 중...';
+    setLoadingMessage(msg);
     setIsLoading(true);
+    // 페이지 새로고침 시에도 로딩 유지
+    if (persistAcrossReload) {
+      sessionStorage.setItem('talez_pending_load', msg);
+    }
   };
 
   const stopLoading = () => {
