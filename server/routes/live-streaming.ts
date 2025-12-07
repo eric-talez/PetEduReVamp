@@ -1,0 +1,525 @@
+import { Router } from 'express';
+import { db } from '../db';
+import { liveStreams, streamViewers, streamChatMessages, users, insertLiveStreamSchema, insertStreamChatSchema } from '@shared/schema';
+import { eq, desc, and, isNull } from 'drizzle-orm';
+import { csrfProtection } from '../middleware/csrf';
+import { 
+  ApiErrorCode,
+  extendResponse
+} from '../middleware/api-standards';
+import crypto from 'crypto';
+
+const router = Router();
+router.use(extendResponse);
+
+function generateStreamKey(): string {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+function generateMeetingCode(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const segments = 3;
+  const segmentLength = 3;
+  
+  const code = Array.from({ length: segments }, () => {
+    return Array.from({ length: segmentLength }, () => 
+      chars.charAt(Math.floor(Math.random() * chars.length))
+    ).join('');
+  }).join('-');
+  
+  return code;
+}
+
+router.get('/streams', async (req, res) => {
+  try {
+    const { status, category } = req.query;
+    
+    let query = db.select({
+      id: liveStreams.id,
+      hostId: liveStreams.hostId,
+      title: liveStreams.title,
+      description: liveStreams.description,
+      category: liveStreams.category,
+      meetingUrl: liveStreams.meetingUrl,
+      meetingCode: liveStreams.meetingCode,
+      thumbnailUrl: liveStreams.thumbnailUrl,
+      status: liveStreams.status,
+      isPublic: liveStreams.isPublic,
+      currentViewers: liveStreams.currentViewers,
+      scheduledStartTime: liveStreams.scheduledStartTime,
+      createdAt: liveStreams.createdAt,
+      hostName: users.name,
+      hostAvatar: users.avatar,
+    })
+    .from(liveStreams)
+    .leftJoin(users, eq(liveStreams.hostId, users.id))
+    .where(eq(liveStreams.isPublic, true))
+    .orderBy(desc(liveStreams.createdAt));
+    
+    const streams = await query;
+    
+    const filteredStreams = streams.filter(stream => {
+      if (status && stream.status !== status) return false;
+      if (category && stream.category !== category) return false;
+      return true;
+    });
+    
+    return res.success({ streams: filteredStreams });
+  } catch (error) {
+    console.error('[Live Streaming] Error fetching streams:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch streams');
+  }
+});
+
+router.get('/streams/live', async (req, res) => {
+  try {
+    const liveStreamsList = await db.select({
+      id: liveStreams.id,
+      hostId: liveStreams.hostId,
+      title: liveStreams.title,
+      description: liveStreams.description,
+      category: liveStreams.category,
+      meetingUrl: liveStreams.meetingUrl,
+      meetingCode: liveStreams.meetingCode,
+      thumbnailUrl: liveStreams.thumbnailUrl,
+      currentViewers: liveStreams.currentViewers,
+      scheduledStartTime: liveStreams.scheduledStartTime,
+      actualStartTime: liveStreams.actualStartTime,
+      hostName: users.name,
+      hostAvatar: users.avatar,
+    })
+    .from(liveStreams)
+    .leftJoin(users, eq(liveStreams.hostId, users.id))
+    .where(and(
+      eq(liveStreams.status, 'live'),
+      eq(liveStreams.isPublic, true)
+    ))
+    .orderBy(desc(liveStreams.currentViewers));
+    
+    return res.success({ streams: liveStreamsList });
+  } catch (error) {
+    console.error('[Live Streaming] Error fetching live streams:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch live streams');
+  }
+});
+
+router.get('/streams/:id', async (req, res) => {
+  try {
+    const streamId = parseInt(req.params.id);
+    
+    if (isNaN(streamId)) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Invalid stream ID');
+    }
+    
+    const [stream] = await db.select({
+      id: liveStreams.id,
+      hostId: liveStreams.hostId,
+      title: liveStreams.title,
+      description: liveStreams.description,
+      category: liveStreams.category,
+      streamKey: liveStreams.streamKey,
+      meetingUrl: liveStreams.meetingUrl,
+      meetingCode: liveStreams.meetingCode,
+      thumbnailUrl: liveStreams.thumbnailUrl,
+      status: liveStreams.status,
+      isPublic: liveStreams.isPublic,
+      maxViewers: liveStreams.maxViewers,
+      currentViewers: liveStreams.currentViewers,
+      peakViewers: liveStreams.peakViewers,
+      totalViews: liveStreams.totalViews,
+      scheduledStartTime: liveStreams.scheduledStartTime,
+      actualStartTime: liveStreams.actualStartTime,
+      endTime: liveStreams.endTime,
+      duration: liveStreams.duration,
+      chatEnabled: liveStreams.chatEnabled,
+      createdAt: liveStreams.createdAt,
+      hostName: users.name,
+      hostAvatar: users.avatar,
+    })
+    .from(liveStreams)
+    .leftJoin(users, eq(liveStreams.hostId, users.id))
+    .where(eq(liveStreams.id, streamId));
+    
+    if (!stream) {
+      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+    }
+    
+    const userId = (req.session as any)?.userId;
+    if (!stream.isPublic && stream.hostId !== userId) {
+      return res.error(ApiErrorCode.FORBIDDEN, 'Access denied to private stream');
+    }
+    
+    return res.success({ stream });
+  } catch (error) {
+    console.error('[Live Streaming] Error fetching stream:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch stream');
+  }
+});
+
+router.post('/streams', csrfProtection, async (req, res) => {
+  try {
+    const userId = (req.session as any)?.userId;
+    
+    if (!userId) {
+      return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in to create a stream');
+    }
+    
+    const validation = insertLiveStreamSchema.safeParse(req.body);
+    
+    if (!validation.success) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, validation.error.errors[0].message);
+    }
+    
+    const streamKey = generateStreamKey();
+    const meetingCode = generateMeetingCode();
+    const meetingUrl = `https://meet.google.com/${meetingCode}`;
+    
+    const [newStream] = await db.insert(liveStreams).values({
+      ...validation.data,
+      hostId: userId,
+      streamKey,
+      meetingCode,
+      meetingUrl,
+    }).returning();
+    
+    console.log('[Live Streaming] Stream created:', { id: newStream.id, title: newStream.title });
+    
+    return res.success({ stream: newStream }, 'Stream created successfully');
+  } catch (error) {
+    console.error('[Live Streaming] Error creating stream:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to create stream');
+  }
+});
+
+router.patch('/streams/:id/start', csrfProtection, async (req, res) => {
+  try {
+    const userId = (req.session as any)?.userId;
+    const streamId = parseInt(req.params.id);
+    
+    if (!userId) {
+      return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in');
+    }
+    
+    if (isNaN(streamId)) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Invalid stream ID');
+    }
+    
+    const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
+    
+    if (!stream) {
+      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+    }
+    
+    if (stream.hostId !== userId) {
+      return res.error(ApiErrorCode.FORBIDDEN, 'Only the host can start this stream');
+    }
+    
+    if (stream.status === 'live') {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Stream is already live');
+    }
+    
+    const [updatedStream] = await db.update(liveStreams)
+      .set({
+        status: 'live',
+        actualStartTime: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(liveStreams.id, streamId))
+      .returning();
+    
+    console.log('[Live Streaming] Stream started:', { id: streamId });
+    
+    return res.success({ stream: updatedStream }, 'Stream started');
+  } catch (error) {
+    console.error('[Live Streaming] Error starting stream:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to start stream');
+  }
+});
+
+router.patch('/streams/:id/end', csrfProtection, async (req, res) => {
+  try {
+    const userId = (req.session as any)?.userId;
+    const streamId = parseInt(req.params.id);
+    
+    if (!userId) {
+      return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in');
+    }
+    
+    if (isNaN(streamId)) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Invalid stream ID');
+    }
+    
+    const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
+    
+    if (!stream) {
+      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+    }
+    
+    if (stream.hostId !== userId) {
+      return res.error(ApiErrorCode.FORBIDDEN, 'Only the host can end this stream');
+    }
+    
+    const endTime = new Date();
+    const duration = stream.actualStartTime 
+      ? Math.floor((endTime.getTime() - new Date(stream.actualStartTime).getTime()) / 1000)
+      : 0;
+    
+    await db.update(streamViewers)
+      .set({
+        isActive: false,
+        leftAt: endTime,
+      })
+      .where(and(
+        eq(streamViewers.streamId, streamId),
+        eq(streamViewers.isActive, true)
+      ));
+    
+    const [updatedStream] = await db.update(liveStreams)
+      .set({
+        status: 'ended',
+        endTime,
+        duration,
+        currentViewers: 0,
+        updatedAt: new Date(),
+      })
+      .where(eq(liveStreams.id, streamId))
+      .returning();
+    
+    console.log('[Live Streaming] Stream ended:', { id: streamId, duration });
+    
+    return res.success({ stream: updatedStream }, 'Stream ended');
+  } catch (error) {
+    console.error('[Live Streaming] Error ending stream:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to end stream');
+  }
+});
+
+router.post('/streams/:id/join', async (req, res) => {
+  try {
+    const streamId = parseInt(req.params.id);
+    const userId = (req.session as any)?.userId;
+    const sessionId = req.body.sessionId || crypto.randomBytes(8).toString('hex');
+    
+    if (isNaN(streamId)) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Invalid stream ID');
+    }
+    
+    const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
+    
+    if (!stream) {
+      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+    }
+    
+    if (stream.status !== 'live' && stream.status !== 'scheduled') {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Stream is not available');
+    }
+    
+    const [viewer] = await db.insert(streamViewers).values({
+      streamId,
+      userId: userId || null,
+      sessionId,
+      isActive: true,
+    }).returning();
+    
+    const newViewerCount = (stream.currentViewers || 0) + 1;
+    const peakViewers = Math.max(stream.peakViewers || 0, newViewerCount);
+    const totalViews = (stream.totalViews || 0) + 1;
+    
+    await db.update(liveStreams)
+      .set({
+        currentViewers: newViewerCount,
+        peakViewers,
+        totalViews,
+        updatedAt: new Date(),
+      })
+      .where(eq(liveStreams.id, streamId));
+    
+    console.log('[Live Streaming] Viewer joined:', { streamId, viewerId: viewer.id });
+    
+    return res.success({ 
+      viewer,
+      stream: {
+        ...stream,
+        currentViewers: newViewerCount,
+      }
+    });
+  } catch (error) {
+    console.error('[Live Streaming] Error joining stream:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to join stream');
+  }
+});
+
+router.post('/streams/:id/leave', async (req, res) => {
+  try {
+    const streamId = parseInt(req.params.id);
+    const { sessionId, viewerId } = req.body;
+    
+    if (isNaN(streamId)) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Invalid stream ID');
+    }
+    
+    if (!sessionId && !viewerId) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Session ID or Viewer ID required');
+    }
+    
+    let condition;
+    if (viewerId) {
+      condition = and(
+        eq(streamViewers.id, viewerId),
+        eq(streamViewers.streamId, streamId)
+      );
+    } else {
+      condition = and(
+        eq(streamViewers.sessionId, sessionId),
+        eq(streamViewers.streamId, streamId),
+        eq(streamViewers.isActive, true)
+      );
+    }
+    
+    const [viewer] = await db.select().from(streamViewers).where(condition);
+    
+    if (viewer) {
+      const leftAt = new Date();
+      const watchTime = viewer.joinedAt 
+        ? Math.floor((leftAt.getTime() - new Date(viewer.joinedAt).getTime()) / 1000)
+        : 0;
+      
+      await db.update(streamViewers)
+        .set({
+          isActive: false,
+          leftAt,
+          watchTime,
+        })
+        .where(eq(streamViewers.id, viewer.id));
+      
+      const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
+      if (stream && stream.currentViewers && stream.currentViewers > 0) {
+        await db.update(liveStreams)
+          .set({
+            currentViewers: stream.currentViewers - 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(liveStreams.id, streamId));
+      }
+      
+      console.log('[Live Streaming] Viewer left:', { streamId, viewerId: viewer.id, watchTime });
+    }
+    
+    return res.success({ message: 'Left stream' });
+  } catch (error) {
+    console.error('[Live Streaming] Error leaving stream:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to leave stream');
+  }
+});
+
+router.get('/streams/:id/chat', async (req, res) => {
+  try {
+    const streamId = parseInt(req.params.id);
+    const limit = parseInt(req.query.limit as string) || 50;
+    const before = req.query.before ? parseInt(req.query.before as string) : undefined;
+    
+    if (isNaN(streamId)) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Invalid stream ID');
+    }
+    
+    let query = db.select({
+      id: streamChatMessages.id,
+      streamId: streamChatMessages.streamId,
+      userId: streamChatMessages.userId,
+      message: streamChatMessages.message,
+      isHighlighted: streamChatMessages.isHighlighted,
+      isPinned: streamChatMessages.isPinned,
+      createdAt: streamChatMessages.createdAt,
+      userName: users.name,
+      userAvatar: users.avatar,
+    })
+    .from(streamChatMessages)
+    .leftJoin(users, eq(streamChatMessages.userId, users.id))
+    .where(and(
+      eq(streamChatMessages.streamId, streamId),
+      eq(streamChatMessages.isDeleted, false)
+    ))
+    .orderBy(desc(streamChatMessages.createdAt))
+    .limit(limit);
+    
+    const messages = await query;
+    
+    return res.success({ messages: messages.reverse() });
+  } catch (error) {
+    console.error('[Live Streaming] Error fetching chat:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch chat messages');
+  }
+});
+
+router.post('/streams/:id/chat', csrfProtection, async (req, res) => {
+  try {
+    const userId = (req.session as any)?.userId;
+    const streamId = parseInt(req.params.id);
+    
+    if (!userId) {
+      return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in to chat');
+    }
+    
+    if (isNaN(streamId)) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Invalid stream ID');
+    }
+    
+    const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
+    
+    if (!stream) {
+      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+    }
+    
+    if (!stream.chatEnabled) {
+      return res.error(ApiErrorCode.FORBIDDEN, 'Chat is disabled for this stream');
+    }
+    
+    const validation = insertStreamChatSchema.safeParse({
+      streamId,
+      userId,
+      message: req.body.message,
+    });
+    
+    if (!validation.success) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, validation.error.errors[0].message);
+    }
+    
+    const [user] = await db.select({ name: users.name, avatar: users.avatar })
+      .from(users).where(eq(users.id, userId));
+    
+    const [newMessage] = await db.insert(streamChatMessages).values(validation.data).returning();
+    
+    return res.success({ 
+      message: {
+        ...newMessage,
+        userName: user?.name,
+        userAvatar: user?.avatar,
+      }
+    });
+  } catch (error) {
+    console.error('[Live Streaming] Error sending chat:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to send message');
+  }
+});
+
+router.get('/my-streams', async (req, res) => {
+  try {
+    const userId = (req.session as any)?.userId;
+    
+    if (!userId) {
+      return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in');
+    }
+    
+    const myStreams = await db.select()
+      .from(liveStreams)
+      .where(eq(liveStreams.hostId, userId))
+      .orderBy(desc(liveStreams.createdAt));
+    
+    return res.success({ streams: myStreams });
+  } catch (error) {
+    console.error('[Live Streaming] Error fetching my streams:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch streams');
+  }
+});
+
+export default router;

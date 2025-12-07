@@ -562,6 +562,11 @@ async function startServer() {
     app.use('/api/google-meet', googleMeetRoutes);
     console.log('[Google Meet] Google Meet 라우트가 등록되었습니다.');
 
+    // 라이브 스트리밍 라우트 등록
+    const liveStreamingRoutes = (await import('./routes/live-streaming')).default;
+    app.use('/api/live-streaming', liveStreamingRoutes);
+    console.log('[Live Streaming] 라이브 스트리밍 라우트가 등록되었습니다.');
+
     // Setup Vite for development or serve static files for production
     // This MUST come AFTER API routes to prevent catch-all from intercepting API calls
     if (process.env.NODE_ENV === "development") {
