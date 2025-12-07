@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { useLocation } from 'wouter';
 
 interface SplashScreenProps {
@@ -87,13 +87,20 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [location] = useLocation();
+  const prevLocationRef = useRef(location);
 
   // 라우트 변경 시 로딩 표시
   useEffect(() => {
+    // 같은 페이지면 로딩 표시 안함
+    if (location === prevLocationRef.current) return;
+    
+    prevLocationRef.current = location;
+
     const routeNames: Record<string, string> = {
       '/': '홈',
       '/home': '홈',
       '/dashboard': '대시보드',
+      '/admin': '관리자',
       '/courses': '강의',
       '/trainers': '훈련사',
       '/community': '커뮤니티',
@@ -108,6 +115,7 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
       '/notebook': '노트북',
       '/institutes': '교육기관',
       '/profile': '프로필',
+      '/auth': '로그인',
     };
 
     // 현재 경로에 맞는 이름 찾기
@@ -122,11 +130,33 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
     setLoadingMessage(`${currentRouteName} 로딩 중...`);
     setIsLoading(true);
 
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 400);
+    // 페이지 렌더링 완료 감지 - requestAnimationFrame + setTimeout 조합
+    // React가 렌더링을 완료하고 브라우저가 페인팅을 마친 후 로딩 종료
+    let frameId: number;
+    let timerId: NodeJS.Timeout;
+    
+    const checkRenderComplete = () => {
+      frameId = requestAnimationFrame(() => {
+        // 다음 프레임에서 추가 확인
+        frameId = requestAnimationFrame(() => {
+          setIsLoading(false);
+        });
+      });
+    };
 
-    return () => clearTimeout(timer);
+    // 최소 표시 시간 (500ms) 후 렌더링 완료 확인
+    timerId = setTimeout(checkRenderComplete, 500);
+    
+    // 최대 대기 시간 (2초)
+    const maxTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => {
+      clearTimeout(timerId);
+      clearTimeout(maxTimer);
+      if (frameId) cancelAnimationFrame(frameId);
+    };
   }, [location]);
 
   const startLoading = (message?: string) => {
