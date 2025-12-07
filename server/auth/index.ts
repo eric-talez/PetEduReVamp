@@ -21,9 +21,15 @@ import {
   extendResponse
 } from '../middleware/api-standards';
 
-// JWT 설정
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// JWT 설정 - 프로덕션에서 반드시 환경 변수 필요
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+
+if (!JWT_SECRET) {
+  console.error('❌ JWT_SECRET 환경 변수가 설정되지 않았습니다.');
+  console.error('   Replit Secrets에서 JWT_SECRET을 설정해주세요.');
+  process.exit(1);
+}
 
 // JWT 토큰 생성
 export function generateJwtToken(user: SelectUser): string {

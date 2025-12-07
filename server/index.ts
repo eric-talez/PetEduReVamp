@@ -34,7 +34,7 @@ const PORT = parseInt(process.env.PORT || "5000", 10);
 const HOST = process.env.HOST || "0.0.0.0";
 
 // 필수 환경 변수 확인
-const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET'];
+const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'JWT_SECRET'];
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingEnvVars.length > 0) {
