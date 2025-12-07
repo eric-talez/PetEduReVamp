@@ -510,24 +510,43 @@ export default function VideoCallPage() {
 
         {/* 메인 비디오 영역 */}
         <div className="w-full h-full flex items-center justify-center">
-          {watchingStream.meetingUrl ? (
-            <iframe
-              src={watchingStream.meetingUrl}
-              className="w-full h-full border-0"
-              allow="camera; microphone; display-capture; autoplay; clipboard-write"
-              allowFullScreen
-              title={`${watchingStream.title} 라이브`}
-            />
-          ) : (
-            <div className="text-center text-white">
-              <Video className="w-24 h-24 mx-auto mb-4 text-white/50" />
-              <h3 className="text-xl font-semibold mb-2">라이브 스트림 준비중</h3>
-              <p className="text-white/70 mb-4">{watchingStream.description || '잠시 후 시작됩니다.'}</p>
-              <Button onClick={exitLiveStream} variant="outline" className="text-white border-white/50 hover:bg-white/10">
-                돌아가기
-              </Button>
+          <div className="text-center text-white max-w-md px-6">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-3xl animate-pulse" />
+              <Video className="relative w-24 h-24 mx-auto text-emerald-400" />
             </div>
-          )}
+            <h3 className="text-2xl font-bold mb-2">{watchingStream.title}</h3>
+            <p className="text-white/70 mb-2">{watchingStream.hostName || '훈련사'}</p>
+            <p className="text-white/60 text-sm mb-6">{watchingStream.description || '라이브 수업이 진행중입니다.'}</p>
+            
+            {watchingStream.meetingUrl ? (
+              <div className="space-y-4">
+                <Button 
+                  size="lg"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-8"
+                  onClick={() => window.open(watchingStream.meetingUrl!, '_blank')}
+                  data-testid="btn-join-meeting"
+                >
+                  <Video className="w-5 h-5 mr-2" /> 미팅 참여하기
+                </Button>
+                <p className="text-white/50 text-xs">
+                  Google Meet이 새 창에서 열립니다
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white/10 rounded-lg p-4 mb-4">
+                <p className="text-white/80">미팅 링크가 곧 제공됩니다</p>
+              </div>
+            )}
+            
+            <Button 
+              onClick={exitLiveStream} 
+              variant="ghost" 
+              className="mt-6 text-white/70 hover:text-white hover:bg-white/10"
+            >
+              <X className="w-4 h-4 mr-1" /> 돌아가기
+            </Button>
+          </div>
         </div>
 
         {/* 하단 정보 영역 */}
