@@ -2320,3 +2320,101 @@ export type InsertMediaAsset = z.infer<typeof insertMediaAssetSchema>;
 export type MediaAnalysis = z.infer<typeof selectMediaAnalysisSchema>;
 export type InsertMediaAnalysis = z.infer<typeof insertMediaAnalysisSchema>;
 
+// 라이브 스트리밍 테이블
+export const liveStreams = pgTable("live_streams", {
+  id: serial("id").primaryKey(),
+  hostId: integer("host_id").notNull().references(() => users.id),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 50 }).default("general"), // training, qa, demo, etc.
+  streamKey: varchar("stream_key", { length: 100 }).notNull().unique(),
+  meetingUrl: text("meeting_url"), // Google Meet URL
+  meetingCode: varchar("meeting_code", { length: 50 }),
+  thumbnailUrl: text("thumbnail_url"),
+  status: varchar("status", { length: 20 }).notNull().default("scheduled"), // scheduled, live, ended, cancelled
+  isPublic: boolean("is_public").default(true),
+  maxViewers: integer("max_viewers").default(100),
+  currentViewers: integer("current_viewers").default(0),
+  peakViewers: integer("peak_viewers").default(0),
+  totalViews: integer("total_views").default(0),
+  scheduledStartTime: timestamp("scheduled_start_time"),
+  actualStartTime: timestamp("actual_start_time"),
+  endTime: timestamp("end_time"),
+  duration: integer("duration").default(0), // seconds
+  recordingUrl: text("recording_url"),
+  chatEnabled: boolean("chat_enabled").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 라이브 스트리밍 시청자 테이블
+export const streamViewers = pgTable("stream_viewers", {
+  id: serial("id").primaryKey(),
+  streamId: integer("stream_id").notNull().references(() => liveStreams.id),
+  userId: integer("user_id").references(() => users.id), // nullable for anonymous viewers
+  sessionId: varchar("session_id", { length: 100 }).notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  leftAt: timestamp("left_at"),
+  watchTime: integer("watch_time").default(0), // seconds
+  isActive: boolean("is_active").default(true),
+});
+
+// 라이브 스트리밍 채팅 메시지 테이블
+export const streamChatMessages = pgTable("stream_chat_messages", {
+  id: serial("id").primaryKey(),
+  streamId: integer("stream_id").notNull().references(() => liveStreams.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  message: text("message").notNull(),
+  isHighlighted: boolean("is_highlighted").default(false),
+  isPinned: boolean("is_pinned").default(false),
+  isDeleted: boolean("is_deleted").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 라이브 스트리밍 생성 스키마
+export const insertLiveStreamSchema = createInsertSchema(liveStreams, {
+  title: z.string().min(1, "제목을 입력해주세요").max(200, "제목은 200자 이내로 입력해주세요"),
+  description: z.string().max(1000, "설명은 1000자 이내로 입력해주세요").optional(),
+  category: z.enum(["general", "training", "qa", "demo", "consultation"]).optional(),
+  maxViewers: z.number().int().min(1).max(1000).optional(),
+}).omit({
+  id: true,
+  streamKey: true,
+  currentViewers: true,
+  peakViewers: true,
+  totalViews: true,
+  actualStartTime: true,
+  endTime: true,
+  duration: true,
+  recordingUrl: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// 시청자 생성 스키마
+export const insertStreamViewerSchema = createInsertSchema(streamViewers).omit({
+  id: true,
+  joinedAt: true,
+  leftAt: true,
+  watchTime: true,
+});
+
+// 채팅 메시지 생성 스키마
+export const insertStreamChatSchema = createInsertSchema(streamChatMessages, {
+  message: z.string().min(1, "메시지를 입력해주세요").max(500, "메시지는 500자 이내로 입력해주세요"),
+}).omit({
+  id: true,
+  isHighlighted: true,
+  isPinned: true,
+  isDeleted: true,
+  createdAt: true,
+});
+
+// 라이브 스트리밍 타입 정의
+export type LiveStream = typeof liveStreams.$inferSelect;
+export type InsertLiveStream = z.infer<typeof insertLiveStreamSchema>;
+export type StreamViewer = typeof streamViewers.$inferSelect;
+export type InsertStreamViewer = z.infer<typeof insertStreamViewerSchema>;
+export type StreamChatMessage = typeof streamChatMessages.$inferSelect;
+export type InsertStreamChatMessage = z.infer<typeof insertStreamChatSchema>;
+
