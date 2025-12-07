@@ -2377,6 +2377,10 @@ export const insertLiveStreamSchema = createInsertSchema(liveStreams, {
   description: z.string().max(1000, "설명은 1000자 이내로 입력해주세요").optional(),
   category: z.enum(["general", "training", "qa", "demo", "consultation"]).optional(),
   maxViewers: z.number().int().min(1).max(1000).optional(),
+  scheduledStartTime: z.coerce.date().optional(),
+  isPublic: z.boolean().optional(),
+  chatEnabled: z.boolean().optional(),
+  thumbnailUrl: z.string().optional(),
 }).omit({
   id: true,
   hostId: true,
