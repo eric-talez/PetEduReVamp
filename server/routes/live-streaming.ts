@@ -307,6 +307,44 @@ router.patch('/streams/:id/end', csrfProtection, async (req, res) => {
   }
 });
 
+router.delete('/streams/:id', csrfProtection, async (req, res) => {
+  try {
+    const userId = req.session?.user?.id;
+    const userRole = req.session?.user?.role;
+    const streamId = parseInt(req.params.id);
+    
+    if (!userId) {
+      return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in');
+    }
+    
+    if (isNaN(streamId)) {
+      return res.error(ApiErrorCode.VALIDATION_ERROR, 'Invalid stream ID');
+    }
+    
+    const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
+    
+    if (!stream) {
+      return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, 'Stream not found');
+    }
+    
+    const isAdmin = userRole === 'admin';
+    if (stream.hostId !== userId && !isAdmin) {
+      return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, 'Only the host can delete this stream');
+    }
+    
+    await db.delete(streamViewers).where(eq(streamViewers.streamId, streamId));
+    await db.delete(streamChatMessages).where(eq(streamChatMessages.streamId, streamId));
+    await db.delete(liveStreams).where(eq(liveStreams.id, streamId));
+    
+    console.log('[Live Streaming] Stream deleted:', { id: streamId, deletedBy: userId });
+    
+    return res.success({ deleted: true }, 'Stream deleted');
+  } catch (error) {
+    console.error('[Live Streaming] Error deleting stream:', error);
+    return res.error(ApiErrorCode.INTERNAL_SERVER_ERROR, 'Failed to delete stream');
+  }
+});
+
 router.post('/streams/:id/join', async (req, res) => {
   try {
     const streamId = parseInt(req.params.id);

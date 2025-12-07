@@ -26,7 +26,8 @@ import {
   StopCircle,
   ExternalLink,
   X,
-  Maximize2
+  Maximize2,
+  Trash2
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format } from 'date-fns';
@@ -341,6 +342,34 @@ export default function VideoCallPage() {
     setWatchingStream(null);
   };
 
+  const deleteStream = async (streamId: number) => {
+    if (!confirm('이 라이브를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.')) {
+      return;
+    }
+    
+    try {
+      const response = await apiRequest('DELETE', `/api/live-streaming/streams/${streamId}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "삭제 완료",
+          description: "라이브가 삭제되었습니다.",
+        });
+        fetchLiveStreams();
+      } else {
+        throw new Error(data.message || 'Failed to delete stream');
+      }
+    } catch (error) {
+      console.error('Error deleting stream:', error);
+      toast({
+        title: "삭제 실패",
+        description: "라이브 삭제 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const fetchMeetings = async () => {
     try {
       const response = await apiRequest('GET', '/api/videocall/my-meetings');
@@ -606,15 +635,26 @@ export default function VideoCallPage() {
                             {stream.description || '라이브 수업이 진행중입니다.'}
                           </p>
                         </CardContent>
-                        <CardFooter className="p-3 pt-0">
+                        <CardFooter className="p-3 pt-0 flex gap-2">
                           <Button 
-                            className="w-full" 
+                            className="flex-1" 
                             size="sm"
                             onClick={() => joinLiveStream(stream)}
                             data-testid={`btn-join-stream-${stream.id}`}
                           >
-                            <Play className="w-4 h-4 mr-1" /> 시청하기
+                            <Play className="w-4 h-4 mr-1" /> 
+                            {user?.id === stream.hostId ? '방송하기' : '시청하기'}
                           </Button>
+                          {user?.id === stream.hostId && (
+                            <Button 
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => deleteStream(stream.id)}
+                              data-testid={`btn-delete-stream-${stream.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </CardFooter>
                       </Card>
                     ))}
@@ -661,14 +701,26 @@ export default function VideoCallPage() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => startLiveStream(stream.id)}
-                            data-testid={`btn-start-stream-${stream.id}`}
-                          >
-                            <Play className="w-4 h-4 mr-1" /> 시작
-                          </Button>
+                          {user?.id === stream.hostId && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => startLiveStream(stream.id)}
+                                data-testid={`btn-start-stream-${stream.id}`}
+                              >
+                                <Play className="w-4 h-4 mr-1" /> 시작
+                              </Button>
+                              <Button 
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => deleteStream(stream.id)}
+                                data-testid={`btn-delete-scheduled-${stream.id}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -699,7 +751,20 @@ export default function VideoCallPage() {
                             <span className="text-xs text-muted-foreground">{stream.hostName}</span>
                           </div>
                         </div>
-                        <span className="text-xs text-muted-foreground">종료됨</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">종료됨</span>
+                          {user?.id === stream.hostId && (
+                            <Button 
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                              onClick={() => deleteStream(stream.id)}
+                              data-testid={`btn-delete-ended-${stream.id}`}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
