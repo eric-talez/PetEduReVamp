@@ -73,10 +73,9 @@ export function useSplashScreen() {
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === 'undefined') return false;
     
-    const isMobile = window.innerWidth < 768;
     const hasSeenSplash = sessionStorage.getItem('talez_splash_shown');
     
-    return isMobile && !hasSeenSplash;
+    return !hasSeenSplash;
   });
 
   const handleSplashComplete = () => {
