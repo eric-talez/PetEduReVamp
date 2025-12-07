@@ -1,8 +1,149 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useLocation } from 'wouter';
 
 interface SplashScreenProps {
   onComplete: () => void;
   minDisplayTime?: number;
+}
+
+// 페이지 전환 로딩 컨텍스트
+interface PageLoadingContextType {
+  isLoading: boolean;
+  loadingMessage: string;
+  startLoading: (message?: string) => void;
+  stopLoading: () => void;
+}
+
+const PageLoadingContext = createContext<PageLoadingContextType>({
+  isLoading: false,
+  loadingMessage: '',
+  startLoading: () => {},
+  stopLoading: () => {},
+});
+
+export const usePageLoading = () => useContext(PageLoadingContext);
+
+// 페이지 전환 스플래시 로딩 컴포넌트
+export function PageLoadingSplash({ isVisible, message }: { isVisible: boolean; message?: string }) {
+  const [shouldRender, setShouldRender] = useState(isVisible);
+  const [fadeOut, setFadeOut] = useState(false);
+
+  useEffect(() => {
+    if (isVisible) {
+      setShouldRender(true);
+      setFadeOut(false);
+    } else {
+      setFadeOut(true);
+      const timer = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible]);
+
+  if (!shouldRender) return null;
+
+  return (
+    <div 
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50/95 via-white/95 to-teal-50/95 dark:from-gray-900/95 dark:via-gray-800/95 dark:to-emerald-950/95 backdrop-blur-sm transition-opacity duration-300 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
+      data-testid="page-loading-splash"
+    >
+      <div className="flex flex-col items-center space-y-4">
+        <div className="relative">
+          <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-2xl animate-pulse" />
+          <img 
+            src="/logo-symbol-new.png"
+            alt="TALEZ" 
+            className="relative w-20 h-20 md:w-24 md:h-24 object-contain animate-bounce-slow"
+          />
+        </div>
+        
+        <div className="flex space-x-2">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+
+        {message && (
+          <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mt-2">
+            {message}
+          </p>
+        )}
+      </div>
+      
+      <style>{`
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 1.5s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// 페이지 로딩 프로바이더
+export function PageLoadingProvider({ children }: { children: ReactNode }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [location] = useLocation();
+
+  // 라우트 변경 시 로딩 표시
+  useEffect(() => {
+    const routeNames: Record<string, string> = {
+      '/': '홈',
+      '/home': '홈',
+      '/dashboard': '대시보드',
+      '/courses': '강의',
+      '/trainers': '훈련사',
+      '/community': '커뮤니티',
+      '/messages': '메시지',
+      '/my-pets': '내 펫',
+      '/locations': '위치',
+      '/shop': '쇼핑',
+      '/video-call': '화상통화',
+      '/chatbot': 'AI 챗봇',
+      '/events': '이벤트',
+      '/search': '검색',
+      '/notebook': '노트북',
+      '/institutes': '교육기관',
+      '/profile': '프로필',
+    };
+
+    // 현재 경로에 맞는 이름 찾기
+    let currentRouteName = '페이지';
+    for (const [path, name] of Object.entries(routeNames)) {
+      if (location === path || location.startsWith(path + '/')) {
+        currentRouteName = name;
+        break;
+      }
+    }
+
+    setLoadingMessage(`${currentRouteName} 로딩 중...`);
+    setIsLoading(true);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [location]);
+
+  const startLoading = (message?: string) => {
+    setLoadingMessage(message || '로딩 중...');
+    setIsLoading(true);
+  };
+
+  const stopLoading = () => {
+    setIsLoading(false);
+  };
+
+  return (
+    <PageLoadingContext.Provider value={{ isLoading, loadingMessage, startLoading, stopLoading }}>
+      <PageLoadingSplash isVisible={isLoading} message={loadingMessage} />
+      {children}
+    </PageLoadingContext.Provider>
+  );
 }
 
 export function SplashScreen({ onComplete, minDisplayTime = 2000 }: SplashScreenProps) {

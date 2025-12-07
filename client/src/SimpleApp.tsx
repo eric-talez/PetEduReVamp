@@ -95,7 +95,7 @@ import AIOptimizationDashboard from "./pages/admin/AIOptimizationDashboard";
 import MenuVisibilityControl from "./pages/admin/MenuVisibilityControl";
 import NavigationProgress from "./components/NavigationProgress";
 import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
-import { SplashScreen, useSplashScreen } from "./components/SplashScreen";
+import { SplashScreen, useSplashScreen, PageLoadingProvider } from "./components/SplashScreen";
 import { WeatherProvider, useWeather } from "./contexts/WeatherContext";
 import { WeatherEffects } from "./components/WeatherEffects";
 
@@ -268,18 +268,10 @@ function AppLayout({ children }: { children: ReactNode }) {
     }
   ], true);
 
-  // 페이지 로딩 감지 활성화
-  usePageLoadingDetector();
-
   return (
     <ErrorBoundary>
+      <PageLoadingProvider>
       <div className="bg-background text-foreground min-h-screen font-sans flex flex-col">
-        {/* 글로벌 로딩바 */}
-        <RouteLoadingBar />
-
-        {/* 로딩 메시지 (선택사항) */}
-        <RouteLoadingMessage />
-
         {/* 접근성 개선: 콘텐츠로 건너뛰기 링크 */}
         <SkipToContent contentId="main-content" />
 
@@ -1135,6 +1127,7 @@ function AppLayout({ children }: { children: ReactNode }) {
         {/* AI 챗봇 */}
         <SimpleChatBot />
       </div>
+      </PageLoadingProvider>
     </ErrorBoundary>
   );
 }
