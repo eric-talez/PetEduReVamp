@@ -18,7 +18,12 @@ import {
   Monitor, 
   UserPlus,
   Copy,
-  Share2
+  Share2,
+  Radio,
+  Play,
+  Eye,
+  StopCircle,
+  ExternalLink
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format } from 'date-fns';
@@ -39,12 +44,31 @@ interface Meeting {
   host_key: string;
 }
 
+interface LiveStream {
+  id: number;
+  hostId: number;
+  title: string;
+  description: string | null;
+  category: string | null;
+  meetingUrl: string | null;
+  meetingCode: string | null;
+  thumbnailUrl: string | null;
+  status: string;
+  isPublic: boolean | null;
+  currentViewers: number | null;
+  scheduledStartTime: string | null;
+  actualStartTime: string | null;
+  createdAt: string | null;
+  hostName: string | null;
+  hostAvatar: string | null;
+}
+
 export default function VideoCallPage() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, isLoading, userName } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('scheduled');
+  const [activeTab, setActiveTab] = useState('live');
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -77,6 +101,19 @@ export default function VideoCallPage() {
     meetingSetupType: string;
     status: string;
   }>>([]);
+  
+  const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
+  const [isLoadingStreams, setIsLoadingStreams] = useState(false);
+  const [isCreatingStream, setIsCreatingStream] = useState(false);
+  const [streamFormData, setStreamFormData] = useState({
+    title: '',
+    description: '',
+    category: 'training',
+    scheduledStartTime: new Date(),
+    scheduledTime: format(new Date(), 'HH:mm'),
+    isPublic: true,
+    maxViewers: 100,
+  });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -91,8 +128,161 @@ export default function VideoCallPage() {
       fetchMeetings();
       // 화상수업 목록 가져오기
       fetchVideoClasses();
+      // 라이브 스트리밍 목록 가져오기
+      fetchLiveStreams();
     }
   }, [isLoading, isAuthenticated, setLocation, toast]);
+
+  // 라이브 탭에서 실시간 업데이트를 위한 폴링 (10초마다)
+  useEffect(() => {
+    if (activeTab === 'live' && isAuthenticated) {
+      const intervalId = setInterval(() => {
+        fetchLiveStreams();
+      }, 10000); // 10초마다 새로고침
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [activeTab, isAuthenticated]);
+
+  const fetchLiveStreams = async () => {
+    try {
+      setIsLoadingStreams(true);
+      const response = await fetch('/api/live-streaming/streams', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.data?.streams) {
+        setLiveStreams(data.data.streams);
+      }
+    } catch (error) {
+      console.error('Error fetching live streams:', error);
+    } finally {
+      setIsLoadingStreams(false);
+    }
+  };
+
+  const createLiveStream = async () => {
+    try {
+      setIsCreatingStream(true);
+      
+      const [hours, minutes] = streamFormData.scheduledTime.split(':').map(Number);
+      const scheduledStartTime = new Date(streamFormData.scheduledStartTime);
+      scheduledStartTime.setHours(hours, minutes, 0, 0);
+
+      const response = await apiRequest('POST', '/api/live-streaming/streams', {
+        title: streamFormData.title,
+        description: streamFormData.description,
+        category: streamFormData.category,
+        scheduledStartTime: scheduledStartTime.toISOString(),
+        isPublic: streamFormData.isPublic,
+        maxViewers: streamFormData.maxViewers,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: "라이브 스트리밍 생성 완료",
+          description: `"${streamFormData.title}" 라이브 스트리밍이 생성되었습니다.`,
+        });
+        
+        setStreamFormData({
+          title: '',
+          description: '',
+          category: 'training',
+          scheduledStartTime: new Date(),
+          scheduledTime: format(new Date(), 'HH:mm'),
+          isPublic: true,
+          maxViewers: 100,
+        });
+        
+        fetchLiveStreams();
+        setActiveTab('live');
+      } else {
+        throw new Error(data.message || '라이브 스트리밍 생성에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error creating live stream:', error);
+      toast({
+        title: "라이브 스트리밍 생성 실패",
+        description: error instanceof Error ? error.message : "라이브 스트리밍 생성 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreatingStream(false);
+    }
+  };
+
+  const startLiveStream = async (streamId: number) => {
+    try {
+      const response = await apiRequest('PATCH', `/api/live-streaming/streams/${streamId}/start`, {});
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "라이브 시작",
+          description: "라이브 스트리밍이 시작되었습니다!",
+        });
+        fetchLiveStreams();
+      }
+    } catch (error) {
+      toast({
+        title: "라이브 시작 실패",
+        description: "라이브 시작 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const endLiveStream = async (streamId: number) => {
+    try {
+      const response = await apiRequest('PATCH', `/api/live-streaming/streams/${streamId}/end`, {});
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "라이브 종료",
+          description: "라이브 스트리밍이 종료되었습니다.",
+        });
+        fetchLiveStreams();
+      }
+    } catch (error) {
+      toast({
+        title: "라이브 종료 실패",
+        description: "라이브 종료 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const joinLiveStream = async (stream: LiveStream) => {
+    try {
+      const response = await apiRequest('POST', `/api/live-streaming/streams/${stream.id}/join`, {
+        sessionId: `session-${Date.now()}`
+      });
+      
+      if (stream.meetingUrl) {
+        window.open(stream.meetingUrl, '_blank');
+        toast({
+          title: "라이브 참여",
+          description: `${stream.title} 라이브에 참여합니다.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error joining stream:', error);
+    }
+  };
 
   const fetchMeetings = async () => {
     try {
@@ -272,20 +462,180 @@ export default function VideoCallPage() {
 
       {/* 메인 탭 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 text-sm">
-          <TabsTrigger value="scheduled" className="flex items-center gap-2 text-sm">
-            <CalendarIcon className="w-4 h-4" />
-            예약된 미팅
+        <TabsList className="grid w-full grid-cols-4 text-sm">
+          <TabsTrigger value="live" className="flex items-center gap-2 text-sm" data-testid="tab-live">
+            <Radio className="w-4 h-4" />
+            라이브
           </TabsTrigger>
-          <TabsTrigger value="trainers" className="flex items-center gap-2 text-sm">
+          <TabsTrigger value="scheduled" className="flex items-center gap-2 text-sm" data-testid="tab-scheduled">
+            <CalendarIcon className="w-4 h-4" />
+            예약 미팅
+          </TabsTrigger>
+          <TabsTrigger value="trainers" className="flex items-center gap-2 text-sm" data-testid="tab-trainers">
             <Users className="w-4 h-4" />
             훈련사 수업
           </TabsTrigger>
-          <TabsTrigger value="create" className="flex items-center gap-2 text-sm">
+          <TabsTrigger value="create" className="flex items-center gap-2 text-sm" data-testid="tab-create">
             <Plus className="w-4 h-4" />
-            미팅 생성
+            생성
           </TabsTrigger>
         </TabsList>
+
+        {/* 라이브 스트리밍 탭 */}
+        <TabsContent value="live" id="live-tab-content" className="mt-6">
+          <div className="space-y-6">
+            {/* 현재 진행중인 라이브 */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Radio className="w-5 h-5 text-red-500 animate-pulse" />
+                      진행중인 라이브
+                    </CardTitle>
+                    <CardDescription className="text-xs">현재 진행중인 라이브 스트리밍에 참여하세요.</CardDescription>
+                  </div>
+                  <Button size="sm" onClick={() => setActiveTab('create')} data-testid="btn-create-stream">
+                    <Plus className="w-4 h-4 mr-1" /> 라이브 시작
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoadingStreams ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : liveStreams.filter(s => s.status === 'live').length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {liveStreams.filter(s => s.status === 'live').map((stream) => (
+                      <Card key={stream.id} className="overflow-hidden border-red-200 dark:border-red-800" data-testid={`stream-card-${stream.id}`}>
+                        <div className="relative">
+                          <div className="h-32 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                            <Video className="w-12 h-12 text-primary/40" />
+                          </div>
+                          <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                            LIVE
+                          </span>
+                          <span className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {stream.currentViewers || 0}
+                          </span>
+                        </div>
+                        <CardContent className="p-3">
+                          <h3 className="font-medium text-sm truncate">{stream.title}</h3>
+                          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                              <Users className="w-3 h-3" />
+                            </div>
+                            <span>{stream.hostName || '훈련사'}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                            {stream.description || '라이브 수업이 진행중입니다.'}
+                          </p>
+                        </CardContent>
+                        <CardFooter className="p-3 pt-0">
+                          <Button 
+                            className="w-full" 
+                            size="sm"
+                            onClick={() => joinLiveStream(stream)}
+                            data-testid={`btn-join-stream-${stream.id}`}
+                          >
+                            <Play className="w-4 h-4 mr-1" /> 시청하기
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Radio className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-sm font-medium mb-2">현재 진행중인 라이브가 없습니다</h3>
+                    <p className="text-muted-foreground text-xs mb-4">새로운 라이브를 시작하거나 예정된 라이브를 확인하세요.</p>
+                    <Button onClick={() => setActiveTab('create')}>
+                      <Plus className="w-4 h-4 mr-2" /> 라이브 시작하기
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 예정된 라이브 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">예정된 라이브</CardTitle>
+                <CardDescription className="text-xs">곧 시작될 라이브 스트리밍 목록입니다.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {liveStreams.filter(s => s.status === 'scheduled').length > 0 ? (
+                  <div className="space-y-3">
+                    {liveStreams.filter(s => s.status === 'scheduled').map((stream) => (
+                      <div key={stream.id} className="flex items-center justify-between p-3 border rounded-lg" data-testid={`scheduled-stream-${stream.id}`}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <Video className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-sm">{stream.title}</h4>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>{stream.hostName || '훈련사'}</span>
+                              {stream.scheduledStartTime && (
+                                <>
+                                  <span>•</span>
+                                  <span>{format(new Date(stream.scheduledStartTime), 'MM/dd HH:mm', { locale: ko })}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => startLiveStream(stream.id)}
+                            data-testid={`btn-start-stream-${stream.id}`}
+                          >
+                            <Play className="w-4 h-4 mr-1" /> 시작
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground text-xs py-4">예정된 라이브가 없습니다.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 지난 라이브 */}
+            {liveStreams.filter(s => s.status === 'ended').length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">지난 라이브</CardTitle>
+                  <CardDescription className="text-xs">종료된 라이브 스트리밍 기록입니다.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {liveStreams.filter(s => s.status === 'ended').slice(0, 5).map((stream) => (
+                      <div key={stream.id} className="flex items-center justify-between p-2 border rounded-lg opacity-60">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+                            <Video className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-xs">{stream.title}</h4>
+                            <span className="text-xs text-muted-foreground">{stream.hostName}</span>
+                          </div>
+                        </div>
+                        <span className="text-xs text-muted-foreground">종료됨</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
 
         {/* 예약된 미팅 탭 */}
         <TabsContent value="scheduled" id="scheduled-tab-content" className="mt-6">
@@ -651,10 +1001,152 @@ ${videoClass.title}
         </TabsContent>
         
         <TabsContent value="create" id="create-tab-content" className="mt-6">
+          {/* 라이브 스트리밍 생성 섹션 */}
+          <Card className="mb-6 border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Radio className="w-5 h-5 text-red-500" />
+                라이브 스트리밍 시작
+              </CardTitle>
+              <CardDescription className="text-xs">실시간으로 많은 수강생들에게 강의를 진행하세요.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="streamTitle">라이브 제목 *</Label>
+                  <Input
+                    id="streamTitle"
+                    value={streamFormData.title}
+                    onChange={(e) => setStreamFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="라이브 스트리밍 제목을 입력하세요"
+                    className="mt-1"
+                    data-testid="input-stream-title"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="streamCategory">카테고리</Label>
+                  <select
+                    id="streamCategory"
+                    value={streamFormData.category}
+                    onChange={(e) => setStreamFormData(prev => ({ ...prev, category: e.target.value }))}
+                    className="mt-1 w-full px-3 py-2 border border-input bg-background text-sm rounded-md"
+                    data-testid="select-stream-category"
+                  >
+                    <option value="training">훈련 수업</option>
+                    <option value="qa">Q&A 세션</option>
+                    <option value="demo">시연</option>
+                    <option value="consultation">상담</option>
+                    <option value="general">기타</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="streamDescription">설명</Label>
+                <textarea
+                  id="streamDescription"
+                  value={streamFormData.description}
+                  onChange={(e) => setStreamFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="라이브 스트리밍에 대한 설명을 입력하세요"
+                  className="mt-1 min-h-20 w-full px-3 py-2 border border-input bg-background text-sm rounded-md"
+                  rows={3}
+                  data-testid="textarea-stream-description"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="streamDate">예약 날짜</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full mt-1 justify-start text-left font-normal",
+                          !streamFormData.scheduledStartTime && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {streamFormData.scheduledStartTime 
+                          ? format(streamFormData.scheduledStartTime, "yyyy년 MM월 dd일", { locale: ko }) 
+                          : "날짜 선택"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={streamFormData.scheduledStartTime}
+                        onSelect={(date) => date && setStreamFormData(prev => ({ ...prev, scheduledStartTime: date }))}
+                        initialFocus
+                        locale={ko}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <Label htmlFor="streamTime">시작 시간</Label>
+                  <Input
+                    id="streamTime"
+                    type="time"
+                    value={streamFormData.scheduledTime}
+                    onChange={(e) => setStreamFormData(prev => ({ ...prev, scheduledTime: e.target.value }))}
+                    className="mt-1"
+                    data-testid="input-stream-time"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="maxViewers">최대 시청자</Label>
+                  <Input
+                    id="maxViewers"
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={streamFormData.maxViewers}
+                    onChange={(e) => setStreamFormData(prev => ({ ...prev, maxViewers: parseInt(e.target.value) || 100 }))}
+                    className="mt-1"
+                    data-testid="input-max-viewers"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setStreamFormData({
+                    title: '',
+                    description: '',
+                    category: 'training',
+                    scheduledStartTime: new Date(),
+                    scheduledTime: format(new Date(), 'HH:mm'),
+                    isPublic: true,
+                    maxViewers: 100,
+                  })}
+                >
+                  초기화
+                </Button>
+                <Button
+                  onClick={createLiveStream}
+                  disabled={isCreatingStream || !streamFormData.title.trim()}
+                  className="bg-red-500 hover:bg-red-600"
+                  data-testid="btn-create-live"
+                >
+                  {isCreatingStream ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      생성 중...
+                    </>
+                  ) : (
+                    <>
+                      <Radio className="w-4 h-4 mr-2" /> 라이브 생성
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 일반 미팅 생성 섹션 */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">새 미팅 생성</CardTitle>
-              <CardDescription className="text-xs">새로운 Zoom 미팅을 생성하여 다른 사람들을 초대하세요.</CardDescription>
+              <CardDescription className="text-xs">Google Meet 미팅을 생성하여 다른 사람들을 초대하세요.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

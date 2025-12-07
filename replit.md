@@ -3,7 +3,19 @@
 ## Overview
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
-## Recent Changes (December 6, 2025)
+## Recent Changes (December 7, 2025)
+### Live Streaming Feature for Video Classes
+- **Database Schema**: Added `liveStreams`, `streamViewers`, `streamChatMessages` tables with comprehensive status tracking
+- **REST API Endpoints**: Full CRUD operations at `/api/live-streaming/*`
+  - Stream management: create, start, end (trainer/institute/admin only)
+  - Viewer tracking: join, leave with watch time calculation
+  - Real-time chat: get/post messages during streams
+- **Role-based Authorization**: Only trainers, institute-admins, and admins can create/manage streams
+- **Frontend UI**: New "라이브 방송" tab on video-call page with stream cards, creation form, and viewer stats
+- **Real-time Updates**: 10-second polling for viewer counts and stream status updates
+- **Security**: All stream management endpoints require proper role authentication
+
+## Previous Changes (December 6, 2025)
 ### Comprehensive Notification System Integration
 - **All Major Actions Now Trigger Notifications**: 
   - Event registration: Sends notification to user on successful event signup (`server/events/routes.ts`)
@@ -92,6 +104,7 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Vaccination Schedule Management**: Comprehensive system for tracking pet vaccinations, including hospital location, 7 REST API endpoints for CRUD, Google Maps integration, status management, and upcoming appointment notifications.
 - **Google Meet Integration**: Video conferencing using Google Meet API for live classes with link-based meeting creation.
 - **Push Notifications**: Firebase Cloud Messaging (FCM) integration for real-time push notifications with WebSocket fallback, multi-device support, and graceful degradation.
+- **Live Streaming**: Trainer-hosted live broadcasts with real-time viewer tracking, chat functionality, and role-based access control (`server/routes/live-streaming.ts`).
 
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)

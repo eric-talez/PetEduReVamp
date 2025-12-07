@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { liveStreams, streamViewers, streamChatMessages, users, insertLiveStreamSchema, insertStreamChatSchema } from '@shared/schema';
-import { eq, desc, and, isNull } from 'drizzle-orm';
+import { liveStreams, streamViewers, streamChatMessages, users, insertLiveStreamSchema, insertStreamChatSchema } from '../../shared/schema';
+import { eq, desc, and } from 'drizzle-orm';
 import { csrfProtection } from '../middleware/csrf';
 import { 
   ApiErrorCode,
@@ -159,9 +159,16 @@ router.get('/streams/:id', async (req, res) => {
 router.post('/streams', csrfProtection, async (req, res) => {
   try {
     const userId = (req.session as any)?.userId;
+    const userRole = (req.session as any)?.userRole;
     
     if (!userId) {
       return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in to create a stream');
+    }
+    
+    // Role-based authorization: only trainers, institutes, and admins can create streams
+    const allowedRoles = ['trainer', 'institute-admin', 'admin'];
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return res.error(ApiErrorCode.FORBIDDEN, '훈련사 또는 관리자만 라이브 스트리밍을 생성할 수 있습니다.');
     }
     
     const validation = insertLiveStreamSchema.safeParse(req.body);
@@ -194,6 +201,7 @@ router.post('/streams', csrfProtection, async (req, res) => {
 router.patch('/streams/:id/start', csrfProtection, async (req, res) => {
   try {
     const userId = (req.session as any)?.userId;
+    const userRole = (req.session as any)?.userRole;
     const streamId = parseInt(req.params.id);
     
     if (!userId) {
@@ -210,7 +218,9 @@ router.patch('/streams/:id/start', csrfProtection, async (req, res) => {
       return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
     }
     
-    if (stream.hostId !== userId) {
+    // Check if user is the host or an admin
+    const isAdmin = userRole === 'admin';
+    if (stream.hostId !== userId && !isAdmin) {
       return res.error(ApiErrorCode.FORBIDDEN, 'Only the host can start this stream');
     }
     
@@ -239,6 +249,7 @@ router.patch('/streams/:id/start', csrfProtection, async (req, res) => {
 router.patch('/streams/:id/end', csrfProtection, async (req, res) => {
   try {
     const userId = (req.session as any)?.userId;
+    const userRole = (req.session as any)?.userRole;
     const streamId = parseInt(req.params.id);
     
     if (!userId) {
@@ -255,7 +266,9 @@ router.patch('/streams/:id/end', csrfProtection, async (req, res) => {
       return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
     }
     
-    if (stream.hostId !== userId) {
+    // Check if user is the host or an admin
+    const isAdmin = userRole === 'admin';
+    if (stream.hostId !== userId && !isAdmin) {
       return res.error(ApiErrorCode.FORBIDDEN, 'Only the host can end this stream');
     }
     
