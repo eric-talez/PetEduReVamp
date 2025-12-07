@@ -511,6 +511,7 @@ export default function VideoCallPage() {
       {hostingStream && (
         <StreamSession
           streamId={hostingStream.id}
+          userId={user?.id}
           isHost={true}
           userName={userName || '호스트'}
           onExit={exitHosting}
