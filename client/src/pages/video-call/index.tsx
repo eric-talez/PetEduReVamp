@@ -23,7 +23,9 @@ import {
   Play,
   Eye,
   StopCircle,
-  ExternalLink
+  ExternalLink,
+  X,
+  Maximize2
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format } from 'date-fns';
@@ -105,6 +107,7 @@ export default function VideoCallPage() {
   const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
   const [isLoadingStreams, setIsLoadingStreams] = useState(false);
   const [isCreatingStream, setIsCreatingStream] = useState(false);
+  const [watchingStream, setWatchingStream] = useState<LiveStream | null>(null);
   const [streamFormData, setStreamFormData] = useState({
     title: '',
     description: '',
@@ -268,20 +271,31 @@ export default function VideoCallPage() {
 
   const joinLiveStream = async (stream: LiveStream) => {
     try {
-      const response = await apiRequest('POST', `/api/live-streaming/streams/${stream.id}/join`, {
+      await apiRequest('POST', `/api/live-streaming/streams/${stream.id}/join`, {
         sessionId: `session-${Date.now()}`
       });
       
-      if (stream.meetingUrl) {
-        window.open(stream.meetingUrl, '_blank');
-        toast({
-          title: "라이브 참여",
-          description: `${stream.title} 라이브에 참여합니다.`,
-        });
-      }
+      setWatchingStream(stream);
+      toast({
+        title: "라이브 참여",
+        description: `${stream.title} 라이브에 참여합니다.`,
+      });
     } catch (error) {
       console.error('Error joining stream:', error);
     }
+  };
+
+  const exitLiveStream = async () => {
+    if (watchingStream) {
+      try {
+        await apiRequest('POST', `/api/live-streaming/streams/${watchingStream.id}/leave`, {
+          sessionId: `session-${Date.now()}`
+        });
+      } catch (error) {
+        console.error('Error leaving stream:', error);
+      }
+    }
+    setWatchingStream(null);
   };
 
   const fetchMeetings = async () => {
@@ -444,6 +458,84 @@ export default function VideoCallPage() {
 
   if (!isAuthenticated) {
     return null;
+  }
+
+  // 라이브 스트리밍 시청 화면
+  if (watchingStream) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black">
+        {/* 상단 헤더 */}
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent z-10 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                LIVE
+              </span>
+              <div className="text-white">
+                <h2 className="font-semibold">{watchingStream.title}</h2>
+                <p className="text-sm text-white/70">{watchingStream.hostName || '훈련사'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-white/70 text-sm flex items-center gap-1">
+                <Eye className="w-4 h-4" />
+                {watchingStream.currentViewers || 0}명 시청중
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20"
+                onClick={() => {
+                  if (watchingStream.meetingUrl) {
+                    window.open(watchingStream.meetingUrl, '_blank');
+                  }
+                }}
+                data-testid="btn-open-external"
+              >
+                <Maximize2 className="w-4 h-4 mr-1" /> 새 창
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20"
+                onClick={exitLiveStream}
+                data-testid="btn-exit-stream"
+              >
+                <X className="w-4 h-4 mr-1" /> 나가기
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* 메인 비디오 영역 */}
+        <div className="w-full h-full flex items-center justify-center">
+          {watchingStream.meetingUrl ? (
+            <iframe
+              src={watchingStream.meetingUrl}
+              className="w-full h-full border-0"
+              allow="camera; microphone; display-capture; autoplay; clipboard-write"
+              allowFullScreen
+              title={`${watchingStream.title} 라이브`}
+            />
+          ) : (
+            <div className="text-center text-white">
+              <Video className="w-24 h-24 mx-auto mb-4 text-white/50" />
+              <h3 className="text-xl font-semibold mb-2">라이브 스트림 준비중</h3>
+              <p className="text-white/70 mb-4">{watchingStream.description || '잠시 후 시작됩니다.'}</p>
+              <Button onClick={exitLiveStream} variant="outline" className="text-white border-white/50 hover:bg-white/10">
+                돌아가기
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* 하단 정보 영역 */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent z-10 p-4">
+          <p className="text-white/70 text-sm">{watchingStream.description}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
