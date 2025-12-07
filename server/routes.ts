@@ -7,6 +7,7 @@ import { products, productCommissions, referralProfiles, referralEarnings, settl
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
+import { setupStreamingSocket } from "./streaming/socket-server";
 import { registerAdminRoutes } from "./routes/admin";
 // import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
@@ -8259,6 +8260,9 @@ app.get('/api/search', async (req, res) => {
   // 메시징 라우트 등록
   const httpServer = createServer(app);
   registerMessagingRoutes(app, httpServer);
+  
+  // WebRTC 스트리밍 소켓 서버 설정
+  setupStreamingSocket(httpServer);
 
   // 알림 라우트 등록 (WebSocket 설정 문제로 임시 비활성화)
 

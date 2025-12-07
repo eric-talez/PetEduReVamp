@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp, serial, decimal, jsonb, varchar, date } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, boolean, timestamp, serial, decimal, jsonb, json, varchar, date } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
@@ -2424,4 +2424,95 @@ export type StreamViewer = typeof streamViewers.$inferSelect;
 export type InsertStreamViewer = z.infer<typeof insertStreamViewerSchema>;
 export type StreamChatMessage = typeof streamChatMessages.$inferSelect;
 export type InsertStreamChatMessage = z.infer<typeof insertStreamChatSchema>;
+
+// WebRTC 피어 연결 테이블 (P2P 시그널링용)
+export const streamPeers = pgTable("stream_peers", {
+  id: serial("id").primaryKey(),
+  streamId: integer("stream_id").notNull().references(() => liveStreams.id),
+  peerId: varchar("peer_id", { length: 100 }).notNull(), // socket.io client id
+  userId: integer("user_id").references(() => users.id),
+  role: varchar("role", { length: 20 }).notNull().default("viewer"), // host, viewer
+  isConnected: boolean("is_connected").default(true),
+  connectionQuality: varchar("connection_quality", { length: 20 }).default("good"), // good, fair, poor
+  joinedAt: timestamp("joined_at").defaultNow(),
+  lastSeen: timestamp("last_seen").defaultNow(),
+});
+
+// 스트림 녹화 메타데이터 테이블
+export const streamRecordings = pgTable("stream_recordings", {
+  id: serial("id").primaryKey(),
+  streamId: integer("stream_id").notNull().references(() => liveStreams.id),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  fileUrl: text("file_url"),
+  fileSize: integer("file_size").default(0), // bytes
+  duration: integer("duration").default(0), // seconds
+  format: varchar("format", { length: 20 }).default("webm"),
+  status: varchar("status", { length: 20 }).default("processing"), // processing, ready, failed
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 스트림 분석 테이블
+export const streamAnalytics = pgTable("stream_analytics", {
+  id: serial("id").primaryKey(),
+  streamId: integer("stream_id").notNull().references(() => liveStreams.id),
+  eventType: varchar("event_type", { length: 50 }).notNull(), // view, chat, like, share, leave
+  userId: integer("user_id").references(() => users.id),
+  metadata: json("metadata").$type<Record<string, any>>(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 스트림 스케줄 테이블
+export const streamSchedules = pgTable("stream_schedules", {
+  id: serial("id").primaryKey(),
+  hostId: integer("host_id").notNull().references(() => users.id),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 50 }).default("general"),
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  reminderSent: boolean("reminder_sent").default(false),
+  streamId: integer("stream_id").references(() => liveStreams.id), // linked when stream starts
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// WebRTC 피어 생성 스키마
+export const insertStreamPeerSchema = createInsertSchema(streamPeers).omit({
+  id: true,
+  joinedAt: true,
+  lastSeen: true,
+});
+
+// 스트림 녹화 생성 스키마
+export const insertStreamRecordingSchema = createInsertSchema(streamRecordings).omit({
+  id: true,
+  createdAt: true,
+});
+
+// 스트림 분석 생성 스키마
+export const insertStreamAnalyticsSchema = createInsertSchema(streamAnalytics).omit({
+  id: true,
+  createdAt: true,
+});
+
+// 스트림 스케줄 생성 스키마
+export const insertStreamScheduleSchema = createInsertSchema(streamSchedules, {
+  title: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  scheduledAt: z.coerce.date(),
+}).omit({
+  id: true,
+  hostId: true,
+  reminderSent: true,
+  streamId: true,
+  createdAt: true,
+});
+
+// 추가 타입 정의
+export type StreamPeer = typeof streamPeers.$inferSelect;
+export type InsertStreamPeer = z.infer<typeof insertStreamPeerSchema>;
+export type StreamRecording = typeof streamRecordings.$inferSelect;
+export type InsertStreamRecording = z.infer<typeof insertStreamRecordingSchema>;
+export type StreamAnalytics = typeof streamAnalytics.$inferSelect;
+export type InsertStreamAnalytics = z.infer<typeof insertStreamAnalyticsSchema>;
+export type StreamSchedule = typeof streamSchedules.$inferSelect;
+export type InsertStreamSchedule = z.infer<typeof insertStreamScheduleSchema>;
 
