@@ -460,103 +460,6 @@ export default function VideoCallPage() {
     return null;
   }
 
-  // 라이브 스트리밍 시청 화면
-  if (watchingStream) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black">
-        {/* 상단 헤더 */}
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent z-10 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                LIVE
-              </span>
-              <div className="text-white">
-                <h2 className="font-semibold">{watchingStream.title}</h2>
-                <p className="text-sm text-white/70">{watchingStream.hostName || '훈련사'}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-white/70 text-sm flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                {watchingStream.currentViewers || 0}명 시청중
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20"
-                onClick={() => {
-                  if (watchingStream.meetingUrl) {
-                    window.open(watchingStream.meetingUrl, '_blank');
-                  }
-                }}
-                data-testid="btn-open-external"
-              >
-                <Maximize2 className="w-4 h-4 mr-1" /> 새 창
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20"
-                onClick={exitLiveStream}
-                data-testid="btn-exit-stream"
-              >
-                <X className="w-4 h-4 mr-1" /> 나가기
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* 메인 비디오 영역 */}
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="text-center text-white max-w-md px-6">
-            <div className="relative mb-6">
-              <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-3xl animate-pulse" />
-              <Video className="relative w-24 h-24 mx-auto text-emerald-400" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">{watchingStream.title}</h3>
-            <p className="text-white/70 mb-2">{watchingStream.hostName || '훈련사'}</p>
-            <p className="text-white/60 text-sm mb-6">{watchingStream.description || '라이브 수업이 진행중입니다.'}</p>
-            
-            {watchingStream.meetingUrl ? (
-              <div className="space-y-4">
-                <Button 
-                  size="lg"
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-8"
-                  onClick={() => window.open(watchingStream.meetingUrl!, '_blank')}
-                  data-testid="btn-join-meeting"
-                >
-                  <Video className="w-5 h-5 mr-2" /> 미팅 참여하기
-                </Button>
-                <p className="text-white/50 text-xs">
-                  Google Meet이 새 창에서 열립니다
-                </p>
-              </div>
-            ) : (
-              <div className="bg-white/10 rounded-lg p-4 mb-4">
-                <p className="text-white/80">미팅 링크가 곧 제공됩니다</p>
-              </div>
-            )}
-            
-            <Button 
-              onClick={exitLiveStream} 
-              variant="ghost" 
-              className="mt-6 text-white/70 hover:text-white hover:bg-white/10"
-            >
-              <X className="w-4 h-4 mr-1" /> 돌아가기
-            </Button>
-          </div>
-        </div>
-
-        {/* 하단 정보 영역 */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent z-10 p-4">
-          <p className="text-white/70 text-sm">{watchingStream.description}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="pb-8">
       <PageBanner
@@ -570,6 +473,107 @@ export default function VideoCallPage() {
       />
       
       <div className="container mx-auto px-4 py-8 space-y-8 text-sm">
+
+      {/* 라이브 시청 중인 경우 - 유튜브 스타일 플레이어 */}
+      {watchingStream && (
+        <div className="space-y-4" data-testid="live-stream-viewer">
+          {/* 비디오 플레이어 영역 */}
+          <div className="relative bg-black rounded-xl overflow-hidden aspect-video">
+            {/* 플레이어 배경 */}
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+              <div className="text-center">
+                <div className="relative mb-4">
+                  <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-2xl animate-pulse" />
+                  <Video className="relative w-20 h-20 text-emerald-400" />
+                </div>
+                <p className="text-white/60 text-sm mb-4">라이브 방송이 진행 중입니다</p>
+                {watchingStream.meetingUrl ? (
+                  <Button 
+                    size="lg"
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                    onClick={() => window.open(watchingStream.meetingUrl!, '_blank')}
+                    data-testid="btn-join-meeting"
+                  >
+                    <ExternalLink className="w-5 h-5 mr-2" /> Google Meet 참여하기
+                  </Button>
+                ) : (
+                  <p className="text-white/50 text-sm">미팅 링크 준비 중...</p>
+                )}
+              </div>
+            </div>
+            
+            {/* LIVE 배지 */}
+            <div className="absolute top-4 left-4 flex items-center gap-2">
+              <span className="bg-red-500 text-white text-xs px-3 py-1 rounded-md flex items-center gap-1.5 font-medium">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                LIVE
+              </span>
+              <span className="bg-black/60 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                <Eye className="w-3 h-3" />
+                {watchingStream.currentViewers || 0}명 시청중
+              </span>
+            </div>
+
+            {/* 닫기 버튼 */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 right-4 bg-black/60 text-white hover:bg-black/80"
+              onClick={exitLiveStream}
+              data-testid="btn-close-viewer"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* 스트림 정보 */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <h2 className="text-lg font-bold mb-2">{watchingStream.title}</h2>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  {watchingStream.hostAvatar ? (
+                    <img src={watchingStream.hostAvatar} alt="" className="w-10 h-10 rounded-full" />
+                  ) : (
+                    <Users className="w-5 h-5 text-primary" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium text-sm">{watchingStream.hostName || '훈련사'}</p>
+                  <p className="text-xs text-muted-foreground">{watchingStream.category || '라이브 수업'}</p>
+                </div>
+              </div>
+              {watchingStream.description && (
+                <p className="text-sm text-muted-foreground">{watchingStream.description}</p>
+              )}
+            </div>
+            
+            <div className="flex gap-2 md:flex-col">
+              {watchingStream.meetingUrl && (
+                <Button 
+                  className="flex-1 md:flex-none"
+                  onClick={() => window.open(watchingStream.meetingUrl!, '_blank')}
+                >
+                  <Video className="w-4 h-4 mr-2" /> 미팅 참여
+                </Button>
+              )}
+              <Button 
+                variant="outline"
+                className="flex-1 md:flex-none"
+                onClick={() => {
+                  const shareText = `${watchingStream.title} - 라이브 방송\n${watchingStream.hostName || '훈련사'}`;
+                  navigator.clipboard.writeText(shareText);
+                  toast({ title: '복사 완료', description: '라이브 정보가 복사되었습니다.' });
+                }}
+              >
+                <Share2 className="w-4 h-4 mr-2" /> 공유
+              </Button>
+            </div>
+          </div>
+          
+          <Separator className="my-4" />
+        </div>
+      )}
 
       {/* 메인 탭 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
