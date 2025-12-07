@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { usePageLoading } from '@/components/SplashScreen';
 
 /**
  * 빠른 로그인 버튼 컴포넌트
@@ -11,12 +12,14 @@ import { useToast } from '@/hooks/use-toast';
 export function QuickLoginButtons() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { startLoading } = usePageLoading();
 
   // 테스트 계정으로 로그인 처리 함수
   const handleLoginAs = async (role: string) => {
     if (isLoading) return;
     
     setIsLoading(true);
+    startLoading('로그인 중...');
     
     try {
       console.log('[QuickLogin] API 호출 시작:', role);
@@ -94,6 +97,7 @@ export function QuickLoginButtons() {
     if (isLoading) return;
     
     setIsLoading(true);
+    startLoading('로그아웃 중...');
     
     try {
       // CSRF 토큰 조회
