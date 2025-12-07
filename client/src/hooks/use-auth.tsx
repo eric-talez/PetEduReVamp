@@ -65,8 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery({
     queryKey: ['/api/auth/me'],
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5분
-    initialData: getInitialUserState() // 로컬 스토리지에서 초기 데이터 로드
+    staleTime: 0, // 항상 서버와 검증
+    gcTime: 5 * 60 * 1000, // 캐시 유지 시간
+    refetchOnMount: 'always', // 마운트 시 항상 재검증
+    refetchOnWindowFocus: true, // 창 포커스 시 재검증
+    placeholderData: getInitialUserState() // 초기 UI용 (서버 응답까지 표시)
   });
 
   // 사용자 데이터 변경 시 상태 업데이트 (TanStack Query v5 호환)
