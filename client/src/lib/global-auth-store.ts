@@ -49,7 +49,46 @@ class AuthStore {
     // 윈도우 전역 객체에 접근 가능하도록 설정 (웹뷰 통신용)
     this.updateGlobalState();
     
+    // 서버와 세션 검증 (localStorage에 인증 정보가 있는 경우에만)
+    if (this._state.isAuthenticated) {
+      this.validateServerSession();
+    }
+    
     console.log('[GlobalAuth] 초기화 완료:', this._state);
+  }
+  
+  // 서버 세션 검증
+  private async validateServerSession(): Promise<void> {
+    try {
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        // 서버 세션이 유효하지 않으면 로컬 상태 초기화
+        console.log('[GlobalAuth] 서버 세션 만료, 로컬 상태 초기화');
+        this.logout();
+        
+        // 관련 localStorage도 정리
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userData');
+      } else {
+        // 서버 응답으로 상태 동기화
+        const data = await response.json();
+        if (data.success && data.data) {
+          const user = data.data;
+          this.setState({
+            isAuthenticated: true,
+            userRole: user.role,
+            userName: user.name
+          });
+          console.log('[GlobalAuth] 서버 세션 검증 성공:', user.name);
+        }
+      }
+    } catch (error) {
+      console.error('[GlobalAuth] 서버 세션 검증 오류:', error);
+      // 네트워크 오류 시에는 기존 상태 유지
+    }
   }
   
   // 현재 상태 가져오기
