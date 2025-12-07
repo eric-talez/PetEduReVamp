@@ -72,19 +72,26 @@ export function useStreamingSocket(options: UseStreamingSocketOptions = {}) {
   const maxReconnectAttempts = 5;
 
   const connect = useCallback(() => {
-    if (socketRef.current?.connected) return;
+    if (socketRef.current?.connected) {
+      console.log('[StreamingSocket] Already connected');
+      return;
+    }
 
+    console.log('[StreamingSocket] Attempting to connect to /streaming namespace');
+    
     const socket = io('/streaming', {
       path: '/streaming-socket',
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionAttempts: maxReconnectAttempts,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       timeout: 20000,
+      forceNew: true,
     });
 
     socket.on('connect', () => {
+      console.log('[StreamingSocket] Connected! Socket ID:', socket.id);
       setIsConnected(true);
       setConnectionError(null);
       reconnectAttemptsRef.current = 0;
@@ -92,6 +99,7 @@ export function useStreamingSocket(options: UseStreamingSocketOptions = {}) {
     });
 
     socket.on('disconnect', (reason) => {
+      console.log('[StreamingSocket] Disconnected:', reason);
       setIsConnected(false);
       options.onConnectionChange?.(false);
       
@@ -101,6 +109,7 @@ export function useStreamingSocket(options: UseStreamingSocketOptions = {}) {
     });
 
     socket.on('connect_error', (error) => {
+      console.error('[StreamingSocket] Connection error:', error.message);
       reconnectAttemptsRef.current += 1;
       setConnectionError(`Connection error: ${error.message}`);
       

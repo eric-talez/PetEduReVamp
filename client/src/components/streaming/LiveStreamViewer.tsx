@@ -275,19 +275,22 @@ export function LiveStreamViewer({ stream, onExit }: LiveStreamViewerProps) {
   useEffect(() => {
     console.log('[Viewer] Connecting to stream:', stream.id);
     connect();
-    
-    const timer = setTimeout(() => {
-      joinStream(stream.id, user?.id, 'viewer');
-    }, 500);
 
     return () => {
-      clearTimeout(timer);
       peersRef.current.forEach(({ peer }) => peer.destroy());
       peersRef.current.clear();
       leaveStream(stream.id);
       disconnect();
     };
   }, []);
+
+  // Join stream when connected
+  useEffect(() => {
+    if (isConnected) {
+      console.log('[Viewer] Socket connected, joining stream:', stream.id);
+      joinStream(stream.id, user?.id, 'viewer');
+    }
+  }, [isConnected, stream.id, user?.id, joinStream]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
