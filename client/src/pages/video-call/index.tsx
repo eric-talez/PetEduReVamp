@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import VideoClassBannerImage from '@assets/stock_images/virtual_online_pet_d_cb89d2cb.jpg';
 import { PageBanner } from '@/components/PageBanner';
 import { LiveStreamViewer } from '@/components/streaming/LiveStreamViewer';
+import { StreamSession } from '@/components/streaming/StreamSession';
 
 interface Meeting {
   id: string;
@@ -109,6 +110,7 @@ export default function VideoCallPage() {
   const [isLoadingStreams, setIsLoadingStreams] = useState(false);
   const [isCreatingStream, setIsCreatingStream] = useState(false);
   const [watchingStream, setWatchingStream] = useState<LiveStream | null>(null);
+  const [hostingStream, setHostingStream] = useState<LiveStream | null>(null);
   const [streamFormData, setStreamFormData] = useState({
     title: '',
     description: '',
@@ -234,9 +236,13 @@ export default function VideoCallPage() {
       const data = await response.json();
       
       if (data.success) {
+        const stream = liveStreams.find(s => s.id === streamId);
+        if (stream) {
+          setHostingStream({ ...stream, status: 'live' });
+        }
         toast({
           title: "라이브 시작",
-          description: "라이브 스트리밍이 시작되었습니다!",
+          description: "WebRTC 스트리밍이 시작됩니다. 카메라와 마이크 권한을 허용해주세요.",
         });
         fetchLiveStreams();
       }
@@ -255,6 +261,7 @@ export default function VideoCallPage() {
       const data = await response.json();
       
       if (data.success) {
+        setHostingStream(null);
         toast({
           title: "라이브 종료",
           description: "라이브 스트리밍이 종료되었습니다.",
@@ -268,6 +275,13 @@ export default function VideoCallPage() {
         variant: "destructive"
       });
     }
+  };
+  
+  const exitHosting = async () => {
+    if (hostingStream) {
+      await endLiveStream(hostingStream.id);
+    }
+    setHostingStream(null);
   };
 
   const joinLiveStream = async (stream: LiveStream) => {
@@ -476,6 +490,16 @@ export default function VideoCallPage() {
         <LiveStreamViewer 
           stream={watchingStream} 
           onExit={exitLiveStream}
+        />
+      )}
+      
+      {/* 호스트 스트리밍 중인 경우 - WebRTC 방송 화면 */}
+      {hostingStream && (
+        <StreamSession
+          streamId={hostingStream.id}
+          isHost={true}
+          userName={userName || '호스트'}
+          onExit={exitHosting}
         />
       )}
 

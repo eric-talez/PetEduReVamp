@@ -4,6 +4,26 @@
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
 ## Recent Changes (December 7, 2025)
+### WebRTC Streaming System (Google Meet Replacement)
+- **Architecture Change**: Replaced Google Meet iframe (blocked by X-Frame-Options) with custom WebRTC solution
+- **Socket.IO Server**: Real-time signaling server at `/streaming` namespace with `/streaming-socket` path
+  - `server/streaming/socket-server.ts` - Full signaling implementation
+  - Events: join-stream, leave-stream, signal, chat-message, end-stream, disconnect
+  - Viewer count tracking with automatic cleanup on disconnect
+- **WebRTC Components**: 
+  - `StreamSession.tsx` - Host/viewer P2P video streaming with simple-peer
+  - `useStreamingSocket.ts` - Custom hook for Socket.IO connection management
+  - `LiveStreamViewer.tsx` - Enhanced viewer UI with embedded player and chat
+- **Database Extensions**: Added `streamPeers`, `streamRecordings`, `streamAnalytics`, `streamSchedules` tables
+- **Video-call Page Integration**: Hosts see StreamSession component when broadcasting, viewers see LiveStreamViewer
+- **Packages Added**: simple-peer, socket.io, socket.io-client
+- **Key Features**:
+  - P2P video/audio streaming with STUN servers for NAT traversal
+  - Real-time chat via Socket.IO
+  - Connection quality monitoring
+  - Viewer count tracking and analytics
+  - Role-based access (only trainers/institute-admins/admins can host)
+
 ### Live Streaming Feature for Video Classes
 - **Database Schema**: Added `liveStreams`, `streamViewers`, `streamChatMessages` tables with comprehensive status tracking
 - **REST API Endpoints**: Full CRUD operations at `/api/live-streaming/*`
