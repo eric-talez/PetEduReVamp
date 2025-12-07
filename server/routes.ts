@@ -376,6 +376,7 @@ import { setupSocialRoutes } from './routes/social';
 import { registerCourseManagementRoutes } from './routes/course-management';
 import { registerAIErrorFixRoutes } from './routes/ai-error-fix';
 import { registerAIUsageRoutes } from './routes/ai-usage';
+import { weatherRoutes } from './routes/weather';
 import { analyzeCurriculumContent, suggestCurriculumPricing } from './ai/openai';
 import { extractTextAndTables, validateUploadedFile } from './utils/fileParser';
 import multer from 'multer';
@@ -778,6 +779,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 관리자 라우트 등록
   registerAdminRoutes(app);
+
+  // 날씨 API 라우트 등록
+  app.use('/api/weather', weatherRoutes);
 
   // 커미션 라우트 등록
   setupCommissionRoutes(app);
