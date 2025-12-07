@@ -282,13 +282,7 @@ app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Setup authentication system
-setupAuth(app);
-
-// API 표준화 미들웨어 적용 - Response 객체에 표준 메서드 추가
-app.use(extendResponse);
-
-// Session to req.user middleware
+// Session to req.user middleware - MUST run before auth routes
 app.use((req: any, res: any, next: any) => {
   try {
     if (req.session?.user && !req.user) {
@@ -300,6 +294,12 @@ app.use((req: any, res: any, next: any) => {
     next();
   }
 });
+
+// API 표준화 미들웨어 적용 - Response 객체에 표준 메서드 추가
+app.use(extendResponse);
+
+// Setup authentication system
+setupAuth(app);
 
 // REMOVED: Critical security fix - these endpoints have been moved to routes.ts with proper authentication
 
