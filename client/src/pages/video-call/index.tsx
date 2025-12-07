@@ -35,6 +35,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import VideoClassBannerImage from '@assets/stock_images/virtual_online_pet_d_cb89d2cb.jpg';
 import { PageBanner } from '@/components/PageBanner';
+import { LiveStreamViewer } from '@/components/streaming/LiveStreamViewer';
 
 interface Meeting {
   id: string;
@@ -463,13 +464,9 @@ export default function VideoCallPage() {
   return (
     <div className="pb-8">
       <PageBanner
-        imageSrc={VideoClassBannerImage}
-        imageAlt="실시간 Google Meet 훈련"
         title="실시간 화상 훈련 서비스"
-        description="Google Meet로 어디서나 전문 훈련사와 실시간 화상 수업을 받아보세요"
-        onBannerClick={() => {
-          setActiveTab('trainers');
-        }}
+        subtitle="어디서나 전문 훈련사와 실시간 화상 수업을 받아보세요"
+        imageUrl={VideoClassBannerImage}
       />
       
       <div className="container mx-auto px-4 py-8 space-y-8 text-sm">
