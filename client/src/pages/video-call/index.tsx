@@ -288,8 +288,16 @@ export default function VideoCallPage() {
 
   const joinLiveStream = async (stream: LiveStream) => {
     try {
+      console.log('[joinLiveStream] Attempting to join stream:', {
+        streamId: stream.id,
+        streamHostId: stream.hostId,
+        userId: user?.id,
+        isHost: user?.id && stream.hostId === user.id
+      });
+      
       // Check if the current user is the host of this stream
       if (user?.id && stream.hostId === user.id) {
+        console.log('[joinLiveStream] User is host, opening host interface');
         // User is the host - show host streaming interface
         setHostingStream({ ...stream, status: 'live' });
         toast({
@@ -299,6 +307,7 @@ export default function VideoCallPage() {
         return;
       }
       
+      console.log('[joinLiveStream] User is viewer, joining as viewer');
       // User is a viewer
       await apiRequest('POST', `/api/live-streaming/streams/${stream.id}/join`, {
         sessionId: `session-${Date.now()}`
@@ -311,6 +320,11 @@ export default function VideoCallPage() {
       });
     } catch (error) {
       console.error('Error joining stream:', error);
+      toast({
+        title: "참여 실패",
+        description: "라이브 참여 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
     }
   };
 
