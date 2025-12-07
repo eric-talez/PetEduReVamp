@@ -1,0 +1,44 @@
+Error: useAuth must be used within an AuthProvider
+Stack:
+Error: useAuth must be used within an AuthProvider
+    at useAuth (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/use-auth.tsx:202:11)
+    at LiveStreamViewer (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/streaming/LiveStreamViewer.tsx:49:20)
+    at renderWithHooks (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=e0438bfd:11548:26)
+    at mountIndeterminateComponent (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=e0438bfd:14926:21)
+    at beginWork (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=e0438bfd:15914:22)
+    at beginWork$1 (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=e0438bfd:19753:22)
+    at performUnitOfWork (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=e0438bfd:19198:20)
+    at workLoopSync (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=e0438bfd:19137:13)
+    at renderRootSync (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=e0438bfd:19116:15)
+    at recoverFromConcurrentError (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=e0438bfd:18736:28)
+Component Stack:
+
+    at LiveStreamViewer (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/streaming/LiveStreamViewer.tsx:46:36)
+    at div
+    at div
+    at VideoCallPage (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/pages/video-call/index.tsx:54:27)
+    at Route (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=e0438bfd:338:16)
+    at Switch (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=e0438bfd:394:17)
+    at ErrorBoundary (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at main
+    at div
+    at div
+    at div
+    at PageLoadingProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/SplashScreen.tsx:144:39)
+    at ErrorBoundary (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at AppLayout (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?v=6OImUlIWh4oOy5z7DspXg:157:22)
+    at AuthenticatedRoutes (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?v=6OImUlIWh4oOy5z7DspXg:2304:24)
+    at KeyboardShortcutsManager (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?v=6OImUlIWh4oOy5z7DspXg:4843:37)
+    at WeatherProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/contexts/WeatherContext.tsx:29:35)
+    at NotificationProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/use-notifications.tsx:23:40)
+    at NotificationsProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/NotificationsProvider.tsx:21:41)
+    at AchievementsProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/useAchievements.tsx:120:40)
+    at UserPreferencesProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/use-user-preferences.tsx:28:43)
+    at ThemeManager (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/components/ThemeManager.tsx:24:32)
+    at ThemeProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/context/theme-context.tsx:33:3)
+    at SimpleApp (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/SimpleApp.tsx?v=6OImUlIWh4oOy5z7DspXg:4858:16)
+    at AuthProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/hooks/useAuth.tsx?v=6OImUlIWh4oOy5z7DspXg:42:32)
+    at Provider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=e0438bfd:38:15)
+    at TooltipProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=e0438bfd:67:5)
+    at ThemeProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/src/context/theme-context.tsx?v=6OImUlIWh4oOy5z7DspXg:33:3)
+    at QueryClientProvider (https://8f9bc033-6ae0-4fd7-95cb-7a6faad7f5f8-00-1y8b4o11gsn13.pike.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=e0438bfd:2875:3)
