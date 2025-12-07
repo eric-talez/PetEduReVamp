@@ -2379,7 +2379,10 @@ export const insertLiveStreamSchema = createInsertSchema(liveStreams, {
   maxViewers: z.number().int().min(1).max(1000).optional(),
 }).omit({
   id: true,
+  hostId: true,
   streamKey: true,
+  meetingUrl: true,
+  meetingCode: true,
   currentViewers: true,
   peakViewers: true,
   totalViews: true,
