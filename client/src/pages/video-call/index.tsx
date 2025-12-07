@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/lib/auth-compat';
+import { useAuth as useAuthContext } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,6 +71,7 @@ interface LiveStream {
 export default function VideoCallPage() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, isLoading, userName } = useAuth();
+  const { user } = useAuthContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('live');
@@ -286,6 +288,18 @@ export default function VideoCallPage() {
 
   const joinLiveStream = async (stream: LiveStream) => {
     try {
+      // Check if the current user is the host of this stream
+      if (user?.id && stream.hostId === user.id) {
+        // User is the host - show host streaming interface
+        setHostingStream({ ...stream, status: 'live' });
+        toast({
+          title: "호스트 모드",
+          description: "방송을 시작합니다. 카메라와 마이크가 필요합니다.",
+        });
+        return;
+      }
+      
+      // User is a viewer
       await apiRequest('POST', `/api/live-streaming/streams/${stream.id}/join`, {
         sessionId: `session-${Date.now()}`
       });

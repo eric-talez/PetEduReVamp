@@ -273,15 +273,17 @@ export function StreamSession({
     return peer;
   }, [localStream, sendSignal, streamId, isHost, remoteStream, updateQuality]);
 
+  const hasJoinedRef = useRef(false);
+
   useEffect(() => {
     const initMedia = async () => {
       if (!isHost) {
         connect();
-        joinStream(streamId, userId, 'viewer');
         return;
       }
 
       try {
+        console.log('[StreamSession] Requesting camera/mic access...');
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             width: { ideal: 1280 },
@@ -294,15 +296,15 @@ export function StreamSession({
           },
         });
 
+        console.log('[StreamSession] Got local stream:', stream.getTracks().map(t => t.kind));
         setLocalStream(stream);
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
 
         connect();
-        joinStream(streamId, userId, 'host');
       } catch (err) {
-        console.error('Failed to get media:', err);
+        console.error('[StreamSession] Failed to get media:', err);
         setError('카메라/마이크 접근 권한이 필요합니다.');
         setIsLoading(false);
       }
@@ -321,6 +323,15 @@ export function StreamSession({
       disconnect();
     };
   }, []);
+
+  // Join stream when connected (only once)
+  useEffect(() => {
+    if (isConnected && !hasJoinedRef.current) {
+      console.log('[StreamSession] Socket connected, joining stream:', streamId, 'as', isHost ? 'host' : 'viewer');
+      hasJoinedRef.current = true;
+      joinStream(streamId, userId, isHost ? 'host' : 'viewer');
+    }
+  }, [isConnected]);
 
   const toggleVideo = useCallback(() => {
     if (localStream) {

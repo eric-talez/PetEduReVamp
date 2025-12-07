@@ -284,13 +284,15 @@ export function LiveStreamViewer({ stream, onExit }: LiveStreamViewerProps) {
     };
   }, []);
 
-  // Join stream when connected
+  // Join stream when connected (only once)
+  const hasJoinedRef = useRef(false);
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && !hasJoinedRef.current) {
       console.log('[Viewer] Socket connected, joining stream:', stream.id);
+      hasJoinedRef.current = true;
       joinStream(stream.id, user?.id, 'viewer');
     }
-  }, [isConnected, stream.id, user?.id, joinStream]);
+  }, [isConnected]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
