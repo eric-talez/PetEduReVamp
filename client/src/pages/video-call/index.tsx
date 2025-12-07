@@ -79,6 +79,7 @@ export default function VideoCallPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [meetingData, setMeetingData] = useState({
     topic: '',
     date: new Date(),
@@ -133,6 +134,23 @@ export default function VideoCallPage() {
       });
       setLocation('/auth/login');
     } else if (isAuthenticated) {
+      // 현재 사용자 ID 가져오기
+      const fetchCurrentUser = async () => {
+        try {
+          const response = await fetch('/api/auth/me', { credentials: 'include' });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data?.id) {
+              setCurrentUserId(data.data.id);
+              console.log('[VideoCall] Current user ID loaded:', data.data.id);
+            }
+          }
+        } catch (error) {
+          console.error('[VideoCall] Error fetching current user:', error);
+        }
+      };
+      fetchCurrentUser();
+      
       // 미팅 목록 가져오기
       fetchMeetings();
       // 화상수업 목록 가져오기
@@ -292,12 +310,12 @@ export default function VideoCallPage() {
       console.log('[joinLiveStream] Attempting to join stream:', {
         streamId: stream.id,
         streamHostId: stream.hostId,
-        userId: user?.id,
-        isHost: user?.id && stream.hostId === user.id
+        currentUserId,
+        isHost: currentUserId && stream.hostId === currentUserId
       });
       
       // Check if the current user is the host of this stream
-      if (user?.id && stream.hostId === user.id) {
+      if (currentUserId && stream.hostId === currentUserId) {
         console.log('[joinLiveStream] User is host, opening host interface');
         // User is the host - show host streaming interface
         setHostingStream({ ...stream, status: 'live' });
@@ -554,7 +572,7 @@ export default function VideoCallPage() {
       {hostingStream && (
         <StreamSession
           streamId={hostingStream.id}
-          userId={user?.id}
+          userId={currentUserId || undefined}
           isHost={true}
           userName={userName || '호스트'}
           onExit={exitHosting}
@@ -643,9 +661,9 @@ export default function VideoCallPage() {
                             data-testid={`btn-join-stream-${stream.id}`}
                           >
                             <Play className="w-4 h-4 mr-1" /> 
-                            {user?.id === stream.hostId ? '방송하기' : '시청하기'}
+                            {currentUserId === stream.hostId ? '방송하기' : '시청하기'}
                           </Button>
-                          {user?.id === stream.hostId && (
+                          {currentUserId === stream.hostId && (
                             <Button 
                               variant="destructive"
                               size="sm"
@@ -701,7 +719,7 @@ export default function VideoCallPage() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          {user?.id === stream.hostId && (
+                          {currentUserId === stream.hostId && (
                             <>
                               <Button 
                                 variant="outline" 
@@ -753,7 +771,7 @@ export default function VideoCallPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">종료됨</span>
-                          {user?.id === stream.hostId && (
+                          {currentUserId === stream.hostId && (
                             <Button 
                               variant="ghost"
                               size="sm"
