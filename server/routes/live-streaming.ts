@@ -141,12 +141,12 @@ router.get('/streams/:id', async (req, res) => {
     .where(eq(liveStreams.id, streamId));
     
     if (!stream) {
-      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+      return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, 'Stream not found');
     }
     
-    const userId = (req.session as any)?.userId;
+    const userId = req.session?.user?.id;
     if (!stream.isPublic && stream.hostId !== userId) {
-      return res.error(ApiErrorCode.FORBIDDEN, 'Access denied to private stream');
+      return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, 'Access denied to private stream');
     }
     
     return res.success({ stream });
@@ -158,8 +158,8 @@ router.get('/streams/:id', async (req, res) => {
 
 router.post('/streams', csrfProtection, async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId;
-    const userRole = (req.session as any)?.userRole;
+    const userId = req.session?.user?.id;
+    const userRole = req.session?.user?.role;
     
     if (!userId) {
       return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in to create a stream');
@@ -168,7 +168,7 @@ router.post('/streams', csrfProtection, async (req, res) => {
     // Role-based authorization: only trainers, institutes, and admins can create streams
     const allowedRoles = ['trainer', 'institute-admin', 'admin'];
     if (!userRole || !allowedRoles.includes(userRole)) {
-      return res.error(ApiErrorCode.FORBIDDEN, '훈련사 또는 관리자만 라이브 스트리밍을 생성할 수 있습니다.');
+      return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, '훈련사 또는 관리자만 라이브 스트리밍을 생성할 수 있습니다.');
     }
     
     const validation = insertLiveStreamSchema.safeParse(req.body);
@@ -200,8 +200,8 @@ router.post('/streams', csrfProtection, async (req, res) => {
 
 router.patch('/streams/:id/start', csrfProtection, async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId;
-    const userRole = (req.session as any)?.userRole;
+    const userId = req.session?.user?.id;
+    const userRole = req.session?.user?.role;
     const streamId = parseInt(req.params.id);
     
     if (!userId) {
@@ -215,13 +215,13 @@ router.patch('/streams/:id/start', csrfProtection, async (req, res) => {
     const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
     
     if (!stream) {
-      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+      return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, 'Stream not found');
     }
     
     // Check if user is the host or an admin
     const isAdmin = userRole === 'admin';
     if (stream.hostId !== userId && !isAdmin) {
-      return res.error(ApiErrorCode.FORBIDDEN, 'Only the host can start this stream');
+      return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, 'Only the host can start this stream');
     }
     
     if (stream.status === 'live') {
@@ -248,8 +248,8 @@ router.patch('/streams/:id/start', csrfProtection, async (req, res) => {
 
 router.patch('/streams/:id/end', csrfProtection, async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId;
-    const userRole = (req.session as any)?.userRole;
+    const userId = req.session?.user?.id;
+    const userRole = req.session?.user?.role;
     const streamId = parseInt(req.params.id);
     
     if (!userId) {
@@ -263,13 +263,13 @@ router.patch('/streams/:id/end', csrfProtection, async (req, res) => {
     const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
     
     if (!stream) {
-      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+      return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, 'Stream not found');
     }
     
     // Check if user is the host or an admin
     const isAdmin = userRole === 'admin';
     if (stream.hostId !== userId && !isAdmin) {
-      return res.error(ApiErrorCode.FORBIDDEN, 'Only the host can end this stream');
+      return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, 'Only the host can end this stream');
     }
     
     const endTime = new Date();
@@ -310,7 +310,7 @@ router.patch('/streams/:id/end', csrfProtection, async (req, res) => {
 router.post('/streams/:id/join', async (req, res) => {
   try {
     const streamId = parseInt(req.params.id);
-    const userId = (req.session as any)?.userId;
+    const userId = req.session?.user?.id;
     const sessionId = req.body.sessionId || crypto.randomBytes(8).toString('hex');
     
     if (isNaN(streamId)) {
@@ -320,7 +320,7 @@ router.post('/streams/:id/join', async (req, res) => {
     const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
     
     if (!stream) {
-      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+      return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, 'Stream not found');
     }
     
     if (stream.status !== 'live' && stream.status !== 'scheduled') {
@@ -466,7 +466,7 @@ router.get('/streams/:id/chat', async (req, res) => {
 
 router.post('/streams/:id/chat', csrfProtection, async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId;
+    const userId = req.session?.user?.id;
     const streamId = parseInt(req.params.id);
     
     if (!userId) {
@@ -480,11 +480,11 @@ router.post('/streams/:id/chat', csrfProtection, async (req, res) => {
     const [stream] = await db.select().from(liveStreams).where(eq(liveStreams.id, streamId));
     
     if (!stream) {
-      return res.error(ApiErrorCode.NOT_FOUND, 'Stream not found');
+      return res.error(ApiErrorCode.RESOURCE_NOT_FOUND, 'Stream not found');
     }
     
     if (!stream.chatEnabled) {
-      return res.error(ApiErrorCode.FORBIDDEN, 'Chat is disabled for this stream');
+      return res.error(ApiErrorCode.INSUFFICIENT_PERMISSIONS, 'Chat is disabled for this stream');
     }
     
     const validation = insertStreamChatSchema.safeParse({
@@ -517,7 +517,7 @@ router.post('/streams/:id/chat', csrfProtection, async (req, res) => {
 
 router.get('/my-streams', async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId;
+    const userId = req.session?.user?.id;
     
     if (!userId) {
       return res.error(ApiErrorCode.AUTHENTICATION_REQUIRED, 'Please log in');
