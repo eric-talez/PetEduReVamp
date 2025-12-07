@@ -191,11 +191,15 @@ export function LiveStreamViewer({ stream, onExit }: LiveStreamViewerProps) {
 
   const handleStreamJoined = useCallback((data: { peers: PeerInfo[] }) => {
     console.log('[Viewer] Joined stream, peers:', data.peers.length);
+    setIsConnecting(false);
     setViewerCount(data.peers.length);
+    setConnectionQuality('good');
     
     const hostPeer = data.peers.find(p => p.role === 'host');
     if (hostPeer) {
       console.log('[Viewer] Found host, creating peer connection');
+    } else {
+      console.log('[Viewer] No host broadcasting yet, waiting...');
     }
   }, []);
 
