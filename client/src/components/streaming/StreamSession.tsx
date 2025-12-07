@@ -88,15 +88,11 @@ export function StreamSession({
   const [chatInput, setChatInput] = useState('');
 
   const handleStreamJoined = useCallback((data: StreamJoinedData) => {
+    console.log('[StreamSession] Stream joined successfully, peers:', data.peers.length);
     setIsLoading(false);
     setConnectionQuality('good');
     setViewerCount(data.peers.length);
-    
-    data.peers.forEach((peerInfo) => {
-      if (isHost && peerInfo.role === 'host') return;
-      createPeerConnection(peerInfo.peerId, true, peerInfo);
-    });
-  }, [isHost]);
+  }, []);
 
   const handlePeerJoined = useCallback((data: PeerJoinedData) => {
     setViewerCount(prev => prev + 1);
