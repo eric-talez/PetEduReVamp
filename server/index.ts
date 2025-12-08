@@ -13,6 +13,7 @@ import { registerInstituteRoutes } from "./institutes/routes";
 import { setupVite, serveStatic } from "./vite";
 import { storage } from "./storage";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import passport from "passport";
 import cors from "cors";
 import helmet from "helmet";
@@ -259,9 +260,21 @@ app.get('/attached_assets/:filename', (req, res) => {
   }
 });
 
-// 세션 설정 - 크로스 도메인 지원 개선
+// 세션 설정 - PostgreSQL 세션 저장소 사용 (서버 재시작해도 세션 유지)
 const isProduction = process.env.NODE_ENV === 'production';
-const sessionConfig = {
+const PgSession = connectPgSimple(session);
+
+// PostgreSQL 세션 저장소 설정
+const pgSessionStore = new PgSession({
+  conString: process.env.DATABASE_URL,
+  tableName: 'session', // 세션 테이블 이름
+  createTableIfMissing: true, // 테이블 자동 생성
+  pruneSessionInterval: 60 * 15, // 15분마다 만료된 세션 정리
+  errorLog: console.error.bind(console)
+});
+
+const sessionConfig: session.SessionOptions = {
+  store: pgSessionStore,
   secret: process.env.SESSION_SECRET || 'talez-super-secure-session-secret-2025-production-ready',
   resave: false,
   saveUninitialized: false,
@@ -275,9 +288,11 @@ const sessionConfig = {
     ...(isProduction && process.env.COOKIE_DOMAIN && {
       domain: process.env.COOKIE_DOMAIN
     })
-  },
-  // 개발 환경에서는 메모리 세션 사용 (프로덕션에서는 Redis 등 영구 저장소 사용 권장)
+  }
 };
+
+console.log('✅ PostgreSQL 세션 저장소 초기화 완료');
+
 // 세션 미들웨어를 먼저 설정
 app.use(session(sessionConfig));
 
