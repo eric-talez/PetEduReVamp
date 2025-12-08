@@ -234,14 +234,16 @@ export const posts = pgTable("posts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 댓글 테이블
+// 댓글 테이블 - 실제 데이터베이스 스키마에 맞춤
 export const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
   content: text("content").notNull(),
   postId: integer("post_id").references(() => posts.id),
-  authorId: integer("author_id").references(() => users.id),
+  authorId: integer("user_id").references(() => users.id), // DB column is user_id
   parentId: integer("parent_id"),
-  isActive: boolean("is_active").default(true),
+  likes: integer("likes").default(0),
+  isEdited: boolean("is_edited").default(false),
+  isDeleted: boolean("is_deleted").default(false), // Using isDeleted instead of isActive
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -637,11 +639,39 @@ export const eventAttendances = pgTable("event_attendances", {
 export const trainers = pgTable("trainers", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
+  name: varchar("name", { length: 100 }),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
+  bio: text("bio"),
   specialty: text("specialty"),
+  specialties: jsonb("specialties"), // array of specializations
   experience: integer("experience"),
   certification: text("certification"),
+  certifications: jsonb("certifications"), // array of certifications
+  price: decimal("price", { precision: 10, scale: 2 }),
+  location: text("location"),
+  address: text("address"),
+  profileImage: text("profile_image"),
+  avatar: text("avatar"),
+  background: text("background"),
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0"),
+  reviewCount: integer("review_count").default(0),
+  reviews: integer("reviews").default(0),
+  coursesCount: integer("courses_count").default(0),
+  studentsCount: integer("students_count").default(0),
+  featured: boolean("featured").default(false),
+  verified: boolean("verified").default(false),
+  isActive: boolean("is_active").default(true),
+  status: varchar("status", { length: 50 }).default("active"),
+  institute: text("institute"),
+  instituteId: integer("institute_id").references(() => institutes.id),
+  category: varchar("category", { length: 100 }),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export type InsertTrainer = typeof trainers.$inferInsert;
+export type SelectTrainer = typeof trainers.$inferSelect;
 
 export const checkups = pgTable("checkups", {
   id: serial("id").primaryKey(),
@@ -2510,4 +2540,42 @@ export type StreamAnalytics = typeof streamAnalytics.$inferSelect;
 export type InsertStreamAnalytics = z.infer<typeof insertStreamAnalyticsSchema>;
 export type StreamSchedule = typeof streamSchedules.$inferSelect;
 export type InsertStreamSchedule = z.infer<typeof insertStreamScheduleSchema>;
+
+// 매칭 요청 테이블
+export const matchingRequests = pgTable("matching_requests", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id"),
+  trainerName: text("trainer_name"),
+  petId: integer("pet_id"),
+  petName: text("pet_name"),
+  petOwnerId: integer("pet_owner_id"),
+  petOwnerName: text("pet_owner_name"),
+  status: text("status").default("pending"), // pending, approved, rejected
+  response: text("response"),
+  processedAt: timestamp("processed_at"),
+  processedBy: integer("processed_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 등록 신청 테이블 (훈련사/기관)
+export const registrationApplications = pgTable("registration_applications", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // 'trainer' or 'institute'
+  applicantInfo: jsonb("applicant_info").notNull(),
+  status: text("status").default("pending"), // pending, approved, rejected
+  submittedAt: timestamp("submitted_at").defaultNow(),
+  processedAt: timestamp("processed_at"),
+  processedBy: integer("processed_by"),
+  rejectionReason: text("rejection_reason"),
+});
+
+// 매칭 요청 스키마 및 타입
+export const insertMatchingRequestSchema = createInsertSchema(matchingRequests).omit({ id: true, createdAt: true });
+export type InsertMatchingRequest = z.infer<typeof insertMatchingRequestSchema>;
+export type MatchingRequest = typeof matchingRequests.$inferSelect;
+
+// 등록 신청 스키마 및 타입
+export const insertRegistrationApplicationSchema = createInsertSchema(registrationApplications).omit({ id: true, submittedAt: true });
+export type InsertRegistrationApplication = z.infer<typeof insertRegistrationApplicationSchema>;
+export type RegistrationApplication = typeof registrationApplications.$inferSelect;
 

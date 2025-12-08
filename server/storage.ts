@@ -1,5 +1,5 @@
 import { db } from './db/index';
-import { logoSettings, users, products, conversations, messages } from '../shared/schema';
+import { logoSettings, users, products, conversations, messages, trainers } from '../shared/schema';
 import { eq, desc, or, and, sql } from 'drizzle-orm';
 
 class Storage {
@@ -86,7 +86,6 @@ class Storage {
   paymentMethods: any[] = [];
   userPaymentPlans: any[] = [];
   paymentHistory: any[] = [];
-  trainers: any[] = [];
   events: any[] = [
     {
       id: 1,
@@ -3289,27 +3288,39 @@ class Storage {
     }
   }
 
-  // 훈련사 정보 필드 업데이트
+  // 훈련사 정보 필드 업데이트 (PostgreSQL 데이터베이스 사용)
   async updateTrainerField(businessId: string, correctionType: string, proposedValue: string) {
-    const trainer = this.trainers.find(t => t.id === parseInt(businessId));
-    if (trainer) {
+    try {
+      const trainerId = parseInt(businessId);
+      let updateData: any = {};
+      
       switch (correctionType) {
         case 'address':
-          trainer.address = proposedValue;
+          updateData.address = proposedValue;
           break;
         case 'phone':
-          trainer.phone = proposedValue;
+          updateData.phone = proposedValue;
           break;
         case 'description':
-          trainer.bio = proposedValue;
+          updateData.bio = proposedValue;
           break;
         case 'services':
-          trainer.specialties = proposedValue.split(',').map(s => s.trim());
+          updateData.specialties = proposedValue.split(',').map(s => s.trim());
           break;
         default:
-          trainer[correctionType] = proposedValue;
+          updateData[correctionType] = proposedValue;
       }
-      console.log('[Storage] 훈련사 정보 업데이트 완료:', trainer.name);
+      
+      const [updatedTrainer] = await db.update(trainers)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(trainers.id, trainerId))
+        .returning();
+      
+      if (updatedTrainer) {
+        console.log('[Storage] 훈련사 정보 업데이트 완료 (DB):', updatedTrainer.name);
+      }
+    } catch (error) {
+      console.error('[Storage] 훈련사 정보 업데이트 실패:', error);
     }
   }
 
@@ -3471,40 +3482,93 @@ class Storage {
     }
   }
 
-  // 훈련사 생성
+  // 훈련사 생성 (PostgreSQL 데이터베이스 사용)
   async createTrainer(trainerData: any): Promise<any> {
     try {
-      const newTrainer = {
-        id: trainerData.id || Date.now(),
+      const newTrainerData = {
         name: trainerData.name,
         email: trainerData.email,
         phone: trainerData.phone,
         bio: trainerData.bio,
+        specialty: trainerData.specialty,
         specialties: trainerData.specialties || [],
         experience: trainerData.experience || 0,
+        certification: trainerData.certification,
         certifications: trainerData.certifications || [],
-        price: trainerData.price || 0,
+        price: trainerData.price?.toString() || "0",
         location: trainerData.location,
         address: trainerData.address,
         profileImage: trainerData.profileImage,
-        rating: trainerData.rating || 0,
+        avatar: trainerData.avatar,
+        background: trainerData.background,
+        rating: trainerData.rating?.toString() || "0",
         reviewCount: trainerData.reviewCount || 0,
+        reviews: trainerData.reviews || 0,
+        coursesCount: trainerData.coursesCount || 0,
+        studentsCount: trainerData.studentsCount || 0,
         featured: trainerData.featured || false,
+        verified: trainerData.verified || false,
         isActive: trainerData.isActive !== false,
-        createdAt: trainerData.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        status: trainerData.status || 'active',
+        institute: trainerData.institute,
+        instituteId: trainerData.instituteId,
+        category: trainerData.category,
+        userId: trainerData.userId,
       };
 
-      // 전역 훈련사 목록에 추가
-      if (!global.trainers) {
-        global.trainers = [];
-      }
-      global.trainers.push(newTrainer);
-
-      console.log('[Storage] 새 훈련사 생성:', newTrainer.name);
-      return newTrainer;
+      const [savedTrainer] = await db.insert(trainers).values(newTrainerData).returning();
+      console.log('[Storage] 새 훈련사 생성 (DB):', savedTrainer.name);
+      return savedTrainer;
     } catch (error) {
       console.error('[Storage] 훈련사 생성 실패:', error);
+      throw error;
+    }
+  }
+
+  // 훈련사 목록 조회 (PostgreSQL 데이터베이스 사용)
+  async getTrainers(options: any = {}): Promise<any[]> {
+    try {
+      let query = db.select().from(trainers);
+      
+      if (options.instituteId) {
+        query = query.where(eq(trainers.instituteId, options.instituteId)) as any;
+      }
+      
+      if (options.isActive !== undefined) {
+        query = query.where(eq(trainers.isActive, options.isActive)) as any;
+      }
+      
+      const result = await query;
+      console.log(`[Storage] 훈련사 목록 조회 (DB): ${result.length}명`);
+      return result;
+    } catch (error) {
+      console.error('[Storage] 훈련사 목록 조회 실패:', error);
+      return [];
+    }
+  }
+
+  // 훈련사 단일 조회 (PostgreSQL 데이터베이스 사용)
+  async getTrainerById(trainerId: number): Promise<any> {
+    try {
+      const [trainer] = await db.select().from(trainers).where(eq(trainers.id, trainerId));
+      return trainer || null;
+    } catch (error) {
+      console.error('[Storage] 훈련사 조회 실패:', error);
+      return null;
+    }
+  }
+
+  // 훈련사 정보 업데이트 (PostgreSQL 데이터베이스 사용)
+  async updateTrainer(trainerId: number, updateData: any): Promise<any> {
+    try {
+      const [updatedTrainer] = await db.update(trainers)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(trainers.id, trainerId))
+        .returning();
+      console.log('[Storage] 훈련사 정보 업데이트 (DB):', updatedTrainer?.name);
+      return updatedTrainer;
+    } catch (error) {
+      console.error('[Storage] 훈련사 업데이트 실패:', error);
       throw error;
     }
   }
@@ -3914,7 +3978,7 @@ class Storage {
 
   // ===== 대체 훈련사 시스템 메서드들 =====
 
-  // 대체 훈련사 게시글 조회
+  // 대체 훈련사 게시글 조회 (PostgreSQL 데이터베이스 사용)
   async getSubstituteTrainerPosts(options: any = {}) {
     const { page = 1, limit = 10, status = 'all', instituteId } = options;
 
@@ -3924,17 +3988,17 @@ class Storage {
       return true;
     });
 
-    // 훈련사 정보 포함
-    posts = posts.map(post => ({
+    // 훈련사 정보 포함 (데이터베이스에서 조회)
+    const postsWithTrainers = await Promise.all(posts.map(async post => ({
       ...post,
-      trainer: this.trainers.find(t => t.id === post.trainerId),
-    }));
+      trainer: await this.getTrainerById(post.trainerId),
+    })));
 
     // 페이지네이션 적용
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
 
-    return posts.slice(startIndex, endIndex);
+    return postsWithTrainers.slice(startIndex, endIndex);
   }
 
   // 대체 훈련사 게시글 생성
@@ -3950,14 +4014,14 @@ class Storage {
     return newPost;
   }
 
-  // 대체 훈련사 게시글 단일 조회
+  // 대체 훈련사 게시글 단일 조회 (PostgreSQL 데이터베이스 사용)
   async getSubstituteTrainerPost(postId: number) {
     const post = this.substituteClassPosts.find(p => p.id === postId);
     if (!post) return null;
 
     return {
       ...post,
-      trainer: this.trainers.find(t => t.id === post.trainerId),
+      trainer: await this.getTrainerById(post.trainerId),
       applications: this.substituteClassApplications.filter(app => app.postId === postId)
     };
   }
@@ -3989,7 +4053,7 @@ class Storage {
     return newApplication;
   }
 
-  // 대체 훈련사 지원 신청 조회
+  // 대체 훈련사 지원 신청 조회 (PostgreSQL 데이터베이스 사용)
   async getSubstituteTrainerApplications(options: any = {}) {
     const { instituteId } = options;
 
@@ -4002,11 +4066,14 @@ class Storage {
       applications = applications.filter(app => institutePostIds.includes(app.postId));
     }
 
-    return applications.map(app => ({
+    // 데이터베이스에서 훈련사 정보 조회
+    const applicationsWithDetails = await Promise.all(applications.map(async app => ({
       ...app,
       post: this.substituteClassPosts.find(p => p.id === app.postId),
-      applicant: this.trainers.find(t => t.id === app.applicantId)
-    }));
+      applicant: await this.getTrainerById(app.applicantId)
+    })));
+
+    return applicationsWithDetails;
   }
 
   // 대체 훈련사 지원 신청 업데이트
@@ -4173,89 +4240,102 @@ class Storage {
     return payment;
   }
 
-  // 대체 훈련사 시스템 초기 데이터 생성
-  private initializeSubstituteTrainerData() {
-    // 훈련사 데이터 추가
-    this.trainers = [
-      {
-        id: 1,
-        name: '강동훈',
-        email: 'donghoong@wangzzang.com',
-        phone: '010-4765-1909',
-        certification: '반려동물행동지도사 국가자격증 2급',
-        experience: 5,
-        specialization: ['기초 훈련', '문제 행동 교정', '사회화 훈련'],
-        instituteId: 1,
-        isActive: true,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 2,
-        name: '김민수',
-        email: 'kim@trainingcenter.com',
-        phone: '010-1234-5678',
-        certification: '반려동물 훈련 전문가 자격증',
-        experience: 8,
-        specialization: ['사회화 훈련', '분리불안 치료', '기초 복종'],
-        instituteId: 1,
-        isActive: true,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 3,
-        name: '박지혜',
-        email: 'park@behaviorplus.com',
-        phone: '010-9876-5432',
-        certification: '동물행동 전문가 자격증',
-        experience: 6,
-        specialization: ['행동 교정', '공격성 치료', '고급 훈련'],
-        instituteId: 2,
-        isActive: true,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 4,
-        name: '이수현',
-        email: 'lee@puppytraining.com',
-        phone: '010-5678-9012',
-        certification: '반려동물 훈련사 자격증',
-        experience: 4,
-        specialization: ['퍼피 훈련', '소형견 전문', '기초 복종'],
-        instituteId: 2,
-        isActive: true,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 5,
-        name: '최영진',
-        email: 'choi@advancedtraining.com',
-        phone: '010-3456-7890',
-        certification: '동물행동 치료사 자격증',
-        experience: 10,
-        specialization: ['고급 훈련', '특수 행동 치료', '전문 트레이닝'],
-        instituteId: 3,
-        isActive: true,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 2,
-        name: "우하나",
-        email: "whn0525@naver.com",
-        phone: "010-2447-4900",
-        specialty: "행동교정 및 사회화",
-        certifications: ["인천광역시고등학교 - 순천부", "서울중앙고등학교 - 반려동물관리학과 졸업", "서울문화예술대학교 - 반려동물관리 전공", "경기대학교 - 대학원 박사과정 중", "서울소방학습관리센터 - 애견미용사 자격증 취득", "서울문화예술대학 - 반려동물관리 전공", "서울문화예술대학교 - 펫 테라피스트 강사", "바이츠콘설팅훈련도서 - 강의교수", "애견전산업체 - 조종군 직원장 강사"],
-        experience: "20년",
-        rating: 4.9,
-        reviews: 215,
-        institute: "이화목",
-        instituteId: 2,
-        bio: "20년 경력의 행동교정 및 사회화 전문 훈련사입니다. 서울중앙고등학교와 서울문화예술대학교에서 반려동물관리를 전공하였으며, 현재 경기대학교 대학원 박사과정 중입니다.",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=우하나&backgroundColor=ffd1dc",
-        status: "active",
-        coursesCount: 18,
-        studentsCount: 142
+  // 대체 훈련사 시스템 초기 데이터 생성 (데이터베이스에 시드 데이터 추가)
+  private async initializeSubstituteTrainerData() {
+    // 데이터베이스에 초기 훈련사 데이터 시드 (기존 데이터가 없을 경우에만)
+    try {
+      const existingTrainers = await db.select().from(trainers);
+      if (existingTrainers.length === 0) {
+        console.log('[Storage] 훈련사 초기 데이터 시드 시작...');
+        const seedTrainers = [
+          {
+            name: '강동훈',
+            email: 'donghoong@wangzzang.com',
+            phone: '010-4765-1909',
+            certification: '반려동물행동지도사 국가자격증 2급',
+            experience: 5,
+            specialties: ['기초 훈련', '문제 행동 교정', '사회화 훈련'],
+            institute: '왕짱 훈련센터',
+            isActive: true,
+            status: 'active',
+            verified: true,
+          },
+          {
+            name: '김민수',
+            email: 'kim@trainingcenter.com',
+            phone: '010-1234-5678',
+            certification: '반려동물 훈련 전문가 자격증',
+            experience: 8,
+            specialties: ['사회화 훈련', '분리불안 치료', '기초 복종'],
+            institute: '서울 훈련센터',
+            isActive: true,
+            status: 'active',
+            verified: true,
+          },
+          {
+            name: '박지혜',
+            email: 'park@behaviorplus.com',
+            phone: '010-9876-5432',
+            certification: '동물행동 전문가 자격증',
+            experience: 6,
+            specialties: ['행동 교정', '공격성 치료', '고급 훈련'],
+            institute: '행동교정 전문센터',
+            isActive: true,
+            status: 'active',
+            verified: true,
+          },
+          {
+            name: '이수현',
+            email: 'lee@puppytraining.com',
+            phone: '010-5678-9012',
+            certification: '반려동물 훈련사 자격증',
+            experience: 4,
+            specialties: ['퍼피 훈련', '소형견 전문', '기초 복종'],
+            institute: '퍼피 훈련원',
+            isActive: true,
+            status: 'active',
+            verified: true,
+          },
+          {
+            name: '최영진',
+            email: 'choi@advancedtraining.com',
+            phone: '010-3456-7890',
+            certification: '동물행동 치료사 자격증',
+            experience: 10,
+            specialties: ['고급 훈련', '특수 행동 치료', '전문 트레이닝'],
+            institute: '고급 훈련 아카데미',
+            isActive: true,
+            status: 'active',
+            verified: true,
+          },
+          {
+            name: "우하나",
+            email: "whn0525@naver.com",
+            phone: "010-2447-4900",
+            specialty: "행동교정 및 사회화",
+            certifications: ["인천광역시고등학교 - 순천부", "서울중앙고등학교 - 반려동물관리학과 졸업", "서울문화예술대학교 - 반려동물관리 전공"],
+            experience: 20,
+            rating: "4.9",
+            reviews: 215,
+            institute: "이화목",
+            bio: "20년 경력의 행동교정 및 사회화 전문 훈련사입니다.",
+            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=우하나&backgroundColor=ffd1dc",
+            status: "active",
+            coursesCount: 18,
+            studentsCount: 142,
+            isActive: true,
+            verified: true,
+          }
+        ];
+
+        await db.insert(trainers).values(seedTrainers);
+        console.log('[Storage] 훈련사 초기 데이터 시드 완료:', seedTrainers.length, '명');
+      } else {
+        console.log('[Storage] 훈련사 데이터가 이미 존재함:', existingTrainers.length, '명');
       }
-    ];
+    } catch (error) {
+      console.error('[Storage] 훈련사 초기 데이터 시드 실패:', error);
+    }
 
     // 샘플 대체 훈련사 게시글 데이터
     this.substituteClassPosts = [

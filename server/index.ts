@@ -336,15 +336,15 @@ process.on('SIGINT', () => {
 });
 
 // Start the server
-// 메모리 초기화 함수
-function initializeMemoryData() {
-  // 등록 신청 데이터 초기화
-  if (!global.registrationApplications) {
-    global.registrationApplications = [];
-  }
-
-  // 기존 데이터가 없는 경우에만 샘플 데이터 생성
-  if (global.registrationApplications.length === 0) {
+// 메모리 초기화 함수 (레거시 - 데이터베이스 마이그레이션으로 비활성화됨)
+// 등록 신청은 이제 registrationApplications 테이블을 사용합니다
+async function initializeMemoryData() {
+  // 데이터베이스 마이그레이션 완료 - global.registrationApplications 더 이상 사용하지 않음
+  console.log('✅ 등록 신청 데이터는 이제 데이터베이스(registration_applications 테이블)를 사용합니다.');
+  return;
+  
+  // 아래 코드는 레거시 코드로 비활성화됨
+  if (false) {
     const sampleTrainerApplications = [
       {
         id: 'trainer_' + Date.now() + '_1',

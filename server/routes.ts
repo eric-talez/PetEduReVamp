@@ -4758,47 +4758,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 훈련사 등록 API
+  // 훈련사 등록 API (PostgreSQL 데이터베이스 사용)
   app.post("/api/trainers/register", csrfProtection, async (req, res) => {
     try {
       const { name, email, phone, institute, certification, experience, specialties, bio, location } = req.body;
 
       console.log('훈련사 등록 요청:', { name, email, institute });
 
-      const trainerId = Date.now();
       const trainerData = {
-        id: trainerId,
         name: name,
         email: email,
         phone: phone,
         institute: institute,
         certification: certification,
-        experience: experience,
-        specialties: specialties ? specialties.split(',').map((s: string) => s.trim()) : [],
+        experience: parseInt(experience) || 0,
+        specialties: specialties ? (typeof specialties === 'string' ? specialties.split(',').map((s: string) => s.trim()) : specialties) : [],
         bio: bio || `${experience} 경력의 전문 훈련사입니다.`,
         location: location || '서울시',
-        rating: 0,
+        rating: "0",
         reviews: 0,
-        courses: 0,
+        reviewCount: 0,
+        coursesCount: 0,
         category: "기본 훈련",
         avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
         background: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
         status: 'active',
         verified: true,
         featured: false,
-        createdAt: new Date().toISOString()
+        isActive: true,
       };
 
-      // 메모리에 훈련사 추가 (실제로는 데이터베이스에 저장)
-      if (!global.trainersData) {
-        global.trainersData = [];
-      }
-      global.trainersData.push(trainerData);
+      // PostgreSQL 데이터베이스에 저장
+      const savedTrainer = await storage.createTrainer(trainerData);
 
       res.json({ 
         success: true, 
         message: "훈련사 등록이 완료되었습니다.",
-        data: trainerData
+        data: savedTrainer
       });
     } catch (error) {
       console.error('훈련사 등록 오류:', error);
@@ -10617,7 +10613,7 @@ app.get('/api/search', async (req, res) => {
           pending,
           approved,
           rejected,
-          applications: global.registrationApplications || []
+          applications: [...trainerApps, ...instituteApps]
         }
       });
     } catch (error) {

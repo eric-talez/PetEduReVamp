@@ -2,22 +2,70 @@ import { Express } from 'express';
 import { notificationService } from '../notifications/notification-service';
 import { csrfProtection } from '../middleware/csrf';
 import { db } from '../db';
-import { posts as postsTable, users } from '../../shared/schema';
-import { eq, desc, sql } from 'drizzle-orm';
+import { posts as postsTable, users, comments as commentsTable } from '../../shared/schema';
+import { eq, desc, sql, and, isNull } from 'drizzle-orm';
 
 export function setupSocialRoutes(app: Express) {
-  // In-memory storage for comments (to be migrated to database separately)
-  const commentsStore: Map<number, any[]> = new Map();
-  let nextCommentId = 1;
+  // Helper function to fetch comments from database with author info
+  const fetchCommentsFromDB = async (postId: number) => {
+    const rawComments = await db.select({
+      id: commentsTable.id,
+      content: commentsTable.content,
+      postId: commentsTable.postId,
+      authorId: commentsTable.authorId,
+      parentId: commentsTable.parentId,
+      likes: commentsTable.likes,
+      isDeleted: commentsTable.isDeleted,
+      createdAt: commentsTable.createdAt,
+      updatedAt: commentsTable.updatedAt,
+      authorName: users.name,
+      authorUsername: users.username,
+      authorAvatar: users.avatar,
+    })
+    .from(commentsTable)
+    .leftJoin(users, eq(commentsTable.authorId, users.id))
+    .where(and(eq(commentsTable.postId, postId), eq(commentsTable.isDeleted, false)))
+    .orderBy(desc(commentsTable.createdAt));
 
-  // Helper function to get comments for a post
-  const getPostComments = (postId: number) => {
-    return commentsStore.get(postId) || [];
-  };
+    // Transform to nested structure (top-level comments with replies)
+    const topLevelComments: any[] = [];
+    const repliesMap: Map<number, any[]> = new Map();
 
-  // Helper function to set comments for a post
-  const setPostComments = (postId: number, comments: any[]) => {
-    commentsStore.set(postId, comments);
+    // First pass: separate top-level and replies
+    for (const comment of rawComments) {
+      const transformedComment = {
+        id: comment.id,
+        postId: comment.postId,
+        content: comment.content,
+        authorId: comment.authorId,
+        author: {
+          id: comment.authorId,
+          name: comment.authorName || '익명 사용자',
+          username: comment.authorUsername,
+          avatar: comment.authorAvatar,
+        },
+        parentId: comment.parentId,
+        likes: comment.likes || 0,
+        replies: [],
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+      };
+
+      if (comment.parentId) {
+        const parentReplies = repliesMap.get(comment.parentId) || [];
+        parentReplies.push(transformedComment);
+        repliesMap.set(comment.parentId, parentReplies);
+      } else {
+        topLevelComments.push(transformedComment);
+      }
+    }
+
+    // Second pass: attach replies to their parent comments
+    for (const comment of topLevelComments) {
+      comment.replies = repliesMap.get(comment.id) || [];
+    }
+
+    return topLevelComments;
   };
 
   // 게시글 목록 조회
@@ -115,7 +163,7 @@ export function setupSocialRoutes(app: Express) {
           views: post.views || 0,
           viewCount: post.views || 0,
           likes: post.likes || 0,
-          comments: getPostComments(post.id).length,
+          comments: post.comments || 0,
           commentsCount: post.comments || 0,
           locationName: post.locationName,
           locationAddress: post.locationAddress,
@@ -203,7 +251,7 @@ export function setupSocialRoutes(app: Express) {
         views: (post.views || 0) + 1,
         viewCount: (post.views || 0) + 1,
         likes: post.likes || 0,
-        comments: getPostComments(post.id),
+        comments: await fetchCommentsFromDB(post.id),
         commentsCount: post.comments || 0,
         locationName: post.locationName,
         locationAddress: post.locationAddress,
@@ -318,8 +366,8 @@ export function setupSocialRoutes(app: Express) {
 
       await db.delete(postsTable).where(eq(postsTable.id, postId));
       
-      // Also remove comments from memory
-      commentsStore.delete(postId);
+      // Also remove comments from database
+      await db.delete(commentsTable).where(eq(commentsTable.postId, postId));
 
       res.json({ message: '게시글이 삭제되었습니다.' });
     } catch (error) {
@@ -424,7 +472,7 @@ export function setupSocialRoutes(app: Express) {
         image: updatedPost.image,
         views: updatedPost.views || 0,
         likes: updatedPost.likes || 0,
-        comments: getPostComments(updatedPost.id),
+        comments: await fetchCommentsFromDB(updatedPost.id),
         createdAt: updatedPost.createdAt,
         updatedAt: updatedPost.updatedAt,
         hidden: updatedPost.isDeleted,
@@ -441,7 +489,7 @@ export function setupSocialRoutes(app: Express) {
     }
   });
 
-  // 댓글 목록 조회 (in-memory)
+  // 댓글 목록 조회 (PostgreSQL)
   app.get('/api/community/posts/:id/comments', async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
@@ -453,7 +501,7 @@ export function setupSocialRoutes(app: Express) {
         return res.status(404).json({ error: '게시글을 찾을 수 없습니다.' });
       }
 
-      const comments = getPostComments(postId);
+      const comments = await fetchCommentsFromDB(postId);
 
       res.json({ 
         comments: comments,
@@ -465,7 +513,7 @@ export function setupSocialRoutes(app: Express) {
     }
   });
 
-  // 댓글 작성 (in-memory)
+  // 댓글 작성 (PostgreSQL)
   app.post('/api/community/posts/:id/comments', csrfProtection, async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
@@ -486,41 +534,59 @@ export function setupSocialRoutes(app: Express) {
         return res.status(404).json({ error: '게시글을 찾을 수 없습니다.' });
       }
 
-      const newComment = {
-        id: nextCommentId++,
-        postId,
-        content: content.trim(),
-        authorId: req.session?.user?.id || 1,
-        author: { 
-          id: req.session?.user?.id || 1, 
-          username: req.session?.user?.username || 'user', 
-          name: req.session?.user?.name || '반려인', 
-          avatar: null 
-        },
-        parentId: parentId || null,
-        likes: 0,
-        replies: [],
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const authorId = req.session?.user?.id || null;
 
-      const comments = getPostComments(postId);
-
+      // If parentId is provided, verify the parent comment exists
       if (parentId) {
-        const parentComment = comments.find(c => c.id === parentId);
-        if (parentComment) {
-          if (!parentComment.replies) {
-            parentComment.replies = [];
-          }
-          parentComment.replies.push(newComment);
-        } else {
+        const [parentComment] = await db.select({ id: commentsTable.id })
+          .from(commentsTable)
+          .where(and(eq(commentsTable.id, parentId), eq(commentsTable.postId, postId)));
+        
+        if (!parentComment) {
           return res.status(404).json({ error: '상위 댓글을 찾을 수 없습니다.' });
         }
-      } else {
-        comments.push(newComment);
       }
 
-      setPostComments(postId, comments);
+      // Insert new comment into database
+      const [insertedComment] = await db.insert(commentsTable).values({
+        content: content.trim(),
+        postId: postId,
+        authorId: authorId,
+        parentId: parentId || null,
+        isDeleted: false,
+      }).returning();
+
+      // Fetch author info
+      let authorInfo = { 
+        id: authorId, 
+        username: req.session?.user?.username || 'user', 
+        name: req.session?.user?.name || '반려인', 
+        avatar: null 
+      };
+      if (authorId) {
+        const [author] = await db.select({
+          id: users.id,
+          name: users.name,
+          username: users.username,
+          avatar: users.avatar,
+        }).from(users).where(eq(users.id, authorId));
+        if (author) {
+          authorInfo = author;
+        }
+      }
+
+      const newComment = {
+        id: insertedComment.id,
+        postId: insertedComment.postId,
+        content: insertedComment.content,
+        authorId: insertedComment.authorId,
+        author: authorInfo,
+        parentId: insertedComment.parentId,
+        likes: 0,
+        replies: [],
+        createdAt: insertedComment.createdAt,
+        updatedAt: insertedComment.updatedAt
+      };
 
       // Update comments count in database
       await db.update(postsTable)
@@ -528,7 +594,7 @@ export function setupSocialRoutes(app: Express) {
         .where(eq(postsTable.id, postId));
 
       // Send notification to post author
-      if (post.authorId && post.authorId !== newComment.authorId) {
+      if (post.authorId && post.authorId !== authorId) {
         try {
           await notificationService.sendNotification({
             userId: post.authorId,
@@ -536,7 +602,7 @@ export function setupSocialRoutes(app: Express) {
             title: '새로운 댓글',
             message: `회원님의 게시글 "${post.title?.substring(0, 30)}${(post.title?.length || 0) > 30 ? '...' : ''}"에 새 댓글이 달렸습니다.`,
             actionUrl: `/community/posts/${post.id}`,
-            data: { postId: post.id, commentId: newComment.id }
+            data: { postId: post.id, commentId: insertedComment.id }
           });
         } catch (notifyError) {
           console.error('[댓글] 알림 발송 실패:', notifyError);
@@ -553,7 +619,7 @@ export function setupSocialRoutes(app: Express) {
     }
   });
 
-  // 댓글 삭제 (in-memory)
+  // 댓글 삭제 (PostgreSQL)
   app.delete('/api/community/posts/:postId/comments/:commentId', csrfProtection, async (req, res) => {
     try {
       const postId = parseInt(req.params.postId);
@@ -566,51 +632,46 @@ export function setupSocialRoutes(app: Express) {
         return res.status(404).json({ error: '게시글을 찾을 수 없습니다.' });
       }
 
-      const comments = getPostComments(postId);
+      // Find the comment
+      const [comment] = await db.select({ id: commentsTable.id, parentId: commentsTable.parentId })
+        .from(commentsTable)
+        .where(and(eq(commentsTable.id, commentId), eq(commentsTable.postId, postId), eq(commentsTable.isDeleted, false)));
 
-      if (comments.length === 0) {
+      if (!comment) {
         return res.status(404).json({ error: '댓글을 찾을 수 없습니다.' });
       }
 
-      // Find and delete comment
-      const commentIndex = comments.findIndex(c => c.id === commentId);
-      if (commentIndex !== -1) {
-        comments.splice(commentIndex, 1);
-        setPostComments(postId, comments);
-        
-        // Update comments count
-        await db.update(postsTable)
-          .set({ comments: sql`GREATEST(${postsTable.comments} - 1, 0)` })
-          .where(eq(postsTable.id, postId));
-          
-        return res.json({ message: '댓글이 삭제되었습니다.' });
+      // Count replies to be deleted (if this is a parent comment)
+      const replies = await db.select({ id: commentsTable.id })
+        .from(commentsTable)
+        .where(and(eq(commentsTable.parentId, commentId), eq(commentsTable.isDeleted, false)));
+      
+      const totalToDelete = 1 + replies.length;
+
+      // Delete the comment and its replies from database
+      await db.delete(commentsTable)
+        .where(and(eq(commentsTable.id, commentId), eq(commentsTable.postId, postId)));
+      
+      // Also delete any replies to this comment
+      if (replies.length > 0) {
+        await db.delete(commentsTable)
+          .where(eq(commentsTable.parentId, commentId));
       }
 
-      // Find and delete reply
-      for (const comment of comments) {
-        if (comment.replies) {
-          const replyIndex = comment.replies.findIndex((r: any) => r.id === commentId);
-          if (replyIndex !== -1) {
-            comment.replies.splice(replyIndex, 1);
-            setPostComments(postId, comments);
-            
-            await db.update(postsTable)
-              .set({ comments: sql`GREATEST(${postsTable.comments} - 1, 0)` })
-              .where(eq(postsTable.id, postId));
-              
-            return res.json({ message: '답글이 삭제되었습니다.' });
-          }
-        }
-      }
+      // Update comments count
+      await db.update(postsTable)
+        .set({ comments: sql`GREATEST(${postsTable.comments} - ${totalToDelete}, 0)` })
+        .where(eq(postsTable.id, postId));
 
-      return res.status(404).json({ error: '댓글을 찾을 수 없습니다.' });
+      const message = comment.parentId ? '답글이 삭제되었습니다.' : '댓글이 삭제되었습니다.';
+      return res.json({ message });
     } catch (error) {
       console.error('댓글 삭제 오류:', error);
       res.status(500).json({ error: '댓글 삭제에 실패했습니다.' });
     }
   });
 
-  // 댓글 좋아요 (in-memory)
+  // 댓글 좋아요 (PostgreSQL)
   app.post('/api/community/posts/:postId/comments/:commentId/like', csrfProtection, async (req, res) => {
     try {
       const postId = parseInt(req.params.postId);
@@ -622,29 +683,23 @@ export function setupSocialRoutes(app: Express) {
         return res.status(404).json({ error: '게시글을 찾을 수 없습니다.' });
       }
 
-      const comments = getPostComments(postId);
+      // Check if comment exists
+      const [comment] = await db.select({ id: commentsTable.id, parentId: commentsTable.parentId, likes: commentsTable.likes })
+        .from(commentsTable)
+        .where(and(eq(commentsTable.id, commentId), eq(commentsTable.postId, postId), eq(commentsTable.isDeleted, false)));
 
-      // Find comment
-      const comment = comments.find(c => c.id === commentId);
-      if (comment) {
-        comment.likes = (comment.likes || 0) + 1;
-        setPostComments(postId, comments);
-        return res.json({ message: '댓글에 좋아요가 추가되었습니다.', likes: comment.likes });
+      if (!comment) {
+        return res.status(404).json({ error: '댓글을 찾을 수 없습니다.' });
       }
 
-      // Find reply
-      for (const c of comments) {
-        if (c.replies) {
-          const reply = c.replies.find((r: any) => r.id === commentId);
-          if (reply) {
-            reply.likes = (reply.likes || 0) + 1;
-            setPostComments(postId, comments);
-            return res.json({ message: '답글에 좋아요가 추가되었습니다.', likes: reply.likes });
-          }
-        }
-      }
+      // Update likes in database
+      const [updatedComment] = await db.update(commentsTable)
+        .set({ likes: sql`COALESCE(${commentsTable.likes}, 0) + 1` })
+        .where(eq(commentsTable.id, commentId))
+        .returning({ likes: commentsTable.likes });
 
-      return res.status(404).json({ error: '댓글을 찾을 수 없습니다.' });
+      const message = comment.parentId ? '답글에 좋아요가 추가되었습니다.' : '댓글에 좋아요가 추가되었습니다.';
+      return res.json({ message, likes: updatedComment.likes });
     } catch (error) {
       console.error('댓글 좋아요 오류:', error);
       res.status(500).json({ error: '좋아요 처리에 실패했습니다.' });
