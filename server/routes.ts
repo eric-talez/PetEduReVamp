@@ -1424,7 +1424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 - 기관 삭제
-  app.delete('/api/admin/institutes/:id', requireAuth('admin'), async (req, res) => {
+  app.delete('/api/admin/institutes/:id', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       
@@ -1448,7 +1448,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 대신 결제 처리
-  app.post('/api/admin/institutes/:id/admin-payment', requireAuth('admin'), async (req, res) => {
+  app.post('/api/admin/institutes/:id/admin-payment', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const { subscriptionPlan } = req.body;
@@ -1513,7 +1513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 기관 관리자 결제 요청
-  app.post('/api/admin/institutes/:id/request-payment', requireAuth('admin'), async (req, res) => {
+  app.post('/api/admin/institutes/:id/request-payment', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const { subscriptionPlan } = req.body;
@@ -1667,7 +1667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 커리큘럼 등록 API
-  app.post('/api/admin/curriculum', requireAuth('admin'), async (req, res) => {
+  app.post('/api/admin/curriculum', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const curriculumData = req.body;
       
@@ -1704,7 +1704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 커리큘럼 수정 API
-  app.put('/api/admin/curriculum/:id', requireAuth('admin'), async (req, res) => {
+  app.put('/api/admin/curriculum/:id', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -1732,7 +1732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 커리큘럼 삭제 API
-  app.delete('/api/admin/curriculum/:id', requireAuth('admin'), async (req, res) => {
+  app.delete('/api/admin/curriculum/:id', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -1757,7 +1757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 커리큘럼 상태 변경 API (발행/비발행)
-  app.patch('/api/admin/curriculum/:id/status', requireAuth('admin'), async (req, res) => {
+  app.patch('/api/admin/curriculum/:id/status', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const { status } = req.body;
@@ -1791,7 +1791,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 커리큘럼 발행 상태 초기화 API
-  app.post('/api/admin/curriculums/:id/unpublish', requireAuth('admin'), async (req, res) => {
+  app.post('/api/admin/curriculums/:id/unpublish', requireAuth('admin'), csrfProtection, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -2360,7 +2360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 공개 API: 배너 클릭 추적
-  app.post("/api/banners/:id/click", async (req, res) => {
+  app.post("/api/banners/:id/click", csrfProtection, async (req, res) => {
     try {
       const bannerId = parseInt(req.params.id);
       if (isNaN(bannerId)) {
@@ -2383,7 +2383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 상담 신청 API
-  app.post("/api/consultation/request", async (req, res) => {
+  app.post("/api/consultation/request", csrfProtection, async (req, res) => {
     try {
       const { trainerId, message, preferredDate } = req.body;
 
@@ -2400,7 +2400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 메시지 전송 API
-  app.post("/api/messages/send", async (req, res) => {
+  app.post("/api/messages/send", csrfProtection, async (req, res) => {
     try {
       const { receiverId, message } = req.body;
 
@@ -2417,7 +2417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 댓글 작성 API
-  app.post("/api/comments/create", async (req, res) => {
+  app.post("/api/comments/create", csrfProtection, async (req, res) => {
     try {
       const { postId, content } = req.body;
 
@@ -2441,7 +2441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 이벤트 참가 신청 API
-  app.post("/api/events/:id/register", async (req, res) => {
+  app.post("/api/events/:id/register", csrfProtection, async (req, res) => {
     try {
       const eventId = req.params.id;
 
@@ -3050,7 +3050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 이벤트 문의 API
-  app.post("/api/events/:id/inquiry", async (req, res) => {
+  app.post("/api/events/:id/inquiry", csrfProtection, async (req, res) => {
     try {
       const eventId = req.params.id;
       const { message } = req.body;
@@ -3068,7 +3068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 좋아요 API
-  app.post("/api/like", async (req, res) => {
+  app.post("/api/like", csrfProtection, async (req, res) => {
     try {
       const { itemId, itemType } = req.body;
 
@@ -3086,7 +3086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 공유 링크 생성 API
-  app.post("/api/share", async (req, res) => {
+  app.post("/api/share", csrfProtection, async (req, res) => {
     try {
       const { itemId, itemType, title } = req.body;
 
@@ -3334,7 +3334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/pets/:id/health-records", async (req, res) => {
+  app.post("/api/pets/:id/health-records", csrfProtection, async (req, res) => {
     try {
       const petId = parseInt(req.params.id);
       const healthRecord = await storage.createHealthRecord(petId, req.body);
@@ -4654,7 +4654,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/consultations/:id/cancel", async (req, res) => {
+  app.post("/api/consultations/:id/cancel", csrfProtection, async (req, res) => {
     try {
       const consultationId = req.params.id;
 
@@ -4701,7 +4701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 메시지 전송 API
-  app.post("/api/messages/send", async (req, res) => {
+  app.post("/api/messages/send", csrfProtection, async (req, res) => {
     try {
       const { trainerId, message } = req.body;
 
@@ -4729,7 +4729,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 예약 생성 API
-  app.post("/api/reservations/create", async (req, res) => {
+  app.post("/api/reservations/create", csrfProtection, async (req, res) => {
     try {
       const { trainerId, date, time, notes } = req.body;
 
@@ -4759,7 +4759,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 훈련사 등록 API
-  app.post("/api/trainers/register", async (req, res) => {
+  app.post("/api/trainers/register", csrfProtection, async (req, res) => {
     try {
       const { name, email, phone, institute, certification, experience, specialties, bio, location } = req.body;
 

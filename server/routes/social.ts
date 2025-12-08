@@ -1,5 +1,6 @@
 import { Express } from 'express';
 import { notificationService } from '../notifications/notification-service';
+import { csrfProtection } from '../middleware/csrf';
 
 export function setupSocialRoutes(app: Express) {
   // 메모리 저장소 (임시 데이터)
@@ -1044,7 +1045,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 게시글 작성
-  app.post('/api/community/posts', (req, res) => {
+  app.post('/api/community/posts', csrfProtection, (req, res) => {
     try {
       const { 
         title, content, category = '일반', tag, linkUrl, linkTitle, linkDescription, linkImage,
@@ -1102,7 +1103,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 게시글 삭제
-  app.delete('/api/community/posts/:id', (req, res) => {
+  app.delete('/api/community/posts/:id', csrfProtection, (req, res) => {
     try {
       const postId = parseInt(req.params.id);
       const postIndex = posts.findIndex(p => p.id === postId);
@@ -1121,7 +1122,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 게시글 좋아요 토글
-  app.post('/api/community/posts/:id/like', async (req, res) => {
+  app.post('/api/community/posts/:id/like', csrfProtection, async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
       const post = posts.find(p => p.id === postId);
@@ -1161,7 +1162,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 게시글 수정
-  app.put('/api/community/posts/:id', (req, res) => {
+  app.put('/api/community/posts/:id', csrfProtection, (req, res) => {
     try {
       const postId = parseInt(req.params.id);
       const { title, content, category, tag } = req.body;
@@ -1215,7 +1216,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 댓글 작성
-  app.post('/api/community/posts/:id/comments', async (req, res) => {
+  app.post('/api/community/posts/:id/comments', csrfProtection, async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
       const { content, parentId } = req.body;
@@ -1292,7 +1293,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 댓글 삭제
-  app.delete('/api/community/posts/:postId/comments/:commentId', (req, res) => {
+  app.delete('/api/community/posts/:postId/comments/:commentId', csrfProtection, (req, res) => {
     try {
       const postId = parseInt(req.params.postId);
       const commentId = parseInt(req.params.commentId);
@@ -1332,7 +1333,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 댓글 좋아요
-  app.post('/api/community/posts/:postId/comments/:commentId/like', (req, res) => {
+  app.post('/api/community/posts/:postId/comments/:commentId/like', csrfProtection, (req, res) => {
     try {
       const postId = parseInt(req.params.postId);
       const commentId = parseInt(req.params.commentId);
@@ -1377,7 +1378,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 네이버 검색 API를 이용한 이벤트/행사 크롤링 API (관리자 전용)
-  app.post('/api/community/crawl-events', async (req, res) => {
+  app.post('/api/community/crawl-events', csrfProtection, async (req, res) => {
     try {
       // 세션 및 관리자 권한 확인
       if (!req.session?.userId) {
@@ -1615,7 +1616,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 뉴스 크롤링 API
-  app.post('/api/community/crawl-news', async (req, res) => {
+  app.post('/api/community/crawl-news', csrfProtection, async (req, res) => {
     try {
       console.log('[뉴스 크롤링] 반려동물 뉴스 크롤링 시작');
       
@@ -1706,7 +1707,7 @@ export function setupSocialRoutes(app: Express) {
   });
 
   // 관리자 글 삭제 API
-  app.delete('/api/admin/community/posts/:id', (req, res) => {
+  app.delete('/api/admin/community/posts/:id', csrfProtection, (req, res) => {
     try {
       const postId = parseInt(req.params.id);
       

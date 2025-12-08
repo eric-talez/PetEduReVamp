@@ -345,7 +345,7 @@ router.delete('/streams/:id', csrfProtection, async (req, res) => {
   }
 });
 
-router.post('/streams/:id/join', async (req, res) => {
+router.post('/streams/:id/join', csrfProtection, async (req, res) => {
   try {
     const streamId = parseInt(req.params.id);
     const userId = req.session?.user?.id;
@@ -400,7 +400,7 @@ router.post('/streams/:id/join', async (req, res) => {
   }
 });
 
-router.post('/streams/:id/leave', async (req, res) => {
+router.post('/streams/:id/leave', csrfProtection, async (req, res) => {
   try {
     const streamId = parseInt(req.params.id);
     const { sessionId, viewerId } = req.body;
