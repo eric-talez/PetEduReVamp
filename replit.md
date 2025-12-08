@@ -3,7 +3,21 @@
 ## Overview
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
-## Recent Changes (December 7, 2025)
+## Recent Changes (December 8, 2025)
+### Commercialization Readiness Security Improvements (~95% Ready)
+- **JWT Security**: JWT_SECRET now required in production environment (development uses temporary key with warning)
+- **Session Persistence**: Migrated from in-memory to PostgreSQL using connect-pg-simple - eliminates session data loss on restart
+- **CSRF Protection**: Applied to 30+ state-changing API endpoints across live-streaming, social, and main routes
+- **Database Migrations (In-Memory → PostgreSQL)**:
+  - Community posts: Full CRUD with proper joins and pagination
+  - Community comments: With nested replies support and user joins
+  - Matching requests: New `matching_requests` table for pet-trainer matching
+  - Registration applications: Using existing `trainerApplications`/`instituteApplications` tables
+  - Trainers: All trainer CRUD operations now use PostgreSQL `trainers` table
+- **Logging**: Winston structured logging with daily rotation and separate error logs
+- **Status**: Safe for controlled beta testing; production launch pending load testing and backup SOPs
+
+## Previous Changes (December 7, 2025)
 ### WebRTC Streaming System (Google Meet Replacement)
 - **Architecture Change**: Replaced Google Meet iframe (blocked by X-Frame-Options) with custom WebRTC solution
 - **Socket.IO Server**: Real-time signaling server at `/streaming` namespace with `/streaming-socket` path
