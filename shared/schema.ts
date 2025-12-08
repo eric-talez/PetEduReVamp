@@ -212,29 +212,24 @@ export const vaccinations = pgTable("vaccinations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 커뮤니티 게시글 테이블
+// 커뮤니티 게시글 테이블 - 실제 데이터베이스 스키마에 맞춤
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
-  title: varchar("title", { length: 200 }).notNull(),
+  title: text("title").notNull(),
   content: text("content").notNull(),
   authorId: integer("author_id").references(() => users.id),
-  category: varchar("category", { length: 100 }),
-  tags: jsonb("tags"),
+  category: text("category"),
+  tag: text("tag"), // 태그 (단일 텍스트)
+  image: text("image"), // 이미지 URL
   views: integer("views").default(0),
   likes: integer("likes").default(0),
-  commentsCount: integer("comments_count").default(0),
-  // 영상 관련 필드 추가
-  postType: varchar("post_type", { length: 50 }).default("text"), // 'text', 'video', 'video_short', 'link'
-  videoUrl: text("video_url"), // 영상 파일 URL
-  videoThumbnail: text("video_thumbnail"), // 영상 썸네일 URL
-  videoDuration: integer("video_duration"), // 영상 길이 (초)
-  videoFileSize: integer("video_file_size"), // 파일 크기 (bytes)
+  comments: integer("comments").default(0), // 댓글 수
   // 이벤트/행사 위치 정보
   locationName: varchar("location_name", { length: 200 }), // 장소 이름
   locationAddress: text("location_address"), // 주소
   locationLatitude: text("location_latitude"), // 위도
   locationLongitude: text("location_longitude"), // 경도
-  isActive: boolean("is_active").default(true),
+  isDeleted: boolean("is_deleted").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
