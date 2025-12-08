@@ -33,8 +33,11 @@ const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
 const HOST = process.env.HOST || "0.0.0.0";
 
-// 필수 환경 변수 확인
-const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'JWT_SECRET'];
+// 필수 환경 변수 확인 (프로덕션에서는 JWT_SECRET 필수)
+const isProductionEnv = process.env.NODE_ENV === 'production';
+const requiredEnvVars = isProductionEnv 
+  ? ['DATABASE_URL', 'SESSION_SECRET', 'JWT_SECRET']
+  : ['DATABASE_URL', 'SESSION_SECRET'];
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingEnvVars.length > 0) {
