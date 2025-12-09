@@ -1,8 +1,27 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { db } from "../db";
 import { products, shopCategories, cartItems } from "../../shared/schema";
 import { eq, and, or, like, gte, lte, desc, count } from "drizzle-orm";
 import type { IStorage } from "../storage";
+
+// 관리자 권한 검사 미들웨어
+const requireAdmin = (req: any, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ 
+      success: false, 
+      message: '로그인이 필요합니다.',
+      code: 'AUTHENTICATION_REQUIRED'
+    });
+  }
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ 
+      success: false, 
+      message: '관리자 권한이 필요합니다.',
+      code: 'ADMIN_ACCESS_REQUIRED'
+    });
+  }
+  next();
+};
 
 export function registerShoppingRoutes(app: Express, storage: IStorage) {
   console.log('[ShoppingRoutes] 쇼핑 라우트 등록 시작');

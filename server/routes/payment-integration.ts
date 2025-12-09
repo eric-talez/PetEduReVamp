@@ -1,6 +1,24 @@
-
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { storage } from "../storage";
+
+// 관리자 권한 검사 미들웨어
+const requireAdmin = (req: any, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ 
+      success: false, 
+      message: '로그인이 필요합니다.',
+      code: 'AUTHENTICATION_REQUIRED'
+    });
+  }
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ 
+      success: false, 
+      message: '관리자 권한이 필요합니다.',
+      code: 'ADMIN_ACCESS_REQUIRED'
+    });
+  }
+  next();
+};
 
 // 결제 수단 테스트 함수 (Toss Payments 기반)
 async function testTossPayment(amount: number = 1000) {
@@ -58,7 +76,7 @@ async function cancelTossPayment(paymentKey: string, reason: string = '관리자
 export function registerPaymentIntegrationRoutes(app: Express) {
   
   // 결제 수단 목록 조회 API
-  app.get('/api/admin/payment/methods', async (req, res) => {
+  app.get('/api/admin/payment/methods', requireAdmin, async (req, res) => {
     try {
       const paymentMethods = storage.getPaymentMethods();
       console.log(`[Payment] 결제 수단 목록 조회: ${paymentMethods.length}개`);
@@ -78,7 +96,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 결제 수단 등록 API
-  app.post('/api/admin/payment/methods', async (req, res) => {
+  app.post('/api/admin/payment/methods', requireAdmin, async (req, res) => {
     try {
       const methodData = req.body;
       console.log(`[Payment] 새 결제 수단 등록:`, methodData.name);
@@ -100,7 +118,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 결제 수단 수정 API
-  app.put('/api/admin/payment/methods/:id', async (req, res) => {
+  app.put('/api/admin/payment/methods/:id', requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -130,7 +148,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 사용자 요금제 목록 조회 API
-  app.get('/api/admin/payment/plans', async (req, res) => {
+  app.get('/api/admin/payment/plans', requireAdmin, async (req, res) => {
     try {
       const userPaymentPlans = storage.getUserPaymentPlans();
       console.log(`[Payment] 사용자 요금제 목록 조회: ${userPaymentPlans.length}개`);
@@ -149,7 +167,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
     }
   });
   // 결제 수단 테스트 API
-  app.post('/api/admin/payment/test', async (req, res) => {
+  app.post('/api/admin/payment/test', requireAdmin, async (req, res) => {
     try {
       const { methodId, amount = 1000 } = req.body;
 
@@ -203,7 +221,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 결제 수단 상태 변경 API
-  app.patch('/api/admin/payment/methods/:methodId/status', async (req, res) => {
+  app.patch('/api/admin/payment/methods/:methodId/status', requireAdmin, async (req, res) => {
     try {
       const { methodId } = req.params;
       const { status } = req.body;
@@ -227,7 +245,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 요금제 업데이트 API
-  app.patch('/api/admin/payment/plans/:role', async (req, res) => {
+  app.patch('/api/admin/payment/plans/:role', requireAdmin, async (req, res) => {
     try {
       const { role } = req.params;
       const updates = req.body;
@@ -251,7 +269,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 결제 내역 조회 API
-  app.get('/api/admin/payment/history', async (req, res) => {
+  app.get('/api/admin/payment/history', requireAdmin, async (req, res) => {
     try {
       const { startDate, endDate, status, methodId } = req.query;
       const options = { startDate, endDate, status, methodId };
@@ -274,7 +292,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 결제 내역 추가 API (시스템 내부용)
-  app.post('/api/admin/payment/history', async (req, res) => {
+  app.post('/api/admin/payment/history', requireAdmin, async (req, res) => {
     try {
       const historyData = req.body;
       console.log(`[Payment] 새 결제 내역 추가:`, historyData.orderId);
@@ -296,7 +314,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 결제 수단 삭제 API
-  app.delete('/api/admin/payment/methods/:methodId', async (req, res) => {
+  app.delete('/api/admin/payment/methods/:methodId', requireAdmin, async (req, res) => {
     try {
       const { methodId } = req.params;
       console.log(`[Payment] ${methodId} 결제 수단 삭제`);
@@ -319,7 +337,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
 
 
   // 결제 취소 API
-  app.post('/api/admin/payment/cancel/:paymentKey', async (req, res) => {
+  app.post('/api/admin/payment/cancel/:paymentKey', requireAdmin, async (req, res) => {
     try {
       const { paymentKey } = req.params;
       const { reason = '관리자 취소' } = req.body;
@@ -352,8 +370,8 @@ export function registerPaymentIntegrationRoutes(app: Express) {
     }
   });
 
-  // 결제 수단 추가 API
-  app.post('/api/admin/payment/methods', async (req, res) => {
+  // 결제 수단 추가 API (중복 - requireAdmin 적용)
+  app.post('/api/admin/payment/methods/add', requireAdmin, async (req, res) => {
     try {
       const { id, name, type, description, provider, apiKey, commissionRate } = req.body;
       
@@ -393,7 +411,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 보안 설정 조회 API
-  app.get('/api/admin/payment/security', async (req, res) => {
+  app.get('/api/admin/payment/security', requireAdmin, async (req, res) => {
     try {
       const securitySettings = {
         encryptionEnabled: true,
@@ -419,7 +437,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 보안 설정 업데이트 API
-  app.put('/api/admin/payment/security', async (req, res) => {
+  app.put('/api/admin/payment/security', requireAdmin, async (req, res) => {
     try {
       const securitySettings = req.body;
       
@@ -446,7 +464,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   });
 
   // 전체 결제 통계 API
-  app.get('/api/admin/payment/stats', async (req, res) => {
+  app.get('/api/admin/payment/stats', requireAdmin, async (req, res) => {
     try {
       // 실제로는 데이터베이스에서 계산
       const stats = {

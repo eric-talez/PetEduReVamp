@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { storage } from "../storage";
 
 // 임시 에러 핸들러
@@ -7,6 +7,25 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 const successResponse = (data: any) => ({ success: true, data });
+
+// 관리자 권한 검사 미들웨어
+const requireAdmin = (req: any, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ 
+      success: false, 
+      message: '로그인이 필요합니다.',
+      code: 'AUTHENTICATION_REQUIRED'
+    });
+  }
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ 
+      success: false, 
+      message: '관리자 권한이 필요합니다.',
+      code: 'ADMIN_ACCESS_REQUIRED'
+    });
+  }
+  next();
+};
 
 // ApiError 클래스 정의
 class ApiError extends Error {
@@ -32,7 +51,7 @@ class ApiError extends Error {
 
 export function registerAdminRoutes(app: Express) {
   // 회원 현황 조회 API
-  app.get('/api/admin/members-status', asyncHandler(async (req: any, res: any) => {
+  app.get('/api/admin/members-status', requireAdmin, asyncHandler(async (req: any, res: any) => {
     console.log('[Admin] 회원 현황 조회 요청');
 
     try {
@@ -108,7 +127,7 @@ export function registerAdminRoutes(app: Express) {
   }));
 
   // 회원 상태 변경 API
-  app.patch("/api/admin/members/:id/status", async (req, res) => {
+  app.patch("/api/admin/members/:id/status", requireAdmin, async (req, res) => {
     try {
       const memberId = parseInt(req.params.id);
       const { status, reason } = req.body;
@@ -138,7 +157,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 관리자 승인 대기 목록 조회
-  app.get("/api/admin/approvals", async (req, res) => {
+  app.get("/api/admin/approvals", requireAdmin, async (req, res) => {
     try {
       const approvals = [
         { id: 1, type: 'trainer', name: '김훈련', status: 'pending', requestDate: '2024-12-15' },
@@ -167,7 +186,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 관리자 위치 등록 API
-  app.post("/api/admin/locations", async (req, res) => {
+  app.post("/api/admin/locations", requireAdmin, async (req, res) => {
     try {
       const { name, type, address, latitude, longitude, description, certification } = req.body;
 
@@ -199,7 +218,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 기관 관리 목록 조회
-  app.get("/api/admin/institutes", async (req, res) => {
+  app.get("/api/admin/institutes", requireAdmin, async (req, res) => {
     try {
       console.log('[Admin] 기관 관리 목록 조회 요청');
 
@@ -326,7 +345,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 기관 상태 변경 API
-  app.patch("/api/admin/institutes/:id/status", async (req, res) => {
+  app.patch("/api/admin/institutes/:id/status", requireAdmin, async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const { status, reason } = req.body;
@@ -355,7 +374,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 관리자 위치 목록 조회 (기존 유지)
-  app.get("/api/admin/locations", async (req, res) => {
+  app.get("/api/admin/locations", requireAdmin, async (req, res) => {
     try {
       const locations = [
         {
@@ -396,7 +415,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 관리자 위치 승인/거부
-  app.patch("/api/admin/locations/:id/approve", async (req, res) => {
+  app.patch("/api/admin/locations/:id/approve", requireAdmin, async (req, res) => {
     try {
       const locationId = parseInt(req.params.id);
       const { approved, reason } = req.body;
@@ -422,7 +441,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // 커리큘럼 목록 조회 API
-  app.get('/api/admin/curriculums', asyncHandler(async (req: any, res: any) => {
+  app.get('/api/admin/curriculums', requireAdmin, asyncHandler(async (req: any, res: any) => {
     console.log('[Admin] 커리큘럼 목록 조회 요청');
 
     try {
