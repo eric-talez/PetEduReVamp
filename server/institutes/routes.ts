@@ -412,52 +412,66 @@ export function registerInstituteRoutes(app: Express, storage: any) {
     }
   });
 
-  // 현재 로그인한 사용자의 기관 정보 조회
+  // 현재 로그인한 사용자의 기관 정보 조회 (인증 필수)
   app.get("/api/my-institute", async (req: any, res) => {
     try {
       console.log('[MyInstitute] 현재 사용자 기관 정보 조회');
       
-      // 세션에서 사용자 정보 확인
+      // 세션에서 사용자 정보 확인 - 인증 필수
       const user = req.session?.user || req.user;
       
-      if (!user) {
+      if (!user || !user.id) {
+        console.log('[MyInstitute] 인증되지 않은 요청');
         return res.status(401).json({ message: '로그인이 필요합니다.' });
       }
 
       if (user.role !== 'institute-admin' && user.role !== 'admin') {
+        console.log('[MyInstitute] 권한 없음:', user.role);
         return res.status(403).json({ message: '기관 관리자만 접근할 수 있습니다.' });
       }
 
       let institute = null;
 
-      // instituteId가 있으면 해당 기관 조회
+      // instituteId가 있으면 해당 기관 조회 (사용자와 연결된 기관만)
       if (user.instituteId) {
         institute = await storage.getInstitute(user.instituteId);
-      }
-
-      // 기관이 없으면 첫 번째 기관 조회 (데모용)
-      if (!institute) {
-        const institutes = await storage.getAllInstitutes();
-        if (institutes && institutes.length > 0) {
-          institute = institutes[0];
+        
+        // 기관이 존재하는지 확인
+        if (!institute) {
+          console.log('[MyInstitute] 사용자 연결 기관 없음:', user.instituteId);
+          return res.status(404).json({ message: '소속 기관 정보를 찾을 수 없습니다.' });
+        }
+      } else {
+        // admin은 첫 번째 기관 조회 가능 (데모용)
+        if (user.role === 'admin') {
+          const institutes = await storage.getAllInstitutes();
+          if (institutes && institutes.length > 0) {
+            institute = institutes[0];
+          }
+        }
+        
+        if (!institute) {
+          console.log('[MyInstitute] 소속 기관 없음');
+          return res.status(404).json({ message: '소속 기관 정보를 찾을 수 없습니다.' });
         }
       }
 
-      if (!institute) {
-        return res.status(404).json({ message: '소속 기관 정보를 찾을 수 없습니다.' });
-      }
-
-      // 기관 코드가 없으면 자동 생성
-      if (!institute.code) {
+      // 기관 코드가 없으면 자동 생성 (기관이 확실히 존재할 때만)
+      if (!institute.code && institute.id) {
         const generatedCode = `TALEZ-${institute.id.toString().padStart(4, '0')}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
         
         // 기관 코드 업데이트
         try {
-          await storage.updateInstitute(institute.id, { code: generatedCode });
-          institute.code = generatedCode;
-          console.log('[MyInstitute] 기관 코드 자동 생성:', generatedCode);
+          const updated = await storage.updateInstitute(institute.id, { code: generatedCode });
+          if (updated) {
+            institute.code = generatedCode;
+            console.log('[MyInstitute] 기관 코드 자동 생성:', generatedCode);
+          } else {
+            console.warn('[MyInstitute] 기관 코드 업데이트 실패 - 임시 코드 반환');
+            institute.code = generatedCode;
+          }
         } catch (updateError) {
-          console.error('[MyInstitute] 기관 코드 업데이트 실패:', updateError);
+          console.error('[MyInstitute] 기관 코드 업데이트 오류:', updateError);
           // 업데이트 실패해도 임시 코드 반환
           institute.code = generatedCode;
         }
