@@ -860,16 +860,24 @@ export default function NotebookPage() {
     const template = templates.find(t => t.id === templateId);
     if (!template) return;
 
-    setNewEntry(prev => ({
-      ...prev,
-      title: template.defaultContent.replace('{petName}', prev.petName || '[반려동물 이름]'),
-      content: template.defaultContent.replace('{petName}', prev.petName || '[반려동물 이름]'),
-      tags: template.tags,
-      activities: {
-        ...prev.activities,
-        ...(template.activityPreset || {})
+    setNewEntry(prev => {
+      const mergedActivities = { ...prev.activities };
+      if (template.activityPreset) {
+        Object.keys(template.activityPreset).forEach(key => {
+          const val = template.activityPreset?.[key as keyof typeof template.activityPreset];
+          if (val) {
+            (mergedActivities as any)[key] = val;
+          }
+        });
       }
-    }));
+      return {
+        ...prev,
+        title: template.defaultContent.replace('{petName}', prev.petName || '[반려동물 이름]'),
+        content: template.defaultContent.replace('{petName}', prev.petName || '[반려동물 이름]'),
+        tags: template.tags,
+        activities: mergedActivities
+      };
+    });
 
     setSelectedTemplate(templateId);
 
@@ -951,13 +959,13 @@ export default function NotebookPage() {
   return (
     <div className="pb-8">
       <PageBanner
-        imageSrc={NotebookBannerImage}
-        imageAlt="반려견 훈련 일지"
         title="반려견 훈련 알림장"
-        description="매일매일 반려견의 훈련 기록과 성장 과정을 체계적으로 관리하세요"
-        onBannerClick={() => {
-          setIsNewEntryOpen(true);
-        }}
+        subtitle="매일매일 반려견의 훈련 기록과 성장 과정을 체계적으로 관리하세요"
+        imageUrl={NotebookBannerImage}
+        actions={[{
+          label: "새 알림장",
+          href: "#"
+        }]}
       />
       
       <div className="container mx-auto p-6 space-y-6">
@@ -2083,16 +2091,16 @@ export default function NotebookPage() {
                 <p className="text-gray-700 leading-relaxed line-clamp-3">{entry.content}</p>
 
                 {/* 활동 태그 */}
-                {Object.entries(entry.activities).some(([_, activities]) => activities.length > 0) && (
+                {Object.entries(entry.activities).some(([_, activities]) => Array.isArray(activities) && activities.length > 0) && (
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-gray-600">오늘의 활동</h4>
                     <div className="flex flex-wrap gap-1">
                       {Object.entries(entry.activities).map(([category, activities]) =>
-                        activities.map((activity, index) => (
+                        Array.isArray(activities) ? activities.map((activity, index) => (
                           <Badge key={`${category}-${index}`} variant="outline" className="text-xs">
                             {activity}
                           </Badge>
-                        ))
+                        )) : null
                       )}
                     </div>
                   </div>
@@ -2231,12 +2239,12 @@ export default function NotebookPage() {
               </div>
 
               {/* 활동 */}
-              {Object.entries(selectedEntry.activities).some(([_, activities]) => activities.length > 0) && (
+              {Object.entries(selectedEntry.activities).some(([_, activities]) => Array.isArray(activities) && activities.length > 0) && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3">오늘의 활동</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {Object.entries(selectedEntry.activities).map(([category, activities]) => (
-                      activities.length > 0 && (
+                      Array.isArray(activities) && activities.length > 0 && (
                         <div key={category}>
                           <h4 className="font-medium text-gray-600 mb-2 capitalize">{category}</h4>
                           <div className="flex flex-wrap gap-1">
