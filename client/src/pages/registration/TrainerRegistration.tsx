@@ -26,9 +26,13 @@ import {
   Upload,
   X,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Building2,
+  Search,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 // 훈련사 등록 스키마
 const trainerRegistrationSchema = z.object({
@@ -50,7 +54,8 @@ const trainerRegistrationSchema = z.object({
     businessType: z.string().min(1, '사업자 유형을 선택해주세요'),
     businessNumber: z.string().optional(),
     businessName: z.string().optional(),
-    hourlyRate: z.string().min(1, '시간당 요금을 입력해주세요')
+    hourlyRate: z.string().min(1, '시간당 요금을 입력해주세요'),
+    instituteCode: z.string().optional()
   }),
   documents: z.object({
     profileImage: z.any().optional(),
@@ -84,7 +89,58 @@ export default function TrainerRegistration() {
     portfolioImages: [] as File[]
   });
   
+  // 기관 코드 검증 상태
+  const [instituteCodeInput, setInstituteCodeInput] = useState('');
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [verifiedInstitute, setVerifiedInstitute] = useState<{
+    id: number;
+    name: string;
+    code: string;
+    address: string;
+  } | null>(null);
+  const [codeError, setCodeError] = useState<string | null>(null);
+  
   const { toast } = useToast();
+  
+  // 기관 코드 검증 함수
+  const verifyInstituteCode = async () => {
+    if (!instituteCodeInput.trim()) {
+      setCodeError('기관 코드를 입력해주세요');
+      return;
+    }
+    
+    setIsVerifyingCode(true);
+    setCodeError(null);
+    setVerifiedInstitute(null);
+    
+    try {
+      const response = await fetch(`/api/institutes/verify-code/${instituteCodeInput.toUpperCase()}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setVerifiedInstitute(data.data);
+        form.setValue('businessInfo.instituteCode', data.data.code);
+        toast({
+          title: '기관 확인 완료',
+          description: `${data.data.name} 기관이 확인되었습니다.`
+        });
+      } else {
+        setCodeError(data.message || '기관 코드를 찾을 수 없습니다');
+      }
+    } catch (error) {
+      setCodeError('기관 코드 확인 중 오류가 발생했습니다');
+    } finally {
+      setIsVerifyingCode(false);
+    }
+  };
+  
+  // 기관 연결 해제
+  const clearInstituteCode = () => {
+    setVerifiedInstitute(null);
+    setInstituteCodeInput('');
+    setCodeError(null);
+    form.setValue('businessInfo.instituteCode', '');
+  };
 
   const form = useForm<TrainerRegistrationForm>({
     resolver: zodResolver(trainerRegistrationSchema),
@@ -107,7 +163,8 @@ export default function TrainerRegistration() {
         businessType: '',
         businessNumber: '',
         businessName: '',
-        hourlyRate: ''
+        hourlyRate: '',
+        instituteCode: ''
       },
       documents: {
         profileImage: null,
@@ -188,12 +245,18 @@ export default function TrainerRegistration() {
       // FormData 생성
       const formData = new FormData();
       
-      // 기본 정보 추가
+      // 기본 정보 추가 (기관 정보 포함)
       formData.append('registrationData', JSON.stringify({
         ...data,
         type: 'trainer',
         status: 'pending',
-        submittedAt: new Date().toISOString()
+        submittedAt: new Date().toISOString(),
+        // 검증된 기관 정보 추가
+        verifiedInstitute: verifiedInstitute ? {
+          id: verifiedInstitute.id,
+          name: verifiedInstitute.name,
+          code: verifiedInstitute.code
+        } : null
       }));
 
       // 파일 추가
@@ -536,6 +599,79 @@ export default function TrainerRegistration() {
                     <p className="text-sm text-red-500 mt-1">
                       {form.formState.errors.businessInfo.hourlyRate.message}
                     </p>
+                  )}
+                </div>
+
+                {/* 기관 코드 입력 (선택사항) */}
+                <div className="border-t pt-4 mt-4">
+                  <Label className="flex items-center mb-2">
+                    <Building2 className="w-4 h-4 mr-2" />
+                    소속 기관 코드 (선택사항)
+                  </Label>
+                  <p className="text-sm text-gray-500 mb-3">
+                    소속된 교육기관이 있다면 기관 코드를 입력하여 연결할 수 있습니다.
+                  </p>
+                  
+                  {!verifiedInstitute ? (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          id="instituteCode"
+                          data-testid="input-institute-code"
+                          value={instituteCodeInput}
+                          onChange={(e) => setInstituteCodeInput(e.target.value.toUpperCase())}
+                          placeholder="예: WZ-001"
+                          className="flex-1"
+                          disabled={isVerifyingCode}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={verifyInstituteCode}
+                          disabled={isVerifyingCode || !instituteCodeInput.trim()}
+                          data-testid="button-verify-institute"
+                        >
+                          {isVerifyingCode ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Search className="w-4 h-4 mr-1" />
+                              확인
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      {codeError && (
+                        <p className="text-sm text-red-500 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-1" />
+                          {codeError}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                          <div>
+                            <p className="font-medium text-green-800">{verifiedInstitute.name}</p>
+                            <p className="text-sm text-green-600">
+                              코드: {verifiedInstitute.code} | {verifiedInstitute.address || '주소 정보 없음'}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearInstituteCode}
+                          className="text-gray-500 hover:text-red-500"
+                          data-testid="button-clear-institute"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </CardContent>

@@ -1,5 +1,5 @@
 import { db } from './db/index';
-import { logoSettings, users, products, conversations, messages, trainers } from '../shared/schema';
+import { logoSettings, users, products, conversations, messages, trainers, institutes, trainerInstitutes } from '../shared/schema';
 import { eq, desc, or, and, sql } from 'drizzle-orm';
 
 class Storage {
@@ -4734,6 +4734,60 @@ class HybridStorage extends Storage {
       return result;
     } catch (error) {
       console.error('[DB] 기관 조회 오류:', error);
+      return [];
+    }
+  }
+
+  // 기관 코드로 기관 조회 (훈련사 등록 시 기관 연결용)
+  async getInstituteByCode(code: string): Promise<any | null> {
+    try {
+      const result = await db.select().from(institutes).where(eq(institutes.code, code));
+      if (result.length > 0) {
+        console.log('[DB] 기관 코드 검증 성공:', code, '->', result[0].name);
+        return result[0];
+      }
+      console.log('[DB] 기관 코드 없음:', code);
+      return null;
+    } catch (error) {
+      console.error('[DB] 기관 코드 검증 오류:', error);
+      return null;
+    }
+  }
+
+  // 훈련사-기관 연결 생성
+  async linkTrainerToInstitute(trainerId: number, instituteId: number): Promise<boolean> {
+    try {
+      await db.insert(trainerInstitutes).values({
+        trainerId,
+        instituteId,
+        joinedAt: new Date()
+      });
+      console.log('[DB] 훈련사-기관 연결 완료:', { trainerId, instituteId });
+      return true;
+    } catch (error) {
+      console.error('[DB] 훈련사-기관 연결 오류:', error);
+      return false;
+    }
+  }
+
+  // 훈련사의 기관 정보 조회
+  async getTrainerInstitutes(trainerId: number): Promise<any[]> {
+    try {
+      const result = await db
+        .select({
+          id: trainerInstitutes.id,
+          trainerId: trainerInstitutes.trainerId,
+          instituteId: trainerInstitutes.instituteId,
+          instituteName: institutes.name,
+          instituteCode: institutes.code,
+          joinedAt: trainerInstitutes.joinedAt
+        })
+        .from(trainerInstitutes)
+        .innerJoin(institutes, eq(trainerInstitutes.instituteId, institutes.id))
+        .where(eq(trainerInstitutes.trainerId, trainerId));
+      return result;
+    } catch (error) {
+      console.error('[DB] 훈련사 기관 조회 오류:', error);
       return [];
     }
   }

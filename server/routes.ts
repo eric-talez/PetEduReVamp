@@ -10663,6 +10663,136 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 기관 코드 검증 (훈련사 등록 시 기관 연결용)
+  app.get('/api/institutes/verify-code/:code', async (req, res) => {
+    try {
+      const { code } = req.params;
+      
+      if (!code || code.length < 3) {
+        return res.status(400).json({
+          success: false,
+          message: '유효한 기관 코드를 입력해주세요.'
+        });
+      }
+
+      const institute = await storage.getInstituteByCode(code.toUpperCase());
+      
+      if (!institute) {
+        return res.status(404).json({
+          success: false,
+          message: '해당 기관 코드를 찾을 수 없습니다.'
+        });
+      }
+
+      if (!institute.isActive) {
+        return res.status(400).json({
+          success: false,
+          message: '해당 기관은 현재 비활성 상태입니다.'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          id: institute.id,
+          name: institute.name,
+          code: institute.code,
+          address: institute.address
+        },
+        message: '기관 코드가 확인되었습니다.'
+      });
+    } catch (error) {
+      console.error('기관 코드 검증 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '기관 코드 검증 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 훈련사-기관 연결 (인증 필요)
+  app.post('/api/trainer/link-institute', requireAuth('trainer'), csrfProtection, async (req, res) => {
+    try {
+      const { instituteCode } = req.body;
+      const trainerId = req.session.user?.trainerId || req.user?.trainerId;
+
+      if (!trainerId) {
+        return res.status(400).json({
+          success: false,
+          message: '훈련사 정보를 찾을 수 없습니다.'
+        });
+      }
+
+      if (!instituteCode) {
+        return res.status(400).json({
+          success: false,
+          message: '기관 코드를 입력해주세요.'
+        });
+      }
+
+      const institute = await storage.getInstituteByCode(instituteCode.toUpperCase());
+      
+      if (!institute) {
+        return res.status(404).json({
+          success: false,
+          message: '해당 기관 코드를 찾을 수 없습니다.'
+        });
+      }
+
+      const linked = await storage.linkTrainerToInstitute(trainerId, institute.id);
+      
+      if (!linked) {
+        return res.status(500).json({
+          success: false,
+          message: '기관 연결에 실패했습니다.'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          instituteName: institute.name,
+          instituteCode: institute.code
+        },
+        message: `${institute.name} 기관에 성공적으로 연결되었습니다.`
+      });
+    } catch (error) {
+      console.error('훈련사-기관 연결 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '기관 연결 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 훈련사의 소속 기관 조회
+  app.get('/api/trainer/my-institutes', requireAuth('trainer'), async (req, res) => {
+    try {
+      const trainerId = req.session.user?.trainerId || req.user?.trainerId;
+
+      if (!trainerId) {
+        return res.status(400).json({
+          success: false,
+          message: '훈련사 정보를 찾을 수 없습니다.'
+        });
+      }
+
+      const institutes = await storage.getTrainerInstitutes(trainerId);
+      
+      res.json({
+        success: true,
+        data: institutes,
+        message: '소속 기관 목록을 조회했습니다.'
+      });
+    } catch (error) {
+      console.error('훈련사 기관 조회 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '소속 기관 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // 기관 등록 (관리자 전용)
   app.post('/api/institutes', requireAuth('admin'), async (req, res) => {
     try {
@@ -10769,28 +10899,52 @@ app.get('/api/search', async (req, res) => {
         });
       }
 
+      // 기관 정보 추출
+      const verifiedInstitute = registrationData.verifiedInstitute;
+      const instituteCode = registrationData.businessInfo?.instituteCode || null;
+      
+      // 기관 정보를 JSON으로 저장 (승인 시 trainer_institutes 연결에 사용)
+      const affiliationData = verifiedInstitute ? JSON.stringify({
+        id: verifiedInstitute.id,
+        name: verifiedInstitute.name,
+        code: verifiedInstitute.code
+      }) : (registrationData.affiliationName || null);
+      
       // 데이터베이스에 저장
       const [application] = await db.insert(trainerApplications).values({
-        name: registrationData.name,
-        email: registrationData.email,
-        phone: registrationData.phone,
-        hasAffiliation: registrationData.hasAffiliation || false,
-        affiliationName: registrationData.affiliationName || null,
-        experience: registrationData.experience || null,
+        name: registrationData.personalInfo?.name || registrationData.name,
+        email: registrationData.personalInfo?.email || registrationData.email,
+        phone: registrationData.personalInfo?.phone || registrationData.phone,
+        hasAffiliation: !!verifiedInstitute || registrationData.hasAffiliation || false,
+        affiliationName: affiliationData,
+        experience: registrationData.professionalInfo?.experience || registrationData.experience || null,
         education: registrationData.education || null,
-        certifications: JSON.stringify(processedFiles.certificationDocs),
-        motivation: registrationData.motivation || null,
+        certifications: JSON.stringify(
+          registrationData.professionalInfo?.certifications || processedFiles.certificationDocs
+        ),
+        motivation: registrationData.professionalInfo?.bio || registrationData.motivation || null,
         portfolioUrl: JSON.stringify(processedFiles.portfolioImages),
         resume: processedFiles.resume || processedFiles.profileImage || null,
         status: 'pending',
       }).returning();
 
       console.log('훈련사 등록 신청 저장 완료:', application.id);
+      
+      // 기관 연결 정보 로그 (승인 후 실제 연결됨)
+      if (verifiedInstitute) {
+        console.log(`[훈련사 등록] 기관 연결 정보 저장됨: ${verifiedInstitute.name} (ID: ${verifiedInstitute.id}, 코드: ${verifiedInstitute.code})`);
+        console.log(`[훈련사 등록] affiliationName에 JSON 저장: ${affiliationData}`);
+        // 메모: 훈련사 신청 승인 시 affiliationName의 JSON을 파싱하여 trainer_institutes 테이블에 연결 생성
+      }
 
       res.status(201).json({
         success: true,
         message: '훈련사 등록 신청이 접수되었습니다.',
-        applicationId: application.id
+        applicationId: application.id,
+        linkedInstitute: verifiedInstitute ? {
+          name: verifiedInstitute.name,
+          code: verifiedInstitute.code
+        } : null
       });
 
     } catch (error) {
@@ -14059,7 +14213,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
         reviewerId
       );
 
-      // 승인된 경우 훈련사 인증 기록 생성
+      // 승인된 경우 훈련사 인증 기록 생성 및 기관 연결
       if (status === 'approved') {
         await storage.createTrainerCertification({
           applicationId: applicationId,
@@ -14069,6 +14223,43 @@ export function registerTrainerCertificationRoutes(app: Express) {
           expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1년 후 만료
           isActive: true
         });
+
+        // 기관 연결: affiliationName에 저장된 JSON 파싱하여 trainer_institutes에 연결
+        // 참고: 현재 trainerApplications는 trainers 테이블과 직접 연결되지 않음
+        // TODO: 훈련사 신청 승인 시 trainers 테이블에 레코드 생성 후 연결 필요
+        if (updatedApplication.hasAffiliation && updatedApplication.affiliationName) {
+          try {
+            // affiliationName이 JSON 형태인지 확인 (기관 코드로 검증된 경우)
+            const affiliationData = JSON.parse(updatedApplication.affiliationName);
+            if (affiliationData.id) {
+              // 현재는 application.id를 사용 (향후 실제 trainer.id로 변경 필요)
+              // 참고: 훈련사 레코드가 별도로 생성되면 해당 ID를 사용해야 함
+              const trainerId = updatedApplication.trainerId || updatedApplication.id;
+              
+              console.log(`[훈련사 승인] 기관 연결 예정 정보 저장됨:`, {
+                applicationId: applicationId,
+                trainerId: trainerId,
+                instituteId: affiliationData.id,
+                instituteName: affiliationData.name,
+                instituteCode: affiliationData.code
+              });
+              
+              // 기관 연결 시도 (trainerId가 실제 trainers 테이블의 ID인 경우에만 성공)
+              try {
+                const linked = await storage.linkTrainerToInstitute(trainerId, affiliationData.id);
+                if (linked) {
+                  console.log(`[훈련사 승인] 기관 연결 완료: 훈련사 ${trainerId} -> 기관 ${affiliationData.name} (${affiliationData.code})`);
+                }
+              } catch (linkError) {
+                console.log(`[훈련사 승인] 기관 연결 실패 (훈련사 레코드 없음 가능성): ${linkError}`);
+                // 연결 실패해도 승인 프로세스는 계속 진행
+              }
+            }
+          } catch (parseError) {
+            // JSON이 아닌 경우 일반 텍스트로 저장된 것 (수동 입력)
+            console.log(`[훈련사 승인] affiliationName이 JSON이 아님 (수동 입력): ${updatedApplication.affiliationName}`);
+          }
+        }
       }
 
       res.json({
