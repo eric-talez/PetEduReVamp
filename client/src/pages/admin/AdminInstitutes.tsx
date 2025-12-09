@@ -832,7 +832,7 @@ export default function AdminInstitutes() {
                       variant="outline" 
                       size="sm"
                       onClick={() => handleViewInstitute(institute)}
-                      className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
+                      className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400"
                       data-testid={`button-view-${institute.id}`}
                     >
                       <Eye className="h-4 w-4" />
@@ -841,7 +841,7 @@ export default function AdminInstitutes() {
                       variant="outline" 
                       size="sm"
                       onClick={() => handleEditInstitute(institute)}
-                      className="hover:bg-green-50 hover:text-green-600 hover:border-green-300"
+                      className="text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700 hover:border-green-400"
                       data-testid={`button-edit-${institute.id}`}
                     >
                       <Edit className="h-4 w-4" />
@@ -850,7 +850,7 @@ export default function AdminInstitutes() {
                       variant="outline" 
                       size="sm"
                       onClick={() => handleDeleteInstitute(institute)}
-                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400"
                       data-testid={`button-delete-${institute.id}`}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -859,7 +859,7 @@ export default function AdminInstitutes() {
                       variant="outline" 
                       size="sm"
                       onClick={() => handleChangeSubscription(institute)}
-                      className="hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+                      className="text-purple-600 border-purple-300 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-400"
                       data-testid={`button-subscription-${institute.id}`}
                     >
                       <CreditCard className="h-4 w-4" />
