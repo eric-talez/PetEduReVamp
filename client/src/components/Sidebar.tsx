@@ -486,13 +486,7 @@ export function Sidebar({
       // '/shop' 항목은 제거 - 사이드바에서 직접 새 창으로 열기 처리
     };
 
-    // 쇼핑 페이지는 새 창에서 열기
-    if (path === '/shop') {
-      window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
-      // 모바일 화면에서만 사이드바 닫기
-      if (onClose && window.innerWidth < 768) onClose();
-      return;
-    }
+    // 쇼핑 페이지는 SpecialShopLink 컴포넌트에서 처리되므로 여기서는 처리하지 않음
 
     // SPA 라우팅 함수
     const navigateToPage = (targetPath: string) => {

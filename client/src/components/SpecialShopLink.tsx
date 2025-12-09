@@ -28,10 +28,43 @@ interface SpecialShopLinkProps {
   expanded?: boolean;
 }
 
+// URL 검증 함수
+const isValidShopUrl = (url: string): boolean => {
+  try {
+    const urlObj = new URL(url);
+    // HTTPS 프로토콜만 허용
+    if (urlObj.protocol !== 'https:') {
+      console.warn('[SpecialShopLink] HTTPS만 지원됩니다:', url);
+      return false;
+    }
+    // 허용된 도메인 확인 (배포 버전)
+    const allowedDomains = ['store.funnytalez.com', 'shop.funnytalez.com'];
+    const isAllowed = allowedDomains.some(domain => urlObj.hostname === domain);
+    if (!isAllowed && import.meta.env.PROD) {
+      console.warn('[SpecialShopLink] 허용되지 않은 도메인:', urlObj.hostname);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('[SpecialShopLink] 잘못된 URL:', error);
+    return false;
+  }
+};
+
 export function SpecialShopLink({ children, className = "", expanded = true }: SpecialShopLinkProps) {
+  // 환경 변수에서 쇼핑몰 URL 가져오기
+  const shopBaseUrl = import.meta.env.VITE_SHOP_URL || 'https://store.funnytalez.com/';
+  
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('특별 쇼핑 링크 클릭됨 - 쇼핑몰 페이지를 새 창으로 열기');
+    console.log('[SpecialShopLink] 쇼핑몰 클릭됨');
+    
+    // URL 검증
+    if (!isValidShopUrl(shopBaseUrl)) {
+      console.error('[SpecialShopLink] 유효하지 않은 쇼핑몰 URL');
+      alert('쇼핑몰을 열 수 없습니다. 나중에 다시 시도해주세요.');
+      return;
+    }
     
     // 마이크로 인터랙션을 위한 효과
     const target = e.currentTarget as HTMLElement;
@@ -44,17 +77,15 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
       userName: null
     };
     
-    // 인증 정보를 URL 파라미터로 전달
-    let shopUrl = 'https://store.funnytalez.com/';
+    // 보안: URL 파라미터로 민감한 정보 전달 제한
+    let shopUrl = shopBaseUrl;
     
-    // 인증된 사용자인 경우에만 정보 전달
-    if (authState.isAuthenticated && authState.userName) {
-      // 외부 쇼핑몰에서는 URL 파라미터를 통해 인증 상태를 전달
-      // 실제 운영 환경에서는 보다 안전한 방식(JWT 토큰 등)을 사용해야 함
+    // 개발 환경에서만 URL 파라미터 사용 (프로덕션에서는 JWT 토큰 사용 권장)
+    if (!import.meta.env.PROD && authState.isAuthenticated && authState.userName) {
       const params = new URLSearchParams({
         auth: 'true',
-        role: authState.userRole || 'pet-owner',
-        name: authState.userName
+        role: authState.userRole || 'pet-owner'
+        // userName은 전달하지 않음 (보안)
       });
       shopUrl += '?' + params.toString();
     }
@@ -65,12 +96,6 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
       // 쇼핑몰 페이지를 새 창에서 열기
       window.open(shopUrl, '_blank', 'noopener,noreferrer');
     }, 300);
-    
-    // 디버깅 정보
-    console.log("SpecialShopLink에서 쇼핑몰 페이지 새 창으로 열기:", new Date().toISOString());
-    console.log("현재 경로:", window.location.pathname);
-    console.log("인증 상태:", authState);
-    console.log("쇼핑몰 URL:", shopUrl);
   };
   
   // 아이콘 설정 (장바구니 아이콘으로 변경)
@@ -82,22 +107,19 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <a
-              href="https://store.funnytalez.com/"
+            <button
               className={cn(
                 "sidebar-link relative flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2",
                 "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary",
                 className
               )}
               onClick={handleClick}
-              target="_blank"
-              rel="noopener noreferrer"
               aria-label="쇼핑몰 (새 창에서 열림)"
-              tabIndex={0}
+              type="button"
             >
               <ShoppingCart className="w-5 h-5 text-primary transition-all duration-200 hover:scale-110" />
               <ExternalLink className="absolute top-0 right-0 w-3 h-3 text-blue-500 animate-pulse" />
-            </a>
+            </button>
           </TooltipTrigger>
           <TooltipContent side="right" className="bg-white dark:bg-gray-900 p-2 rounded border border-gray-200 dark:border-gray-700 shadow-lg">
             <p>테일즈 샵 (새 창에서 열림)</p>
@@ -109,23 +131,21 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
   
   // 확장된 사이드바에서는 일반 메뉴 아이템으로 표시
   return (
-    <a 
-      href="https://store.funnytalez.com/" 
+    <button
       onClick={handleClick}
       className={cn(
-        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3",
+        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3 w-full text-left",
         "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary group relative",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900",
         className
       )}
-      target="_blank"
-      rel="noopener noreferrer"
+      type="button"
     >
       <ShoppingCart className="w-5 h-5 mr-2 text-primary transition-all duration-200 group-hover:scale-110" />
       <span className="flex-1">{children}</span>
       <div className="flex items-center">
         <ExternalLink className="w-4 h-4 text-blue-500 ml-1 transition-all duration-200 group-hover:text-primary" aria-label="새 창에서 열림" />
       </div>
-    </a>
+    </button>
   );
 }
