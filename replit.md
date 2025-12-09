@@ -4,6 +4,19 @@
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
 ## Recent Changes (December 9, 2025)
+### Role-Based Access Control Enhancement - Admin API Security
+- **Critical Security Fix**: Added `requireAdmin` middleware to 24+ unprotected admin API routes
+  - `server/routes/admin.ts`: 8 routes protected (dashboard stats, user/trainer/course/registration management)
+  - `server/routes/payment-integration.ts`: 16 routes protected (payment methods, history, security settings, stats)
+  - `server/routes/shopping.ts`: Admin product/category management routes verified
+- **Protected API Endpoints Summary**:
+  - Dashboard: `/api/admin/dashboard-stats`, `/api/admin/activity-stats`
+  - Users: `/api/admin/users/*`, `/api/admin/user/:id/role`
+  - Trainers: `/api/admin/trainers/*`, `/api/admin/trainer-applications/*`
+  - Payments: `/api/admin/payment/*` (methods, history, security, stats, cancel)
+- **Frontend Verification**: ProtectedRoute, ProtectedAdminRoute components confirmed working
+- **Status**: All admin APIs now require admin role authentication (401/403 for unauthorized access)
+
 ### Sidebar Menu UX/UI Optimization & Basic Process QA
 - **Menu Structure Cleanup**:
   - **메인 메뉴**: 로그인 후 중복되는 "화상 강의" 제거 (도구 섹션에만 유지)
