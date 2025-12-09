@@ -191,14 +191,19 @@ export default function RegisterForm() {
           placeholder="010-0000-0000"
           value={phoneNumber}
           onChange={(e) => {
-            let value = e.target.value.replace(/[^0-9]/g, '');
-            if (value.length >= 3) {
-              value = value.slice(0, 3) + '-' + value.slice(3);
+            const digits = e.target.value.replace(/[^0-9]/g, '');
+            const limitedDigits = digits.slice(0, 11);
+            
+            let formatted = '';
+            if (limitedDigits.length <= 3) {
+              formatted = limitedDigits;
+            } else if (limitedDigits.length <= 7) {
+              formatted = limitedDigits.slice(0, 3) + '-' + limitedDigits.slice(3);
+            } else {
+              formatted = limitedDigits.slice(0, 3) + '-' + limitedDigits.slice(3, 7) + '-' + limitedDigits.slice(7);
             }
-            if (value.length >= 8) {
-              value = value.slice(0, 8) + '-' + value.slice(8, 12);
-            }
-            setPhoneNumber(value);
+            
+            setPhoneNumber(formatted);
           }}
           maxLength={13}
           required

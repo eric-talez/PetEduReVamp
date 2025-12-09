@@ -412,6 +412,80 @@ export function registerInstituteRoutes(app: Express, storage: any) {
     }
   });
 
+  // 현재 로그인한 사용자의 기관 정보 조회
+  app.get("/api/my-institute", async (req: any, res) => {
+    try {
+      console.log('[MyInstitute] 현재 사용자 기관 정보 조회');
+      
+      // 세션에서 사용자 정보 확인
+      const user = req.session?.user || req.user;
+      
+      if (!user) {
+        return res.status(401).json({ message: '로그인이 필요합니다.' });
+      }
+
+      if (user.role !== 'institute-admin' && user.role !== 'admin') {
+        return res.status(403).json({ message: '기관 관리자만 접근할 수 있습니다.' });
+      }
+
+      let institute = null;
+
+      // instituteId가 있으면 해당 기관 조회
+      if (user.instituteId) {
+        institute = await storage.getInstitute(user.instituteId);
+      }
+
+      // 기관이 없으면 첫 번째 기관 조회 (데모용)
+      if (!institute) {
+        const institutes = await storage.getAllInstitutes();
+        if (institutes && institutes.length > 0) {
+          institute = institutes[0];
+        }
+      }
+
+      if (!institute) {
+        return res.status(404).json({ message: '소속 기관 정보를 찾을 수 없습니다.' });
+      }
+
+      // 기관 코드가 없으면 자동 생성
+      if (!institute.code) {
+        const generatedCode = `TALEZ-${institute.id.toString().padStart(4, '0')}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
+        
+        // 기관 코드 업데이트
+        try {
+          await storage.updateInstitute(institute.id, { code: generatedCode });
+          institute.code = generatedCode;
+          console.log('[MyInstitute] 기관 코드 자동 생성:', generatedCode);
+        } catch (updateError) {
+          console.error('[MyInstitute] 기관 코드 업데이트 실패:', updateError);
+          // 업데이트 실패해도 임시 코드 반환
+          institute.code = generatedCode;
+        }
+      }
+
+      // 추가 통계 정보
+      const trainers = await storage.getAllTrainers();
+      const instituteTrainers = trainers.filter(t => 
+        t.instituteId === institute.id || 
+        (t.affiliatedInstitutes && t.affiliatedInstitutes.includes(institute.id))
+      );
+
+      const response = {
+        ...institute,
+        trainerCount: instituteTrainers.length,
+        studentCount: institute.studentCount || 0,
+        courseCount: institute.courseCount || 0
+      };
+
+      console.log('[MyInstitute] 기관 정보 응답:', { id: response.id, name: response.name, code: response.code });
+      res.json(response);
+
+    } catch (error) {
+      console.error('[MyInstitute] 기관 정보 조회 오류:', error);
+      res.status(500).json({ message: '기관 정보 조회 중 오류가 발생했습니다.' });
+    }
+  });
+
   // 전화 문의 로그 API
   app.post("/api/institutes/:id/call-inquiries", csrfProtection, async (req, res) => {
     try {

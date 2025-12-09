@@ -131,9 +131,31 @@ export default function InstituteDashboardPage() {
   const { isAuthenticated, userRole } = useAuth();
   const { toast } = useToast();
 
+  // 기관 정보 로딩 상태
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // 기관 정보 상태 (빈 상태로 시작)
+  const [institute, setInstitute] = useState<Institute>({
+    id: 0,
+    name: "",
+    code: "",
+    address: "",
+    phone: "",
+    email: "",
+    website: "",
+    verified: false,
+    logo: "",
+    foundedYear: 0,
+    trainerCount: 0,
+    studentCount: 0,
+    courseCount: 0,
+    rating: 0,
+    reviewCount: 0
+  });
+
   // 인증되지 않은 사용자 또는 기관 관리자가 아닌 사용자 리디렉션
   useEffect(() => {
-    if (!isAuthenticated || userRole !== 'institute-admin') {
+    if (!isAuthenticated || (userRole !== 'institute-admin' && userRole !== 'admin')) {
       toast({
         title: "접근 권한이 없습니다",
         description: "기관 관리자만 접근할 수 있는 페이지입니다.",
@@ -143,24 +165,54 @@ export default function InstituteDashboardPage() {
     }
   }, [isAuthenticated, userRole, navigate, toast]);
 
-  // 데모 데이터 - 실제로는 API에서 가져와야 함
-  const [institute, setInstitute] = useState<Institute>({
-    id: 1,
-    name: "퍼펙트 펫 아카데미",
-    code: "PPA2023",
-    address: "서울시 강남구 테헤란로 443, 15층",
-    phone: "02-123-4567",
-    email: "info@perfectpet.co.kr",
-    website: "https://www.perfectpet.co.kr",
-    verified: true,
-    logo: "https://images.unsplash.com/photo-1553322396-0c9cd410975e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    foundedYear: 2015,
-    trainerCount: 8,
-    studentCount: 245,
-    courseCount: 12,
-    rating: 4.8,
-    reviewCount: 156
-  });
+  // API에서 기관 정보 가져오기
+  useEffect(() => {
+    const fetchInstituteData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/my-institute', {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setInstitute({
+            id: data.id,
+            name: data.name || '기관명 없음',
+            code: data.code || '코드 미설정',
+            address: data.address || '',
+            phone: data.phone || '',
+            email: data.email || '',
+            website: data.website || '',
+            verified: data.certification || false,
+            logo: data.logo || '',
+            foundedYear: data.foundedYear || new Date().getFullYear(),
+            trainerCount: data.trainerCount || 0,
+            studentCount: data.studentCount || 0,
+            courseCount: data.courseCount || 0,
+            rating: parseFloat(data.rating) || 0,
+            reviewCount: data.reviewCount || 0
+          });
+          console.log('[InstituteDashboard] 기관 정보 로드 완료:', data.code);
+        } else {
+          console.error('[InstituteDashboard] 기관 정보 로드 실패:', response.status);
+          toast({
+            title: "기관 정보 로드 실패",
+            description: "기관 정보를 불러오는데 실패했습니다.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('[InstituteDashboard] 기관 정보 로드 오류:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isAuthenticated && (userRole === 'institute-admin' || userRole === 'admin')) {
+      fetchInstituteData();
+    }
+  }, [isAuthenticated, userRole, toast]);
 
   const [trainers, setTrainers] = useState<Trainer[]>([
     {
