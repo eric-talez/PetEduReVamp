@@ -358,8 +358,8 @@ function setupAuthRoutes(app: Express) {
     }
   });
   
-  // 회원가입 API (표준화 적용)
-  router.post('/register', csrfProtection, async (req, res) => {
+  // 회원가입 API (표준화 적용) - 비인증 상태에서 접근하므로 CSRF 보호 제외
+  router.post('/register', async (req, res) => {
     try {
       const { username, password, email, name, phoneNumber, birthDate, gender, role } = req.body;
       
