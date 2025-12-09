@@ -222,109 +222,53 @@ export function registerAdminRoutes(app: Express) {
     try {
       console.log('[Admin] 기관 관리 목록 조회 요청');
 
-      const institutes = [
-        {
-          id: 1,
-          name: "왕짱스쿨",
-          businessNumber: "123-45-67890",
-          address: "경북 구미시 구평동 661",
-          phone: "010-4765-1909",
-          email: "donghoong@wangzzang.com",
-          directorName: "강동훈",
-          directorEmail: "donghoong@wangzzang.com",
-          status: "active",
-          isVerified: true,
-          certification: "반려동물행동지도사 국가자격증 2급",
-          establishedDate: "2020-01-01",
-          registeredDate: "2024-01-15",
-          trainersCount: 1,
-          studentsCount: 87,
-          coursesCount: 6,
-          facilities: ["실내 훈련장", "야외 훈련장", "대기실", "상담실", "애견유치원"],
-          operatingHours: "평일 09:00-18:00, 토요일 09:00-18:00, 일요일 휴무",
-          description: "국가자격증 훈련부터 반려동물 교감 교육까지! 반려견과 보호자의 '진짜 관계'를 만들어 드리는 전문 교육기관입니다.",
-          website: "https://wangzzang.com",
-          specialPrograms: [
-            "구미시 2025 미래교육지구 마을학교 '반려꿈터' 운영",
-            "정신건강 및 특수교육 대상자를 위한 교감 활동",
-            "경북소방본부, 교육기관 대상 강의 및 상담"
-          ]
-        },
-        {
-          id: 2,
-          name: "서울반려견아카데미",
-          businessNumber: "234-56-78901",
-          address: "서울시 강남구 테헤란로 123",
-          phone: "02-1234-5678",
-          email: "info@seoul-pet-academy.com",
-          directorName: "이기관",
-          directorEmail: "lee.institute@example.com",
-          status: "active",
-          isVerified: true,
-          certification: "교육부 인증",
-          establishedDate: "2020-01-15",
-          registeredDate: "2024-01-15",
-          trainersCount: 8,
-          studentsCount: 156,
-          coursesCount: 12,
-          facilities: ["실내 훈련장", "야외 운동장", "대기실", "상담실"],
-          operatingHours: "평일 09:00-18:00, 주말 10:00-17:00",
-          description: "전문 반려견 교육 및 훈련 서비스를 제공하는 종합 교육기관입니다."
-        },
-        {
-          id: 3,
-          name: "부산펫트레이닝센터",
-          businessNumber: "345-67-89012",
-          address: "부산시 해운대구 해운대로 456",
-          phone: "051-2345-6789",
-          email: "info@busan-pet-center.com",
-          directorName: "박기관",
-          directorEmail: "park.institute@example.com",
-          status: "pending",
-          isVerified: false,
-          certification: "신청 중",
-          establishedDate: "2023-06-01",
-          registeredDate: "2024-02-20",
-          trainersCount: 3,
-          studentsCount: 45,
-          coursesCount: 5,
-          facilities: ["실내 훈련장", "놀이터"],
-          operatingHours: "평일 10:00-19:00, 토요일 10:00-15:00",
-          description: "개인 맞춤형 반려견 훈련 전문 센터입니다."
-        },
-        {
-          id: 4,
-          name: "대구애견학교",
-          businessNumber: "456-78-90123",
-          address: "대구시 중구 동성로 789",
-          phone: "053-3456-7890",
-          email: "info@daegu-pet-school.com",
-          directorName: "최기관",
-          directorEmail: "choi.institute@example.com",
-          status: "suspended",
-          isVerified: true,
-          certification: "한국애견협회 인증",
-          establishedDate: "2019-03-01",
-          registeredDate: "2024-01-30",
-          trainersCount: 5,
-          studentsCount: 89,
-          coursesCount: 8,
-          facilities: ["실내 훈련장", "야외 운동장", "수영장"],
-          operatingHours: "일시 운영 중단",
-          description: "체계적인 교육 프로그램으로 유명한 반려견 교육 전문기관입니다.",
-          suspendedReason: "시설 보수 공사로 인한 일시 중단"
-        }
-      ];
+      // 데이터베이스에서 실제 기관 데이터 조회
+      const dbInstitutes = await storage.getInstitutes();
+      console.log('[Admin] 데이터베이스 기관 조회 결과:', dbInstitutes.length + '개');
+
+      // 데이터 형식 정규화
+      const institutes = dbInstitutes.map((inst: any) => ({
+        id: inst.id,
+        code: inst.code || inst.instituteCode || null,
+        name: inst.name || '이름 없음',
+        businessNumber: inst.businessNumber || inst.business_number || null,
+        address: inst.address || inst.location || null,
+        phone: inst.phone || null,
+        email: inst.email || null,
+        directorName: inst.directorName || inst.director_name || inst.director || null,
+        directorEmail: inst.directorEmail || inst.director_email || null,
+        status: inst.isActive ? 'active' : (inst.status || 'inactive'),
+        isActive: inst.isActive ?? true,
+        isVerified: inst.isVerified ?? false,
+        certification: inst.certification || null,
+        establishedDate: inst.establishedDate || inst.established_date || null,
+        registeredDate: inst.createdAt || inst.created_at || null,
+        trainersCount: inst.trainersCount || 0,
+        studentsCount: inst.studentsCount || 0,
+        coursesCount: inst.coursesCount || 0,
+        facilities: inst.facilities || [],
+        operatingHours: inst.operatingHours || null,
+        description: inst.description || null,
+        website: inst.website || null,
+        subscriptionPlan: inst.subscriptionPlan || inst.subscription_plan || null,
+        subscriptionStatus: inst.subscriptionStatus || inst.subscription_status || 'inactive',
+        maxMembers: inst.maxMembers ?? 0,
+        maxVideoHours: inst.maxVideoHours ?? 0,
+        maxAiAnalysis: inst.maxAiAnalysis ?? 0,
+        usedVideoHours: inst.usedVideoHours ?? 0,
+        currentAiUsage: inst.currentAiUsage ?? 0,
+        trainerId: inst.trainerId || inst.trainer_id || null
+      }));
 
       const stats = {
         totalInstitutes: institutes.length,
-        activeInstitutes: institutes.filter(i => i.status === 'active').length,
-        pendingInstitutes: institutes.filter(i => i.status === 'pending').length,
-        suspendedInstitutes: institutes.filter(i => i.status === 'suspended').length,
-        verifiedInstitutes: institutes.filter(i => i.isVerified).length,
-        totalTrainers: institutes.reduce((sum, i) => sum + i.trainersCount, 0),
-        totalStudents: institutes.reduce((sum, i) => sum + i.studentsCount, 0),
-        totalCourses: institutes.reduce((sum, i) => sum + i.coursesCount, 0)
+        activeInstitutes: institutes.filter((i: any) => i.isActive).length,
+        pendingInstitutes: institutes.filter((i: any) => i.status === 'pending').length,
+        suspendedInstitutes: institutes.filter((i: any) => i.status === 'suspended').length,
+        verifiedInstitutes: institutes.filter((i: any) => i.isVerified).length,
+        totalTrainers: institutes.reduce((sum: number, i: any) => sum + (i.trainersCount || 0), 0),
+        totalStudents: institutes.reduce((sum: number, i: any) => sum + (i.studentsCount || 0), 0),
+        totalCourses: institutes.reduce((sum: number, i: any) => sum + (i.coursesCount || 0), 0)
       };
 
       res.json({
