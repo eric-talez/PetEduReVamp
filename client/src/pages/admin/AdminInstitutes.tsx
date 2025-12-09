@@ -754,7 +754,8 @@ export default function AdminInstitutes() {
 
           {/* 기관 테이블 */}
           <div className="border rounded-lg">
-            <div className="grid grid-cols-9 gap-4 p-4 font-medium border-b bg-muted/50">
+            <div className="grid grid-cols-10 gap-4 p-4 font-medium border-b bg-muted/50">
+              <div>기관코드</div>
               <div>기관명</div>
               <div>대표자</div>
               <div>위치</div>
@@ -769,10 +770,15 @@ export default function AdminInstitutes() {
               institutes.map((institute: any) => (
                 <div 
                   key={institute.id} 
-                  className="grid grid-cols-9 gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer transition-colors" 
+                  className="grid grid-cols-10 gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer transition-colors" 
                   onClick={() => handleViewInstitute(institute)}
                   data-testid={`institute-row-${institute.id}`}
                 >
+                  <div>
+                    <div className="font-mono text-sm font-semibold text-primary bg-primary/10 px-2 py-1 rounded inline-block">
+                      {institute.code || institute.instituteCode || '-'}
+                    </div>
+                  </div>
                   <div>
                     <div className="font-medium">{institute.name || '이름 없음'}</div>
                     <div className="text-sm text-muted-foreground">{institute.email || '-'}</div>
@@ -951,6 +957,12 @@ export default function AdminInstitutes() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">기관 코드</Label>
+                  <p className="font-mono text-sm font-semibold text-primary bg-primary/10 px-2 py-1 rounded inline-block mt-1">
+                    {selectedInstitute.code || selectedInstitute.instituteCode || '-'}
+                  </p>
+                </div>
                 <div>
                   <Label className="text-sm font-medium">기관명</Label>
                   <p className="text-sm text-muted-foreground">{selectedInstitute.name}</p>
