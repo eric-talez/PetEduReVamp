@@ -3,7 +3,27 @@
 ## Overview
 TALEZ is a comprehensive pet education and e-commerce platform that integrates AI-powered pet training services with an online shopping experience for pet supplies. It aims to serve pet owners, professional trainers, and educational institutions by providing personalized training programs and convenient access to pet-related products. The platform's vision is to lead the pet industry with integrated educational and retail solutions powered by advanced technology, aiming for significant market penetration and a strong community presence.
 
-## Recent Changes (December 8, 2025)
+## Recent Changes (December 9, 2025)
+### Sidebar Menu UX/UI Optimization & Basic Process QA
+- **Menu Structure Cleanup**:
+  - **메인 메뉴**: 로그인 후 중복되는 "화상 강의" 제거 (도구 섹션에만 유지)
+  - **학습 메뉴** (견주): 8개 → 5개로 축소 (내 상담 현황, 내 훈련사 제거 - 불필요한 중복)
+  - **운영 관리** (훈련사/기관): 공통/역할별 메뉴로 재구성
+    - 공통: 내 강좌, 학생 관리, 수익 관리, 내 포인트, 휴식 관리
+    - 훈련사만: 대체 강사 게시판, 알림장 관리
+    - 기관만: 대체 강사 관리, 알림장 모니터링, 강사 관리, 시설 관리
+  - **도구 메뉴**: 6개 → 4개로 축소 (영상 훈련, 분석 리포트 제거 - 사용성 낮음)
+    - 화상 강의, 메시지, 알림, AI 분석만 유지
+  - **관리자 메뉴**: "관리자 대시보드" → "관리"로 단순화
+    - 대시보드, 회원 관리, 분석, 수익 (4개만)
+- **권한별 메뉴 정렬**: 사용 빈도/중요도 순으로 재정렬
+- **Basic Process QA**:
+  - 회원가입 CSRF 오류 수정 (비인증 API에서 CSRF 제외)
+  - 휴대폰 자동 포맷팅 (010-XXXX-XXXX) 정상 작동
+  - 기관 코드 자동 생성 및 표시 기능 추가
+  - 보안: 기관 정보 API 인증 검증 강화 (401/403/404 상태 코드)
+
+## Previous Changes (December 8, 2025)
 ### Commercialization Readiness Security Improvements (~95% Ready)
 - **JWT Security**: JWT_SECRET now required in production environment (development uses temporary key with warning)
 - **Session Persistence**: Migrated from in-memory to PostgreSQL using connect-pg-simple - eliminates session data loss on restart
