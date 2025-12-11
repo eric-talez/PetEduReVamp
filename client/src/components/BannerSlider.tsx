@@ -155,14 +155,14 @@ export function BannerSlider() {
       </Button>
 
       {/* Pagination Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2.5" role="tablist">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5" role="tablist">
         {bannerSlides.map((banner, index) => (
           <button
             key={index}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-1.5 rounded-full transition-all duration-300 ${
               index === currentIndex 
-                ? "bg-white w-8" 
-                : "bg-white/50 w-2 hover:bg-white/70"
+                ? "bg-white w-5" 
+                : "bg-white/50 w-1.5 hover:bg-white/70"
             }`}
             onClick={() => setCurrentIndex(index)}
             aria-label={`${banner.title} 배너로 이동`}
