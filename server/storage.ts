@@ -1,6 +1,18 @@
-import { db } from './db/index';
-import { logoSettings, users, products, conversations, messages, trainers, institutes, trainerInstitutes } from '../shared/schema';
-import { eq, desc, or, and, sql } from 'drizzle-orm';
+import { db } from "./db";
+import { eq, desc, or, and, sql } from "drizzle-orm";
+import {
+  logoSettings as logoSettingsTable,
+  users as usersTable,
+  products as productsTable,
+  conversations,
+  messages,
+  trainers,
+  institutes as institutesTable,
+  trainerInstitutes,
+  contentApprovals,
+  trainerApplications,
+  curriculums as curriculumsTable
+} from "../shared/schema";
 
 class Storage {
   users: any[] = [];
@@ -1238,7 +1250,7 @@ class Storage {
   }
 
   // 기관 관련 메서드들
-  getInstitutes() {
+  getInstitutes(): Promise<any[]> | any[] {
     return this.institutes || [];
   }
 
@@ -1279,25 +1291,25 @@ class Storage {
     try {
       // 데이터베이스에서 먼저 조회 (존재하는 컬럼만 선택)
       const [user] = await db.select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-        password: users.password,
-        role: users.role,
-        name: users.name,
-        phone: users.phone,
-        avatar: users.avatar,
-        bio: users.bio,
-        specialty: users.specialty,
-        location: users.location,
-        isActive: users.isActive,
-        emailVerified: users.emailVerified,
-        isVerified: users.isVerified,
-        instituteId: users.instituteId,
-        createdAt: users.createdAt,
-        provider: users.provider,
-        socialId: users.socialId
-      }).from(users).where(eq(users.username, username));
+        id: usersTable.id,
+        username: usersTable.username,
+        email: usersTable.email,
+        password: usersTable.password,
+        role: usersTable.role,
+        name: usersTable.name,
+        phone: usersTable.phone,
+        avatar: usersTable.avatar,
+        bio: usersTable.bio,
+        specialty: usersTable.specialty,
+        location: usersTable.location,
+        isActive: usersTable.isActive,
+        emailVerified: usersTable.emailVerified,
+        isVerified: usersTable.isVerified,
+        instituteId: usersTable.instituteId,
+        createdAt: usersTable.createdAt,
+        provider: usersTable.provider,
+        socialId: usersTable.socialId
+      }).from(usersTable).where(eq(usersTable.username, username));
       
       if (user) {
         return user;
@@ -1545,25 +1557,25 @@ class Storage {
     try {
       const trainers = await db
         .select({
-          id: users.id,
-          username: users.username,
-          email: users.email,
-          name: users.name,
-          role: users.role,
-          avatar: users.avatar,
-          bio: users.bio,
-          location: users.location,
-          specialty: users.specialty,
-          institute_id: users.instituteId,
-          address: users.address,
-          latitude: users.latitude,
-          longitude: users.longitude,
-          verified: users.verified,
-          is_verified: users.isVerified,
-          created_at: users.createdAt
+          id: usersTable.id,
+          username: usersTable.username,
+          email: usersTable.email,
+          name: usersTable.name,
+          role: usersTable.role,
+          avatar: usersTable.avatar,
+          bio: usersTable.bio,
+          location: usersTable.location,
+          specialty: usersTable.specialty,
+          institute_id: usersTable.instituteId,
+          address: usersTable.address,
+          latitude: usersTable.latitude,
+          longitude: usersTable.longitude,
+          verified: usersTable.verified,
+          is_verified: usersTable.isVerified,
+          created_at: usersTable.createdAt
         })
-        .from(users)
-        .where(eq(users.role, 'trainer'));
+        .from(usersTable)
+        .where(eq(usersTable.role, 'trainer'));
       
       return trainers;
     } catch (error) {
@@ -1580,7 +1592,7 @@ class Storage {
   // 로고 설정 관련 메서드들 - 데이터베이스 사용
   async initializeLogoSettings() {
     // 데이터베이스에서 로고 설정 조회
-    const existingSettings = await db.select().from(logoSettings).limit(1);
+    const existingSettings = await db.select().from(logoSettingsTable).limit(1);
 
     if (existingSettings.length > 0) {
       console.log('[Storage] 데이터베이스에서 로고 설정 로드:', existingSettings[0]);
@@ -1601,7 +1613,7 @@ class Storage {
       isActive: true
     };
 
-    const [newSettings] = await db.insert(logoSettings).values(defaultSettings).returning();
+    const [newSettings] = await db.insert(logoSettingsTable).values(defaultSettings).returning();
     console.log('[Storage] 로고 설정 초기화 완료 (DB):', newSettings);
     return newSettings;
   }
@@ -1614,7 +1626,7 @@ class Storage {
   async getLogoSettings(includeInactive: boolean = false) {
     console.log('[Storage] 로고 설정 조회 (DB) - includeInactive:', includeInactive);
 
-    const settings = await db.select().from(logoSettings).limit(1);
+    const settings = await db.select().from(logoSettingsTable).limit(1);
 
     if (settings.length === 0) {
       console.log('[Storage] 로고 설정이 없어서 초기화 실행');
@@ -1642,19 +1654,19 @@ class Storage {
     console.log('[Storage] 로고 설정 업데이트 요청 (DB):', settings);
 
     // 기존 설정 조회
-    const existingSettings = await db.select().from(logoSettings).limit(1);
+    const existingSettings = await db.select().from(logoSettingsTable).limit(1);
 
     if (existingSettings.length === 0) {
       console.log('[Storage] 기존 로고 설정이 없어서 생성');
-      const [newSettings] = await db.insert(logoSettings).values(settings).returning();
+      const [newSettings] = await db.insert(logoSettingsTable).values(settings).returning();
       return newSettings;
     }
 
     // 업데이트
     const [updatedSettings] = await db
-      .update(logoSettings)
+      .update(logoSettingsTable)
       .set(settings)
-      .where(eq(logoSettings.id, existingSettings[0].id))
+      .where(eq(logoSettingsTable.id, existingSettings[0].id))
       .returning();
 
     console.log('[Storage] 로고 설정 업데이트 완료 (DB):', updatedSettings);
@@ -1951,7 +1963,7 @@ class Storage {
   async deleteInstitute(instituteId: number): Promise<boolean> {
     try {
       // 데이터베이스에서 삭제
-      const result = await db.delete(institutes).where(eq(institutes.id, instituteId));
+      const result = await db.delete(institutesTable).where(eq(institutesTable.id, instituteId));
       
       // 메모리 캐시에서도 삭제
       const index = this.institutes.findIndex(i => i.id === instituteId);
@@ -2138,9 +2150,9 @@ class Storage {
       
       const productList = await db
         .select()
-        .from(products)
-        .where(eq(products.is_active, true))
-        .orderBy(desc(products.created_at));
+        .from(productsTable)
+        .where(eq(productsTable.is_active, true))
+        .orderBy(desc(productsTable.created_at));
       
       console.log(`[Storage] DB에서 ${productList.length}개 상품 조회됨`);
       
@@ -4587,16 +4599,6 @@ class Storage {
 }
 
 // 개발 환경에서는 데이터베이스 연동을 위해 하이브리드 접근 방식 사용
-import { db } from "./db";
-import { eq } from "drizzle-orm";
-import {
-  users,
-  contentApprovals,
-  trainerApplications,
-  curriculums,
-  institutes
-} from "../shared/schema";
-
 class HybridStorage extends Storage {
   // 데이터베이스 연동 메서드들 추가
 
@@ -4694,7 +4696,7 @@ class HybridStorage extends Storage {
   // 커리큘럼 관련
   async createCurriculum(data: any): Promise<any> {
     try {
-      const [curriculum] = await db.insert(curriculums).values({
+      const [curriculum] = await db.insert(curriculumsTable).values({
         title: data.title,
         description: data.description,
         creatorId: data.creatorId,
@@ -4729,7 +4731,7 @@ class HybridStorage extends Storage {
   // 기관 관련 - 데이터베이스에서 조회
   async getInstitutes(): Promise<any[]> {
     try {
-      const result = await db.select().from(institutes);
+      const result = await db.select().from(institutesTable);
       console.log('[DB] 기관 조회:', result.length + '개');
       return result;
     } catch (error) {
@@ -4741,7 +4743,7 @@ class HybridStorage extends Storage {
   // 기관 코드로 기관 조회 (훈련사 등록 시 기관 연결용)
   async getInstituteByCode(code: string): Promise<any | null> {
     try {
-      const result = await db.select().from(institutes).where(eq(institutes.code, code));
+      const result = await db.select().from(institutesTable).where(eq(institutesTable.code, code));
       if (result.length > 0) {
         console.log('[DB] 기관 코드 검증 성공:', code, '->', result[0].name);
         return result[0];
@@ -4760,7 +4762,7 @@ class HybridStorage extends Storage {
       await db.insert(trainerInstitutes).values({
         trainerId,
         instituteId,
-        joinedAt: new Date()
+        joinDate: new Date()
       });
       console.log('[DB] 훈련사-기관 연결 완료:', { trainerId, instituteId });
       return true;
@@ -4778,12 +4780,12 @@ class HybridStorage extends Storage {
           id: trainerInstitutes.id,
           trainerId: trainerInstitutes.trainerId,
           instituteId: trainerInstitutes.instituteId,
-          instituteName: institutes.name,
-          instituteCode: institutes.code,
-          joinedAt: trainerInstitutes.joinedAt
+          instituteName: institutesTable.name,
+          instituteCode: institutesTable.code,
+          joinDate: trainerInstitutes.joinDate
         })
         .from(trainerInstitutes)
-        .innerJoin(institutes, eq(trainerInstitutes.instituteId, institutes.id))
+        .innerJoin(institutesTable, eq(trainerInstitutes.instituteId, institutesTable.id))
         .where(eq(trainerInstitutes.trainerId, trainerId));
       return result;
     } catch (error) {
@@ -5481,11 +5483,11 @@ class HybridStorage extends Storage {
             : conv.participant1Id;
 
           const otherUser = await db.select({
-            id: users.id,
-            name: users.name,
-            role: users.role,
-            avatar: users.avatar
-          }).from(users).where(eq(users.id, otherUserId)).limit(1);
+            id: usersTable.id,
+            name: usersTable.name,
+            role: usersTable.role,
+            avatar: usersTable.avatar
+          }).from(usersTable).where(eq(usersTable.id, otherUserId)).limit(1);
 
           const lastMessage = await db.select().from(messages)
             .where(eq(messages.conversationId, conv.id))
@@ -5539,11 +5541,11 @@ class HybridStorage extends Storage {
       const messagesWithSender = await Promise.all(
         messageList.map(async (msg) => {
           const sender = await db.select({
-            id: users.id,
-            name: users.name,
-            role: users.role,
-            avatar: users.avatar
-          }).from(users).where(eq(users.id, msg.senderId)).limit(1);
+            id: usersTable.id,
+            name: usersTable.name,
+            role: usersTable.role,
+            avatar: usersTable.avatar
+          }).from(usersTable).where(eq(usersTable.id, msg.senderId)).limit(1);
 
           return {
             ...msg,
@@ -5586,11 +5588,11 @@ class HybridStorage extends Storage {
         .where(eq(conversations.id, conversation.id));
 
       const sender = await db.select({
-        id: users.id,
-        name: users.name,
-        role: users.role,
-        avatar: users.avatar
-      }).from(users).where(eq(users.id, senderId)).limit(1);
+        id: usersTable.id,
+        name: usersTable.name,
+        role: usersTable.role,
+        avatar: usersTable.avatar
+      }).from(usersTable).where(eq(usersTable.id, senderId)).limit(1);
 
       return {
         ...newMessage[0],
@@ -5657,5 +5659,6 @@ class HybridStorage extends Storage {
 
 const storage = new HybridStorage();
 
+export type IStorage = typeof storage;
 export { storage };
 export default storage;

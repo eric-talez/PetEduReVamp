@@ -68,6 +68,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
 
 // 기관 정보 타입
 interface Institute {
@@ -636,8 +637,7 @@ export default function InstituteDashboardPage() {
                           <div className="flex items-center gap-3">
                             <Avatar 
                               src={trainer.avatar} 
-                              fallback={trainer.name[0]} 
-                              alt={trainer.name}
+                              fallback={trainer.name[0]}
                             />
                             <div>
                               <div className="font-medium flex items-center">
@@ -772,8 +772,7 @@ export default function InstituteDashboardPage() {
                           <div className="flex items-center gap-3">
                             <Avatar 
                               src={reservation.customerAvatar} 
-                              fallback={reservation.customerName[0]} 
-                              alt={reservation.customerName}
+                              fallback={reservation.customerName[0]}
                             />
                             <div>
                               <div className="font-medium">{reservation.customerName}</div>

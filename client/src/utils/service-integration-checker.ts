@@ -3,7 +3,7 @@
  * 서비스 연동 상태 및 권한별 접근 제어 유틸리티
  */
 
-import { UserRole } from '@shared/schema';
+import { UserRole } from '../../../shared/schema';
 
 export interface ServiceAccess {
   canRead: boolean;
@@ -62,14 +62,6 @@ export function getServiceAccessMatrix(userRole: UserRole | null): ServiceIntegr
       shop: { canRead: true, canWrite: false, canDelete: false, canManage: false },
       analytics: { canRead: false, canWrite: false, canDelete: false, canManage: false },
     },
-    'user': {
-      notebook: { canRead: false, canWrite: false, canDelete: false, canManage: false },
-      consultation: { canRead: false, canWrite: false, canDelete: false, canManage: false },
-      courses: { canRead: true, canWrite: false, canDelete: false, canManage: false },
-      messaging: { canRead: false, canWrite: false, canDelete: false, canManage: false },
-      shop: { canRead: true, canWrite: false, canDelete: false, canManage: false },
-      analytics: { canRead: false, canWrite: false, canDelete: false, canManage: false },
-    },
   };
 
   return accessMatrix[userRole] || getDefaultServiceAccess();
@@ -122,7 +114,6 @@ export function getDefaultRedirectPath(userRole: UserRole | null): string {
     'institute-admin': '/institute/dashboard',
     'trainer': '/trainer/dashboard',
     'pet-owner': '/dashboard',
-    'user': '/',
   };
 
   return userRole ? redirectPaths[userRole] : '/auth';

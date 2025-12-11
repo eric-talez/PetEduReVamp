@@ -1,4 +1,5 @@
 import { Express } from "express";
+import type { IStorage } from "../storage";
 
 export function registerTrainerRoutes(app: Express, storage: IStorage) {
   // 훈련사 목록 조회
