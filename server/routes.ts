@@ -16079,6 +16079,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
     console.error('[FCM] FCM 라우트 로드 실패:', error);
   });
 
+  // 관리자 푸시 알림 관리 라우트 (대량/예약/세그먼트 발송)
+  import('./routes/push-admin').then(pushAdminModule => {
+    app.use('/api/admin/push', pushAdminModule.default);
+    console.log('[Push Admin] 푸시 알림 관리 라우트가 등록되었습니다.');
+  }).catch(error => {
+    console.error('[Push Admin] 푸시 관리 라우트 로드 실패:', error);
+  });
+
   // 모든 인증 API들은 setupAuth()에서 처리됩니다 (/api/auth/login, /api/auth/logout, /api/auth/me)
 
   const httpServer = createServer(app);

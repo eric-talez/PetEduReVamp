@@ -424,6 +424,55 @@ export const fcmTokens = pgTable("fcm_tokens", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// 푸시 캠페인 테이블 (대량/세그먼트 발송용)
+export const pushCampaigns = pgTable("push_campaigns", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  message: text("message").notNull(),
+  status: varchar("status", { length: 20 }).default("draft"), // draft, scheduled, sending, completed, cancelled
+  targetType: varchar("target_type", { length: 30 }).notNull(), // all, role, segment, topic
+  targetCriteria: jsonb("target_criteria"), // { role: 'pet-owner', petTypes: ['dog'] } 등
+  scheduledAt: timestamp("scheduled_at"), // 예약 발송 시간
+  sentAt: timestamp("sent_at"), // 실제 발송 시간
+  totalRecipients: integer("total_recipients").default(0),
+  successCount: integer("success_count").default(0),
+  failureCount: integer("failure_count").default(0),
+  data: jsonb("data"), // 추가 데이터 (actionUrl 등)
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 예약 푸시 알림 테이블 (개별 알림 예약)
+export const scheduledPushNotifications = pgTable("scheduled_push_notifications", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").references(() => pushCampaigns.id),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  message: text("message").notNull(),
+  data: jsonb("data"),
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, sent, failed, cancelled
+  sentAt: timestamp("sent_at"),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 푸시 발송 이력 테이블
+export const pushNotificationLogs = pgTable("push_notification_logs", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").references(() => pushCampaigns.id),
+  userId: integer("user_id").references(() => users.id),
+  tokenId: integer("token_id").references(() => fcmTokens.id),
+  title: varchar("title", { length: 200 }).notNull(),
+  message: text("message").notNull(),
+  status: varchar("status", { length: 20 }).notNull(), // success, failed
+  messageId: text("message_id"), // FCM 응답 메시지 ID
+  errorCode: varchar("error_code", { length: 50 }),
+  errorMessage: text("error_message"),
+  sentAt: timestamp("sent_at").defaultNow(),
+});
+
 // 시스템 설정 테이블
 export const systemSettings = pgTable("system_settings", {
   id: serial("id").primaryKey(),
@@ -1821,6 +1870,49 @@ export const selectFcmTokenSchema = createSelectSchema(fcmTokens);
 
 export type FcmToken = typeof fcmTokens.$inferSelect;
 export type InsertFcmToken = z.infer<typeof insertFcmTokenSchema>;
+
+// 푸시 캠페인 Zod 스키마
+export const insertPushCampaignSchema = createInsertSchema(pushCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  sentAt: true,
+  totalRecipients: true,
+  successCount: true,
+  failureCount: true,
+}).extend({
+  title: z.string().min(1, "제목은 필수입니다").max(200),
+  message: z.string().min(1, "메시지는 필수입니다"),
+  targetType: z.enum(["all", "role", "segment", "topic"]),
+  status: z.enum(["draft", "scheduled", "sending", "completed", "cancelled"]).optional(),
+  scheduledAt: z.string().datetime().optional().nullable(),
+});
+
+export const selectPushCampaignSchema = createSelectSchema(pushCampaigns);
+export type PushCampaign = typeof pushCampaigns.$inferSelect;
+export type InsertPushCampaign = z.infer<typeof insertPushCampaignSchema>;
+
+// 예약 푸시 알림 Zod 스키마
+export const insertScheduledPushSchema = createInsertSchema(scheduledPushNotifications).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
+  errorMessage: true,
+});
+
+export const selectScheduledPushSchema = createSelectSchema(scheduledPushNotifications);
+export type ScheduledPushNotification = typeof scheduledPushNotifications.$inferSelect;
+export type InsertScheduledPush = z.infer<typeof insertScheduledPushSchema>;
+
+// 푸시 발송 로그 Zod 스키마
+export const insertPushLogSchema = createInsertSchema(pushNotificationLogs).omit({
+  id: true,
+  sentAt: true,
+});
+
+export const selectPushLogSchema = createSelectSchema(pushNotificationLogs);
+export type PushNotificationLog = typeof pushNotificationLogs.$inferSelect;
+export type InsertPushLog = z.infer<typeof insertPushLogSchema>;
 
 // 훈련 일지 (알림장) Zod 스키마
 export const insertTrainingJournalSchema = createInsertSchema(trainingJournals).omit({

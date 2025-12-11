@@ -617,7 +617,16 @@ async function startServer() {
     app.use(errorHandler);
 
     // Start the server
-    server.listen(PORT, HOST, () => {
+    server.listen(PORT, HOST, async () => {
+      // 푸시 알림 예약 발송 스케줄러 시작
+      try {
+        const { pushSchedulerService } = await import('./services/push-scheduler');
+        pushSchedulerService.start();
+        console.log('📬 Push notification scheduler started');
+      } catch (error) {
+        console.warn('[Push Scheduler] 스케줄러 시작 실패:', error);
+      }
+
       // 운영 환경 모니터링 설정
       if (process.env.NODE_ENV === 'production') {
         // 에러 로깅 강화
