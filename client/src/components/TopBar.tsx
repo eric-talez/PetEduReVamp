@@ -918,14 +918,12 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     aria-controls="user-menu"
                     aria-haspopup="menu"
                   >
-                    <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                      {userRole && (
-                        <AvatarImage 
-                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || '')}&background=random&color=fff`} 
-                          alt={userName || '사용자'} 
-                        />
-                      )}
-                      <AvatarFallback>{userName ? userName.substring(0, 1).toUpperCase() : "U"}</AvatarFallback>
+                    <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border-2 border-primary">
+                      <AvatarImage 
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=2BAA61&color=fff`} 
+                        alt={userName || '사용자'} 
+                      />
+                      <AvatarFallback className="bg-primary text-white">{userName ? userName.substring(0, 1).toUpperCase() : "U"}</AvatarFallback>
                     </Avatar>
                     <span className="hidden sm:flex items-center space-x-1">
                       <span className="text-xs sm:text-sm font-medium">{userName}</span>
