@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Bell, Send, Calendar, Users, Smartphone, Globe, Trash2, Eye, RefreshCw } from 'lucide-react';
 
 interface Campaign {
@@ -232,6 +233,41 @@ export default function PushNotificationManagement() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {!newCampaign.targetCriteria.role && (
+                      <p className="text-xs text-destructive mt-1">역할을 선택해주세요</p>
+                    )}
+                  </div>
+                )}
+                {newCampaign.targetType === 'segment' && (
+                  <div>
+                    <Label>반려동물 유형</Label>
+                    <div className="flex flex-wrap gap-3 mt-2">
+                      {segmentData?.petTypes.map((petType) => (
+                        <div key={petType.value} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`pet-${petType.value}`}
+                            checked={newCampaign.targetCriteria.petTypes?.includes(petType.value) || false}
+                            onCheckedChange={(checked) => {
+                              const currentTypes = newCampaign.targetCriteria.petTypes || [];
+                              const newTypes = checked
+                                ? [...currentTypes, petType.value]
+                                : currentTypes.filter((t: string) => t !== petType.value);
+                              setNewCampaign({
+                                ...newCampaign,
+                                targetCriteria: { petTypes: newTypes },
+                              });
+                            }}
+                            data-testid={`checkbox-pet-${petType.value}`}
+                          />
+                          <Label htmlFor={`pet-${petType.value}`} className="text-sm cursor-pointer">
+                            {petType.label} ({petType.count}명)
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    {(!newCampaign.targetCriteria.petTypes || newCampaign.targetCriteria.petTypes.length === 0) && (
+                      <p className="text-xs text-destructive mt-2">반려동물 유형을 하나 이상 선택해주세요</p>
+                    )}
                   </div>
                 )}
                 <div>
@@ -245,25 +281,34 @@ export default function PushNotificationManagement() {
                   />
                 </div>
                 <div className="flex gap-2 justify-end">
-                  {newCampaign.scheduledAt ? (
-                    <Button
-                      onClick={() => createCampaignMutation.mutate(newCampaign)}
-                      disabled={!newCampaign.title || !newCampaign.message || createCampaignMutation.isPending}
-                      data-testid="button-schedule"
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {createCampaignMutation.isPending ? '예약 중...' : '예약 발송'}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => sendNowMutation.mutate(newCampaign)}
-                      disabled={!newCampaign.title || !newCampaign.message || sendNowMutation.isPending}
-                      data-testid="button-send-now"
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      {sendNowMutation.isPending ? '발송 중...' : '즉시 발송'}
-                    </Button>
-                  )}
+                  {(() => {
+                    const isBasicValid = newCampaign.title && newCampaign.message;
+                    const isTargetValid =
+                      newCampaign.targetType === 'all' ||
+                      (newCampaign.targetType === 'role' && newCampaign.targetCriteria.role) ||
+                      (newCampaign.targetType === 'segment' && newCampaign.targetCriteria.petTypes?.length > 0);
+                    const canSubmit = isBasicValid && isTargetValid;
+
+                    return newCampaign.scheduledAt ? (
+                      <Button
+                        onClick={() => createCampaignMutation.mutate(newCampaign)}
+                        disabled={!canSubmit || createCampaignMutation.isPending}
+                        data-testid="button-schedule"
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {createCampaignMutation.isPending ? '예약 중...' : '예약 발송'}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => sendNowMutation.mutate(newCampaign)}
+                        disabled={!canSubmit || sendNowMutation.isPending}
+                        data-testid="button-send-now"
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        {sendNowMutation.isPending ? '발송 중...' : '즉시 발송'}
+                      </Button>
+                    );
+                  })()}
                 </div>
               </div>
             </DialogContent>
