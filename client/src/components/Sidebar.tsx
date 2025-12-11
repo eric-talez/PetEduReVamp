@@ -414,7 +414,7 @@ export function Sidebar({
       }
 
       // 기관 관리자 전용 페이지
-      if ((path.startsWith('/institute-dashboard') || path.startsWith('/institute/')) && userRole !== 'institute-admin' && userRole !== 'admin') {
+      if (path.startsWith('/institute/') && userRole !== 'institute-admin' && userRole !== 'admin') {
 
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
@@ -812,6 +812,9 @@ export function Sidebar({
                     <SidebarMenuGroup expanded={expanded} title="운영 관리" groupName="management" isOpen={menuGroups.management} toggleGroup={toggleMenuGroup} icon={<UserCog className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.management && (
                       <>
+                        {/* 훈련사/기관 대시보드 */}
+                        <AccessibleNavItem href="/trainer/dashboard" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/dashboard")} onClick={handleItemClick} show={showTrainerMenu && !showInstituteMenu}>훈련사 대시보드</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/dashboard" icon={<Building className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/dashboard")} onClick={handleItemClick} show={showInstituteMenu}>기관 대시보드</AccessibleNavItem>
                         {/* 공통 메뉴 */}
                         <AccessibleNavItem href="/trainer/courses" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/courses")} onClick={handleItemClick} show={showTrainerMenu || showInstituteMenu}>내 강좌</AccessibleNavItem>
                         <AccessibleNavItem href="/trainer/students" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/students")} onClick={handleItemClick} show={showTrainerMenu || showInstituteMenu}>학생 관리</AccessibleNavItem>
@@ -849,7 +852,9 @@ export function Sidebar({
                     {menuGroups.adminDashboard && (
                       <>
                         <AccessibleNavItem href="/admin/dashboard" icon={<BarChart3 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/dashboard")} onClick={handleItemClick} show={true}>대시보드</AccessibleNavItem>
-                        <AccessibleNavItem href="/admin/members-status" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/members-status")} onClick={handleItemClick} show={true}>회원 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/users" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/users")} onClick={handleItemClick} show={true}>사용자 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/trainers")} onClick={handleItemClick} show={true}>훈련사 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/members-status" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/members-status")} onClick={handleItemClick} show={true}>회원 현황</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/analytics" icon={<Activity className="w-5 h-5 mr-2" />} hoverIcon={<BarChart3 className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/analytics")} onClick={handleItemClick} show={true}>분석</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/revenue" icon={<DollarSign className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/revenue")} onClick={handleItemClick} show={true}>수익</AccessibleNavItem>
                       </>

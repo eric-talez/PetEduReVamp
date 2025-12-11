@@ -273,7 +273,7 @@ export function NewSidebar({
       }
       
       // 기관 관리자 전용 페이지
-      if (path.startsWith('/institute-dashboard') && userRole !== 'institute-admin' && userRole !== 'admin') {
+      if (path.startsWith('/institute/') && userRole !== 'institute-admin' && userRole !== 'admin') {
         console.log('기관 관리자 권한 필요');
         window.location.href = "/";
         return;
@@ -621,9 +621,9 @@ export function NewSidebar({
                 {menuGroups.institute && (userRole === 'institute-admin' || userRole === 'admin') && (
                   <>
                     <NavItem
-                      href="/institute-dashboard"
+                      href="/institute/dashboard"
                       icon={<AreaChart className="w-5 h-5 mr-2" />}
-                      active={isActive("/institute-dashboard")}
+                      active={isActive("/institute/dashboard")}
                       onClick={handleItemClick}
                       show={true}
                     >

@@ -119,7 +119,7 @@ export async function checkServiceIntegrationHealth(): Promise<Record<string, bo
 export function getDefaultRedirectPath(userRole: UserRole | null): string {
   const redirectPaths: Record<UserRole, string> = {
     'admin': '/admin/dashboard',
-    'institute-admin': '/institute-dashboard',
+    'institute-admin': '/institute/dashboard',
     'trainer': '/trainer/dashboard',
     'pet-owner': '/dashboard',
     'user': '/',
