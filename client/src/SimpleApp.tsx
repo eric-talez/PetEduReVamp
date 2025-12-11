@@ -71,6 +71,7 @@ import AdminContents from "./pages/admin/AdminContents";
 import AdminMembersStatus from "./pages/admin/AdminMembersStatus";
 import TrainerCertificationManagement from "./pages/admin/TrainerCertificationManagement";
 import MessagingSettings from "./pages/admin/MessagingSettings";
+import PushNotificationManagement from "./pages/admin/PushNotificationManagement";
 import AdminProductPricing from "./pages/admin/AdminProductPricing";
 import AdminSettlementPage from "./pages/admin/settlement";
 import ContentCrawler from "./pages/admin/ContentCrawler";
@@ -343,6 +344,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/shop" component={AdminShop} />
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/messaging-settings" component={MessagingSettings} />
+                  <Route path="/admin/push-notifications" component={PushNotificationManagement} />
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/community" component={AdminCommunityManagement} />
                   <Route path="/admin/curriculum" component={AdminCurriculum} />
