@@ -385,7 +385,7 @@ export function Sidebar({
     // 역할별 접근 제한
     if (isAuthenticated) {
       // 훈련사 전용 페이지
-      if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin' && userRole !== 'institute-admin') {
+      if (path.startsWith('/trainer/') && userRole !== 'trainer' && userRole !== 'admin' && userRole !== 'institute-admin') {
 
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
