@@ -753,16 +753,6 @@ function AppLayout({ children }: { children: ReactNode }) {
                   
                   <Route path="/institute/rest-management" component={InstituteRestManagement} />
                   <Route path="/institute/substitute-management" component={SubstituteTrainerManagement} />
-                  <Route path="/institute/trainers">
-                    {() => {
-                      const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
-                      return (
-                        <Suspense fallback={<SimpleLoading />}>
-                          <InstituteTrainers />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
                   <Route path="/institute/members">
                     {() => {
                       const InstituteMembers = lazy(() => import('./pages/institute-admin/InstituteMembers'));
@@ -1201,90 +1191,6 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
-        {/* 메뉴 관리는 따로 처리 */}
-        <Route path="/admin/menu-management">
-          {() => {
-            const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <AdminMenuManagement />
-              </Suspense>
-            );
-          }}
-        </Route>
-
-        {/* 기관 관리자 메뉴 */}
-        <Route path="/institute/trainers">
-          {() => {
-            const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <InstituteTrainers />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/courses">
-          {() => {
-            const InstituteCourses = lazy(() => import('./pages/institute-admin/InstituteCourses'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <InstituteCourses />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/facility">
-          {() => {
-            const InstituteFacility = lazy(() => import('./pages/institute-admin/InstituteFacility'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <InstituteFacility />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/members">
-          {() => {
-            const InstituteMembers = lazy(() => import('./pages/institute-admin/InstituteMembers'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <InstituteMembers />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/stats">
-          {() => {
-            const InstituteStats = lazy(() => import('./pages/institute-admin/InstituteStats'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <InstituteStats />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/pet-assignments">
-          {() => {
-            const InstitutePetAssignments = lazy(() => import('./pages/institute-admin/InstitutePetAssignments'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <InstitutePetAssignments />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/settings">
-          {() => {
-            const InstituteSettings = lazy(() => import('./pages/institute-admin/InstituteSettings'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <InstituteSettings />
-              </Suspense>
-            );
-          }}
-        </Route>
-
         {/* 일반 메뉴 */}
         <Route path="/courses" component={() => <Courses />} />
         <Route path="/course/:id" component={CourseDetail} />
@@ -1587,23 +1493,6 @@ function AuthenticatedRoutes() {
               }>
                 <ProtectedInstituteRoute 
                   component={() => <ProfilePage userType="institute-admin" />} 
-                />
-              </Suspense>
-            );
-          }}
-        </Route>
-
-        <Route path="/institute/settings">
-          {() => {
-            const SettingsPage = lazy(() => import('./pages/settings'));
-            return (
-              <Suspense fallback={
-                <div className="p-8 flex justify-center items-center">
-                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                </div>
-              }>
-                <ProtectedInstituteRoute 
-                  component={() => <SettingsPage userRole="institute-admin" />} 
                 />
               </Suspense>
             );
