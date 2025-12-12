@@ -676,92 +676,6 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
 
-                  {/* 훈련사 메뉴 */}
-                  <Route path="/trainer/classes">
-                    {() => {
-                      const TrainerClasses = lazy(() => import('./pages/trainer/classes'));
-                      return (
-                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
-                          <TrainerClasses />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-                  <Route path="/trainer/students">
-                    {() => {
-                      const TrainerStudents = lazy(() => import('./pages/trainer/students'));
-                      return (
-                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
-                          <TrainerStudents />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-                  <Route path="/trainer/courses">
-                    {() => {
-                      const TrainerCourses = lazy(() => import('./pages/trainer/courses'));
-                      return (
-                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
-                          <TrainerCourses />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-                  <Route path="/trainer/notebook">
-                    {() => {
-                      const TrainerNotebook = lazy(() => import('./pages/trainer/notebook'));
-                      return (
-                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
-                          <TrainerNotebook />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-                  <Route path="/trainer/reviews">
-                    {() => {
-                      const TrainerReviews = lazy(() => import('./pages/trainer/reviews'));
-                      return (
-                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
-                          <TrainerReviews />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-                  <Route path="/trainer/earnings">
-                    {() => {
-                      const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
-                      return (
-                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
-                          <TrainerEarnings />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-                  <Route path="/trainer/referrals">
-                    {() => {
-                      const TrainerReferrals = lazy(() => import('./pages/trainer/referralCodeManagement'));
-                      return (
-                        <Suspense fallback={<SimpleLoading />}>
-                          <TrainerReferrals />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-                  <Route path="/trainer/my-points" component={TrainerMyPoints} />
-                  <Route path="/trainer/settings">
-                    {() => {
-                      const TrainerSettings = lazy(() => import('./pages/trainer/Settings'));
-                      return (
-                        <Suspense fallback={<SimpleLoading />}>
-                          <TrainerSettings />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-                  <Route path="/trainer/rest-management" component={TrainerRestManagement} />
-                  <Route path="/trainer/substitute-board" component={SubstituteClassBoard} />
-                  <Route path="/trainer/substitute-class-board" component={SubstituteClassBoard} />
-
                   {/* 기관 관리자 메뉴 */}
                   <Route path="/institute/dashboard">
                     {() => {
@@ -1645,40 +1559,6 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
-        <Route path="/trainer/earnings">
-          {() => {
-            const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
-            return (
-              <Suspense fallback={
-                <div className="p-8 flex justify-center items-center">
-                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                </div>
-              }>
-                <ProtectedTrainerRoute 
-                  component={() => <TrainerEarnings />} 
-                />
-              </Suspense>
-            );
-          }}
-        </Route>
-
-        <Route path="/trainer/students">
-          {() => {
-            const TrainerStudents = lazy(() => import('./pages/trainer/students'));
-            return (
-              <Suspense fallback={
-                <div className="p-8 flex justify-center items-center">
-                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                </div>
-              }>
-                <ProtectedTrainerRoute 
-                  component={() => <TrainerStudents />} 
-                />
-              </Suspense>
-            );
-          }}
-        </Route>
-
         <Route path="/trainer/settings">
           {() => {
             const SettingsPage = lazy(() => import('./pages/settings'));
@@ -2243,58 +2123,6 @@ function AuthenticatedRoutes() {
                 </div>
               }>
                 <EducationSchedulePage />
-              </Suspense>
-            );
-          }}
-        </Route>
-
-        {/* 훈련사 메뉴 */}
-        <Route path="/trainer/courses">
-          {() => {
-            const TrainerCourses = lazy(() => import('./pages/trainer/courses'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerCourses} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/trainer/notebook">
-          {() => {
-            const TrainerNotebook = lazy(() => import('./pages/trainer/notebook'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerNotebook} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/trainer/students">
-          {() => {
-            const TrainerStudents = lazy(() => import('./pages/trainer/students'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerStudents} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/trainer/stats">
-          {() => {
-            const TrainerStats = lazy(() => import('./pages/trainer/stats'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerStats} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/trainer/earnings">
-          {() => {
-            const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
-            return (
-              <Suspense fallback={<SimpleLoading />}>
-                <ProtectedTrainerRoute component={TrainerEarnings} />
               </Suspense>
             );
           }}
