@@ -81,7 +81,7 @@ export default function CourseDetail() {
     try {
       // 먼저 커리큘럼에서 데이터를 가져오기 시도 (미리보기 모드일 경우)
       if (isPreviewMode) {
-        const curriculumResponse = await fetch(`/api/admin/curriculums`);
+        const curriculumResponse = await fetch(`/api/public/curriculums`);
         if (curriculumResponse.ok) {
           const curriculumsData = await curriculumResponse.json();
           const curriculum = curriculumsData.curriculums.find((c: any) => c.id === courseId);

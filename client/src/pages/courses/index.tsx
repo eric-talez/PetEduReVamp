@@ -166,14 +166,13 @@ export default function Courses(props?: CoursesPageProps) {
       setLoading(true);
       console.log('🔥 강의 찾기 - 발행된 강의 목록 조회 시작');
       
-      const response = await fetch('/api/admin/curriculums');
+      const response = await fetch('/api/public/curriculums');
       if (response.ok) {
         const data = await response.json();
         console.log('🔥 커리큘럼 데이터:', data);
         
-        // 발행된 상태의 커리큘럼만 필터링하여 강의 형태로 변환
-        const publishedCourses = data.curriculums
-          .filter((curriculum: any) => curriculum.status === 'published')
+        // 공개 API는 이미 발행된 커리큘럼만 반환하므로 추가 필터링 불필요
+        const publishedCourses = (data.curriculums || [])
           .map((curriculum: any) => {
             // 각 모듈의 영상 정보 포함하여 매핑
             const modulesWithVideos = (curriculum.modules || []).map((module: any) => ({

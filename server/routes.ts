@@ -15092,6 +15092,47 @@ export function registerTrainerCertificationRoutes(app: Express) {
   console.log('  - GET /api/logo (공개 접근, 표준화된 응답)');
 
   // =============================================================================
+  // 공개 커리큘럼 API (비로그인 사용자도 접근 가능)
+  // =============================================================================
+  
+  /**
+   * GET /api/public/curriculums - 발행된 커리큘럼 목록 조회 (공개 접근)
+   * 
+   * 보안: 공개 접근 허용
+   * 필터: 발행된(published) 상태의 커리큘럼만 반환
+   */
+  app.get('/api/public/curriculums', async (req, res) => {
+    try {
+      console.log('[Public Curriculum API] 공개 커리큘럼 목록 조회 요청');
+      
+      const allCurriculums = await storage.getCurriculums();
+      
+      // 발행된 상태의 커리큘럼만 필터링
+      const publishedCurriculums = allCurriculums.filter(
+        (curriculum: any) => curriculum.status === 'published'
+      );
+      
+      console.log(`[Public Curriculum API] 발행된 커리큘럼 ${publishedCurriculums.length}개 조회 완료`);
+      
+      return res.json({
+        success: true,
+        curriculums: publishedCurriculums,
+        total: publishedCurriculums.length
+      });
+      
+    } catch (error: any) {
+      console.error('[Public Curriculum API] 커리큘럼 목록 조회 오류:', error);
+      return res.status(500).json({
+        success: false,
+        error: '커리큘럼 목록 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+  
+  console.log('[Public Curriculum API] 공개 커리큘럼 API 등록됨');
+  console.log('  - GET /api/public/curriculums (공개 접근, 발행된 커리큘럼만)');
+
+  // =============================================================================
   // 커리큘럼 CRUD API (표준화된 버전)
   // =============================================================================
   
