@@ -50,8 +50,12 @@ export default function AdminTrainers() {
 
         // 훈련사 데이터 처리
         const trainersData = await trainersResponse.json();
+        console.log('훈련사 API 응답:', trainersData);
         if (Array.isArray(trainersData)) {
           setTrainers(trainersData);
+        } else if (trainersData && trainersData.trainers && Array.isArray(trainersData.trainers)) {
+          // API가 { trainers: [...], pagination: {...} } 형식으로 반환
+          setTrainers(trainersData.trainers);
         } else if (trainersData && trainersData.success && Array.isArray(trainersData.data)) {
           setTrainers(trainersData.data);
         } else {
@@ -100,6 +104,8 @@ export default function AdminTrainers() {
         const trainersData = await trainersResponse.json();
         if (Array.isArray(trainersData)) {
           setTrainers(trainersData);
+        } else if (trainersData && trainersData.trainers && Array.isArray(trainersData.trainers)) {
+          setTrainers(trainersData.trainers);
         } else if (trainersData && trainersData.success && Array.isArray(trainersData.data)) {
           setTrainers(trainersData.data);
         }
