@@ -165,6 +165,8 @@ export function UnifiedTrainerProfileModal({
               onClose();
             }}
             className="absolute right-6 top-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-2 rounded-full hover:bg-white/70 dark:hover:bg-gray-600 transition-all duration-200 shadow-lg"
+            data-testid="modal-close-button"
+            aria-label="닫기"
           >
             <X className="h-6 w-6" />
             <span className="sr-only">닫기</span>
