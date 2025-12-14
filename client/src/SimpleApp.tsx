@@ -345,6 +345,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/messaging-settings" component={MessagingSettings} />
                   <Route path="/admin/push-notifications" component={PushNotificationManagement} />
+                  <Route path="/admin/push" component={PushNotificationManagement} />
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/community" component={AdminCommunityManagement} />
                   <Route path="/admin/curriculum" component={AdminCurriculum} />
