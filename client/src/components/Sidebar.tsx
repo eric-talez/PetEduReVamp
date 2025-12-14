@@ -563,12 +563,13 @@ export function Sidebar({
   const isPetOwner = userRole === 'pet-owner';
   
   // 메뉴 그룹별 표시 조건
-  const showTrainerMenu = isTrainer || isAdmin;  // 훈련사 전용 메뉴
-  const showInstituteMenu = isInstituteAdmin || isAdmin;  // 기관 전용 메뉴
+  // 관리자는 관리자 전용 메뉴만 표시 (일반 사용자 메뉴 숨김)
+  const showTrainerMenu = isTrainer && !isAdmin;  // 훈련사 전용 메뉴 (관리자 제외)
+  const showInstituteMenu = isInstituteAdmin && !isAdmin;  // 기관 전용 메뉴 (관리자 제외)
   const showAdminMenu = isAdmin;  // 관리자 전용 메뉴
-  const showPetOwnerMenu = isPetOwner || isAdmin;  // 견주 전용 메뉴 (학습, 반려견 관리)
-  const showOperationsMenu = isTrainer || isInstituteAdmin || isAdmin;  // 운영 관리 메뉴
-  const showAllAuthenticatedMenu = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;  // 모든 로그인 사용자
+  const showPetOwnerMenu = isPetOwner && !isAdmin;  // 견주 전용 메뉴 (관리자 제외)
+  const showOperationsMenu = (isTrainer || isInstituteAdmin) && !isAdmin;  // 운영 관리 메뉴 (관리자 제외)
+  const showAllAuthenticatedMenu = (isPetOwner || isTrainer || isInstituteAdmin) && !isAdmin;  // 로그인 사용자 (관리자 제외)
   const showBasicMenu = true;  // 공개 메뉴
 
   // 이 useEffect는 중복되므로 제거 (위에서 이미 처리됨)
