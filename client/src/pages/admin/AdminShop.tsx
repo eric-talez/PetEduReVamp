@@ -82,7 +82,8 @@ import {
   Copy,
   Save,
   RotateCcw,
-  BookOpen
+  BookOpen,
+  Building
 } from 'lucide-react';
 import { 
   DropdownMenu,
