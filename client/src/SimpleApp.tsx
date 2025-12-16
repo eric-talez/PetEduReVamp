@@ -5,6 +5,7 @@ import { SimpleChatBot } from './components/ui/SimpleChatBot';
 import { UserPreferencesProvider } from './hooks/use-user-preferences';
 import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
 import { NotificationsProvider } from './components/NotificationsProvider';
+import { NotificationPermissionPopup } from './components/NotificationPermissionPopup';
 import { AchievementsProvider } from './hooks/useAchievements';
 import { useKeyboardAccessibility } from '@/hooks/use-keyboard-accessibility';
 import { startCacheCleanup } from './utils/performance-optimizer';
@@ -2276,6 +2277,7 @@ function SimpleApp() {
                     {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
                     <DebugButton />
                     <Toaster />
+                    <NotificationPermissionPopup />
                   </>
                 </KeyboardShortcutsManager>
               </WeatherProvider>
