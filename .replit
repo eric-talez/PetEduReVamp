@@ -7,7 +7,7 @@ channel = "stable-24_05"
 packages = ["maven", "openjdk17", "unzip", "imagemagick"]
 
 [deployment]
-deploymentTarget = "gce"
+deploymentTarget = "cloudrun"
 build = [
   "sh",
   "-c",
