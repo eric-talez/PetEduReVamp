@@ -48,6 +48,11 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Institute-Trainer Connection**: Secure system for trainers to link with institutes via unique codes, including verification and relationship management.
 - **Optimized UI/UX**: Streamlined sidebar menus for various user roles (pet owner, trainer, institute, admin) and consolidated navigation.
 
+## Recent Changes (December 2025)
+- **Routing Fix**: Fixed trainer dashboard routes (/trainer/courses, /trainer/notebook, etc.) returning 404 errors. The issue was caused by AppLayout having an internal Switch that intercepted all routes before AuthenticatedRoutes could handle them. Solution: Modified AppLayout to render children instead of its own Switch.
+- **Trainer Registration**: Enhanced trainer registration to auto-assign to "TALEZ 공식 기관" (default institute) when no institute code is provided.
+- **Login Security**: Added CSRF token handling to login API endpoint.
+
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
 - **Email**: SendGrid
