@@ -4,9 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2, LayoutGrid, List } from "lucide-react";
+import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2, LayoutGrid, List, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import CoursesBannerImage from '@assets/stock_images/online_pet_dog_train_c9e8e79a.jpg';
 import { PageBanner } from '@/components/PageBanner';
 
@@ -53,6 +56,14 @@ export default function Courses(props?: CoursesPageProps) {
   const [showProductModal, setShowProductModal] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Advanced filter states
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
+  const [hasVideoOnly, setHasVideoOnly] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [minRating, setMinRating] = useState<number>(0);
+  const [durationRange, setDurationRange] = useState<[number, number]>([0, 600]);
+  
   const { toast } = useToast();
 
   // 강의 구매 처리 함수
@@ -241,12 +252,21 @@ export default function Courses(props?: CoursesPageProps) {
                          course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          course.trainerName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    if (filter === "all") return matchesSearch;
-    if (filter === "beginner") return matchesSearch && course.difficulty === "beginner";
-    if (filter === "intermediate") return matchesSearch && course.difficulty === "intermediate";
-    if (filter === "advanced") return matchesSearch && course.difficulty === "advanced";
+    // Basic filter (difficulty or category)
+    let matchesBasicFilter = true;
+    if (filter === "all") matchesBasicFilter = true;
+    else if (filter === "beginner") matchesBasicFilter = course.difficulty === "beginner";
+    else if (filter === "intermediate") matchesBasicFilter = course.difficulty === "intermediate";
+    else if (filter === "advanced") matchesBasicFilter = course.difficulty === "advanced";
+    else matchesBasicFilter = course.category === filter;
     
-    return matchesSearch && course.category === filter;
+    // Advanced filters
+    const matchesPrice = course.price >= priceRange[0] && course.price <= priceRange[1];
+    const matchesDuration = course.duration >= durationRange[0] && course.duration <= durationRange[1];
+    const matchesRating = minRating === 0 || (course.averageRating ?? 0) >= minRating;
+    const matchesVideo = !hasVideoOnly || course.hasAnyVideo === true;
+    
+    return matchesSearch && matchesBasicFilter && matchesPrice && matchesDuration && matchesRating && matchesVideo;
   });
 
   // 페이지네이션을 위한 현재 페이지 강의 목록
@@ -257,7 +277,7 @@ export default function Courses(props?: CoursesPageProps) {
   // 검색/필터 변경 시 첫 페이지로 리셋
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filter]);
+  }, [searchTerm, filter, priceRange, durationRange, minRating, hasVideoOnly]);
 
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
@@ -415,6 +435,131 @@ export default function Courses(props?: CoursesPageProps) {
           </Button>
         </div>
       </div>
+
+      {/* Advanced Filters Panel */}
+      {showAdvancedFilters && (
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-testid="advanced-filters-panel">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">고급 필터</h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowAdvancedFilters(false)}
+              data-testid="button-close-filters"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Price Range */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">가격 범위</Label>
+              <Slider
+                value={[priceRange[0], priceRange[1]]}
+                onValueChange={(value) => setPriceRange([value[0], value[1]])}
+                min={0}
+                max={500000}
+                step={10000}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>{priceRange[0].toLocaleString()}원</span>
+                <span>{priceRange[1].toLocaleString()}원</span>
+              </div>
+            </div>
+
+            {/* Duration Range */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">강의 시간 (분)</Label>
+              <Slider
+                value={[durationRange[0], durationRange[1]]}
+                onValueChange={(value) => setDurationRange([value[0], value[1]])}
+                min={0}
+                max={600}
+                step={30}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>{durationRange[0]}분</span>
+                <span>{durationRange[1]}분</span>
+              </div>
+            </div>
+
+            {/* Minimum Rating */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">최소 평점</Label>
+              <div className="flex items-center gap-2">
+                {[0, 1, 2, 3, 4, 5].map((rating) => (
+                  <Button
+                    key={rating}
+                    variant={minRating === rating ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setMinRating(rating)}
+                    data-testid={`button-rating-${rating}`}
+                  >
+                    {rating === 0 ? "전체" : rating}
+                  </Button>
+                ))}
+              </div>
+              {minRating > 0 && (
+                <div className="flex items-center text-xs text-gray-500">
+                  <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 mr-1" />
+                  {minRating}점 이상
+                </div>
+              )}
+            </div>
+
+            {/* Video Only Toggle */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">추가 옵션</Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="hasVideoOnly" 
+                  checked={hasVideoOnly}
+                  onCheckedChange={(checked) => setHasVideoOnly(checked as boolean)}
+                  data-testid="checkbox-video-only"
+                />
+                <Label htmlFor="hasVideoOnly" className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+                  영상 강의만 보기
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Actions */}
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setPriceRange([0, 500000]);
+                setHasVideoOnly(false);
+                setSelectedCategories([]);
+                setMinRating(0);
+                setDurationRange([0, 600]);
+              }}
+              data-testid="button-reset-filters"
+            >
+              초기화
+            </Button>
+            <Button 
+              size="sm"
+              onClick={() => {
+                toast({
+                  title: "필터 적용됨",
+                  description: "선택한 필터가 적용되었습니다.",
+                });
+                setShowAdvancedFilters(false);
+              }}
+              data-testid="button-apply-filters"
+            >
+              필터 적용
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Course Grid/List */}
       <div className={viewMode === 'grid' 
