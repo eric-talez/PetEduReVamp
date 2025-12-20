@@ -88,15 +88,15 @@ function getTestAccounts() {
       password: process.env.TEST_TRAINER_PASSWORD || 'change-this-password-in-production', 
       role: 'trainer', 
       name: '강동훈',
-      email: 'donghoong@wangzzang.com',
-      id: 2
+      email: 'kang@talez.com',
+      id: 4
     },
     '강동훈': { 
       password: process.env.TEST_TRAINER_PASSWORD || 'change-this-password-in-production', 
       role: 'trainer', 
       name: '강동훈',
-      email: 'donghoong@wangzzang.com',
-      id: 2
+      email: 'kang@talez.com',
+      id: 4
     },
     'test': { 
       password: process.env.TEST_USER_PASSWORD || 'change-this-password-in-production', 
