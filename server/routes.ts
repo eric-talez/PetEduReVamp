@@ -10900,8 +10900,21 @@ app.get('/api/search', async (req, res) => {
       }
 
       // 기관 정보 추출
-      const verifiedInstitute = registrationData.verifiedInstitute;
+      let verifiedInstitute = registrationData.verifiedInstitute;
       const instituteCode = registrationData.businessInfo?.instituteCode || null;
+      
+      // 기관 코드가 없으면 기본 TALEZ 공식 기관으로 연결
+      if (!verifiedInstitute && !instituteCode) {
+        const defaultInstitute = await storage.getInstituteByCode('TALEZ');
+        if (defaultInstitute) {
+          verifiedInstitute = {
+            id: defaultInstitute.id,
+            name: defaultInstitute.name,
+            code: defaultInstitute.code
+          };
+          console.log('[훈련사 등록] 기관 코드 미입력 - 기본 TALEZ 기관으로 연결:', verifiedInstitute.name);
+        }
+      }
       
       // 기관 정보를 JSON으로 저장 (승인 시 trainer_institutes 연결에 사용)
       const affiliationData = verifiedInstitute ? JSON.stringify({
@@ -10915,7 +10928,7 @@ app.get('/api/search', async (req, res) => {
         name: registrationData.personalInfo?.name || registrationData.name,
         email: registrationData.personalInfo?.email || registrationData.email,
         phone: registrationData.personalInfo?.phone || registrationData.phone,
-        hasAffiliation: !!verifiedInstitute || registrationData.hasAffiliation || false,
+        hasAffiliation: true, // 기관 코드가 없어도 기본 TALEZ 기관에 소속됨
         affiliationName: affiliationData,
         experience: registrationData.professionalInfo?.experience || registrationData.experience || null,
         education: registrationData.education || null,
