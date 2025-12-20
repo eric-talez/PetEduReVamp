@@ -1512,6 +1512,32 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
+
+        {/* 강의 목록 - 비인증 사용자도 열람 가능 */}
+        <Route path="/courses" component={() => <Courses />} />
+        <Route path="/course/:id" component={CourseDetail} />
+        <Route path="/courses/:id" component={CourseDetail} />
+
+        {/* 훈련사 목록 - 비인증 사용자도 열람 가능 */}
+        <Route path="/trainers" component={Trainers} />
+        <Route path="/trainers/:id">
+          {() => {
+            const TrainerDetailPage = lazy(() => import('./pages/trainers/detail'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <TrainerDetailPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        {/* 기관 목록 - 비인증 사용자도 열람 가능 */}
+        <Route path="/institutes" component={Institutes} />
+
+        {/* 커뮤니티 - 비인증 사용자도 열람 가능 */}
+        <Route path="/community" component={Community} />
+        <Route path="/community/post/:id" component={CommunityPostDetail} />
+
         <Route path="/" component={Home} />
 
         {/* 404 페이지 */}
