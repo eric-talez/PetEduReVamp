@@ -44,6 +44,8 @@ const defaultMenuSettings: MenuVisibilitySettings = {
   },
   admin: {
     'admin-dashboard': true,
+    'users-management': true,
+    'trainers-management': true,
     'admin-analytics': true,
     'members-status': true,
     'substitute-overview': true,

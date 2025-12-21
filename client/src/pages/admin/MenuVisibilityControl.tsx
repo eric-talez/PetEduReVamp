@@ -149,6 +149,8 @@ const MenuVisibilityControl: React.FC = () => {
       icon: <Settings className="w-4 h-4" />,
       menuItems: [
         { id: 'admin-dashboard', name: '통합 대시보드', path: '/admin/dashboard', category: '대시보드', description: '전체 시스템 현황', icon: 'BarChart3' },
+        { id: 'users-management', name: '사용자 관리', path: '/admin/users', category: '대시보드', description: '전체 사용자 관리', icon: 'Users' },
+        { id: 'trainers-management', name: '훈련사 관리', path: '/admin/trainers', category: '대시보드', description: '훈련사 현황 관리', icon: 'UserCheck' },
         { id: 'admin-analytics', name: '심층 분석', path: '/admin/analytics', category: '대시보드', description: '상세 데이터 분석', icon: 'Activity' },
         { id: 'members-status', name: '회원 현황', path: '/admin/members-status', category: '대시보드', description: '전체 회원 현황', icon: 'Users' },
         { id: 'substitute-overview', name: '대체 훈련사 현황', path: '/admin/substitute-overview', category: '대시보드', description: '대체 인력 현황', icon: 'RefreshCw' },
