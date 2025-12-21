@@ -1,106 +1,101 @@
 import { useAuth } from '@/lib/auth-compat';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-// Avatar 컴포넌트 대신 직접 이미지 태그 사용
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, Star, TrendingUp, Calendar, Clock, Bell, List, 
-  ChevronRight, MessageCircle, BookOpen, Clipboard, Award, DollarSign
+  ChevronRight, MessageCircle, BookOpen, Clipboard, Award, DollarSign, Loader2
 } from 'lucide-react';
 import { Link } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { getQueryFn } from '@/lib/queryClient';
+
+interface DashboardData {
+  stats: {
+    totalStudents: number;
+    totalCourses: number;
+    averageRating: number;
+    monthlyRevenue: number;
+    totalNotebooks: number;
+    unreadNotifications: number;
+  };
+  recentStudents: Array<{
+    id: number;
+    name: string;
+    image: string | null;
+    course: string;
+    progress: number;
+    lastActivity: string;
+    pet: { name: string; image: string | null };
+  }>;
+  recentNotebooks: Array<{
+    id: number;
+    pet: string;
+    owner: string;
+    date: string;
+    content: string;
+    hasImage: boolean;
+  }>;
+  upcomingSchedules: Array<{
+    id: number;
+    title: string;
+    time: string;
+    type: string;
+    student: string;
+    pet: string;
+  }>;
+}
 
 export default function TrainerHome() {
   const { userName } = useAuth();
 
-  // 수강생 데이터 모의 
-  const recentStudents = [
-    {
-      id: 1,
-      name: "김시현",
-      image: null,
-      course: "반려견 기초 훈련 마스터하기",
-      progress: 65,
-      lastActivity: "오늘",
-      pet: {
-        name: "몽이",
-        image: null
-      }
-    },
-    {
-      id: 2,
-      name: "이현준",
-      image: null,
-      course: "반려견 사회화 훈련",
-      progress: 45,
-      lastActivity: "어제",
-      pet: {
-        name: "콩이",
-        image: null
-      }
-    },
-    {
-      id: 3,
-      name: "박민지",
-      image: null,
-      course: "반려견 어질리티 입문",
-      progress: 30,
-      lastActivity: "3일 전",
-      pet: {
-        name: "까미",
-        image: null
-      }
-    }
-  ];
+  // 실제 API에서 대시보드 데이터 가져오기
+  const { data: dashboardData, isLoading, isError, error } = useQuery<DashboardData>({
+    queryKey: ['/api/trainer/dashboard'],
+    queryFn: getQueryFn({ on401: 'returnNull' }),
+    staleTime: 60000, // 1분
+    retry: false
+  });
 
-  // 다가오는 일정 데이터 모의
-  const upcomingSchedules = [
-    {
-      id: 1,
-      title: "기본 훈련 12주차",
-      time: "오늘 17:00",
-      type: "수업",
-      student: "김시현",
-      pet: "몽이"
-    },
-    {
-      id: 2,
-      title: "어질리티 훈련 6주차",
-      time: "내일 14:00",
-      type: "수업",
-      student: "박민지",
-      pet: "까미"
-    },
-    {
-      id: 3,
-      title: "행동 교정 상담",
-      time: "수요일 16:30",
-      type: "상담",
-      student: "최도윤",
-      pet: "콩이"
-    }
-  ];
+  // 로딩 상태 또는 기본값 사용
+  const stats = dashboardData?.stats || {
+    totalStudents: 0,
+    totalCourses: 0,
+    averageRating: 0,
+    monthlyRevenue: 0,
+    totalNotebooks: 0,
+    unreadNotifications: 0
+  };
 
-  // 알림장 최근 활동
-  const recentNotebooks = [
-    {
-      id: 1,
-      pet: "몽이",
-      owner: "김시현",
-      date: "오늘",
-      content: "오늘 몽이가 '앉아' 명령에 잘 반응했습니다. 지속적인 연습이 필요합니다.",
-      hasImage: true
-    },
-    {
-      id: 2,
-      pet: "까미",
-      owner: "박민지",
-      date: "어제",
-      content: "까미의 사회화 과정에서 큰 진전이 있었습니다. 다른 강아지와의 만남에서 긍정적인 행동을 보였습니다.",
-      hasImage: false
-    }
-  ];
+  const recentStudents = dashboardData?.recentStudents || [];
+  const upcomingSchedules = dashboardData?.upcomingSchedules || [];
+  const recentNotebooks = dashboardData?.recentNotebooks || [];
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6 max-w-7xl flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-gray-600">대시보드를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="container mx-auto p-6 max-w-7xl flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-4 rounded-lg">
+            <p className="font-medium">대시보드 데이터를 불러올 수 없습니다.</p>
+            <p className="text-sm mt-2">페이지를 새로고침하거나 다시 로그인해주세요.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -122,7 +117,9 @@ export default function TrainerHome() {
           >
             <Bell className="w-4 h-4 mr-2" />
             알림
-            <Badge variant="danger" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
+            {stats.unreadNotifications > 0 && (
+              <Badge variant="danger" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">{stats.unreadNotifications}</Badge>
+            )}
           </Button>
           <Button 
             variant="outline" 
@@ -164,12 +161,11 @@ export default function TrainerHome() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">총 수강생</p>
-                <h3 className="text-2xl font-bold">78명</h3>
+                <h3 className="text-2xl font-bold">{stats.totalStudents}명</h3>
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <Badge variant="outline" className="mr-2 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800">+12%</Badge>
-              <span className="text-gray-500 dark:text-gray-400">지난달 대비</span>
+              <span className="text-gray-500 dark:text-gray-400">배정된 반려동물 수</span>
             </div>
           </CardContent>
         </Card>
@@ -178,16 +174,15 @@ export default function TrainerHome() {
           <CardContent className="p-6">
             <div className="flex items-center">
               <div className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-3 rounded-full mr-4">
-                <List className="h-6 w-6" />
+                <Clipboard className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">운영 강의</p>
-                <h3 className="text-2xl font-bold">5개</h3>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">작성 알림장</p>
+                <h3 className="text-2xl font-bold">{stats.totalNotebooks}개</h3>
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <Badge variant="outline" className="mr-2 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800">+1</Badge>
-              <span className="text-gray-500 dark:text-gray-400">지난달 신규 강의</span>
+              <span className="text-gray-500 dark:text-gray-400">총 작성한 알림장 수</span>
             </div>
           </CardContent>
         </Card>
@@ -200,12 +195,11 @@ export default function TrainerHome() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">평균 평점</p>
-                <h3 className="text-2xl font-bold">4.8/5</h3>
+                <h3 className="text-2xl font-bold">{stats.averageRating.toFixed(1)}/5</h3>
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <Badge variant="outline" className="mr-2 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800">+0.1</Badge>
-              <span className="text-gray-500 dark:text-gray-400">지난 3개월 대비</span>
+              <span className="text-gray-500 dark:text-gray-400">수강생 리뷰 평점</span>
             </div>
           </CardContent>
         </Card>
@@ -214,16 +208,15 @@ export default function TrainerHome() {
           <CardContent className="p-6">
             <div className="flex items-center">
               <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-3 rounded-full mr-4">
-                <TrendingUp className="h-6 w-6" />
+                <List className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">이번 달 수익</p>
-                <h3 className="text-2xl font-bold">290만원</h3>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">운영 프로그램</p>
+                <h3 className="text-2xl font-bold">{stats.totalCourses}개</h3>
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <Badge variant="outline" className="mr-2 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800">+8%</Badge>
-              <span className="text-gray-500 dark:text-gray-400">지난달 대비</span>
+              <span className="text-gray-500 dark:text-gray-400">진행 중인 훈련 프로그램</span>
             </div>
           </CardContent>
         </Card>
@@ -244,8 +237,8 @@ export default function TrainerHome() {
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">이번 달 순수익</span>
-                <span className="text-sm font-bold text-green-600 dark:text-green-400">1,850만원</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">수익 현황 확인</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
               </div>
             </CardContent>
           </Card>
@@ -264,8 +257,8 @@ export default function TrainerHome() {
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">활성 학생</span>
-                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">23명</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">배정된 학생</span>
+                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{stats.totalStudents}명</span>
               </div>
             </CardContent>
           </Card>
@@ -284,8 +277,8 @@ export default function TrainerHome() {
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">프로필 완성도</span>
-                <span className="text-sm font-bold text-purple-600 dark:text-purple-400">95%</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">프로필 설정</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
               </div>
             </CardContent>
           </Card>
@@ -308,25 +301,32 @@ export default function TrainerHome() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {upcomingSchedules.map((schedule) => (
-                <div key={schedule.id} className="flex items-start">
-                  <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div className="ml-3">
-                    <div className="font-medium">{schedule.title}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                      <span className="mr-2">{schedule.time}</span>
-                      <Badge variant="outline" className={`text-[10px] px-2 py-0.5 ${schedule.type === "수업" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 border-blue-200 dark:border-blue-800" : "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400 border-purple-200 dark:border-purple-800"}`}>
-                        {schedule.type}
-                      </Badge>
+              {upcomingSchedules.length > 0 ? (
+                upcomingSchedules.map((schedule) => (
+                  <div key={schedule.id} className="flex items-start">
+                    <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-5 h-5" />
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {schedule.student} (반려견: {schedule.pet})
+                    <div className="ml-3">
+                      <div className="font-medium">{schedule.title}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                        <span className="mr-2">{schedule.time}</span>
+                        <Badge variant="outline" className={`text-[10px] px-2 py-0.5 ${schedule.type === "수업" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 border-blue-200 dark:border-blue-800" : "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400 border-purple-200 dark:border-purple-800"}`}>
+                          {schedule.type}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {schedule.student} (반려견: {schedule.pet})
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">예정된 일정이 없습니다</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -345,31 +345,40 @@ export default function TrainerHome() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentNotebooks.map((notebook) => (
-                <div key={notebook.id} className="flex items-start">
-                  <div className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-2 rounded-full mr-3">
-                    <Clipboard className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{notebook.pet} ({notebook.owner})</span>
-                      <span className="text-xs text-gray-500">{notebook.date}</span>
+              {recentNotebooks.length > 0 ? (
+                recentNotebooks.map((notebook) => (
+                  <div key={notebook.id} className="flex items-start">
+                    <div className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-2 rounded-full mr-3">
+                      <Clipboard className="w-5 h-5" />
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
-                      {notebook.content}
-                    </p>
-                    {notebook.hasImage && (
-                      <Badge variant="outline" className="mt-2 text-xs bg-gray-50 text-gray-600 dark:bg-gray-800/40 dark:text-gray-400">
-                        이미지 첨부됨
-                      </Badge>
-                    )}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{notebook.pet} ({notebook.owner})</span>
+                        <span className="text-xs text-gray-500">{notebook.date}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                        {notebook.content}
+                      </p>
+                      {notebook.hasImage && (
+                        <Badge variant="outline" className="mt-2 text-xs bg-gray-50 text-gray-600 dark:bg-gray-800/40 dark:text-gray-400">
+                          이미지 첨부됨
+                        </Badge>
+                      )}
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  <Clipboard className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">작성한 알림장이 없습니다</p>
                 </div>
-              ))}
-              <Button variant="outline" size="sm" className="w-full mt-2">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                알림장 작성하기
-              </Button>
+              )}
+              <Link href="/notebook">
+                <Button variant="outline" size="sm" className="w-full mt-2">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  알림장 작성하기
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -388,44 +397,51 @@ export default function TrainerHome() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentStudents.map((student) => (
-                <div key={student.id} className="pb-4 border-b border-gray-100 dark:border-gray-800 last:border-none last:pb-0">
-                  <div className="flex items-center mb-2">
-                    <div className="relative h-8 w-8 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
-                      {student.image ? (
-                        <img 
-                          src={student.image} 
-                          alt={student.name} 
-                          className="h-full w-full object-cover filter brightness-110 contrast-110"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
-                          {student.name.substring(0, 1)}
+              {recentStudents.length > 0 ? (
+                recentStudents.map((student) => (
+                  <div key={student.id} className="pb-4 border-b border-gray-100 dark:border-gray-800 last:border-none last:pb-0">
+                    <div className="flex items-center mb-2">
+                      <div className="relative h-8 w-8 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
+                        {student.image ? (
+                          <img 
+                            src={student.image} 
+                            alt={student.name} 
+                            className="h-full w-full object-cover filter brightness-110 contrast-110"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
+                            {student.name.substring(0, 1)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="ml-2">
+                        <div className="font-medium text-sm">{student.name}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                          반려견: {student.pet?.name || '-'}
                         </div>
-                      )}
-                    </div>
-                    <div className="ml-2">
-                      <div className="font-medium text-sm">{student.name}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">
-                        반려견: {student.pet.name}
+                      </div>
+                      <div className="ml-auto text-xs text-gray-500">
+                        {student.lastActivity}
                       </div>
                     </div>
-                    <div className="ml-auto text-xs text-gray-500">
-                      {student.lastActivity}
+
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                      {student.course}
                     </div>
-                  </div>
 
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    {student.course}
+                    <div className="flex items-center justify-between text-xs mt-1 mb-1">
+                      <span className="text-gray-600 dark:text-gray-400">진도율</span>
+                      <span className="font-medium">{student.progress}%</span>
+                    </div>
+                    <Progress value={student.progress} className="h-1" />
                   </div>
-
-                  <div className="flex items-center justify-between text-xs mt-1 mb-1">
-                    <span className="text-gray-600 dark:text-gray-400">진도율</span>
-                    <span className="font-medium">{student.progress}%</span>
-                  </div>
-                  <Progress value={student.progress} className="h-1" />
+                ))
+              ) : (
+                <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">등록된 수강생이 없습니다</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>

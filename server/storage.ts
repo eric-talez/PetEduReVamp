@@ -2386,6 +2386,16 @@ class Storage {
     return (this.trainingJournals || []).filter(journal => journal.trainerId === trainerId);
   }
 
+  // Alias for API compatibility
+  getTrainingJournalsByTrainerId(trainerId: number): any[] {
+    return this.getTrainingJournalsByTrainer(trainerId);
+  }
+
+  // 훈련사에게 배정된 반려동물 조회
+  getPetsByTrainerId(trainerId: number): any[] {
+    return (this.pets || []).filter(pet => pet.trainerId === trainerId || pet.assignedTrainerId === trainerId);
+  }
+
   getTrainingJournalsByPet(petId: number): any[] {
     return (this.trainingJournals || []).filter(journal => journal.petId === petId);
   }

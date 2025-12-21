@@ -5583,6 +5583,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 훈련사 대시보드 통계 API
+  app.get("/api/trainer/dashboard", requireAuth('trainer'), async (req, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ success: false, error: '인증이 필요합니다.' });
+      }
+
+      // 훈련사의 알림장 조회
+      const trainingJournals = storage.getTrainingJournalsByTrainerId(userId);
+      
+      // 훈련사의 반려동물(수강생) 목록 조회
+      const assignedPets = storage.getPetsByTrainerId ? storage.getPetsByTrainerId(userId) : [];
+      
+      // 알림 개수 조회
+      const notifications = storage.getNotificationsByUserId ? storage.getNotificationsByUserId(userId) : [];
+      const unreadNotifications = notifications.filter((n: any) => !n.isRead);
+
+      // 최근 알림장 (3개)
+      const recentNotebooks = trainingJournals.slice(0, 3).map((journal: any) => ({
+        id: journal.id,
+        pet: journal.petName || '반려동물',
+        owner: journal.ownerName || '보호자',
+        date: journal.createdAt ? new Date(journal.createdAt).toLocaleDateString('ko-KR') : '오늘',
+        content: journal.content?.substring(0, 100) || '',
+        hasImage: journal.photos?.length > 0 || journal.images?.length > 0
+      }));
+
+      // 최근 수강생 (3명)
+      const recentStudents = assignedPets.slice(0, 3).map((pet: any) => ({
+        id: pet.id,
+        name: pet.ownerName || '보호자',
+        image: null,
+        course: pet.trainingProgram || '훈련 프로그램',
+        progress: pet.trainingProgress || 0,
+        lastActivity: pet.lastActivityDate || '최근',
+        pet: {
+          name: pet.name,
+          image: pet.image || null
+        }
+      }));
+
+      // 통계 계산
+      const stats = {
+        totalStudents: assignedPets.length,
+        totalCourses: new Set(assignedPets.map((p: any) => p.trainingProgram)).size || 1,
+        averageRating: 4.5, // 실제 리뷰에서 계산 필요
+        monthlyRevenue: 0, // 실제 수익에서 계산 필요
+        totalNotebooks: trainingJournals.length,
+        unreadNotifications: unreadNotifications.length
+      };
+
+      // 다가오는 일정 (실제 일정 데이터가 있으면 사용)
+      const upcomingSchedules = assignedPets.slice(0, 3).map((pet: any, index: number) => ({
+        id: pet.id,
+        title: `${pet.name} 훈련 ${index + 1}회차`,
+        time: index === 0 ? '오늘 17:00' : index === 1 ? '내일 14:00' : '수요일 16:30',
+        type: '수업',
+        student: pet.ownerName || '보호자',
+        pet: pet.name
+      }));
+
+      res.json({
+        success: true,
+        stats,
+        recentStudents,
+        recentNotebooks,
+        upcomingSchedules
+      });
+    } catch (error) {
+      console.error('훈련사 대시보드 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '대시보드 데이터를 불러오는 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // 훈련사 프로필 조회 API
   app.get("/api/trainer/profile", async (req, res) => {
     try {

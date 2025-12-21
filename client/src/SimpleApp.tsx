@@ -487,6 +487,18 @@ function AuthenticatedRoutes() {
         <Route path="/trainer/dashboard">
           {() => <ProtectedTrainerRoute component={() => <Dashboard type="trainer" />} />}
         </Route>
+        <Route path="/trainer">
+          {() => {
+            const TrainerHomePage = lazy(() => import('./pages/trainer/TrainerHome'));
+            return (
+              <ProtectedTrainerRoute component={() => (
+                <Suspense fallback={<SimpleLoading />}>
+                  <TrainerHomePage />
+                </Suspense>
+              )} />
+            );
+          }}
+        </Route>
         <Route path="/institute/dashboard">
           {() => {
             const InstituteDashboard = lazy(() => import('./pages/institute-admin/InstituteDashboard'));
