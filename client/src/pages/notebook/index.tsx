@@ -801,7 +801,7 @@ export default function NotebookPage() {
   };
 
   // AI 알림장 생성 (중복 제거)
-  const handleAIGenerate = async (petData: any) => {
+  const handleAIGenerate = async () => {
     // 권한 체크
     if (!['trainer', 'institute-admin', 'admin'].includes(userRole || '')) {
       toast({
@@ -813,7 +813,7 @@ export default function NotebookPage() {
     }
 
     try {
-      setIsLoading(true);
+      setLoading(true);
       const response = await fetch('/api/notebook/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
