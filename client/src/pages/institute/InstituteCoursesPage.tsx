@@ -457,7 +457,7 @@ export default function InstituteCoursesPage() {
                             course.status === 'active' ? 'default' : 
                             course.status === 'draft' ? 'outline' : 
                             course.status === 'completed' ? 'secondary' :
-                            'destructive'
+                            'danger'
                           }>
                             {course.status === 'active' ? '진행중' : 
                              course.status === 'draft' ? '초안' : 

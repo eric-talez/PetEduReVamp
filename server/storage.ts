@@ -2303,6 +2303,23 @@ class Storage {
     }
   }
 
+  async getTrainingJournalsByInstitute(instituteId: number): Promise<any[]> {
+    try {
+      // 기관에 소속된 훈련사들 찾기
+      const allTrainers = await this.getAllTrainers();
+      const instituteTrainers = allTrainers.filter(trainer => trainer.instituteId === instituteId);
+      const trainerIds = instituteTrainers.map(trainer => trainer.id);
+
+      // 해당 훈련사들이 작성한 알림장 반환
+      return (this.trainingJournals || []).filter(journal =>
+        trainerIds.includes(journal.trainerId)
+      );
+    } catch (error) {
+      console.error('getTrainingJournalsByInstitute 오류:', error);
+      return [];
+    }
+  }
+
   createTrainingJournal(journalData: any): any {
     const journal = {
       id: (this.trainingJournals || []).length + 1,
