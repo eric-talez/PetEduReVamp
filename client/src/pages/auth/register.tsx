@@ -31,6 +31,7 @@ export default function Register() {
   const [gender, setGender] = useState<"male" | "female" | "">("");
   const [userRole, setUserRole] = useState<UserRole>("pet-owner");
   const [instituteCode, setInstituteCode] = useState("");
+  const [instituteOption, setInstituteOption] = useState<"talez" | "custom">("talez");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialSignup, setIsSocialSignup] = useState(false);
@@ -424,15 +425,41 @@ export default function Register() {
             
             {(userRole === 'trainer' || userRole === 'institute-admin') && (
               <div className="space-y-2">
-                <Label htmlFor="institute-code">기관 코드</Label>
-                <Input
-                  id="institute-code"
-                  type="text"
-                  placeholder="소속 기관 코드를 입력하세요"
-                  value={instituteCode}
-                  onChange={(e) => setInstituteCode(e.target.value)}
-                  required={userRole === 'trainer' || userRole === 'institute-admin'}
-                />
+                <Label htmlFor="institute-option">소속 기관</Label>
+                <Select 
+                  value={instituteOption} 
+                  onValueChange={(value: "talez" | "custom") => {
+                    setInstituteOption(value);
+                    if (value === "talez") {
+                      setInstituteCode("");
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="소속 기관을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="talez">TALEZ 공식 기관</SelectItem>
+                    <SelectItem value="custom">직접 입력</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                {instituteOption === "custom" && (
+                  <Input
+                    id="institute-code"
+                    type="text"
+                    placeholder="소속 기관 코드를 입력하세요"
+                    value={instituteCode}
+                    onChange={(e) => setInstituteCode(e.target.value)}
+                    className="mt-2"
+                  />
+                )}
+                
+                {instituteOption === "talez" && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    TALEZ 공식 기관 소속으로 등록됩니다.
+                  </p>
+                )}
               </div>
             )}
             
