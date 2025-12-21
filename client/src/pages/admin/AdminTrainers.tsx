@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Filter, Plus, Eye, Edit, Trash2, GraduationCap, MapPin, Star } from "lucide-react";
+import { Search, Filter, Plus, Eye, Edit, Trash2, GraduationCap, MapPin, Star, Trophy, TrendingUp, MessageSquare, ThumbsUp, ThumbsDown, Award } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { getCSRFToken } from "@/lib/csrf";
 
@@ -349,11 +350,20 @@ export default function AdminTrainers() {
         </Card>
       </div>
 
-      {/* 검색 및 필터 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>훈련사 목록</CardTitle>
-        </CardHeader>
+      {/* 탭 기반 관리 */}
+      <Tabs defaultValue="list" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="list">훈련사 목록</TabsTrigger>
+          <TabsTrigger value="performance">성과 순위</TabsTrigger>
+          <TabsTrigger value="reviews">리뷰 및 평가</TabsTrigger>
+        </TabsList>
+
+        {/* 훈련사 목록 탭 */}
+        <TabsContent value="list">
+          <Card>
+            <CardHeader>
+              <CardTitle>훈련사 목록</CardTitle>
+            </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-4">
             <div className="relative flex-1">
@@ -480,7 +490,190 @@ export default function AdminTrainers() {
             ))}
           </div>
         </CardContent>
-      </Card>
+          </Card>
+        </TabsContent>
+
+        {/* 성과 순위 탭 */}
+        <TabsContent value="performance">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-yellow-500" />
+                훈련사 성과 순위
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* 성과 순위 테이블 */}
+                <div className="border rounded-lg">
+                  <div className="grid grid-cols-7 gap-4 p-4 font-medium border-b bg-muted/50">
+                    <div>순위</div>
+                    <div>훈련사</div>
+                    <div className="text-center">수강생 수</div>
+                    <div className="text-center">완료 강좌</div>
+                    <div className="text-center">평균 평점</div>
+                    <div className="text-center">리뷰 수</div>
+                    <div className="text-center">성과 점수</div>
+                  </div>
+                  {trainers
+                    .map((trainer: any) => ({
+                      ...trainer,
+                      performanceScore: (trainer.studentsCount * 10) + (trainer.rating * 20) + ((trainer.reviewsCount || 0) * 5)
+                    }))
+                    .sort((a: any, b: any) => b.performanceScore - a.performanceScore)
+                    .slice(0, 10)
+                    .map((trainer: any, index: number) => (
+                      <div key={trainer.id} className="grid grid-cols-7 gap-4 p-4 border-b last:border-b-0 hover:bg-muted/30">
+                        <div className="flex items-center gap-2">
+                          {index === 0 && <Trophy className="h-5 w-5 text-yellow-500" />}
+                          {index === 1 && <Trophy className="h-5 w-5 text-gray-400" />}
+                          {index === 2 && <Trophy className="h-5 w-5 text-amber-600" />}
+                          <span className="font-bold">{index + 1}위</span>
+                        </div>
+                        <div>
+                          <div className="font-medium">{trainer.name || '이름 없음'}</div>
+                          <div className="text-xs text-muted-foreground">{trainer.institute || '-'}</div>
+                        </div>
+                        <div className="text-center font-medium">{trainer.studentsCount || 0}명</div>
+                        <div className="text-center">{trainer.coursesCompleted || 0}개</div>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                            {(trainer.rating || 0).toFixed(1)}
+                          </div>
+                        </div>
+                        <div className="text-center">{trainer.reviewsCount || 0}개</div>
+                        <div className="text-center">
+                          <Badge variant="secondary" className="bg-primary/10 text-primary">
+                            {trainer.performanceScore}점
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 리뷰 및 평가 탭 */}
+        <TabsContent value="reviews">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-blue-500" />
+                훈련사 리뷰 및 평가
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* 리뷰 요약 통계 */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <ThumbsUp className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">긍정 리뷰</p>
+                          <p className="text-xl font-bold text-green-600">85%</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-lg">
+                          <ThumbsDown className="h-5 w-5 text-red-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">개선 필요</p>
+                          <p className="text-xl font-bold text-red-600">15%</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-yellow-100 rounded-lg">
+                          <Star className="h-5 w-5 text-yellow-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">전체 평균</p>
+                          <p className="text-xl font-bold text-yellow-600">
+                            {trainers.length > 0 ? (trainers.reduce((t: number, trainer: any) => t + (trainer.rating || 0), 0) / trainers.length).toFixed(1) : '0.0'}점
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <MessageSquare className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">총 리뷰 수</p>
+                          <p className="text-xl font-bold text-blue-600">
+                            {trainers.reduce((t: number, trainer: any) => t + (trainer.reviewsCount || 0), 0)}개
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* 훈련사별 리뷰 목록 */}
+                <div className="border rounded-lg">
+                  <div className="grid grid-cols-6 gap-4 p-4 font-medium border-b bg-muted/50">
+                    <div>훈련사</div>
+                    <div className="text-center">평점</div>
+                    <div className="text-center">리뷰 수</div>
+                    <div className="text-center">긍정</div>
+                    <div className="text-center">부정</div>
+                    <div>평가 상태</div>
+                  </div>
+                  {trainers.map((trainer: any) => {
+                    const positiveRate = Math.round((trainer.rating || 0) / 5 * 100);
+                    return (
+                      <div key={trainer.id} className="grid grid-cols-6 gap-4 p-4 border-b last:border-b-0 hover:bg-muted/30">
+                        <div>
+                          <div className="font-medium">{trainer.name || '이름 없음'}</div>
+                          <div className="text-xs text-muted-foreground">{trainer.institute || '-'}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                            {(trainer.rating || 0).toFixed(1)}
+                          </div>
+                        </div>
+                        <div className="text-center">{trainer.reviewsCount || 0}개</div>
+                        <div className="text-center text-green-600">{positiveRate}%</div>
+                        <div className="text-center text-red-600">{100 - positiveRate}%</div>
+                        <div>
+                          {(trainer.rating || 0) >= 4.5 ? (
+                            <Badge className="bg-green-100 text-green-700">우수</Badge>
+                          ) : (trainer.rating || 0) >= 3.5 ? (
+                            <Badge className="bg-blue-100 text-blue-700">양호</Badge>
+                          ) : (trainer.rating || 0) >= 2.5 ? (
+                            <Badge className="bg-yellow-100 text-yellow-700">보통</Badge>
+                          ) : (
+                            <Badge className="bg-red-100 text-red-700">개선 필요</Badge>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
