@@ -204,6 +204,10 @@ export default function AdminHome() {
     setLocation('/admin/alerts');
   };
 
+  const handleGenerateReport = () => {
+    setLocation('/admin/reports');
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* 상세 분석 모달 */}
@@ -357,11 +361,11 @@ export default function AdminHome() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">관리자 대시보드</h1>
         <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleGenerateReport}>
             <FileText className="h-4 w-4 mr-2" />
             보고서 생성
           </Button>
-          <Button variant="default" size="sm">
+          <Button variant="default" size="sm" onClick={handleSystemSettings}>
             <Settings className="h-4 w-4 mr-2" />
             시스템 설정
           </Button>
