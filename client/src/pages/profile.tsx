@@ -48,18 +48,14 @@ export default function ProfilePage({ userType }: ProfilePageProps) {
   const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadProfile();
-  }, [userId]);
+  }, []);
 
   const loadProfile = async () => {
-    if (!userId) {
-      setIsLoading(false);
-      return;
-    }
-    
     setIsLoading(true);
     try {
       const response = await fetch('/api/user/profile', {
@@ -69,12 +65,15 @@ export default function ProfilePage({ userType }: ProfilePageProps) {
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {
+          console.log('[Profile] Loaded profile data:', data.data);
           setProfile(data.data);
           setEditForm(data.data);
+          setImageLoadError(false); // Reset image error on new profile load
         }
       } else {
+        // API 호출 실패 시 기본 프로필 생성
         setProfile({
-          id: userId,
+          id: 0,
           username: userName || '',
           name: userName || '',
           email: '',
@@ -148,6 +147,7 @@ export default function ProfilePage({ userType }: ProfilePageProps) {
         if (updateResponse.ok) {
           setProfile(prev => prev ? { ...prev, profileImage: imageUrl } : null);
           setEditForm(prev => ({ ...prev, profileImage: imageUrl }));
+          setImageLoadError(false); // Reset error to allow new image to load
           toast({
             title: "성공",
             description: "프로필 사진이 업데이트되었습니다."
@@ -199,9 +199,10 @@ export default function ProfilePage({ userType }: ProfilePageProps) {
   };
 
   const getAvatarUrl = () => {
-    if (profile?.profileImage) return profile.profileImage;
-    if (profile?.avatar) return profile.avatar;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || userName || 'U')}&background=2BAA61&color=fff`;
+    const url = profile?.profileImage || profile?.avatar || 
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || userName || 'U')}&background=2BAA61&color=fff`;
+    console.log('[Profile] Avatar URL:', url, 'profileImage:', profile?.profileImage, 'avatar:', profile?.avatar);
+    return url;
   };
 
   const getRoleLabel = () => {
@@ -263,12 +264,38 @@ export default function ProfilePage({ userType }: ProfilePageProps) {
             <div className="flex flex-col md:flex-row gap-8">
               <div className="flex flex-col items-center">
                 <div className="relative group">
-                  <Avatar className="w-32 h-32 border-4 border-primary">
-                    <AvatarImage src={getAvatarUrl()} alt={profile?.name || '사용자'} />
-                    <AvatarFallback className="bg-primary text-white text-3xl">
-                      {(profile?.name || userName || 'U').substring(0, 1).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-32 h-32 border-4 border-primary rounded-full overflow-hidden bg-primary flex items-center justify-center" data-testid="avatar-container">
+                    {(() => {
+                      const hasImage = !!(profile?.profileImage || profile?.avatar);
+                      const showImage = hasImage && !imageLoadError;
+                      console.log('[Profile] Avatar render:', { hasImage, imageLoadError, showImage, profileImage: profile?.profileImage, avatar: profile?.avatar });
+                      
+                      if (showImage) {
+                        const imgUrl = getAvatarUrl();
+                        return (
+                          <img 
+                            src={imgUrl}
+                            alt={profile?.name || '사용자'}
+                            className="w-full h-full object-cover"
+                            data-testid="avatar-image"
+                            onLoad={() => {
+                              console.log('[Profile] Image loaded successfully:', imgUrl);
+                            }}
+                            onError={(e) => {
+                              console.error('[Profile] Image load error:', imgUrl, e);
+                              setImageLoadError(true);
+                            }}
+                          />
+                        );
+                      } else {
+                        return (
+                          <span className="text-white text-3xl font-bold" data-testid="avatar-fallback">
+                            {(profile?.name || userName || 'U').substring(0, 1).toUpperCase()}
+                          </span>
+                        );
+                      }
+                    })()}
+                  </div>
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}

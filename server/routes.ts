@@ -16189,6 +16189,12 @@ export function registerTrainerCertificationRoutes(app: Express) {
       }
 
       const { password, ...userProfile } = user[0];
+      console.log('[Profile API] 프로필 응답 데이터:', {
+        id: userProfile.id,
+        username: userProfile.username,
+        profileImage: userProfile.profileImage,
+        avatar: userProfile.avatar
+      });
       res.json({ success: true, data: userProfile });
     } catch (error) {
       console.error('프로필 조회 오류:', error);
