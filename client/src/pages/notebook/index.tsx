@@ -46,6 +46,7 @@ import { format, isToday, isYesterday, subDays, addDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth-compat';
+import { secureRequest, getCSRFToken } from '@/lib/csrf';
 import NotebookBannerImage from '@assets/stock_images/pet_training_journal_3a3d5b29.jpg';
 import { PageBanner } from '@/components/PageBanner';
 
@@ -697,11 +698,14 @@ export default function NotebookPage() {
         videoUrls = await uploadFilesToServer(uploadedFiles.videos);
       }
 
+      const csrfToken = await getCSRFToken();
       const response = await fetch('/api/notebook/entries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
         },
+        credentials: 'include',
         body: JSON.stringify({
           ...newEntry,
           date: format(selectedDate, 'yyyy-MM-dd'),
