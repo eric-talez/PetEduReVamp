@@ -43,8 +43,9 @@ interface MonthlySummary {
 }
 
 export default function TrainerEarnings() {
-  const { userName } = useGlobalAuth();
+  const { userName, userRole } = useGlobalAuth();
   const { toast } = useToast();
+  const isAdmin = userRole === 'admin';
   const [earnings, setEarnings] = useState<EarningRecord[]>([]);
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -374,28 +375,32 @@ export default function TrainerEarnings() {
             {monthlySummary.map((summary) => (
               <div 
                 key={summary.month} 
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                className={`flex items-center justify-between p-4 border rounded-lg ${isAdmin ? 'hover:bg-muted/50 cursor-pointer' : ''} transition-colors`}
                 onClick={() => {
-                  setSelectedMonthDetail(summary);
-                  setIsDetailModalOpen(true);
+                  if (isAdmin) {
+                    setSelectedMonthDetail(summary);
+                    setIsDetailModalOpen(true);
+                  }
                 }}
               >
                 <div className="flex items-center space-x-4">
                   <div className="text-lg font-semibold">
                     {format(new Date(summary.month + '-01'), 'yyyy년 MM월')}
                   </div>
-                  <Badge variant="secondary">{summary.transactionCount}건</Badge>
+                  {isAdmin && <Badge variant="secondary">{summary.transactionCount}건</Badge>}
                 </div>
                 <div className="text-right flex items-center space-x-2">
                   <div>
                     <div className="text-lg font-bold text-green-600">
                       {summary.netEarnings.toLocaleString()}원
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      매출 {summary.totalRevenue.toLocaleString()}원 - 수수료 {summary.averageCommissionRate}%
-                    </div>
+                    {isAdmin && (
+                      <div className="text-sm text-muted-foreground">
+                        매출 {summary.totalRevenue.toLocaleString()}원 - 수수료 {summary.averageCommissionRate}%
+                      </div>
+                    )}
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  {isAdmin && <ChevronRight className="h-5 w-5 text-muted-foreground" />}
                 </div>
               </div>
             ))}
@@ -523,25 +528,27 @@ export default function TrainerEarnings() {
         </DialogContent>
       </Dialog>
 
-      {/* 필터 */}
-      <div className="flex items-center space-x-4">
-        <label className="text-sm font-medium">기간 필터:</label>
-        <select
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-        >
-          <option value="all">전체 기간</option>
-          {monthlySummary.map((summary) => (
-            <option key={summary.month} value={summary.month}>
-              {format(new Date(summary.month + '-01'), 'yyyy년 MM월')}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* 필터 - 관리자만 표시 */}
+      {isAdmin && (
+        <div className="flex items-center space-x-4">
+          <label className="text-sm font-medium">기간 필터:</label>
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="px-3 py-2 border border-input bg-background rounded-md text-sm"
+          >
+            <option value="all">전체 기간</option>
+            {monthlySummary.map((summary) => (
+              <option key={summary.month} value={summary.month}>
+                {format(new Date(summary.month + '-01'), 'yyyy년 MM월')}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
-      {/* 수익 내역 테이블 */}
-      <Card>
+      {/* 수익 내역 테이블 - 관리자만 표시 */}
+      {isAdmin && <Card>
         <CardHeader>
           <CardTitle>수익 내역</CardTitle>
         </CardHeader>
@@ -601,10 +608,10 @@ export default function TrainerEarnings() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card>}
 
-      {/* 페이지네이션 */}
-      {totalPages > 1 && (
+      {/* 페이지네이션 - 관리자만 표시 */}
+      {isAdmin && totalPages > 1 && (
         <div className="flex justify-center">
           <div className="flex items-center space-x-2">
             <Button
