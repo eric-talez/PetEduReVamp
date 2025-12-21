@@ -92,6 +92,23 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const userRole = auth?.userRole ?? globalAuth?.userRole ?? null;
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
+  
+  // 프로필 이미지 상태
+  const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
+
+  // 프로필 이미지 가져오기
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetch('/api/user/profile', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data?.profileImage) {
+            setUserProfileImage(data.data.profileImage);
+          }
+        })
+        .catch(err => console.error('프로필 이미지 로드 오류:', err));
+    }
+  }, [isAuthenticated]);
 
   // 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
@@ -920,7 +937,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   >
                     <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border-2 border-primary">
                       <AvatarImage 
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=2BAA61&color=fff`} 
+                        src={userProfileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=2BAA61&color=fff`} 
                         alt={userName || '사용자'} 
                       />
                       <AvatarFallback className="bg-primary text-white">{userName ? userName.substring(0, 1).toUpperCase() : "U"}</AvatarFallback>

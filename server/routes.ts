@@ -16143,6 +16143,96 @@ export function registerTrainerCertificationRoutes(app: Express) {
 
   // 모든 인증 API들은 setupAuth()에서 처리됩니다 (/api/auth/login, /api/auth/logout, /api/auth/me)
 
+  // 사용자 프로필 API
+  app.get("/api/user/profile", requireAuth(), async (req, res) => {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, error: "인증이 필요합니다." });
+      }
+
+      const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (user.length === 0) {
+        return res.status(404).json({ success: false, error: "사용자를 찾을 수 없습니다." });
+      }
+
+      const { password, ...userProfile } = user[0];
+      res.json({ success: true, data: userProfile });
+    } catch (error) {
+      console.error('프로필 조회 오류:', error);
+      res.status(500).json({ success: false, error: "프로필 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/user/profile", requireAuth(), async (req, res) => {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, error: "인증이 필요합니다." });
+      }
+
+      const { name, email, phoneNumber, birthDate, gender, bio, address } = req.body;
+
+      const updatedUser = await db.update(users)
+        .set({
+          name: name || undefined,
+          email: email || undefined,
+          phoneNumber: phoneNumber || undefined,
+          birthDate: birthDate || undefined,
+          gender: gender || undefined,
+          bio: bio || undefined,
+          address: address || undefined,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+
+      if (updatedUser.length === 0) {
+        return res.status(404).json({ success: false, error: "사용자를 찾을 수 없습니다." });
+      }
+
+      const { password, ...userProfile } = updatedUser[0];
+      res.json({ success: true, data: userProfile });
+    } catch (error) {
+      console.error('프로필 업데이트 오류:', error);
+      res.status(500).json({ success: false, error: "프로필 업데이트 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/user/profile/image", requireAuth(), async (req, res) => {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, error: "인증이 필요합니다." });
+      }
+
+      const { profileImage } = req.body;
+      if (!profileImage) {
+        return res.status(400).json({ success: false, error: "이미지 URL이 필요합니다." });
+      }
+
+      const updatedUser = await db.update(users)
+        .set({
+          profileImage: profileImage,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+
+      if (updatedUser.length === 0) {
+        return res.status(404).json({ success: false, error: "사용자를 찾을 수 없습니다." });
+      }
+
+      const { password, ...userProfile } = updatedUser[0];
+      res.json({ success: true, data: userProfile });
+    } catch (error) {
+      console.error('프로필 이미지 업데이트 오류:', error);
+      res.status(500).json({ success: false, error: "프로필 이미지 업데이트 중 오류가 발생했습니다." });
+    }
+  });
+
+  console.log('[Profile API] 사용자 프로필 API가 등록되었습니다.');
+
   const httpServer = createServer(app);
   return httpServer;
 }
