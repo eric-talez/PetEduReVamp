@@ -16150,14 +16150,21 @@ export function registerTrainerCertificationRoutes(app: Express) {
   // 사용자 프로필 API
   app.get("/api/user/profile", requireAuth(), async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
-      if (!userId) {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) {
         return res.status(401).json({ success: false, error: "인증이 필요합니다." });
       }
 
-      const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      // username으로 조회 (세션 ID와 DB ID 불일치 문제 해결)
+      const username = sessionUser.username;
+      const user = username 
+        ? await db.select().from(users).where(eq(users.username, username)).limit(1)
+        : await db.select().from(users).where(eq(users.id, sessionUser.id)).limit(1);
+      
       if (user.length === 0) {
-        return res.status(404).json({ success: false, error: "사용자를 찾을 수 없습니다." });
+        // DB에 없으면 세션 정보 반환
+        const { password, ...userProfile } = sessionUser;
+        return res.json({ success: true, data: userProfile });
       }
 
       const { password, ...userProfile } = user[0];
@@ -16170,24 +16177,32 @@ export function registerTrainerCertificationRoutes(app: Express) {
 
   app.put("/api/user/profile", requireAuth(), async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
-      if (!userId) {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) {
         return res.status(401).json({ success: false, error: "인증이 필요합니다." });
       }
 
       const { name, email, phoneNumber, birthDate, gender, bio, address } = req.body;
+      
+      // 업데이트할 값이 있는지 확인
+      const updateData: Record<string, any> = {};
+      if (name !== undefined && name !== '') updateData.name = name;
+      if (email !== undefined && email !== '') updateData.email = email;
+      if (phoneNumber !== undefined && phoneNumber !== '') updateData.phoneNumber = phoneNumber;
+      if (birthDate !== undefined && birthDate !== '') updateData.birthDate = birthDate;
+      if (gender !== undefined && gender !== '') updateData.gender = gender;
+      if (bio !== undefined && bio !== '') updateData.bio = bio;
+      if (address !== undefined && address !== '') updateData.address = address;
+      
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ success: false, error: "업데이트할 값이 없습니다." });
+      }
 
+      // username으로 조회하여 업데이트
+      const username = sessionUser.username;
       const updatedUser = await db.update(users)
-        .set({
-          name: name || undefined,
-          email: email || undefined,
-          phoneNumber: phoneNumber || undefined,
-          birthDate: birthDate || undefined,
-          gender: gender || undefined,
-          bio: bio || undefined,
-          address: address || undefined
-        })
-        .where(eq(users.id, userId))
+        .set(updateData)
+        .where(username ? eq(users.username, username) : eq(users.id, sessionUser.id))
         .returning();
 
       if (updatedUser.length === 0) {
@@ -16204,8 +16219,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
 
   app.put("/api/user/profile/image", requireAuth(), async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
-      if (!userId) {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) {
         return res.status(401).json({ success: false, error: "인증이 필요합니다." });
       }
 
@@ -16214,11 +16229,13 @@ export function registerTrainerCertificationRoutes(app: Express) {
         return res.status(400).json({ success: false, error: "이미지 URL이 필요합니다." });
       }
 
+      // username으로 조회하여 업데이트
+      const username = sessionUser.username;
       const updatedUser = await db.update(users)
         .set({
           profileImage: profileImage
         })
-        .where(eq(users.id, userId))
+        .where(username ? eq(users.username, username) : eq(users.id, sessionUser.id))
         .returning();
 
       if (updatedUser.length === 0) {
