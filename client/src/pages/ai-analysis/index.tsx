@@ -93,7 +93,11 @@ export default function AiAnalysisPage() {
     queryKey: ['/api/pets'],
   });
   
-  const pets = (petsQuery.data as any[]) || [];
+  // API 응답이 배열이거나 { pets: [...] } 형식일 수 있음
+  const petsData = petsQuery.data as any;
+  const pets = Array.isArray(petsData) 
+    ? petsData 
+    : (petsData?.pets || petsData?.data || []);
 
   // 알림장 데이터 조회
   const careLogsQuery = useQuery({
