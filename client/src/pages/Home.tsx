@@ -68,8 +68,8 @@ export default function Home() {
 
   const { data: systemStats } = useQuery<SystemStats>({
     queryKey: ['/api/dashboard/system/status'],
-    refetchInterval: 30000, // 30초마다 업데이트
-    staleTime: 25000
+    refetchInterval: 60000, // 60초마다 업데이트
+    staleTime: 55000
   });
 
   // 주간 통계 데이터 타입 정의

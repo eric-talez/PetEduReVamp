@@ -117,8 +117,8 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
   // 실시간 시스템 상태 데이터 가져오기
   const { data: systemStats, isLoading, error } = useQuery({
     queryKey: ['/api/dashboard/system/status'],
-    refetchInterval: 30000, // 30초마다 업데이트
-    staleTime: 25000
+    refetchInterval: 60000, // 60초마다 업데이트
+    staleTime: 55000
   });
   
   // 토글 함수

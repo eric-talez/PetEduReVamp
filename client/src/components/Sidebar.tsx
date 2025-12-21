@@ -544,7 +544,7 @@ export function Sidebar({
     queryKey: ['/api/logo'],
     retry: false,
     refetchOnWindowFocus: false,
-    staleTime: 30000 // 30초
+    staleTime: 300000 // 5분
   });
 
   // 로고 URL 결정

@@ -191,7 +191,7 @@ export function registerDashboardRoutes(app: Express) {
   // 캐시 저장소
   let systemStatusCache: any = null;
   let cacheTimestamp = 0;
-  const CACHE_DURATION = 30000; // 30초
+  const CACHE_DURATION = 60000; // 60초
 
   // 주간 통계 캐시
   let weeklyStatsCache: any = null;

@@ -15007,6 +15007,11 @@ export function registerTrainerCertificationRoutes(app: Express) {
   // 로고 설정 API - 완전한 보안 및 표준화 구현
   // =============================================================================
 
+  // 로고 캐시
+  let logoCache: any = null;
+  let logoCacheTimestamp = 0;
+  const LOGO_CACHE_DURATION = 300000; // 5분
+
   /**
    * PUT /api/admin/logo - 로고 설정 업데이트 (관리자 전용)
    * 
@@ -15038,6 +15043,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
 
         // 로고 설정 업데이트 수행
         const updatedSettings = await storage.updateLogoSettings(logoData);
+        
+        // 캐시 무효화
+        logoCache = null;
+        logoCacheTimestamp = 0;
         
         console.log('[Logo API] 로고 설정 업데이트 성공:', updatedSettings);
         
@@ -15073,8 +15082,20 @@ export function registerTrainerCertificationRoutes(app: Express) {
 
         const { includeInactive = false } = req.query as LogoSettingsQuery;
 
+        // 캐시된 로고 반환 (includeInactive가 false일 때만)
+        const now = Date.now();
+        if (!includeInactive && logoCache && (now - logoCacheTimestamp) < LOGO_CACHE_DURATION) {
+          return res.success(logoCache, '로고 설정을 성공적으로 조회했습니다.', 200);
+        }
+
         // 로고 설정 조회
         const logoSettings = await storage.getLogoSettings(includeInactive);
+        
+        // 캐시 업데이트
+        if (!includeInactive) {
+          logoCache = logoSettings;
+          logoCacheTimestamp = now;
+        }
         
         if (!logoSettings) {
           console.log('[Logo API] 활성화된 로고 설정이 없음');
