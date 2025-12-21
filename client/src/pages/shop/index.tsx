@@ -61,17 +61,17 @@ export default function ShopIndex() {
   ]);
   
   const [popularProducts] = useState([
-    { id: 1, name: '프리미엄 닭고기 사료 대용량', price: 45000, discountRate: 10, imageUrl: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=400&h=400&fit=crop', brand: '네이처스', rating: 4.8, reviews: 256, isFreeShipping: true, isNew: false },
-    { id: 2, name: '강아지 덴탈 껌 10개입', price: 12000, discountRate: 0, imageUrl: 'https://images.unsplash.com/photo-1582798244325-e6c375efdddc?w=400&h=400&fit=crop', brand: '펫투데이', rating: 4.5, reviews: 189, isFreeShipping: true, isNew: true },
-    { id: 3, name: '반려견 종합 영양제 120정', price: 35000, discountRate: 15, imageUrl: 'https://images.unsplash.com/photo-1585664811087-47f65abbad64?w=400&h=400&fit=crop', brand: '헬시펫', rating: 4.9, reviews: 312, isFreeShipping: true, isNew: false },
-    { id: 4, name: '인터랙티브 노즈워크 장난감', price: 25000, discountRate: 0, imageUrl: 'https://images.unsplash.com/photo-1535294435445-d7249524ef2e?w=400&h=400&fit=crop', brand: '퍼피플레이', rating: 4.7, reviews: 124, isFreeShipping: false, isNew: false },
+    { id: 1, name: '프리미엄 닭고기 사료 대용량', price: 45000, discountRate: 10, imageUrl: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=400&h=400&fit=crop', brand: '네이처스', rating: 4.8, reviews: 256, isFreeShipping: true, isNew: false, targetInfo: { petTypes: ['강아지'], breeds: ['전 품종'], sizes: ['소형', '중형', '대형'], weightRange: '1~40kg' } },
+    { id: 2, name: '강아지 덴탈 껌 10개입', price: 12000, discountRate: 0, imageUrl: 'https://images.unsplash.com/photo-1582798244325-e6c375efdddc?w=400&h=400&fit=crop', brand: '펫투데이', rating: 4.5, reviews: 189, isFreeShipping: true, isNew: true, targetInfo: { petTypes: ['강아지'], breeds: ['말티즈', '푸들', '포메라니안'], sizes: ['소형'], weightRange: '1~10kg' } },
+    { id: 3, name: '반려견 종합 영양제 120정', price: 35000, discountRate: 15, imageUrl: 'https://images.unsplash.com/photo-1585664811087-47f65abbad64?w=400&h=400&fit=crop', brand: '헬시펫', rating: 4.9, reviews: 312, isFreeShipping: true, isNew: false, targetInfo: { petTypes: ['강아지'], breeds: ['전 품종'], sizes: ['소형', '중형', '대형'], weightRange: '2kg 이상' } },
+    { id: 4, name: '인터랙티브 노즈워크 장난감', price: 25000, discountRate: 0, imageUrl: 'https://images.unsplash.com/photo-1535294435445-d7249524ef2e?w=400&h=400&fit=crop', brand: '퍼피플레이', rating: 4.7, reviews: 124, isFreeShipping: false, isNew: false, targetInfo: { petTypes: ['강아지', '고양이'], breeds: ['전 품종'], sizes: ['소형', '중형', '대형'] } },
   ]);
   
   const [trendingProducts] = useState([
-    { id: 5, name: '반려견 패딩조끼 겨울용', price: 28000, discountRate: 5, imageUrl: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop', brand: '펫라이프', rating: 4.6, reviews: 95, isFreeShipping: true, isNew: true },
-    { id: 6, name: '프리미엄 방석형 하우스 중형', price: 42000, discountRate: 20, imageUrl: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=400&h=400&fit=crop', brand: '코지홈', rating: 4.4, reviews: 78, isFreeShipping: true, isNew: false },
-    { id: 7, name: '안전 하네스 산책용 (M사이즈)', price: 18000, discountRate: 0, imageUrl: 'https://images.unsplash.com/photo-1601758124096-1fd661873b95?w=400&h=400&fit=crop', brand: '세이프티', rating: 4.8, reviews: 156, isFreeShipping: false, isNew: false },
-    { id: 8, name: '저자극 반려견 샴푸 500ml', price: 15000, discountRate: 10, imageUrl: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400&h=400&fit=crop', brand: '퓨어펫', rating: 4.7, reviews: 203, isFreeShipping: true, isNew: true }
+    { id: 5, name: '반려견 패딩조끼 겨울용', price: 28000, discountRate: 5, imageUrl: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop', brand: '펫라이프', rating: 4.6, reviews: 95, isFreeShipping: true, isNew: true, targetInfo: { petTypes: ['강아지'], breeds: ['말티즈', '치와와', '요크셔테리어'], sizes: ['소형'], weightRange: '1~5kg' } },
+    { id: 6, name: '프리미엄 방석형 하우스 중형', price: 42000, discountRate: 20, imageUrl: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=400&h=400&fit=crop', brand: '코지홈', rating: 4.4, reviews: 78, isFreeShipping: true, isNew: false, targetInfo: { petTypes: ['강아지', '고양이'], breeds: ['전 품종'], sizes: ['중형'], weightRange: '5~15kg' } },
+    { id: 7, name: '안전 하네스 산책용 (M사이즈)', price: 18000, discountRate: 0, imageUrl: 'https://images.unsplash.com/photo-1601758124096-1fd661873b95?w=400&h=400&fit=crop', brand: '세이프티', rating: 4.8, reviews: 156, isFreeShipping: false, isNew: false, targetInfo: { petTypes: ['강아지'], breeds: ['비글', '코기', '진돗개'], sizes: ['중형'], weightRange: '10~20kg' } },
+    { id: 8, name: '저자극 반려견 샴푸 500ml', price: 15000, discountRate: 10, imageUrl: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400&h=400&fit=crop', brand: '퓨어펫', rating: 4.7, reviews: 203, isFreeShipping: true, isNew: true, targetInfo: { petTypes: ['강아지'], breeds: ['전 품종'], sizes: ['소형', '중형'], weightRange: '전 체중' } }
   ]);
   
   // 네이버 쇼핑 인기 기획전
@@ -749,6 +749,27 @@ export default function ShopIndex() {
                       </div>
                     )}
                     
+                    {/* 타겟 정보 표시 */}
+                    {product.targetInfo && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {product.targetInfo.petTypes?.map((pet: string, idx: number) => (
+                          <span key={idx} className="bg-green-50 text-green-700 text-[10px] px-1.5 py-0.5 rounded border border-green-200">
+                            {pet}
+                          </span>
+                        ))}
+                        {product.targetInfo.sizes?.slice(0, 2).map((size: string, idx: number) => (
+                          <span key={idx} className="bg-blue-50 text-blue-700 text-[10px] px-1.5 py-0.5 rounded border border-blue-200">
+                            {size}
+                          </span>
+                        ))}
+                        {product.targetInfo.weightRange && (
+                          <span className="bg-purple-50 text-purple-700 text-[10px] px-1.5 py-0.5 rounded border border-purple-200">
+                            {product.targetInfo.weightRange}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    
                     <Button 
                       className="w-full mt-3 bg-[#03c75a] hover:bg-[#02b04a] text-white"
                       size="sm"
@@ -841,6 +862,27 @@ export default function ShopIndex() {
                       <div className="flex items-center mt-2 text-xs text-gray-500">
                         <Truck className="h-3 w-3 mr-1" />
                         <span>무료배송</span>
+                      </div>
+                    )}
+                    
+                    {/* 타겟 정보 표시 */}
+                    {product.targetInfo && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {product.targetInfo.petTypes?.map((pet: string, idx: number) => (
+                          <span key={idx} className="bg-green-50 text-green-700 text-[10px] px-1.5 py-0.5 rounded border border-green-200">
+                            {pet}
+                          </span>
+                        ))}
+                        {product.targetInfo.sizes?.slice(0, 2).map((size: string, idx: number) => (
+                          <span key={idx} className="bg-blue-50 text-blue-700 text-[10px] px-1.5 py-0.5 rounded border border-blue-200">
+                            {size}
+                          </span>
+                        ))}
+                        {product.targetInfo.weightRange && (
+                          <span className="bg-purple-50 text-purple-700 text-[10px] px-1.5 py-0.5 rounded border border-purple-200">
+                            {product.targetInfo.weightRange}
+                          </span>
+                        )}
                       </div>
                     )}
                     

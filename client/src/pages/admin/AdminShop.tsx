@@ -84,7 +84,11 @@ import {
   RotateCcw,
   BookOpen,
   Building,
-  Plus
+  Plus,
+  Dog,
+  Cat,
+  Scale,
+  Calendar
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -94,6 +98,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+// 상품 타겟 정보 타입
+interface ProductTarget {
+  petTypes: string[];      // 강아지, 고양이, 소동물 등
+  breeds: string[];        // 견종/묘종
+  weightMin?: number;      // 최소 체중 (kg)
+  weightMax?: number;      // 최대 체중 (kg)
+  ageMin?: number;         // 최소 나이 (개월)
+  ageMax?: number;         // 최대 나이 (개월)
+  sizes: string[];         // 소형, 중형, 대형
+}
 
 // 상품 타입
 interface Product {
@@ -119,6 +134,7 @@ interface Product {
   relatedProducts?: number[];
   totalSales: number;
   referralCommission: number;
+  targetInfo?: ProductTarget;
 }
 
 // 주문 타입
@@ -363,7 +379,16 @@ export default function AdminShop() {
             },
             relatedProducts: [2, 3, 5],
             totalSales: 547,
-            referralCommission: 10
+            referralCommission: 10,
+            targetInfo: {
+              petTypes: ['강아지'],
+              breeds: ['전 품종'],
+              weightMin: 1,
+              weightMax: 40,
+              ageMin: 2,
+              ageMax: undefined,
+              sizes: ['소형', '중형', '대형']
+            }
           },
           {
             id: 2,
@@ -384,7 +409,16 @@ export default function AdminShop() {
             featured: false,
             tags: ['고단백', '습식', '소포장'],
             totalSales: 312,
-            referralCommission: 8
+            referralCommission: 8,
+            targetInfo: {
+              petTypes: ['강아지'],
+              breeds: ['말티즈', '푸들', '포메라니안'],
+              weightMin: 1,
+              weightMax: 10,
+              ageMin: 6,
+              ageMax: undefined,
+              sizes: ['소형']
+            }
           },
           {
             id: 3,
@@ -411,7 +445,16 @@ export default function AdminShop() {
               '크기': '6 x 3 x 2cm (클리커)'
             },
             totalSales: 201,
-            referralCommission: 12
+            referralCommission: 12,
+            targetInfo: {
+              petTypes: ['강아지', '고양이'],
+              breeds: ['전 품종'],
+              weightMin: undefined,
+              weightMax: undefined,
+              ageMin: 3,
+              ageMax: undefined,
+              sizes: ['소형', '중형', '대형']
+            }
           },
           {
             id: 4,
@@ -438,7 +481,16 @@ export default function AdminShop() {
               '특징': '반사 스트립, 조절 가능한 스트랩'
             },
             totalSales: 158,
-            referralCommission: 15
+            referralCommission: 15,
+            targetInfo: {
+              petTypes: ['강아지'],
+              breeds: ['골든 리트리버', '래브라도', '진돗개', '시베리안 허스키'],
+              weightMin: 15,
+              weightMax: 25,
+              ageMin: 6,
+              ageMax: undefined,
+              sizes: ['중형']
+            }
           },
           {
             id: 5,
@@ -460,7 +512,16 @@ export default function AdminShop() {
             featured: true,
             tags: ['치아 관리', '장난감', '내구성'],
             totalSales: 175,
-            referralCommission: 10
+            referralCommission: 10,
+            targetInfo: {
+              petTypes: ['강아지'],
+              breeds: ['전 품종'],
+              weightMin: 5,
+              weightMax: 30,
+              ageMin: 4,
+              ageMax: undefined,
+              sizes: ['소형', '중형']
+            }
           }
         ];
         
@@ -2986,6 +3047,149 @@ export default function AdminShop() {
                   </>
                 )}
                 
+                {/* 타겟 정보 섹션 */}
+                <Separator />
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium flex items-center">
+                    <Dog className="h-5 w-5 mr-2 text-primary" />
+                    타겟 정보
+                  </h3>
+                  
+                  {modalMode === 'view' ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-[120px_1fr] gap-2">
+                        <div className="font-medium text-muted-foreground">반려동물</div>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedProduct.targetInfo?.petTypes?.map((pet, idx) => (
+                            <Badge key={idx} variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              {pet === '강아지' && <Dog className="h-3 w-3 mr-1" />}
+                              {pet === '고양이' && <Cat className="h-3 w-3 mr-1" />}
+                              {pet}
+                            </Badge>
+                          )) || <span className="text-muted-foreground">미설정</span>}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-[120px_1fr] gap-2">
+                        <div className="font-medium text-muted-foreground">품종</div>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedProduct.targetInfo?.breeds?.map((breed, idx) => (
+                            <Badge key={idx} variant="secondary">{breed}</Badge>
+                          )) || <span className="text-muted-foreground">미설정</span>}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-[120px_1fr] gap-2">
+                        <div className="font-medium text-muted-foreground">체중 범위</div>
+                        <div className="flex items-center">
+                          <Scale className="h-4 w-4 mr-1 text-muted-foreground" />
+                          {selectedProduct.targetInfo?.weightMin || selectedProduct.targetInfo?.weightMax ? (
+                            <span>
+                              {selectedProduct.targetInfo.weightMin || '?'}kg ~ {selectedProduct.targetInfo.weightMax || '?'}kg
+                            </span>
+                          ) : <span className="text-muted-foreground">미설정</span>}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-[120px_1fr] gap-2">
+                        <div className="font-medium text-muted-foreground">나이 범위</div>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                          {selectedProduct.targetInfo?.ageMin || selectedProduct.targetInfo?.ageMax ? (
+                            <span>
+                              {selectedProduct.targetInfo.ageMin || '?'}개월 ~ {selectedProduct.targetInfo.ageMax || '제한없음'}
+                            </span>
+                          ) : <span className="text-muted-foreground">미설정</span>}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-[120px_1fr] gap-2">
+                        <div className="font-medium text-muted-foreground">사이즈</div>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedProduct.targetInfo?.sizes?.map((size, idx) => (
+                            <Badge key={idx} variant="outline">{size}</Badge>
+                          )) || <span className="text-muted-foreground">미설정</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>반려동물 종류</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {['강아지', '고양이', '소동물', '조류', '파충류'].map((pet) => (
+                            <Badge 
+                              key={pet} 
+                              variant={selectedProduct.targetInfo?.petTypes?.includes(pet) ? 'default' : 'outline'}
+                              className="cursor-pointer"
+                            >
+                              {pet}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="breeds">품종 (쉼표로 구분)</Label>
+                        <Input 
+                          id="breeds" 
+                          defaultValue={selectedProduct.targetInfo?.breeds?.join(', ') || ''} 
+                          placeholder="예: 말티즈, 푸들, 포메라니안"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="weightMin">최소 체중 (kg)</Label>
+                          <Input 
+                            id="weightMin" 
+                            type="number" 
+                            defaultValue={selectedProduct.targetInfo?.weightMin || ''} 
+                            placeholder="예: 1"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="weightMax">최대 체중 (kg)</Label>
+                          <Input 
+                            id="weightMax" 
+                            type="number" 
+                            defaultValue={selectedProduct.targetInfo?.weightMax || ''} 
+                            placeholder="예: 40"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="ageMin">최소 나이 (개월)</Label>
+                          <Input 
+                            id="ageMin" 
+                            type="number" 
+                            defaultValue={selectedProduct.targetInfo?.ageMin || ''} 
+                            placeholder="예: 2"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="ageMax">최대 나이 (개월)</Label>
+                          <Input 
+                            id="ageMax" 
+                            type="number" 
+                            defaultValue={selectedProduct.targetInfo?.ageMax || ''} 
+                            placeholder="제한없음"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>사이즈</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {['소형', '중형', '대형', '초대형'].map((size) => (
+                            <Badge 
+                              key={size} 
+                              variant={selectedProduct.targetInfo?.sizes?.includes(size) ? 'default' : 'outline'}
+                              className="cursor-pointer"
+                            >
+                              {size}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
                 {modalMode === 'edit' && (
                   <div className="pt-4">
                     <Button className="w-full">
@@ -3121,6 +3325,76 @@ export default function AdminShop() {
                     </p>
                   </Label>
                   <Switch id="featured" />
+                </div>
+                
+                <Separator />
+                
+                {/* 타겟 정보 입력 */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium flex items-center">
+                    <Dog className="h-5 w-5 mr-2 text-primary" />
+                    타겟 정보
+                  </h3>
+                  
+                  <div className="space-y-2">
+                    <Label>반려동물 종류</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {['강아지', '고양이', '소동물', '조류', '파충류'].map((pet) => (
+                        <Badge 
+                          key={pet} 
+                          variant="outline"
+                          className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                        >
+                          {pet}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="newBreeds">품종 (쉼표로 구분)</Label>
+                    <Input 
+                      id="newBreeds" 
+                      placeholder="예: 말티즈, 푸들, 포메라니안 또는 '전 품종'"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newWeightMin">최소 체중 (kg)</Label>
+                      <Input id="newWeightMin" type="number" placeholder="예: 1" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newWeightMax">최대 체중 (kg)</Label>
+                      <Input id="newWeightMax" type="number" placeholder="예: 40" />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newAgeMin">최소 나이 (개월)</Label>
+                      <Input id="newAgeMin" type="number" placeholder="예: 2" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newAgeMax">최대 나이 (개월)</Label>
+                      <Input id="newAgeMax" type="number" placeholder="제한없음" />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>사이즈</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {['소형', '중형', '대형', '초대형'].map((size) => (
+                        <Badge 
+                          key={size} 
+                          variant="outline"
+                          className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                        >
+                          {size}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
               
