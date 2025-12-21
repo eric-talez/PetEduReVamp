@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 import { 
   DollarSign, 
   TrendingUp,
@@ -17,10 +18,17 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Eye,
-  ChevronRight
+  ChevronRight,
+  Star,
+  Award,
+  Users,
+  Clock,
+  ThumbsUp,
+  MessageCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { useQuery } from '@tanstack/react-query';
 
 interface EarningRecord {
   id: number;
@@ -54,6 +62,39 @@ export default function TrainerEarnings() {
   const [itemsPerPage] = useState(10);
   const [selectedMonthDetail, setSelectedMonthDetail] = useState<MonthlySummary | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // TALEZ SCORE 데이터 로드
+  const { data: scoreData } = useQuery({
+    queryKey: ['/api/monetization/my-score'],
+  });
+
+  const { data: eligibilityData } = useQuery({
+    queryKey: ['/api/monetization/my-eligibility'],
+  });
+
+  // 수익화 관련 유틸 함수
+  const getEligibilityBadge = (level: number) => {
+    switch (level) {
+      case 0:
+        return <Badge variant="secondary">Level 0 - 무료</Badge>;
+      case 1:
+        return <Badge className="bg-blue-500">Level 1 - 광고 수익</Badge>;
+      case 2:
+        return <Badge className="bg-orange-500">Level 2 - 유료 콘텐츠</Badge>;
+      default:
+        return <Badge variant="outline">미정</Badge>;
+    }
+  };
+
+  const getStageBadge = (stage: number) => {
+    const stages = [
+      { label: "Stage 1 (60/40)", color: "bg-gray-500" },
+      { label: "Stage 2 (50/50)", color: "bg-blue-500" },
+      { label: "Stage 3 (40/60)", color: "bg-green-500" },
+    ];
+    const s = stages[stage - 1] || stages[0];
+    return <Badge className={s.color}>{s.label}</Badge>;
+  };
 
   // 수익 데이터 로드
   useEffect(() => {
@@ -297,6 +338,82 @@ export default function TrainerEarnings() {
           </Button>
         </div>
       </div>
+
+      {/* TALEZ SCORE 수익화 카드 */}
+      <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
+                <Star className="h-5 w-5" />
+                TALEZ SCORE
+              </CardTitle>
+              <CardDescription>수익화 자격 및 현황</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              {getEligibilityBadge(eligibilityData?.eligibilityLevel || 0)}
+              {getStageBadge(eligibilityData?.revenueStage || 1)}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div className="text-center p-4 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Star className="h-8 w-8 text-yellow-500" />
+              </div>
+              <p className="text-3xl font-bold text-yellow-600">{scoreData?.talezScore?.toFixed(1) || 0}</p>
+              <p className="text-sm text-muted-foreground">현재 점수</p>
+            </div>
+            <div className="text-center p-4 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Users className="h-8 w-8 text-blue-500" />
+              </div>
+              <p className="text-3xl font-bold text-blue-600">{scoreData?.followers || 0}</p>
+              <p className="text-sm text-muted-foreground">팔로워</p>
+            </div>
+            <div className="text-center p-4 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Eye className="h-8 w-8 text-green-500" />
+              </div>
+              <p className="text-3xl font-bold text-green-600">{(scoreData?.totalViews || 0).toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">총 조회수</p>
+            </div>
+            <div className="text-center p-4 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <ThumbsUp className="h-8 w-8 text-orange-500" />
+              </div>
+              <p className="text-3xl font-bold text-orange-600">{(scoreData?.totalLikes || 0).toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">총 좋아요</p>
+            </div>
+            <div className="text-center p-4 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <DollarSign className="h-8 w-8 text-green-600" />
+              </div>
+              <p className="text-3xl font-bold text-green-600">{(eligibilityData?.pendingPayout || 0).toLocaleString()}원</p>
+              <p className="text-sm text-muted-foreground">미정산액</p>
+            </div>
+          </div>
+          
+          {eligibilityData?.eligibilityLevel === 0 && (
+            <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                <Award className="h-4 w-4 inline mr-2" />
+                수익화 자격 달성까지: 
+                {eligibilityData?.requirements?.level1 && (
+                  <span className="ml-2">
+                    팔로워 {eligibilityData.requirements.level1.followersNeeded}명 또는 점수 {eligibilityData.requirements.level1.scoreNeeded}점 필요
+                  </span>
+                )}
+              </p>
+              <Progress 
+                value={Math.min(100, (scoreData?.talezScore || 0) / 20 * 100)} 
+                className="h-2 mt-2" 
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 통계 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -889,6 +889,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/admin/members-status" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/members-status")} onClick={handleItemClick} show={isMenuVisible('members-status')}>회원 현황</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/analytics" icon={<Activity className="w-5 h-5 mr-2" />} hoverIcon={<BarChart3 className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/analytics")} onClick={handleItemClick} show={isMenuVisible('admin-analytics')}>분석</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/revenue" icon={<DollarSign className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/revenue")} onClick={handleItemClick} show={isMenuVisible('revenue-management')}>수익</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/monetization" icon={<Star className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/monetization")} onClick={handleItemClick} show={isMenuVisible('monetization')}>수익화 시스템</AccessibleNavItem>
                       </>
                     )}
                   </>

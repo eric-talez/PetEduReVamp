@@ -75,13 +75,13 @@ function checkMonetizationEligibility(followers: number, score: number, violatio
 }
 
 // 매출 단계 결정
-function getRevenueStage(totalAmount: number): { stage: string; platformShare: number; trainerShare: number } {
+function getRevenueStage(totalAmount: number): { stage: string; stageNumber: number; platformShare: number; trainerShare: number } {
   if (totalAmount < 5000000) {
-    return { stage: 'stage1', platformShare: 60, trainerShare: 40 };
+    return { stage: 'stage1', stageNumber: 1, platformShare: 60, trainerShare: 40 };
   } else if (totalAmount < 15000000) {
-    return { stage: 'stage2', platformShare: 50, trainerShare: 50 };
+    return { stage: 'stage2', stageNumber: 2, platformShare: 50, trainerShare: 50 };
   } else {
-    return { stage: 'stage3', platformShare: 40, trainerShare: 60 };
+    return { stage: 'stage3', stageNumber: 3, platformShare: 40, trainerShare: 60 };
   }
 }
 
@@ -637,6 +637,218 @@ router.get('/settings', async (req, res) => {
   } catch (error) {
     console.error('Settings fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// 현재 사용자의 TALEZ SCORE 조회
+router.get('/my-score', async (req, res) => {
+  try {
+    const userId = (req as any).session?.userId;
+    if (!userId) {
+      return res.json({
+        talezScore: 0,
+        followers: 0,
+        totalViews: 0,
+        totalLikes: 0,
+        totalWatchTime: 0,
+      });
+    }
+    
+    const [cache] = await db.select().from(talezScoreCache).where(eq(talezScoreCache.userId, userId));
+    const [followerResult] = await db
+      .select({ count: count() })
+      .from(follows)
+      .where(eq(follows.followingId, userId));
+    
+    res.json({
+      talezScore: Number(cache?.trainerScore || 0),
+      followers: followerResult?.count || 0,
+      totalViews: cache?.viewCount || 0,
+      totalLikes: cache?.likeCount || 0,
+      totalWatchTime: Math.floor((cache?.watchSeconds || 0) / 60),
+    });
+  } catch (error) {
+    console.error('My score error:', error);
+    res.status(500).json({ error: 'Failed to fetch score' });
+  }
+});
+
+// 현재 사용자의 수익화 자격 조회
+router.get('/my-eligibility', async (req, res) => {
+  try {
+    const userId = (req as any).session?.userId;
+    if (!userId) {
+      return res.json({
+        eligibilityLevel: 0,
+        revenueStage: 1,
+        pendingPayout: 0,
+        requirements: {
+          level1: { followersNeeded: 300, scoreNeeded: 20 },
+          level2: { followersNeeded: 1000, scoreNeeded: 80 },
+        },
+      });
+    }
+    
+    const [cache] = await db.select().from(talezScoreCache).where(eq(talezScoreCache.userId, userId));
+    const [followerResult] = await db
+      .select({ count: count() })
+      .from(follows)
+      .where(eq(follows.followingId, userId));
+    
+    const followers = followerResult?.count || 0;
+    const score = Number(cache?.trainerScore || 0);
+    const violations = cache?.violationCount || 0;
+    
+    const eligibility = checkMonetizationEligibility(followers, score, violations);
+    
+    // 미정산 금액 계산
+    const pendingPayouts = await db.select()
+      .from(payouts)
+      .where(and(eq(payouts.userId, userId), eq(payouts.status, 'pending')));
+    const pendingPayout = pendingPayouts.reduce((sum, p) => sum + Number(p.netAmount), 0);
+    
+    // 매출 단계 계산 (개인 기준으로는 Stage 1 기본)
+    const revenueStage = eligibility.level >= 2 ? 2 : 1;
+    
+    res.json({
+      eligibilityLevel: eligibility.level,
+      revenueStage,
+      pendingPayout,
+      requirements: {
+        level1: { 
+          followersNeeded: Math.max(0, 300 - followers), 
+          scoreNeeded: Math.max(0, 20 - score) 
+        },
+        level2: { 
+          followersNeeded: Math.max(0, 1000 - followers), 
+          scoreNeeded: Math.max(0, 80 - score) 
+        },
+      },
+    });
+  } catch (error) {
+    console.error('My eligibility error:', error);
+    res.status(500).json({ error: 'Failed to fetch eligibility' });
+  }
+});
+
+// 관리자: 훈련사 목록 조회 (수익화 정보 포함)
+router.get('/admin/trainers', async (req, res) => {
+  try {
+    const trainers = await db.select().from(users).where(eq(users.role, 'trainer'));
+    
+    const enrichedTrainers = await Promise.all(trainers.map(async (trainer) => {
+      const [cache] = await db.select().from(talezScoreCache).where(eq(talezScoreCache.userId, trainer.id));
+      const [followerResult] = await db
+        .select({ count: count() })
+        .from(follows)
+        .where(eq(follows.followingId, trainer.id));
+      
+      const followers = followerResult?.count || 0;
+      const score = Number(cache?.trainerScore || 0);
+      const violations = cache?.violationCount || 0;
+      
+      const eligibility = checkMonetizationEligibility(followers, score, violations);
+      
+      const pendingPayouts = await db.select()
+        .from(payouts)
+        .where(and(eq(payouts.userId, trainer.id), eq(payouts.status, 'pending')));
+      const pendingPayout = pendingPayouts.reduce((sum, p) => sum + Number(p.netAmount), 0);
+      
+      return {
+        id: trainer.id,
+        name: trainer.name,
+        email: trainer.email,
+        talezScore: score,
+        followers,
+        eligibilityLevel: eligibility.level,
+        revenueStage: eligibility.level >= 2 ? 2 : 1,
+        pendingPayout,
+        totalViews: cache?.viewCount || 0,
+        totalWatchTime: Math.floor((cache?.watchSeconds || 0) / 60),
+        totalLikes: cache?.likeCount || 0,
+        totalComments: cache?.commentCount || 0,
+      };
+    }));
+    
+    res.json({ trainers: enrichedTrainers });
+  } catch (error) {
+    console.error('Admin trainers error:', error);
+    res.status(500).json({ error: 'Failed to fetch trainers' });
+  }
+});
+
+// 관리자: 월별 매출 현황 조회
+router.get('/admin/revenue/monthly', async (req, res) => {
+  try {
+    const revenues = await db.select().from(monthlyRevenue).orderBy(desc(monthlyRevenue.month)).limit(6);
+    
+    const monthly = revenues.map(r => {
+      const stageInfo = getRevenueStage(Number(r.totalAmount));
+      return {
+        month: r.month,
+        totalRevenue: Number(r.totalAmount),
+        platformShare: Number(r.platformShare),
+        trainerShare: Number(r.trainerShare),
+        stage: stageInfo.stageNumber,
+        settled: r.isSettled,
+        trainerCount: 0,
+        stage1Count: 0,
+        stage2Count: 0,
+        stage3Count: 0,
+      };
+    });
+    
+    res.json({ monthly });
+  } catch (error) {
+    console.error('Monthly revenue error:', error);
+    res.status(500).json({ error: 'Failed to fetch monthly revenue' });
+  }
+});
+
+// 관리자: 정산 처리
+router.post('/admin/process-payout', async (req, res) => {
+  try {
+    const { trainerId } = req.body;
+    
+    const pendingPayouts = await db.select()
+      .from(payouts)
+      .where(and(eq(payouts.userId, trainerId), eq(payouts.status, 'pending')));
+    
+    if (pendingPayouts.length === 0) {
+      return res.status(400).json({ error: 'No pending payouts' });
+    }
+    
+    for (const payout of pendingPayouts) {
+      await db.update(payouts)
+        .set({ status: 'completed', paidAt: new Date() })
+        .where(eq(payouts.id, payout.id));
+    }
+    
+    res.json({ success: true, processedCount: pendingPayouts.length });
+  } catch (error) {
+    console.error('Process payout error:', error);
+    res.status(500).json({ error: 'Failed to process payout' });
+  }
+});
+
+// 관리자: 수익화 설정 업데이트
+router.put('/admin/settings', async (req, res) => {
+  try {
+    const settings = req.body;
+    
+    for (const [key, value] of Object.entries(settings)) {
+      await db.insert(monetizationSettings)
+        .values({ key, value: String(value) })
+        .onConflictDoUpdate({
+          target: monetizationSettings.key,
+          set: { value: String(value), updatedAt: new Date() },
+        });
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Settings update error:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
   }
 });
 
