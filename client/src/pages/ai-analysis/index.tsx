@@ -88,12 +88,12 @@ export default function AiAnalysisPage() {
   const [mediaAnalysisResult, setMediaAnalysisResult] = useState<any>(null);
   const [showResultDialog, setShowResultDialog] = useState(false);
 
-  // 임시 반려동물 목록 (실제로는 API에서 가져와야 함)
-  const pets = [
-    { id: 1, name: '멍멍이', species: '개', breed: '골든 리트리버' },
-    { id: 2, name: '야옹이', species: '고양이', breed: '페르시안' },
-    { id: 3, name: '복실이', species: '개', breed: '포메라니안' }
-  ];
+  // 실제 반려동물 목록 조회
+  const petsQuery = useQuery({
+    queryKey: ['/api/pets'],
+  });
+  
+  const pets = (petsQuery.data as any[]) || [];
 
   // 알림장 데이터 조회
   const careLogsQuery = useQuery({
