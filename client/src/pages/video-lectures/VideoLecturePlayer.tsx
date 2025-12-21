@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { useEngagementTracking } from '@/hooks/use-engagement-tracking';
 import { 
   Play, 
   Pause, 
@@ -78,11 +79,36 @@ const VideoLecturePlayer: React.FC = () => {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const { toast } = useToast();
+  
+  const { 
+    recordView, 
+    recordLike, 
+    recordShare,
+    startWatchTracking, 
+    pauseWatchTracking 
+  } = useEngagementTracking({
+    targetType: 'video',
+    targetId: currentModule?.id,
+  });
 
   useEffect(() => {
     loadCurrentLecture();
     loadRelatedVideos();
   }, []);
+  
+  useEffect(() => {
+    if (currentModule) {
+      recordView();
+    }
+  }, [currentModule, recordView]);
+  
+  useEffect(() => {
+    if (isPlaying) {
+      startWatchTracking();
+    } else {
+      pauseWatchTracking();
+    }
+  }, [isPlaying, startWatchTracking, pauseWatchTracking]);
 
   const loadCurrentLecture = () => {
     // 샘플 데이터 - 실제로는 API에서 가져옴
@@ -236,6 +262,9 @@ const VideoLecturePlayer: React.FC = () => {
   };
 
   const handleLike = () => {
+    if (!liked) {
+      recordLike();
+    }
     setLiked(!liked);
     if (disliked) setDisliked(false);
   };
