@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Dog, BookOpen, Award, MapPin, Video, Shield } from 'lucide-react';
 
@@ -215,8 +215,28 @@ export const TalezSection: React.FC<{
   className?: string;
   background?: 'default' | 'glass' | 'gradient';
   backgroundImage?: string;
+  backgroundImages?: string[];
   backgroundOpacity?: number;
-}> = ({ children, className, background = 'default', backgroundImage, backgroundOpacity = 0.12 }) => {
+  slideInterval?: number;
+}> = ({ children, className, background = 'default', backgroundImage, backgroundImages, backgroundOpacity = 0.12, slideInterval = 5000 }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // 슬라이드용 이미지 배열 (backgroundImages가 있으면 사용, 없으면 backgroundImage 사용)
+  const images = backgroundImages && backgroundImages.length > 0 
+    ? backgroundImages 
+    : backgroundImage ? [backgroundImage] : [];
+  
+  // 이미지 슬라이드 효과
+  useEffect(() => {
+    if (images.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, slideInterval);
+    
+    return () => clearInterval(interval);
+  }, [images.length, slideInterval]);
+
   const bgClasses = {
     default: '',
     glass: 'talez-glass',
@@ -226,20 +246,21 @@ export const TalezSection: React.FC<{
   return (
     <section
       className={cn('py-16 px-4 relative overflow-hidden', bgClasses[background], className)}
-      style={backgroundImage ? {
+      style={images.length > 0 ? {
         position: 'relative'
       } : undefined}
     >
-      {backgroundImage && (
+      {images.length > 0 && images.map((img, index) => (
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+          key={index}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transition-opacity duration-1000"
           style={{
-            backgroundImage: `url(${backgroundImage})`,
-            opacity: backgroundOpacity,
+            backgroundImage: `url(${img})`,
+            opacity: index === currentImageIndex ? backgroundOpacity : 0,
             zIndex: 0
           }}
         />
-      )}
+      ))}
       <div className="mx-auto max-w-6xl relative z-10">
         {children}
       </div>

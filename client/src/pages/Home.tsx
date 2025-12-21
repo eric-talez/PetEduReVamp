@@ -43,6 +43,17 @@ import {
   IconShield
 } from '@/components/ui/TalezDesignSystem';
 import DogTrainingBackground from '@assets/stock_images/happy_dog_training_o_e67db05d.jpg';
+import DogTrainingBackground2 from '@assets/stock_images/professional_dog_tra_64c29073.jpg';
+import DogTrainingBackground3 from '@assets/stock_images/modern_pet_training__7ccd29e2.jpg';
+import DogTrainingBackground4 from '@assets/stock_images/happy_healthy_dog_ge_4c9ac208.jpg';
+
+// 히어로 섹션 슬라이드 이미지 배열
+const heroBackgroundImages = [
+  DogTrainingBackground,
+  DogTrainingBackground2,
+  DogTrainingBackground3,
+  DogTrainingBackground4
+];
 
 
 // 각 역할별 홈 페이지를 동적으로 임포트
@@ -458,8 +469,9 @@ export default function Home() {
         <TalezSection
           background="glass"
           className="relative py-16 md:py-20"
-          backgroundImage={DogTrainingBackground}
+          backgroundImages={heroBackgroundImages}
           backgroundOpacity={0.15}
+          slideInterval={4000}
         >
           <div className="text-center talez-fade-in">
             <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">
