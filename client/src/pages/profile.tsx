@@ -55,7 +55,10 @@ export default function ProfilePage({ userType }: ProfilePageProps) {
   }, [userId]);
 
   const loadProfile = async () => {
-    if (!userId) return;
+    if (!userId) {
+      setIsLoading(false);
+      return;
+    }
     
     setIsLoading(true);
     try {
