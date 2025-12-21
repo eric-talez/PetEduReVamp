@@ -1022,6 +1022,18 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/admin/members-status">
+          {() => {
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminMembersStatus} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         <Route path="/admin/reports">
           {() => {
             const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
