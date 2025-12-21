@@ -374,37 +374,37 @@ export default function AdminHome() {
 
       {/* 빠른 접근 메뉴 */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
-        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/users'}>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation('/admin/users')}>
           <div className="flex flex-col items-center text-center">
             <Users className="w-8 h-8 text-blue-600 mb-2" />
             <span className="text-sm font-medium">사용자</span>
           </div>
         </Card>
-        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/institutes'}>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation('/admin/institutes')}>
           <div className="flex flex-col items-center text-center">
             <Building className="w-8 h-8 text-green-600 mb-2" />
             <span className="text-sm font-medium">기관</span>
           </div>
         </Card>
-        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/trainers'}>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation('/admin/trainers')}>
           <div className="flex flex-col items-center text-center">
             <UserCheck className="w-8 h-8 text-purple-600 mb-2" />
             <span className="text-sm font-medium">훈련사</span>
           </div>
         </Card>
-        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/contents'}>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation('/admin/contents')}>
           <div className="flex flex-col items-center text-center">
             <FileText className="w-8 h-8 text-orange-600 mb-2" />
             <span className="text-sm font-medium">콘텐츠</span>
           </div>
         </Card>
-        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/shop'}>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation('/admin/shop')}>
           <div className="flex flex-col items-center text-center">
             <ShoppingBag className="w-8 h-8 text-pink-600 mb-2" />
             <span className="text-sm font-medium">쇼핑몰</span>
           </div>
         </Card>
-        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/review-management'}>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation('/admin/review-management')}>
           <div className="flex flex-col items-center text-center">
             <Monitor className="w-8 h-8 text-red-600 mb-2" />
             <span className="text-sm font-medium">모니터링</span>
