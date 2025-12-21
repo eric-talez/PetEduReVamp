@@ -169,6 +169,7 @@ export default function LocationServices() {
   const [mobileMapDialogOpen, setMobileMapDialogOpen] = useState(false);
   const [myLocationEnabled, setMyLocationEnabled] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
+  const [locationPermissionDialogOpen, setLocationPermissionDialogOpen] = useState(false);
   const { toast} = useToast();
   
   // 정렬 기준 초기화 (URL 파라미터 > 로컬스토리지 > 기본값)
@@ -350,7 +351,7 @@ export default function LocationServices() {
     return keywords[category] || category;
   };
 
-  // 내 위치 찾기 토글 핸들러
+  // 내 위치 찾기 토글 핸들러 - 먼저 권한 확인 다이얼로그 표시
   const handleFindNearby = async () => {
     // 이미 켜져있으면 끄기 (기존 검색 결과는 유지)
     if (myLocationEnabled) {
@@ -363,7 +364,13 @@ export default function LocationServices() {
       return;
     }
 
-    // 켜기
+    // 위치 권한 확인 다이얼로그 표시
+    setLocationPermissionDialogOpen(true);
+  };
+
+  // 실제 위치 요청 및 검색 수행
+  const executeLocationSearch = async () => {
+    setLocationPermissionDialogOpen(false);
     setIsSearching(true);
     
     try {
@@ -374,6 +381,7 @@ export default function LocationServices() {
           description: "브라우저에서 위치 서비스를 지원하지 않습니다.",
           variant: "destructive",
         });
+        setIsSearching(false);
         return;
       }
 
@@ -2185,6 +2193,60 @@ export default function LocationServices() {
               </div>
             </Tabs>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 위치 권한 확인 다이얼로그 */}
+      <Dialog open={locationPermissionDialogOpen} onOpenChange={setLocationPermissionDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Navigation className="h-5 w-5 text-primary" />
+              위치 정보 사용 안내
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              주변 반려견 시설을 검색하기 위해 현재 위치 정보가 필요합니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">수집하는 정보</h4>
+              <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                <li>• 현재 위치 (위도, 경도)</li>
+              </ul>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-2">사용 목적</h4>
+              <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <li>• 주변 반려견 훈련소, 병원, 카페 등 검색</li>
+                <li>• 거리순 정렬 및 가까운 시설 안내</li>
+              </ul>
+            </div>
+            
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              위치 정보는 검색 목적으로만 사용되며, 별도로 저장되지 않습니다.
+              브라우저에서 위치 권한 요청이 표시됩니다.
+            </p>
+          </div>
+          
+          <div className="flex gap-3 justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => setLocationPermissionDialogOpen(false)}
+              data-testid="button-location-cancel"
+            >
+              취소
+            </Button>
+            <Button 
+              onClick={executeLocationSearch}
+              data-testid="button-location-allow"
+            >
+              <Navigation className="h-4 w-4 mr-2" />
+              위치 사용 허용
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
