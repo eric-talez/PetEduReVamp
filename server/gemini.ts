@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import { GoogleGenAI, Modality } from "@google/genai";
+import OpenAI from "openai";
 
 // DON'T DELETE THIS COMMENT
 // Follow these instructions when using this blueprint:
@@ -8,6 +9,11 @@ import { GoogleGenAI, Modality } from "@google/genai";
 
 // This API key is from Gemini Developer API Key, not vertex AI API Key
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+
+// OpenAI client for pet training AI functions (Gemini API key expired)
+const openai = new OpenAI({ 
+    apiKey: process.env.OPENAI_API_TALEZ || process.env.OPENAI_API_KEY 
+});
 
 export async function summarizeArticle(text: string): Promise<string> {
     const prompt = `Please summarize the following text concisely while maintaining key points:\n\n${text}`;
@@ -147,7 +153,7 @@ export async function generateImage(
     }
 }
 
-// 펫 훈련 관련 AI 분석 함수들
+// 펫 훈련 관련 AI 분석 함수들 - OpenAI GPT-4.1 사용
 export async function analyzePetBehavior(description: string): Promise<string> {
     const prompt = `반려동물 행동 전문가로서 다음 행동을 분석하고 훈련 조언을 제공하세요:
 
@@ -161,12 +167,15 @@ export async function analyzePetBehavior(description: string): Promise<string> {
 
 전문적이고 실용적인 조언을 한국어로 제공해주세요.`;
 
-    const response = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
-        contents: prompt,
+    const response = await openai.chat.completions.create({
+        model: "gpt-4.1",
+        messages: [
+            { role: "system", content: "당신은 반려동물 행동 전문가입니다. 전문적이고 실용적인 조언을 한국어로 제공합니다." },
+            { role: "user", content: prompt }
+        ],
     });
 
-    return response.text || "분석을 완료할 수 없습니다.";
+    return response.choices[0].message.content || "분석을 완료할 수 없습니다.";
 }
 
 export async function generateTrainingPlan(petInfo: {
@@ -191,12 +200,15 @@ export async function generateTrainingPlan(petInfo: {
 
 각 주차별로 구체적인 훈련 방법과 주의사항을 포함해주세요.`;
 
-    const response = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
-        contents: prompt,
+    const response = await openai.chat.completions.create({
+        model: "gpt-4.1",
+        messages: [
+            { role: "system", content: "당신은 반려견 훈련 전문가입니다. 체계적이고 실용적인 훈련 계획을 한국어로 작성합니다." },
+            { role: "user", content: prompt }
+        ],
     });
 
-    return response.text || "훈련 계획을 생성할 수 없습니다.";
+    return response.choices[0].message.content || "훈련 계획을 생성할 수 없습니다.";
 }
 
 export async function analyzeHealthSymptoms(symptoms: string): Promise<string> {
@@ -213,10 +225,13 @@ export async function analyzeHealthSymptoms(symptoms: string): Promise<string> {
 
 주의: 이는 참고용 정보이며, 정확한 진단을 위해서는 반드시 수의사 진료를 받으시기 바랍니다.`;
 
-    const response = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
-        contents: prompt,
+    const response = await openai.chat.completions.create({
+        model: "gpt-4.1",
+        messages: [
+            { role: "system", content: "당신은 수의사 관점에서 조언하는 전문가입니다. 참고용 정보임을 명시하며 한국어로 답변합니다." },
+            { role: "user", content: prompt }
+        ],
     });
 
-    return response.text || "증상 분석을 완료할 수 없습니다.";
+    return response.choices[0].message.content || "증상 분석을 완료할 수 없습니다.";
 }
