@@ -387,19 +387,19 @@ export default function TrainerEarnings() {
                   <div className="text-lg font-semibold">
                     {format(new Date(summary.month + '-01'), 'yyyy년 MM월')}
                   </div>
-                  {isAdmin && <Badge variant="secondary">{summary.transactionCount}건</Badge>}
+                  <Badge variant="secondary">{summary.transactionCount}건</Badge>
                 </div>
                 <div className="text-right flex items-center space-x-2">
-                  <div>
-                    <div className="text-lg font-bold text-green-600">
-                      {summary.netEarnings.toLocaleString()}원
-                    </div>
-                    {isAdmin && (
+                  {isAdmin && (
+                    <div>
+                      <div className="text-lg font-bold text-green-600">
+                        {summary.netEarnings.toLocaleString()}원
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         매출 {summary.totalRevenue.toLocaleString()}원 - 수수료 {summary.averageCommissionRate}%
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   {isAdmin && <ChevronRight className="h-5 w-5 text-muted-foreground" />}
                 </div>
               </div>
