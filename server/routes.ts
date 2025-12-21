@@ -3525,6 +3525,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============ 훈련 일지 (알림장) API ============
   
+  // AI 알림장 내용 생성
+  app.post("/api/notebook/ai-generate", requireAuth('trainer'), async (req, res) => {
+    try {
+      const { petName, petBreed, activities, additionalContext } = req.body;
+      
+      // OpenAI를 사용한 알림장 내용 생성
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      const prompt = `당신은 전문 반려동물 훈련사입니다. 다음 정보를 바탕으로 반려동물 보호자에게 보낼 알림장을 작성해주세요.
+
+반려동물 이름: ${petName || '(이름 미입력)'}
+품종: ${petBreed || '(품종 미입력)'}
+오늘의 활동: ${JSON.stringify(activities) || '(활동 미입력)'}
+추가 메모: ${additionalContext || '없음'}
+
+다음 JSON 형식으로 응답해주세요:
+{
+  "title": "오늘의 훈련 알림장 제목",
+  "content": "상세한 알림장 내용 (200자 이상)",
+  "tags": ["태그1", "태그2", "태그3"],
+  "activities": ["활동1", "활동2"],
+  "nextGoals": ["다음 목표1", "다음 목표2"]
+}`;
+
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4.1',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        response_format: { type: 'json_object' }
+      });
+
+      const generatedContent = JSON.parse(response.choices[0].message.content || '{}');
+      
+      res.json({
+        success: true,
+        content: generatedContent
+      });
+    } catch (error: any) {
+      console.error('AI 알림장 생성 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: 'AI 알림장 생성에 실패했습니다.'
+      });
+    }
+  });
+
   // 1. 새 훈련 일지 생성
   app.post("/api/notebook/entries", requireAuth('trainer'), csrfProtection, async (req, res) => {
     try {
