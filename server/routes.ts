@@ -378,6 +378,7 @@ import { registerCourseManagementRoutes } from './routes/course-management';
 import { registerAIErrorFixRoutes } from './routes/ai-error-fix';
 import { registerAIUsageRoutes } from './routes/ai-usage';
 import { weatherRoutes } from './routes/weather';
+import monetizationRoutes from './routes/monetization';
 import { analyzeCurriculumContent, suggestCurriculumPricing } from './ai/openai';
 import { extractTextAndTables, validateUploadedFile } from './utils/fileParser';
 import multer from 'multer';
@@ -783,6 +784,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 날씨 API 라우트 등록
   app.use('/api/weather', weatherRoutes);
+
+  // 수익화 시스템 라우트 등록 (YouTube형 TALEZ SCORE)
+  app.use('/api/monetization', monetizationRoutes);
 
   // 커미션 라우트 등록
   setupCommissionRoutes(app);
