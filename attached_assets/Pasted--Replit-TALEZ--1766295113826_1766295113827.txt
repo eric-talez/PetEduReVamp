@@ -1,0 +1,594 @@
+좋아요. 그럼 **Replit에서 “한 파일”로 바로 돌려볼 수 있는 TALEZ 수익화(유튜브형) 프로토타입**을 만들어드릴게요.
+
+아래 코드는 다음을 **전부 포함**합니다.
+
+* ✅ 사용자/훈련사 계정 생성
+* ✅ 영상 등록
+* ✅ 조회/시청시간/좋아요/댓글 등 “관심도 이벤트” 기록
+* ✅ TALEZ SCORE 자동 계산
+* ✅ “수익화(광고/유료)” 기준 달성 자동 판정
+* ✅ 관리자 대시보드(브라우저 화면)에서:
+
+  * 유저 목록
+  * 점수/팔로워/조건 충족 여부
+  * 수익화 ON/OFF 토글
+
+> **Replit 사용법**
+>
+> 1. 새 Node.js Replit 생성
+> 2. 아래 코드 내용을 `server.js` 로 저장
+> 3. Shell에서 `npm init -y`
+> 4. `npm i express better-sqlite3`
+> 5. Run
+> 6. 웹 미리보기로 접속
+
+---
+
+```js
+/**
+ * TALEZ Monetization Prototype (Single File)
+ * - Node + Express + SQLite (better-sqlite3)
+ * - Admin dashboard included
+ *
+ * Run:
+ *   npm init -y
+ *   npm i express better-sqlite3
+ *   node server.js
+ */
+
+const express = require("express");
+const Database = require("better-sqlite3");
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// -------------------- DB --------------------
+const db = new Database("talez.db");
+
+db.exec(`
+PRAGMA journal_mode = WAL;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  role TEXT NOT NULL CHECK(role IN ('owner','trainer','admin')),
+  name TEXT NOT NULL,
+  followers INTEGER NOT NULL DEFAULT 0,
+  violation_count INTEGER NOT NULL DEFAULT 0,
+  monetization_enabled INTEGER NOT NULL DEFAULT 0,   -- 0/1
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS videos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  trainer_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  is_public INTEGER NOT NULL DEFAULT 1, -- 0/1
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY(trainer_id) REFERENCES users(id)
+);
+
+-- event types: view, watch, like, save, comment, follow, visit_store, answer_accepted
+CREATE TABLE IF NOT EXISTS events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  target_type TEXT NOT NULL CHECK(target_type IN ('video','trainer','system')),
+  target_id INTEGER,
+  event_type TEXT NOT NULL,
+  value REAL NOT NULL DEFAULT 1, -- e.g. watch seconds, or 1 for like/comment
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+-- quick denormalized metrics for faster reads (optional but useful)
+CREATE TABLE IF NOT EXISTS metrics_cache (
+  user_id INTEGER PRIMARY KEY,
+  owner_score REAL NOT NULL DEFAULT 0,
+  trainer_score REAL NOT NULL DEFAULT 0,
+  total_watch_seconds REAL NOT NULL DEFAULT 0,
+  total_views INTEGER NOT NULL DEFAULT 0,
+  total_likes INTEGER NOT NULL DEFAULT 0,
+  total_comments INTEGER NOT NULL DEFAULT 0,
+  last_calculated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY(user_id) REFERENCES users(id)
+);
+`);
+
+// Seed admin if not exists
+const adminExists = db.prepare("SELECT COUNT(*) AS c FROM users WHERE role='admin'").get().c;
+if (!adminExists) {
+  db.prepare("INSERT INTO users(role,name,followers,monetization_enabled) VALUES('admin','TALEZ Admin',0,1)").run();
+}
+
+// -------------------- Scoring Rules --------------------
+/**
+ * You can tune these freely.
+ *
+ * OWNER SCORE:
+ *  watch_time (seconds) weight 0.4
+ *  comments count weight 0.2
+ *  answer_accepted count weight 0.2
+ *  visit_store count weight 0.2
+ *
+ * TRAINER SCORE:
+ *  views count weight 0.3
+ *  completion proxy: (watch_seconds / (views*60)) capped -> weight 0.3
+ *  rating proxy: likes/views -> weight 0.2
+ *  solution proxy: answer_accepted on trainer -> weight 0.2
+ */
+function clamp(n, a, b) {
+  return Math.max(a, Math.min(b, n));
+}
+
+function calcOwnerScore({ watchSeconds, comments, accepted, visits }) {
+  // normalize: watchSeconds / 3600 (hours)
+  const watchHours = watchSeconds / 3600;
+  return (
+    watchHours * 0.4 +
+    comments * 0.2 +
+    accepted * 0.2 +
+    visits * 0.2
+  );
+}
+
+function calcTrainerScore({ views, watchSeconds, likes, acceptedOnTrainer }) {
+  const v = Math.max(views, 1);
+
+  // completion proxy: average watch seconds relative to 60s baseline, capped
+  const avgWatch = watchSeconds / v;
+  const completion = clamp(avgWatch / 60, 0, 1); // 0~1
+
+  const likeRate = clamp(likes / v, 0, 1); // 0~1
+
+  // scale some terms so score grows but not explode
+  // views term uses log-like soft growth
+  const viewsTerm = Math.log10(1 + views) * 10;     // ~0~30
+  const completionTerm = completion * 30;           // 0~30
+  const likeTerm = likeRate * 20;                   // 0~20
+  const acceptedTerm = acceptedOnTrainer * 5;       // each accepted ~ +5
+
+  return (
+    viewsTerm * 0.3 +
+    completionTerm * 0.3 +
+    likeTerm * 0.2 +
+    acceptedTerm * 0.2
+  );
+}
+
+// Monetization gates (YouTube-like)
+function eligibilityForTrainer(userRow, trainerScore) {
+  const followers = userRow.followers || 0;
+  const violation = userRow.violation_count || 0;
+
+  const canAds = (followers >= 300 || trainerScore >= 20) && violation === 0;
+  const canPaid = followers >= 1000 && trainerScore >= 80 && violation === 0;
+
+  return { canAds, canPaid };
+}
+
+// -------------------- Metrics Recalc --------------------
+function ensureCacheRow(userId) {
+  db.prepare(`
+    INSERT INTO metrics_cache(user_id)
+    VALUES (?)
+    ON CONFLICT(user_id) DO NOTHING
+  `).run(userId);
+}
+
+function recalcUser(userId) {
+  const user = db.prepare("SELECT * FROM users WHERE id=?").get(userId);
+  if (!user) return null;
+
+  ensureCacheRow(userId);
+
+  if (user.role === "owner") {
+    const watchSeconds = db.prepare(`
+      SELECT COALESCE(SUM(value),0) AS s FROM events
+      WHERE user_id=? AND event_type='watch'
+    `).get(userId).s;
+
+    const comments = db.prepare(`
+      SELECT COUNT(*) AS c FROM events
+      WHERE user_id=? AND event_type='comment'
+    `).get(userId).c;
+
+    const accepted = db.prepare(`
+      SELECT COUNT(*) AS c FROM events
+      WHERE user_id=? AND event_type='answer_accepted'
+    `).get(userId).c;
+
+    const visits = db.prepare(`
+      SELECT COUNT(*) AS c FROM events
+      WHERE user_id=? AND event_type='visit_store'
+    `).get(userId).c;
+
+    const ownerScore = calcOwnerScore({ watchSeconds, comments, accepted, visits });
+
+    db.prepare(`
+      UPDATE metrics_cache
+      SET owner_score=?, total_watch_seconds=?, total_comments=?, last_calculated_at=datetime('now')
+      WHERE user_id=?
+    `).run(ownerScore, watchSeconds, comments, userId);
+
+    return { role: "owner", ownerScore };
+  }
+
+  if (user.role === "trainer") {
+    // views on trainer videos = events(target_type='video', event_type='view', target_id in trainer videos)
+    const views = db.prepare(`
+      SELECT COUNT(*) AS c
+      FROM events e
+      JOIN videos v ON v.id = e.target_id
+      WHERE e.target_type='video' AND e.event_type='view' AND v.trainer_id=?
+    `).get(userId).c;
+
+    const watchSeconds = db.prepare(`
+      SELECT COALESCE(SUM(e.value),0) AS s
+      FROM events e
+      JOIN videos v ON v.id = e.target_id
+      WHERE e.target_type='video' AND e.event_type='watch' AND v.trainer_id=?
+    `).get(userId).s;
+
+    const likes = db.prepare(`
+      SELECT COUNT(*) AS c
+      FROM events e
+      JOIN videos v ON v.id = e.target_id
+      WHERE e.target_type='video' AND e.event_type='like' AND v.trainer_id=?
+    `).get(userId).c;
+
+    const comments = db.prepare(`
+      SELECT COUNT(*) AS c
+      FROM events e
+      JOIN videos v ON v.id = e.target_id
+      WHERE e.target_type='video' AND e.event_type='comment' AND v.trainer_id=?
+    `).get(userId).c;
+
+    const acceptedOnTrainer = db.prepare(`
+      SELECT COUNT(*) AS c
+      FROM events
+      WHERE target_type='trainer' AND target_id=? AND event_type='answer_accepted'
+    `).get(userId).c;
+
+    const trainerScore = calcTrainerScore({ views, watchSeconds, likes, acceptedOnTrainer });
+
+    db.prepare(`
+      UPDATE metrics_cache
+      SET trainer_score=?, total_watch_seconds=?, total_views=?, total_likes=?, total_comments=?, last_calculated_at=datetime('now')
+      WHERE user_id=?
+    `).run(trainerScore, watchSeconds, views, likes, comments, userId);
+
+    return { role: "trainer", trainerScore };
+  }
+
+  return { role: user.role };
+}
+
+function recalcAll() {
+  const rows = db.prepare("SELECT id FROM users WHERE role IN ('owner','trainer')").all();
+  rows.forEach(r => recalcUser(r.id));
+}
+
+// -------------------- API --------------------
+
+// Health
+app.get("/api/health", (req, res) => res.json({ ok: true }));
+
+// Create user
+app.post("/api/users", (req, res) => {
+  const { role, name } = req.body;
+  if (!role || !name) return res.status(400).json({ error: "role, name required" });
+  if (!["owner","trainer","admin"].includes(role)) return res.status(400).json({ error: "invalid role" });
+
+  const r = db.prepare("INSERT INTO users(role,name) VALUES(?,?)").run(role, name);
+  const userId = r.lastInsertRowid;
+  ensureCacheRow(userId);
+  res.json({ id: userId });
+});
+
+// Update followers (simulate growth)
+app.post("/api/users/:id/followers", (req, res) => {
+  const id = Number(req.params.id);
+  const delta = Number(req.body.delta || 0);
+  db.prepare("UPDATE users SET followers = MAX(0, followers + ?) WHERE id=?").run(delta, id);
+  const user = db.prepare("SELECT * FROM users WHERE id=?").get(id);
+  res.json(user);
+});
+
+// Create video (trainer)
+app.post("/api/videos", (req, res) => {
+  const { trainer_id, title } = req.body;
+  if (!trainer_id || !title) return res.status(400).json({ error: "trainer_id, title required" });
+
+  const trainer = db.prepare("SELECT * FROM users WHERE id=?").get(trainer_id);
+  if (!trainer || trainer.role !== "trainer") return res.status(400).json({ error: "trainer not found" });
+
+  const r = db.prepare("INSERT INTO videos(trainer_id,title) VALUES(?,?)").run(trainer_id, title);
+  res.json({ id: r.lastInsertRowid });
+});
+
+// Record event
+app.post("/api/events", (req, res) => {
+  const { user_id, target_type, target_id, event_type, value } = req.body;
+  if (!user_id || !target_type || !event_type) {
+    return res.status(400).json({ error: "user_id, target_type, event_type required" });
+  }
+  const v = value === undefined ? 1 : Number(value);
+
+  db.prepare(`
+    INSERT INTO events(user_id, target_type, target_id, event_type, value)
+    VALUES (?,?,?,?,?)
+  `).run(user_id, target_type, target_id || null, event_type, v);
+
+  // Recalc affected:
+  // - the user (owner score)
+  // - trainer if target is video/trainer
+  recalcUser(Number(user_id));
+
+  if (target_type === "video" && target_id) {
+    const vid = db.prepare("SELECT * FROM videos WHERE id=?").get(Number(target_id));
+    if (vid) recalcUser(vid.trainer_id);
+  }
+  if (target_type === "trainer" && target_id) {
+    recalcUser(Number(target_id));
+  }
+
+  res.json({ ok: true });
+});
+
+// Get user + scores + eligibility
+app.get("/api/users/:id", (req, res) => {
+  const id = Number(req.params.id);
+  recalcUser(id);
+
+  const user = db.prepare("SELECT * FROM users WHERE id=?").get(id);
+  const cache = db.prepare("SELECT * FROM metrics_cache WHERE user_id=?").get(id);
+
+  let eligibility = null;
+  if (user && user.role === "trainer") {
+    eligibility = eligibilityForTrainer(user, cache?.trainer_score || 0);
+  }
+
+  res.json({ user, cache, eligibility });
+});
+
+// Toggle monetization (admin action)
+app.post("/api/users/:id/monetization", (req, res) => {
+  const id = Number(req.params.id);
+  const enabled = req.body.enabled ? 1 : 0;
+
+  db.prepare("UPDATE users SET monetization_enabled=? WHERE id=?").run(enabled, id);
+  res.json({ ok: true });
+});
+
+// Admin list
+app.get("/api/admin/overview", (req, res) => {
+  recalcAll();
+  const users = db.prepare(`
+    SELECT u.*, c.owner_score, c.trainer_score, c.total_watch_seconds, c.total_views, c.total_likes, c.total_comments
+    FROM users u
+    LEFT JOIN metrics_cache c ON c.user_id = u.id
+    WHERE u.role IN ('owner','trainer')
+    ORDER BY u.role, (CASE WHEN u.role='trainer' THEN c.trainer_score ELSE c.owner_score END) DESC
+  `).all();
+
+  const enriched = users.map(u => {
+    if (u.role === "trainer") {
+      const e = eligibilityForTrainer(u, u.trainer_score || 0);
+      return { ...u, ...e };
+    }
+    return u;
+  });
+
+  res.json({ users: enriched });
+});
+
+// -------------------- Admin Dashboard UI --------------------
+app.get("/", (req, res) => {
+  res.type("html").send(`
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TALEZ Admin</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto; margin:20px; background:#0b0f14; color:#e8eef7;}
+    .wrap{max-width:1100px; margin:0 auto;}
+    h1{font-size:22px; margin:0 0 12px;}
+    .card{background:#111826; border:1px solid #223049; border-radius:14px; padding:14px; margin:12px 0;}
+    table{width:100%; border-collapse:collapse; font-size:13px;}
+    th,td{padding:10px; border-bottom:1px solid #223049; text-align:left; vertical-align:top;}
+    th{color:#a9b6c9; font-weight:600;}
+    .pill{display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid #2a3a57; color:#cfe0ff;}
+    .ok{border-color:#1f6f4a; color:#bfffe0;}
+    .no{border-color:#6b2a2a; color:#ffd0d0;}
+    button{background:#1b2a44; color:#e8eef7; border:1px solid #2a3a57; border-radius:10px; padding:7px 10px; cursor:pointer;}
+    button:hover{background:#213455;}
+    input,select{background:#0b0f14; color:#e8eef7; border:1px solid #2a3a57; border-radius:10px; padding:8px;}
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    @media (max-width:860px){ .grid{grid-template-columns:1fr;} }
+    .muted{color:#a9b6c9; font-size:12px;}
+    .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>TALEZ Admin Dashboard (Prototype)</h1>
+  <div class="muted">유튜브형 “관심도 → 점수 → 수익화” 구조 테스트용</div>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <h3 style="margin:0 0 8px;">빠른 생성</h3>
+        <div class="row">
+          <select id="role">
+            <option value="owner">owner(견주)</option>
+            <option value="trainer">trainer(훈련사)</option>
+          </select>
+          <input id="name" placeholder="이름"/>
+          <button onclick="createUser()">유저 생성</button>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <input id="trainerId" placeholder="trainer_id"/>
+          <input id="videoTitle" placeholder="영상 제목"/>
+          <button onclick="createVideo()">영상 생성</button>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <input id="eventUser" placeholder="user_id"/>
+          <select id="targetType">
+            <option value="video">video</option>
+            <option value="trainer">trainer</option>
+            <option value="system">system</option>
+          </select>
+          <input id="targetId" placeholder="target_id (video/trainer id)"/>
+          <select id="eventType">
+            <option value="view">view</option>
+            <option value="watch">watch(초)</option>
+            <option value="like">like</option>
+            <option value="comment">comment</option>
+            <option value="save">save</option>
+            <option value="follow">follow</option>
+            <option value="visit_store">visit_store</option>
+            <option value="answer_accepted">answer_accepted</option>
+          </select>
+          <input id="value" placeholder="value (watch초 등)" />
+          <button onclick="sendEvent()">이벤트 기록</button>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <input id="followUser" placeholder="user_id"/>
+          <input id="followDelta" placeholder="followers delta (+/-)" />
+          <button onclick="addFollowers()">팔로워 반영</button>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="margin:0 0 8px;">설명</h3>
+        <div class="muted">
+          <div>• Trainer 수익화 기준: followers≥300 또는 score≥20 → 광고 가능</div>
+          <div>• followers≥1000 & score≥80 → 유료/멤버십 가능</div>
+          <div>• violation_count>0이면 차단(테스트 시 DB에서 직접 수정 가능)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <h3 style="margin:0;">유저/점수/수익화 현황</h3>
+      <button onclick="load()">새로고침</button>
+    </div>
+    <div style="overflow:auto; margin-top:10px;">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>ID</th><th>Role</th><th>Name</th><th>Followers</th>
+            <th>OwnerScore</th><th>TrainerScore</th>
+            <th>Ads</th><th>Paid</th><th>Monetization</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+async function load(){
+  const r = await fetch('/api/admin/overview');
+  const j = await r.json();
+  const tbody = document.querySelector('#tbl tbody');
+  tbody.innerHTML = '';
+  j.users.forEach(u=>{
+    const tr = document.createElement('tr');
+    const ads = (u.role==='trainer') ? (u.canAds ? '<span class="pill ok">YES</span>' : '<span class="pill no">NO</span>') : '-';
+    const paid = (u.role==='trainer') ? (u.canPaid ? '<span class="pill ok">YES</span>' : '<span class="pill no">NO</span>') : '-';
+    const mon = u.monetization_enabled ? 'ON' : 'OFF';
+
+    tr.innerHTML = \`
+      <td>\${u.id}</td>
+      <td><span class="pill">\${u.role}</span></td>
+      <td>\${u.name}</td>
+      <td>\${u.followers}</td>
+      <td>\${(u.owner_score||0).toFixed(2)}</td>
+      <td>\${(u.trainer_score||0).toFixed(2)}</td>
+      <td>\${ads}</td>
+      <td>\${paid}</td>
+      <td>
+        <span class="pill \${u.monetization_enabled? 'ok':'no'}">\${mon}</span>
+        \${u.role==='trainer' ? \`
+          <button style="margin-left:8px;" onclick="toggleMon(\${u.id}, \${u.monetization_enabled?0:1})">
+            \${u.monetization_enabled? '끄기':'켜기'}
+          </button>\` : ''}
+      </td>
+    \`;
+    tbody.appendChild(tr);
+  });
+}
+load();
+
+async function createUser(){
+  const role = document.getElementById('role').value;
+  const name = document.getElementById('name').value || (role+'-'+Math.floor(Math.random()*1000));
+  await fetch('/api/users', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({role,name})});
+  await load();
+}
+
+async function createVideo(){
+  const trainer_id = Number(document.getElementById('trainerId').value);
+  const title = document.getElementById('videoTitle').value || ('video-'+Math.floor(Math.random()*1000));
+  await fetch('/api/videos', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({trainer_id,title})});
+  await load();
+}
+
+async function sendEvent(){
+  const user_id = Number(document.getElementById('eventUser').value);
+  const target_type = document.getElementById('targetType').value;
+  const target_id_raw = document.getElementById('targetId').value;
+  const target_id = target_id_raw ? Number(target_id_raw) : null;
+  const event_type = document.getElementById('eventType').value;
+  const value_raw = document.getElementById('value').value;
+  const value = value_raw ? Number(value_raw) : 1;
+
+  await fetch('/api/events', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id,target_type,target_id,event_type,value})});
+  await load();
+}
+
+async function addFollowers(){
+  const id = Number(document.getElementById('followUser').value);
+  const delta = Number(document.getElementById('followDelta').value || 0);
+  await fetch('/api/users/'+id+'/followers', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({delta})});
+  await load();
+}
+
+async function toggleMon(id, enabled){
+  await fetch('/api/users/'+id+'/monetization', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({enabled})});
+  await load();
+}
+</script>
+</body>
+</html>
+  `);
+});
+
+// -------------------- Start --------------------
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("TALEZ prototype running on port", PORT);
+  console.log("Open / for Admin Dashboard");
+});
+```
+
+---
+
+## 다음으로 바로 “테일즈용”으로 고도화할 때 (추천)
+
+원하시면 제가 위 코드에 이어서 **운영 안정화 중심으로** 아래까지 확장해서 “진짜 운영형 v1”을 만들어드릴게요.
+
+1. **정산 로직** (광고/유료 매출 → 훈련사/플랫폼/지분 배분)
+2. **유료 질문/슈퍼챗 형태** (3천/5천/1만원 티어)
+3. **훈련사 영상 업로드 승인 프로세스** (대기→승인→수익화)
+4. **커뮤니티 등급/멤버십** (OwnerScore 기반 권한)
+5. **Replit DB → Postgres 마이그레이션 구조**
+
+원하시는 건 **(A) 지금 코드에 “정산/지분”까지 추가**가 먼저일까요,
+아니면 **(B) “커뮤니티 유료 질문/멤버십”**을 먼저 붙일까요?

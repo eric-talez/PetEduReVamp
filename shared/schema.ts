@@ -2671,3 +2671,105 @@ export const insertRegistrationApplicationSchema = createInsertSchema(registrati
 export type InsertRegistrationApplication = z.infer<typeof insertRegistrationApplicationSchema>;
 export type RegistrationApplication = typeof registrationApplications.$inferSelect;
 
+// ==================== TALEZ 수익화 시스템 (YouTube형) ====================
+
+// 참여 이벤트 테이블 - 조회, 시청시간, 좋아요 등 모든 활동 기록
+export const engagementEvents = pgTable("engagement_events", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  targetType: varchar("target_type", { length: 20 }).notNull(), // video, trainer, course, post, system
+  targetId: integer("target_id"),
+  eventType: varchar("event_type", { length: 30 }).notNull(), // view, watch, like, save, comment, follow, visit_store, answer_accepted
+  value: decimal("value", { precision: 10, scale: 2 }).default("1"), // 시청 시간(초) 또는 기본값 1
+  metadata: json("metadata").$type<Record<string, any>>(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// TALEZ 점수 캐시 테이블 - 빠른 조회를 위한 점수 캐시
+export const talezScoreCache = pgTable("talez_score_cache", {
+  userId: integer("user_id").primaryKey().references(() => users.id),
+  ownerScore: decimal("owner_score", { precision: 10, scale: 2 }).default("0"),
+  trainerScore: decimal("trainer_score", { precision: 10, scale: 2 }).default("0"),
+  totalWatchSeconds: decimal("total_watch_seconds", { precision: 12, scale: 2 }).default("0"),
+  totalViews: integer("total_views").default(0),
+  totalLikes: integer("total_likes").default(0),
+  totalComments: integer("total_comments").default(0),
+  followerCount: integer("follower_count").default(0),
+  violationCount: integer("violation_count").default(0),
+  monetizationLevel: integer("monetization_level").default(0), // 0: 없음, 1: 광고 허용, 2: 유료 허용
+  monetizationEnabled: boolean("monetization_enabled").default(false),
+  lastCalculatedAt: timestamp("last_calculated_at").defaultNow(),
+});
+
+// 월별 매출 테이블
+export const monthlyRevenue = pgTable("monthly_revenue", {
+  id: serial("id").primaryKey(),
+  month: varchar("month", { length: 7 }).notNull(), // YYYY-MM 형식
+  totalAmount: decimal("total_amount", { precision: 15, scale: 2 }).notNull(),
+  adRevenue: decimal("ad_revenue", { precision: 15, scale: 2 }).default("0"),
+  subscriptionRevenue: decimal("subscription_revenue", { precision: 15, scale: 2 }).default("0"),
+  courseRevenue: decimal("course_revenue", { precision: 15, scale: 2 }).default("0"),
+  consultationRevenue: decimal("consultation_revenue", { precision: 15, scale: 2 }).default("0"),
+  otherRevenue: decimal("other_revenue", { precision: 15, scale: 2 }).default("0"),
+  stage: varchar("stage", { length: 20 }).notNull().default("stage1"), // stage1, stage2, stage3
+  platformShare: decimal("platform_share", { precision: 5, scale: 2 }).notNull(), // 플랫폼 비율 (60, 50, 40)
+  trainerShare: decimal("trainer_share", { precision: 5, scale: 2 }).notNull(), // 훈련사 비율 (40, 50, 60)
+  isSettled: boolean("is_settled").default(false),
+  settledAt: timestamp("settled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 정산 내역 테이블
+export const payouts = pgTable("payouts", {
+  id: serial("id").primaryKey(),
+  revenueId: integer("revenue_id").references(() => monthlyRevenue.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  month: varchar("month", { length: 7 }).notNull(), // YYYY-MM 형식
+  grossAmount: decimal("gross_amount", { precision: 12, scale: 2 }).notNull(), // 총 금액
+  platformFee: decimal("platform_fee", { precision: 12, scale: 2 }).notNull(), // 플랫폼 수수료
+  netAmount: decimal("net_amount", { precision: 12, scale: 2 }).notNull(), // 실수령액
+  contributionScore: decimal("contribution_score", { precision: 10, scale: 2 }).notNull(), // 기여도 점수
+  contributionRatio: decimal("contribution_ratio", { precision: 5, scale: 4 }).notNull(), // 기여 비율
+  status: varchar("status", { length: 20 }).default("pending"), // pending, processing, completed, failed
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 팔로우 관계 테이블
+export const follows = pgTable("follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").notNull().references(() => users.id),
+  followingId: integer("following_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 수익화 설정 테이블
+export const monetizationSettings = pgTable("monetization_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 50 }).notNull().unique(),
+  value: json("value").$type<any>().notNull(),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 수익화 관련 스키마 및 타입
+export const insertEngagementEventSchema = createInsertSchema(engagementEvents).omit({ id: true, createdAt: true });
+export type InsertEngagementEvent = z.infer<typeof insertEngagementEventSchema>;
+export type EngagementEvent = typeof engagementEvents.$inferSelect;
+
+export const insertTalezScoreCacheSchema = createInsertSchema(talezScoreCache);
+export type InsertTalezScoreCache = z.infer<typeof insertTalezScoreCacheSchema>;
+export type TalezScoreCache = typeof talezScoreCache.$inferSelect;
+
+export const insertMonthlyRevenueSchema = createInsertSchema(monthlyRevenue).omit({ id: true, createdAt: true });
+export type InsertMonthlyRevenue = z.infer<typeof insertMonthlyRevenueSchema>;
+export type MonthlyRevenue = typeof monthlyRevenue.$inferSelect;
+
+export const insertPayoutSchema = createInsertSchema(payouts).omit({ id: true, createdAt: true });
+export type InsertPayout = z.infer<typeof insertPayoutSchema>;
+export type Payout = typeof payouts.$inferSelect;
+
+export const insertFollowSchema = createInsertSchema(follows).omit({ id: true, createdAt: true });
+export type InsertFollow = z.infer<typeof insertFollowSchema>;
+export type Follow = typeof follows.$inferSelect;
+
