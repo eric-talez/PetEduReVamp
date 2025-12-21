@@ -1340,6 +1340,107 @@ class Storage {
     return newUser;
   }
 
+  updateUser(id: number, userData: Partial<any>) {
+    const userIndex = this.users?.findIndex(user => user.id === id);
+    if (userIndex !== undefined && userIndex !== -1 && this.users) {
+      this.users[userIndex] = {
+        ...this.users[userIndex],
+        ...userData,
+        updatedAt: new Date().toISOString()
+      };
+      return this.users[userIndex];
+    }
+    return null;
+  }
+
+  deleteUser(id: number): boolean {
+    const userIndex = this.users?.findIndex(user => user.id === id);
+    if (userIndex !== undefined && userIndex !== -1 && this.users) {
+      this.users.splice(userIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
+  // DB 기반 사용자 조회
+  async getUserFromDB(id: number) {
+    try {
+      const [user] = await db.select({
+        id: usersTable.id,
+        username: usersTable.username,
+        email: usersTable.email,
+        role: usersTable.role,
+        name: usersTable.name,
+        phone: usersTable.phone,
+        avatar: usersTable.avatar,
+        bio: usersTable.bio,
+        isActive: usersTable.isActive,
+        isVerified: usersTable.isVerified,
+        createdAt: usersTable.createdAt
+      }).from(usersTable).where(eq(usersTable.id, id)).limit(1);
+      return user || null;
+    } catch (error) {
+      console.error('[DB] getUserFromDB 오류:', error);
+      return null;
+    }
+  }
+
+  // DB 기반 사용자 수정
+  async updateUserInDB(id: number, userData: { name?: string; email?: string; role?: string }) {
+    try {
+      const updateData: any = {};
+      if (userData.name) updateData.name = userData.name;
+      if (userData.email) updateData.email = userData.email;
+      if (userData.role) updateData.role = userData.role;
+      
+      await db.update(usersTable)
+        .set(updateData)
+        .where(eq(usersTable.id, id));
+      
+      // 업데이트된 사용자 반환
+      return await this.getUserFromDB(id);
+    } catch (error) {
+      console.error('[DB] updateUserInDB 오류:', error);
+      return null;
+    }
+  }
+
+  // DB 기반 사용자 삭제
+  async deleteUserFromDB(id: number): Promise<boolean> {
+    try {
+      await db.delete(usersTable).where(eq(usersTable.id, id));
+      return true;
+    } catch (error) {
+      console.error('[DB] deleteUserFromDB 오류:', error);
+      return false;
+    }
+  }
+
+  // DB 기반 이메일 중복 확인
+  async checkEmailExistsInDB(email: string, excludeId?: number): Promise<boolean> {
+    try {
+      const conditions = [eq(usersTable.email, email)];
+      
+      let query;
+      if (excludeId) {
+        const [user] = await db.select({ id: usersTable.id })
+          .from(usersTable)
+          .where(and(eq(usersTable.email, email), sql`${usersTable.id} != ${excludeId}`))
+          .limit(1);
+        return !!user;
+      } else {
+        const [user] = await db.select({ id: usersTable.id })
+          .from(usersTable)
+          .where(eq(usersTable.email, email))
+          .limit(1);
+        return !!user;
+      }
+    } catch (error) {
+      console.error('[DB] checkEmailExistsInDB 오류:', error);
+      return false;
+    }
+  }
+
   // 펫 관련 메서드들
   getPets() {
     return this.pets || [];

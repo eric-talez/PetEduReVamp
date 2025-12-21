@@ -1073,6 +1073,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 관리자 전용 사용자 수정 API (DB 기반)
+  app.put('/api/admin/users/:id', requireAuth('admin'), csrfProtection, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { name, email, role } = req.body;
+
+      // 사용자 존재 확인 (DB 기반)
+      const existingUser = await storage.getUserFromDB(userId);
+      if (!existingUser) {
+        return res.status(404).json({ 
+          success: false, 
+          message: '사용자를 찾을 수 없습니다.' 
+        });
+      }
+
+      // 역할 유효성 검증
+      const validRoles = ['admin', 'trainer', 'institute-admin', 'user'];
+      if (role && !validRoles.includes(role)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '유효하지 않은 역할입니다.' 
+        });
+      }
+
+      // 이메일 중복 검증 (DB 기반, 자신 제외)
+      if (email && email !== existingUser.email) {
+        const emailExists = await storage.checkEmailExistsInDB(email, userId);
+        if (emailExists) {
+          return res.status(400).json({ 
+            success: false, 
+            message: '이미 존재하는 이메일입니다.' 
+          });
+        }
+      }
+
+      // 사용자 정보 업데이트 (DB 기반)
+      const updatedUser = await storage.updateUserInDB(userId, {
+        name: name || existingUser.name,
+        email: email || existingUser.email,
+        role: role || existingUser.role
+      });
+
+      // DB 업데이트 실패 확인
+      if (!updatedUser) {
+        return res.status(500).json({ 
+          success: false, 
+          message: '사용자 정보 수정에 실패했습니다. 다시 시도해주세요.' 
+        });
+      }
+
+      console.log('[Admin] 사용자 정보 수정됨:', { id: userId, name: updatedUser.name, role: updatedUser.role });
+
+      res.json({ 
+        success: true, 
+        message: '사용자 정보가 수정되었습니다.',
+        user: {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          createdAt: updatedUser.createdAt
+        }
+      });
+    } catch (error) {
+      console.error('Admin User Update error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: '사용자 정보 수정 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 관리자 전용 사용자 삭제 API (DB 기반)
+  app.delete('/api/admin/users/:id', requireAuth('admin'), csrfProtection, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+
+      // 사용자 존재 확인 (DB 기반)
+      const existingUser = await storage.getUserFromDB(userId);
+      if (!existingUser) {
+        return res.status(404).json({ 
+          success: false, 
+          message: '사용자를 찾을 수 없습니다.' 
+        });
+      }
+
+      // 자기 자신 삭제 방지
+      if (req.session?.userId === userId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '자기 자신은 삭제할 수 없습니다.' 
+        });
+      }
+
+      // 사용자 삭제 (DB 기반)
+      const deleted = await storage.deleteUserFromDB(userId);
+      
+      if (deleted) {
+        console.log('[Admin] 사용자 삭제됨:', { id: userId, name: existingUser.name });
+        res.json({ 
+          success: true, 
+          message: '사용자가 삭제되었습니다.'
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: '사용자 삭제에 실패했습니다.' 
+        });
+      }
+    } catch (error) {
+      console.error('Admin User Delete error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: '사용자 삭제 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 구독 플랜 관련 API
   app.get('/api/subscription-plans', (req, res) => {
     try {
