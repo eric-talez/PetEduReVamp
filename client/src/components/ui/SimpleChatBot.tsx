@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Coffee, User } from 'lucide-react';
+import { X, Send, Loader2, Coffee, User, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/lib/auth-compat';
@@ -401,37 +401,31 @@ export function SimpleChatBot() {
           className="relative cursor-move group"
           data-testid="chatbot-coffee-button"
         >
-          {/* 커피잔 본체 */}
+          {/* 원형 채팅 버튼 */}
           <div 
-            className="w-14 h-12 rounded-b-[50%] rounded-t-lg relative overflow-hidden transition-transform group-hover:scale-105"
+            className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl"
             style={{ 
-              background: 'linear-gradient(135deg, #8B4513 0%, #5D3A1A 100%)',
-              boxShadow: '0 8px 32px rgba(139, 69, 19, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2)',
+              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              boxShadow: '0 4px 20px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(16, 185, 129, 0.2)',
             }}
           >
-            {/* 커피 */}
-            <div 
-              className="absolute bottom-0 left-1 right-1 h-8 rounded-b-[45%]"
-              style={{ background: 'linear-gradient(180deg, #3E2723 0%, #1B0000 100%)' }}
-            />
-            {/* 거품 */}
-            <div className="absolute top-2 left-2 right-2 h-3 bg-gradient-to-b from-white/40 to-transparent rounded-full" />
+            <MessageSquare className="w-6 h-6 text-white" />
           </div>
-          {/* 손잡이 */}
-          <div 
-            className="absolute right-[-8px] top-3 w-4 h-6 border-4 border-[#8B4513] rounded-r-full bg-transparent"
-            style={{ borderLeft: 'none' }}
-          />
-          {/* 김 (steam) 효과 */}
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 flex gap-1">
-            <div className="w-1 h-3 bg-gray-300/60 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
-            <div className="w-1 h-4 bg-gray-300/60 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
-            <div className="w-1 h-3 bg-gray-300/60 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
+          
+          {/* 온라인 상태 표시 */}
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse" />
+          
+          {/* 반짝임 효과 */}
+          <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+            <div 
+              className="absolute -inset-1 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 animate-pulse"
+              style={{ animationDuration: '2s' }}
+            />
           </div>
         </div>
         
         {/* 툴팁 */}
-        <div className="absolute bottom-16 right-0 bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 whitespace-nowrap hover:opacity-100 group-hover:opacity-100">
+        <div className="absolute bottom-16 right-0 bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 whitespace-nowrap group-hover:opacity-100">
           AI 도우미와 채팅하기
           <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800" />
         </div>
