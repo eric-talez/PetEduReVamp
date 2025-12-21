@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useRoute } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star, MapPin, Phone, Mail, Calendar, Award, Users, BookOpen } from 'lucide-react';
 
 interface TrainerDetailProps {
-  trainerId: string;
+  trainerId?: string;
 }
 
 interface TrainerData {
@@ -32,7 +33,10 @@ interface TrainerData {
   courses?: { id: number; title: string; price: number; duration: string }[];
 }
 
-export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
+export default function TrainerDetail({ trainerId: propTrainerId }: TrainerDetailProps) {
+  const [match, routeParams] = useRoute<{ id: string }>('/trainers/:id');
+  const trainerId = propTrainerId || (match && routeParams ? routeParams.id : '') || '';
+  
   const [trainer, setTrainer] = useState<TrainerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

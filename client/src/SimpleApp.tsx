@@ -789,6 +789,30 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/trainer/my-points">
+          {() => (
+            <Suspense fallback={<SimpleLoading />}>
+              <ProtectedTrainerRoute component={TrainerMyPoints} />
+            </Suspense>
+          )}
+        </Route>
+
+        <Route path="/trainer/rest-management">
+          {() => (
+            <Suspense fallback={<SimpleLoading />}>
+              <ProtectedTrainerRoute component={TrainerRestManagement} />
+            </Suspense>
+          )}
+        </Route>
+
+        <Route path="/trainer/substitute-board">
+          {() => (
+            <Suspense fallback={<SimpleLoading />}>
+              <ProtectedTrainerRoute component={SubstituteClassBoard} />
+            </Suspense>
+          )}
+        </Route>
+
         <Route path="/institute/profile">
           {() => {
             const ProfilePage = lazy(() => import('./pages/profile'));
@@ -967,6 +991,49 @@ function AuthenticatedRoutes() {
               </Suspense>
             );
           }}
+        </Route>
+
+        <Route path="/institute/substitute-management">
+          {() => (
+            <Suspense fallback={<SimpleLoading />}>
+              <ProtectedInstituteRoute component={SubstituteTrainerManagement} />
+            </Suspense>
+          )}
+        </Route>
+
+        <Route path="/institute/notebook-monitor">
+          {() => (
+            <Suspense fallback={<SimpleLoading />}>
+              <ProtectedInstituteRoute component={InstituteNotebookMonitorPage} />
+            </Suspense>
+          )}
+        </Route>
+
+        <Route path="/institute/trainers">
+          {() => {
+            const InstituteTrainersPage = lazy(() => import('./pages/institute/InstituteTrainersPage'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedInstituteRoute component={InstituteTrainersPage} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/institute/my-points">
+          {() => (
+            <Suspense fallback={<SimpleLoading />}>
+              <ProtectedInstituteRoute component={InstituteMyPoints} />
+            </Suspense>
+          )}
+        </Route>
+
+        <Route path="/institute/rest-management">
+          {() => (
+            <Suspense fallback={<SimpleLoading />}>
+              <ProtectedInstituteRoute component={InstituteRestManagement} />
+            </Suspense>
+          )}
         </Route>
 
         {/* 관리자 메뉴 */}
@@ -1339,6 +1406,107 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        {/* 누락된 관리자 라우트 */}
+        <Route path="/admin/registrations">
+          {() => (
+            <ProtectedAdminRoute component={AdminRegistrations} />
+          )}
+        </Route>
+        <Route path="/admin/trainer-certification">
+          {() => (
+            <ProtectedAdminRoute component={TrainerCertificationManagement} />
+          )}
+        </Route>
+        <Route path="/admin/business-registration">
+          {() => {
+            const BusinessRegistration = lazy(() => import('./pages/admin/BusinessRegistration'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedAdminRoute component={BusinessRegistration} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/admin/community">
+          {() => (
+            <ProtectedAdminRoute component={AdminCommunityManagement} />
+          )}
+        </Route>
+        <Route path="/admin/content-crawler">
+          {() => (
+            <ProtectedAdminRoute component={ContentCrawler} />
+          )}
+        </Route>
+        <Route path="/admin/content-moderation">
+          {() => (
+            <ProtectedAdminRoute component={AdminContentModeration} />
+          )}
+        </Route>
+        <Route path="/admin/points-management">
+          {() => (
+            <ProtectedAdminRoute component={AdminPointsManagement} />
+          )}
+        </Route>
+        <Route path="/admin/api-management">
+          {() => (
+            <ProtectedAdminRoute component={ApiManagement} />
+          )}
+        </Route>
+        <Route path="/admin/ai-api-management">
+          {() => (
+            <ProtectedAdminRoute component={AIApiManagement} />
+          )}
+        </Route>
+        <Route path="/admin/ai-optimization">
+          {() => (
+            <ProtectedAdminRoute component={AIOptimizationDashboard} />
+          )}
+        </Route>
+        <Route path="/admin/menu-visibility">
+          {() => (
+            <ProtectedAdminRoute component={MenuVisibilityControl} />
+          )}
+        </Route>
+        <Route path="/admin/messaging-settings">
+          {() => (
+            <ProtectedAdminRoute component={MessagingSettings} />
+          )}
+        </Route>
+        <Route path="/admin/push-notifications">
+          {() => (
+            <ProtectedAdminRoute component={PushNotificationManagement} />
+          )}
+        </Route>
+        <Route path="/admin/notebook-monitor">
+          {() => (
+            <ProtectedAdminRoute component={NotebookMonitorPage} />
+          )}
+        </Route>
+        <Route path="/admin/location-management">
+          {() => (
+            <ProtectedAdminRoute component={LocationManagement} />
+          )}
+        </Route>
+        <Route path="/admin/product-pricing">
+          {() => (
+            <ProtectedAdminRoute component={AdminProductPricing} />
+          )}
+        </Route>
+        <Route path="/admin/substitute-overview">
+          {() => (
+            <ProtectedAdminRoute component={SubstituteTrainerOverview} />
+          )}
+        </Route>
+        <Route path="/admin/activity-logs">
+          {() => (
+            <ProtectedAdminRoute component={TrainerActivityLogs} />
+          )}
+        </Route>
+        <Route path="/admin/point-management">
+          {() => (
+            <ProtectedAdminRoute component={PointManagement} />
+          )}
+        </Route>
 
         {/* 분석 및 보고서 페이지 */}
         <Route path="/analytics">
