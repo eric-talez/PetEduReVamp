@@ -7,7 +7,8 @@ interface PageBannerProps {
   imageUrl?: string;
   actions?: Array<{
     label: string;
-    href: string;
+    href?: string;
+    onClick?: () => void;
   }>;
 }
 
@@ -79,19 +80,29 @@ export function PageBanner({
 
         {actions && actions.length > 0 && (
           <div className="flex flex-wrap gap-4 md:gap-6 justify-center">
-            {actions.map((action, index) => (
-              <Link key={index} href={action.href}>
+            {actions.map((action, index) => {
+              const buttonContent = (
                 <Button
                   variant={index === 0 ? "default" : "outline"}
                   size="lg"
+                  onClick={action.onClick}
                   className={index === 0
                     ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700 font-bold text-lg px-8 py-4 rounded-xl shadow-lg shadow-pink-500/30 min-h-[56px] border-0 transition-all hover:scale-105"
                     : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 font-bold text-lg px-8 py-4 rounded-xl shadow-lg shadow-cyan-500/30 min-h-[56px] border-0 transition-all hover:scale-105"}
                 >
                   {action.label}
                 </Button>
-              </Link>
-            ))}
+              );
+              
+              if (action.href && action.href !== '#') {
+                return (
+                  <Link key={index} href={action.href}>
+                    {buttonContent}
+                  </Link>
+                );
+              }
+              return <div key={index}>{buttonContent}</div>;
+            })}
           </div>
         )}
       </div>

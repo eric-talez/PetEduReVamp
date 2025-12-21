@@ -140,25 +140,41 @@ export type { AuthState, UserRole };
  */
 function NavigationMessageListener({ children }: { children: ReactNode }) {
   useEffect(() => {
+    // 허용된 origin 목록 (보안: 신뢰할 수 있는 도메인만)
+    const trustedOrigins = [
+      window.location.origin,
+      'https://talez.com',
+      'https://www.talez.com'
+    ];
+    
     // 쇼핑 페이지 이동 등 특수 메시지 이벤트 리스너
     const handleSpecialNavigation = (event: MessageEvent) => {
       try {
+        // 보안: origin 검증 (신뢰할 수 있는 출처만 허용)
+        if (!trustedOrigins.includes(event.origin) && event.origin !== '') {
+          console.warn("[Navigation] 신뢰할 수 없는 origin에서의 메시지 무시:", event.origin);
+          return;
+        }
+        
         const message = event.data;
 
-        if (message && message.type) {
-          console.log("[Navigation] 메시지 수신:", message.type);
+        // 메시지 형식 검증
+        if (!message || typeof message !== 'object' || typeof message.type !== 'string') {
+          return;
+        }
 
-          switch (message.type) {
-            case 'NAVIGATE_TO_SHOP':
-              console.log("[Navigation] 쇼핑 페이지로 이동 요청 수신");
-              window.location.href = '/shop';
-              break;
+        console.log("[Navigation] 메시지 수신:", message.type);
 
-            case 'NAVIGATE_TO_HOME':
-              console.log("[Navigation] 홈으로 이동 요청 수신");
-              window.location.href = '/';
-              break;
-          }
+        switch (message.type) {
+          case 'NAVIGATE_TO_SHOP':
+            console.log("[Navigation] 쇼핑 페이지로 이동 요청 수신");
+            window.location.href = '/shop';
+            break;
+
+          case 'NAVIGATE_TO_HOME':
+            console.log("[Navigation] 홈으로 이동 요청 수신");
+            window.location.href = '/';
+            break;
         }
       } catch (error) {
         console.error("[Navigation] 메시지 처리 중 오류 발생:", error);

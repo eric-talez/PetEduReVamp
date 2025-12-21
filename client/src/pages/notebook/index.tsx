@@ -978,10 +978,10 @@ export default function NotebookPage() {
         title="반려견 훈련 알림장"
         subtitle="매일매일 반려견의 훈련 기록과 성장 과정을 체계적으로 관리하세요"
         imageUrl={NotebookBannerImage}
-        actions={[{
+        actions={canCreateNotebook ? [{
           label: "새 알림장",
-          href: "#"
-        }]}
+          onClick: () => setIsNewEntryOpen(true)
+        }] : []}
       />
       
       <div className="container mx-auto p-6 space-y-6">

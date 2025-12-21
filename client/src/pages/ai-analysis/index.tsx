@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { getCSRFToken } from '@/lib/csrf';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -136,12 +137,15 @@ export default function AiAnalysisPage() {
       dateRange: string;
       model: string;
     }) => {
+      const csrfToken = await getCSRFToken();
       const response = await fetch('/api/ai-analysis/analyze', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
         },
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('AI 분석 요청 실패');
@@ -173,12 +177,15 @@ export default function AiAnalysisPage() {
       model: string;
       memo?: string;
     }) => {
+      const csrfToken = await getCSRFToken();
       const response = await fetch('/api/ai/analyze-media', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
         },
+        credentials: 'include',
       });
       const result = await response.json();
       if (!response.ok && response.status !== 503) {
