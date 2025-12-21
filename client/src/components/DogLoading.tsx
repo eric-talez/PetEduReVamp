@@ -1,6 +1,5 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/hooks/use-theme';
 
 interface DogLoadingProps {
   size?: 'small' | 'medium' | 'large';
@@ -32,7 +31,6 @@ export function DogLoading({
   className = '',
   showTips = true
 }: DogLoadingProps) {
-  const { theme } = useTheme();
   const randomTipIndex = Math.floor(Math.random() * loadingTips.length);
   
   // 크기에 따른 클래스 설정

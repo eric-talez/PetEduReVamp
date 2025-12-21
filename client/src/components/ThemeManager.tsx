@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSeasonalTheme } from '@/hooks/use-seasonal-theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/context/theme-context';
 
 // CSS 변수를 동적으로 업데이트하는 함수
 const updateCssVariable = (name: string, value: string) => {

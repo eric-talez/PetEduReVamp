@@ -3,7 +3,7 @@ import { Home, Search, ArrowLeft, PawPrint, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from "@/context/theme-context";
 
 export default function NotFound() {
   const [location, setLocation] = useLocation();
