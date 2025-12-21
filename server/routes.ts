@@ -16185,8 +16185,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
           birthDate: birthDate || undefined,
           gender: gender || undefined,
           bio: bio || undefined,
-          address: address || undefined,
-          updatedAt: new Date()
+          address: address || undefined
         })
         .where(eq(users.id, userId))
         .returning();
@@ -16217,8 +16216,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
 
       const updatedUser = await db.update(users)
         .set({
-          profileImage: profileImage,
-          updatedAt: new Date()
+          profileImage: profileImage
         })
         .where(eq(users.id, userId))
         .returning();
