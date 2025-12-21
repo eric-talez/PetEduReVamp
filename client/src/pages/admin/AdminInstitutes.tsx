@@ -753,24 +753,25 @@ export default function AdminInstitutes() {
           </div>
 
           {/* 기관 테이블 */}
-          <div className="border rounded-lg">
-            <div className="grid grid-cols-10 gap-4 p-4 font-medium border-b bg-muted/50">
-              <div>기관코드</div>
-              <div>기관명</div>
-              <div>대표자</div>
-              <div>위치</div>
-              <div>구독 플랜</div>
-              <div>훈련사</div>
-              <div>교육생</div>
-              <div>상태</div>
-              <div>결제 상태</div>
-              <div>작업</div>
-            </div>
+          <div className="border rounded-lg overflow-x-auto">
+            <div className="min-w-[1400px]">
+              <div className="grid grid-cols-[100px_180px_140px_180px_140px_80px_120px_80px_80px_180px] gap-2 p-4 font-medium border-b bg-muted/50 text-sm">
+                <div>기관코드</div>
+                <div>기관명</div>
+                <div>대표자</div>
+                <div>위치</div>
+                <div>구독 플랜</div>
+                <div className="text-center">훈련사</div>
+                <div className="text-center">교육생</div>
+                <div className="text-center">상태</div>
+                <div className="text-center">결제</div>
+                <div>작업</div>
+              </div>
             {Array.isArray(institutes) && institutes.length > 0 ? (
               institutes.map((institute: any) => (
                 <div 
                   key={institute.id} 
-                  className="grid grid-cols-10 gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer transition-colors" 
+                  className="grid grid-cols-[100px_180px_140px_180px_140px_80px_120px_80px_80px_180px] gap-2 p-4 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer transition-colors text-sm" 
                   onClick={() => handleViewInstitute(institute)}
                   data-testid={`institute-row-${institute.id}`}
                 >
@@ -878,6 +879,7 @@ export default function AdminInstitutes() {
                 등록된 기관이 없습니다.
               </div>
             )}
+            </div>
           </div>
         </CardContent>
       </Card>
