@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -147,6 +148,17 @@ export default function NotebookPage() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateFilterMode, setDateFilterMode] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
   const [activeTab, setActiveTab] = useState<'basic' | 'activities' | 'media' | 'ai'>('basic');
+  const [selectedAIPetId, setSelectedAIPetId] = useState<string>('');
+  
+  // 반려동물 목록 조회
+  const petsQuery = useQuery({
+    queryKey: ['/api/pets'],
+  });
+  
+  const petsData = petsQuery.data as any;
+  const pets = Array.isArray(petsData) 
+    ? petsData 
+    : (petsData?.pets || petsData?.data || []);
   
   // 파일 업로드 상태
   const [uploadedFiles, setUploadedFiles] = useState<{
@@ -993,7 +1005,7 @@ export default function NotebookPage() {
                     AI 도우미
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>AI 알림장 도우미</DialogTitle>
                   </DialogHeader>
@@ -1001,7 +1013,66 @@ export default function NotebookPage() {
                     <p className="text-sm text-gray-600">
                       AI가 반려동물 정보를 바탕으로 알림장 내용을 자동 생성해드립니다.
                     </p>
-                    <Button onClick={handleAIGenerate} disabled={loading} className="w-full">
+                    
+                    {/* 반려동물 선택 */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">반려동물 선택</label>
+                      {petsQuery.isLoading ? (
+                        <div className="text-sm text-gray-500">로딩 중...</div>
+                      ) : pets.length === 0 ? (
+                        <div className="text-sm text-gray-500 p-4 border rounded-lg text-center">
+                          등록된 반려동물이 없습니다.
+                          <br />
+                          <span className="text-xs">먼저 반려동물을 등록해주세요.</span>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                          {pets.map((pet: any) => (
+                            <div
+                              key={pet.id}
+                              onClick={() => {
+                                setSelectedAIPetId(pet.id.toString());
+                                setNewEntry(prev => ({
+                                  ...prev,
+                                  petName: pet.name,
+                                  petId: pet.id.toString()
+                                }));
+                              }}
+                              className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                                selectedAIPetId === pet.id.toString()
+                                  ? 'border-primary bg-primary/10'
+                                  : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                              }`}
+                            >
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage 
+                                  src={`https://api.dicebear.com/7.x/big-ears-neutral/svg?seed=${pet.name}`}
+                                  alt={pet.name}
+                                />
+                                <AvatarFallback>
+                                  <PawPrint className="h-4 w-4" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <div className="font-medium">{pet.name}</div>
+                                <div className="text-xs text-gray-500">
+                                  {pet.breed || '품종 미등록'} · {pet.age ? `${pet.age}세` : '나이 미등록'}
+                                </div>
+                              </div>
+                              {selectedAIPetId === pet.id.toString() && (
+                                <div className="text-primary">✓</div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <Button 
+                      onClick={handleAIGenerate} 
+                      disabled={loading || !selectedAIPetId} 
+                      className="w-full"
+                    >
                       {loading ? '생성 중...' : 'AI로 내용 생성'}
                     </Button>
                   </div>
