@@ -693,32 +693,40 @@ export default function AdminHome() {
               <CardDescription>플랫폼 사용자 관리</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row md:justify-between mb-6 space-y-4 md:space-y-0">
-                <div className="flex-1 mr-0 md:mr-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div>
                   <h3 className="text-lg font-semibold mb-2">사용자 현황</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 rounded-lg border">
                       <div className="text-sm text-muted-foreground">총 사용자</div>
-                      <div className="text-2xl font-bold">12,483</div>
+                      <div className="text-2xl font-bold">
+                        {platformStats.find(s => s.name === '총 사용자')?.value?.toLocaleString() || '0'}
+                      </div>
                     </div>
                     <div className="p-4 rounded-lg border">
-                      <div className="text-sm text-muted-foreground">금일 활성</div>
-                      <div className="text-2xl font-bold">4,215</div>
+                      <div className="text-sm text-muted-foreground">활성 사용자</div>
+                      <div className="text-2xl font-bold">
+                        {platformStats.find(s => s.name === '활성 사용자')?.value?.toLocaleString() || '0'}
+                      </div>
                     </div>
                     <div className="p-4 rounded-lg border">
-                      <div className="text-sm text-muted-foreground">신규 가입</div>
-                      <div className="text-2xl font-bold">187</div>
+                      <div className="text-sm text-muted-foreground">신규 가입 (금주)</div>
+                      <div className="text-2xl font-bold">
+                        {platformStats.find(s => s.name === '신규 가입 (금주)')?.value?.toLocaleString() || '0'}
+                      </div>
                     </div>
                     <div className="p-4 rounded-lg border">
-                      <div className="text-sm text-muted-foreground">미인증</div>
-                      <div className="text-2xl font-bold">42</div>
+                      <div className="text-sm text-muted-foreground">총 훈련사</div>
+                      <div className="text-2xl font-bold">
+                        {platformStats.find(s => s.name === '총 훈련사')?.value?.toLocaleString() || '0'}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="text-lg font-semibold mb-2">사용자 분포</h3>
-                  <div className="h-64">
+                  <div className="h-56 w-full">
                     <CompactUserTypeChart />
                   </div>
                 </div>
