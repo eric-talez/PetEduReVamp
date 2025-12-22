@@ -8,6 +8,13 @@
       "when": 1765161622829,
       "tag": "0000_new_shriek",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766409222409,
+      "tag": "0001_wandering_boom_boom",
+      "breakpoints": true
     }
   ]
 }
