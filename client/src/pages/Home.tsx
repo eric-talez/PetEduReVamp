@@ -130,10 +130,11 @@ export default function Home() {
     try {
       const response = await apiRequest('POST', '/api/ai/analyze-video', {
         videoDescription: videoDescription.trim()
-      }) as any;
+      });
 
-      // apiRequest가 성공하면 JSON 데이터를 직접 반환함
-      setAnalysisResult(response);
+      // Response 객체에서 JSON 데이터 추출
+      const data = await response.json();
+      setAnalysisResult(data);
       setAnalysisStep('result');
     } catch (error) {
       setUploadError('AI 분석 중 오류가 발생했습니다. 다시 시도해주세요.');
