@@ -24,6 +24,7 @@ import CommunityPostDetail from "@/pages/community/post/[id]";
 import MyCourses from "@/pages/my-courses";
 import MyPets from "@/pages/my-pets";
 import Login from "@/pages/auth/login";
+import Register from "@/pages/auth/register";
 import NotFound from "@/pages/not-found";
 import VideoTrainingPage from "@/pages/VideoTraining";
 import LocationsPage from "./pages/locations";
@@ -1629,6 +1630,7 @@ function UnauthenticatedRoutes() {
     <AppLayout>
       <Switch>
         <Route path="/auth" component={Login} />
+        <Route path="/auth/register" component={Register} />
         <Route path="/chatbot" component={ChatbotPage} />
 
         {/* TALEZ 체험 서비스 */}
