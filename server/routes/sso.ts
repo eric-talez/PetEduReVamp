@@ -16,6 +16,30 @@ interface SSOTokenPayload {
   exp: number;
 }
 
+const allowedOrigins = [
+  'https://talezaitool.com',
+  'https://www.talezaitool.com',
+  'https://talez.co.kr',
+  'https://www.talez.co.kr'
+];
+
+const corsMiddleware = (req: any, res: any, next: any) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+};
+
+router.options('/api/sso/verify', corsMiddleware);
+
 router.get('/api/sso/token', (req, res) => {
   try {
     if (!req.session?.user) {
@@ -56,7 +80,7 @@ router.get('/api/sso/token', (req, res) => {
   }
 });
 
-router.post('/api/sso/verify', (req, res) => {
+router.post('/api/sso/verify', corsMiddleware, (req, res) => {
   try {
     const { token } = req.body;
 
