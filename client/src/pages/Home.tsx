@@ -1153,9 +1153,19 @@ export default function Home() {
                           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="예시: 저희 강아지는 다른 강아지를 보면 꼬리를 흔들며 다가가지만, 낯선 사람이 오면 짖으면서 뒤로 물러납니다. 산책할 때는 줄을 많이 당기고, 집에서는 혼자 있을 때 불안해하는 모습을 보입니다. 간식을 주면 '앉아'는 잘 따르지만 '기다려'는 아직 어려워합니다."
                         />
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          💡 팁: 산책 시 행동, 다른 강아지/사람과의 상호작용, 명령 반응도, 집에서의 행동 등을 자세히 적어주세요.
-                        </p>
+                        <div className="flex justify-between items-center mt-2">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            💡 팁: 산책 시 행동, 다른 강아지/사람과의 상호작용, 명령 반응도, 집에서의 행동 등을 자세히 적어주세요.
+                          </p>
+                          <span className={`text-xs ${videoDescription.trim().length < 20 ? 'text-orange-500' : 'text-green-500'}`}>
+                            {videoDescription.trim().length}/20자
+                          </span>
+                        </div>
+                        {videoDescription.trim().length > 0 && videoDescription.trim().length < 20 && (
+                          <p className="text-xs text-orange-500 mt-1">
+                            최소 20자 이상 입력해주세요. ({20 - videoDescription.trim().length}자 더 필요)
+                          </p>
+                        )}
                       </div>
 
                       <Button
