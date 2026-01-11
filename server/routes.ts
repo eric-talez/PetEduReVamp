@@ -16409,6 +16409,15 @@ export function registerTrainerCertificationRoutes(app: Express) {
     console.error('[Push Admin] 푸시 관리 라우트 로드 실패:', error);
   });
 
+  // DogVoiceAI 강아지 AI 분석 라우트
+  import('./routes/dog-ai-analysis').then(dogAiModule => {
+    app.use('/api/ai-analysis', dogAiModule.default);
+    app.use('/api/comprehensive-report', dogAiModule.default);
+    console.log('[Dog AI] 강아지 AI 분석 라우트가 등록되었습니다.');
+  }).catch(error => {
+    console.error('[Dog AI] 강아지 AI 분석 라우트 로드 실패:', error);
+  });
+
   // 모든 인증 API들은 setupAuth()에서 처리됩니다 (/api/auth/login, /api/auth/logout, /api/auth/me)
 
   // 사용자 프로필 API

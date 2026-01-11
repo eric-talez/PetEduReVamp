@@ -956,6 +956,21 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/dog-analysis">
+          {() => {
+            const DogAnalysisPage = lazy(() => import('./pages/dog-analysis'));
+            return (
+              <Suspense fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              }>
+                <DogAnalysisPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         <Route path="/trainer-referrals">
           {() => {
             const TrainerReferrals = lazy(() => import('./pages/trainer-referrals'));
