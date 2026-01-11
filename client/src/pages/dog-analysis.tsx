@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dog, Brain, FileVideo, BarChart3, FileText } from "lucide-react";
+import { Dog, Brain, FileVideo, BarChart3, FileText, Activity } from "lucide-react";
 
 import FileUploadAnalysis from "@/components/dog-analysis/FileUploadAnalysis";
 import BehavioralAnalysis from "@/components/dog-analysis/BehavioralAnalysis";
 import PatternAnalysis from "@/components/dog-analysis/PatternAnalysis";
 import ComprehensiveReport from "@/components/dog-analysis/ComprehensiveReport";
+import FileBasedRealTimeAnalysis from "@/components/dog-analysis/FileBasedRealTimeAnalysis";
 
 export default function DogAnalysisPage() {
   const [activeTab, setActiveTab] = useState("upload");
@@ -26,10 +27,14 @@ export default function DogAnalysisPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <FileVideo className="w-4 h-4" />
               <span className="hidden sm:inline">파일 분석</span>
+            </TabsTrigger>
+            <TabsTrigger value="realtime" className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              <span className="hidden sm:inline">실시간 분석</span>
             </TabsTrigger>
             <TabsTrigger value="behavior" className="flex items-center gap-2">
               <Brain className="w-4 h-4" />
@@ -47,6 +52,10 @@ export default function DogAnalysisPage() {
 
           <TabsContent value="upload" className="space-y-6">
             <FileUploadAnalysis />
+          </TabsContent>
+
+          <TabsContent value="realtime" className="space-y-6">
+            <FileBasedRealTimeAnalysis />
           </TabsContent>
 
           <TabsContent value="behavior" className="space-y-6">
@@ -70,10 +79,14 @@ export default function DogAnalysisPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-600">
+            <div className="grid md:grid-cols-4 gap-4 text-sm text-gray-600">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-semibold text-blue-800 mb-2">🎬 동영상 분석</h4>
                 <p>동영상에서 프레임을 추출하여 강아지의 자세, 표정, 행동을 분석합니다.</p>
+              </div>
+              <div className="p-4 bg-orange-50 rounded-lg">
+                <h4 className="font-semibold text-orange-800 mb-2">🎯 실시간 모션 분석</h4>
+                <p>관절 포인트 추적으로 움직임 속도, 자세 기울기, 활동 유형을 분석합니다.</p>
               </div>
               <div className="p-4 bg-green-50 rounded-lg">
                 <h4 className="font-semibold text-green-800 mb-2">🎤 음성 분석</h4>
