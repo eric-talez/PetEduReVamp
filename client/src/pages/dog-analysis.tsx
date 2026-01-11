@@ -1,14 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
-import { Dog, ExternalLink, Maximize, Minimize, RefreshCw } from "lucide-react";
+import { Dog, ExternalLink, Maximize, Minimize, RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 
-interface UserProfile {
-  id: number;
-  username: string;
-  email?: string;
-  name?: string;
-  role?: string;
+interface SSOTokenResponse {
+  success: boolean;
+  token: string;
+  expiresIn: number;
 }
 
 export default function DogAnalysisPage() {
@@ -16,8 +14,10 @@ export default function DogAnalysisPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [iframeKey, setIframeKey] = useState(0);
 
-  const { data: user } = useQuery<UserProfile>({
-    queryKey: ['/api/user'],
+  const { data: ssoData, isLoading: isTokenLoading, refetch: refetchToken } = useQuery<SSOTokenResponse>({
+    queryKey: ['/api/sso/token'],
+    staleTime: 1000 * 60 * 50,
+    refetchInterval: 1000 * 60 * 50,
   });
 
   useEffect(() => {
@@ -30,18 +30,14 @@ export default function DogAnalysisPage() {
 
   const iframeSrc = useMemo(() => {
     const baseUrl = 'https://talezaitool.com';
-    if (!user) return baseUrl;
+    if (!ssoData?.token) return baseUrl;
     
     const params = new URLSearchParams();
-    if (user.id) params.append('userId', String(user.id));
-    if (user.username) params.append('username', user.username);
-    if (user.name) params.append('name', user.name);
-    if (user.role) params.append('role', user.role);
+    params.append('sso_token', ssoData.token);
     params.append('platform', 'talez');
     
-    const queryString = params.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
-  }, [user]);
+    return `${baseUrl}?${params.toString()}`;
+  }, [ssoData?.token]);
 
   const toggleFullscreen = async () => {
     try {
@@ -60,14 +56,26 @@ export default function DogAnalysisPage() {
     }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsLoading(true);
+    await refetchToken();
     setIframeKey(prev => prev + 1);
   };
 
   const handleOpenNewTab = () => {
     window.open(iframeSrc, '_blank');
   };
+
+  if (isTokenLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
+          <p className="text-gray-600">SSO 인증 준비 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div id="dog-ai-container" className="min-h-screen bg-gradient-to-b from-green-50 to-white flex flex-col">
@@ -79,7 +87,7 @@ export default function DogAnalysisPage() {
               <h1 className="text-xl font-bold text-gray-900">강아지 AI 분석</h1>
               <p className="text-xs text-gray-500">
                 TALEZ AI Tool - 고급 행동 분석 시스템
-                {user?.name && <span className="ml-2 text-green-600">({user.name}님)</span>}
+                {ssoData?.token && <span className="ml-2 text-green-600">(SSO 연동됨)</span>}
               </p>
             </div>
           </div>

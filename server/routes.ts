@@ -16418,6 +16418,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
     console.error('[Dog AI] 강아지 AI 분석 라우트 로드 실패:', error);
   });
 
+  // SSO 라우트
+  import('./routes/sso').then(ssoModule => {
+    app.use(ssoModule.default);
+    console.log('[SSO] SSO 라우트가 등록되었습니다.');
+  }).catch(error => {
+    console.error('[SSO] SSO 라우트 로드 실패:', error);
+  });
+
   // 모든 인증 API들은 setupAuth()에서 처리됩니다 (/api/auth/login, /api/auth/logout, /api/auth/me)
 
   // 사용자 프로필 API
