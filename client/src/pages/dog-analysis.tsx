@@ -56,6 +56,13 @@ export default function DogAnalysisPage() {
     };
   }, [cameraStream]);
 
+  useEffect(() => {
+    if (cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.play().catch(err => console.error('Video play error:', err));
+    }
+  }, [cameraStream, isCameraAnalyzing]);
+
   const toggleFullscreen = useCallback(async () => {
     try {
       if (!isFullscreen) {
@@ -278,16 +285,21 @@ export default function DogAnalysisPage() {
                           </CardHeader>
                           <CardContent>
                             <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center relative overflow-hidden">
-                              {isCameraAnalyzing ? (
-                                <>
-                                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                                  <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs flex items-center">
-                                    <div className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-pulse" />
-                                    LIVE
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="text-gray-400 text-center p-4">
+                              <video 
+                                ref={videoRef} 
+                                autoPlay 
+                                playsInline 
+                                muted 
+                                className={`w-full h-full object-cover ${isCameraAnalyzing ? 'block' : 'hidden'}`} 
+                              />
+                              {isCameraAnalyzing && (
+                                <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs flex items-center">
+                                  <div className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-pulse" />
+                                  LIVE
+                                </div>
+                              )}
+                              {!isCameraAnalyzing && (
+                                <div className="text-gray-400 text-center p-4 absolute inset-0 flex flex-col items-center justify-center">
                                   <Camera className="w-12 h-12 mx-auto mb-3" />
                                   <p className="text-sm">카메라 분석을 시작하려면 위의 버튼을 클릭하세요</p>
                                 </div>
