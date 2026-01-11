@@ -18,7 +18,11 @@ import {
   Activity,
   RotateCcw,
   FileVideo,
-  Music
+  Music,
+  Maximize,
+  Minimize,
+  RotateCw,
+  Smartphone
 } from "lucide-react";
 
 interface AnalysisFile {
@@ -37,11 +41,87 @@ export default function FileBasedRealTimeAnalysis() {
   const [currentTime, setCurrentTime] = useState(0);
   const [analysisResults, setAnalysisResults] = useState<RealTimeResult[]>([]);
   const [currentResult, setCurrentResult] = useState<RealTimeResult | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaElementRef = useRef<HTMLVideoElement | HTMLAudioElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!isFullscreen) {
+        if (containerRef.current?.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        } else if ((containerRef.current as any)?.webkitRequestFullscreen) {
+          await (containerRef.current as any).webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        }
+      }
+    } catch (error) {
+      console.error('전체화면 전환 오류:', error);
+      toast({
+        title: "전체화면 전환 실패",
+        description: "브라우저에서 전체화면을 지원하지 않습니다.",
+        variant: "destructive"
+      });
+    }
+  }, [isFullscreen, toast]);
+
+  const toggleOrientation = useCallback(async () => {
+    try {
+      const orientation = screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void> };
+      if (orientation && typeof orientation.lock === 'function') {
+        const currentType = orientation.type;
+        if (currentType.includes('portrait')) {
+          await orientation.lock('landscape');
+        } else {
+          await orientation.lock('portrait');
+        }
+        toast({
+          title: "화면 방향 변경",
+          description: currentType.includes('portrait') ? "가로 모드로 전환되었습니다." : "세로 모드로 전환되었습니다."
+        });
+      } else {
+        toast({
+          title: "화면 방향 전환 불가",
+          description: "이 기기에서는 화면 방향 잠금이 지원되지 않습니다.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('화면 방향 전환 오류:', error);
+      toast({
+        title: "화면 방향 전환 실패",
+        description: "전체화면 모드에서만 화면 방향을 변경할 수 있습니다.",
+        variant: "destructive"
+      });
+    }
+  }, [toast]);
 
   const performAIAnalysis = useCallback(async (timestamp: number): Promise<RealTimeResult | null> => {
     if (!uploadedFile || !mediaElementRef.current) return null;
@@ -198,13 +278,43 @@ export default function FileBasedRealTimeAnalysis() {
   };
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className={`space-y-6 ${isFullscreen ? 'bg-white p-4 overflow-auto' : ''}`}>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Brain className="w-5 h-5 text-purple-600" />
-            <span>파일 기반 실시간 분석</span>
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center space-x-2">
+              <Brain className="w-5 h-5 text-purple-600" />
+              <span>파일 기반 실시간 분석</span>
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              {isMobile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleOrientation}
+                  className="flex items-center gap-1"
+                  title="화면 방향 전환"
+                >
+                  <RotateCw className="w-4 h-4" />
+                  <span className="hidden sm:inline">회전</span>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleFullscreen}
+                className="flex items-center gap-1"
+                title={isFullscreen ? "전체화면 종료" : "전체화면"}
+              >
+                {isFullscreen ? (
+                  <Minimize className="w-4 h-4" />
+                ) : (
+                  <Maximize className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">{isFullscreen ? "축소" : "전체화면"}</span>
+              </Button>
+            </div>
+          </div>
           <p className="text-sm text-gray-600">
             동영상 또는 음성 파일을 업로드하여 실시간 행동 및 음성 분석을 수행합니다
           </p>
