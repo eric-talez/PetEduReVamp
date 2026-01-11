@@ -87,7 +87,8 @@ import {
   Mail,
   Brain,
   Zap,
-  Syringe
+  Syringe,
+  Dog
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -504,6 +505,7 @@ export function Sidebar({
       '/video-training': '영상 훈련',
       '/video-call': '화상 수업',
       '/ai-analysis': 'AI 분석',
+      '/dog-analysis': '강아지 AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
       '/calendar': '교육 일정',
@@ -874,6 +876,7 @@ export function Sidebar({
                     <AccessibleNavItem href="/messages" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<MessageCircle className="w-5 h-5 mr-2 text-primary" />} active={isActive("/messages")} onClick={handleItemClick} show={showAllAuthenticatedMenu && isMenuVisible('messages')}>메시지</AccessibleNavItem>
                     <AccessibleNavItem href="/alerts" icon={<Bell className="w-5 h-5 mr-2" />} hoverIcon={<Activity className="w-5 h-5 mr-2 text-primary" />} active={isActive("/alerts")} onClick={handleItemClick} show={showAllAuthenticatedMenu && isMenuVisible('alerts')}>알림</AccessibleNavItem>
                     <AccessibleNavItem href="/ai-analysis" icon={<Brain className="w-5 h-5 mr-2" />} hoverIcon={<Sparkles className="w-5 h-5 mr-2 text-primary" />} active={isActive("/ai-analysis")} onClick={handleItemClick} show={showAllAuthenticatedMenu && isMenuVisible('ai-analysis')}>AI 분석</AccessibleNavItem>
+                    <AccessibleNavItem href="/dog-analysis" icon={<Dog className="w-5 h-5 mr-2" />} hoverIcon={<Brain className="w-5 h-5 mr-2 text-primary" />} active={isActive("/dog-analysis")} onClick={handleItemClick} show={showAllAuthenticatedMenu && isMenuVisible('dog-analysis')}>강아지 AI 분석</AccessibleNavItem>
                   </>
                 )}
 
