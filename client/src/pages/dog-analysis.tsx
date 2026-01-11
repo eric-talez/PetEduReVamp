@@ -1,11 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dog, ExternalLink, Maximize, Minimize, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+
+interface UserProfile {
+  id: number;
+  username: string;
+  email?: string;
+  name?: string;
+  role?: string;
+}
 
 export default function DogAnalysisPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [iframeKey, setIframeKey] = useState(0);
+
+  const { data: user } = useQuery<UserProfile>({
+    queryKey: ['/api/user'],
+  });
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -14,6 +27,21 @@ export default function DogAnalysisPage() {
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  const iframeSrc = useMemo(() => {
+    const baseUrl = 'https://talezaitool.com';
+    if (!user) return baseUrl;
+    
+    const params = new URLSearchParams();
+    if (user.id) params.append('userId', String(user.id));
+    if (user.username) params.append('username', user.username);
+    if (user.name) params.append('name', user.name);
+    if (user.role) params.append('role', user.role);
+    params.append('platform', 'talez');
+    
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  }, [user]);
 
   const toggleFullscreen = async () => {
     try {
@@ -38,7 +66,7 @@ export default function DogAnalysisPage() {
   };
 
   const handleOpenNewTab = () => {
-    window.open('https://talezaitool.com', '_blank');
+    window.open(iframeSrc, '_blank');
   };
 
   return (
@@ -49,7 +77,10 @@ export default function DogAnalysisPage() {
             <Dog className="w-8 h-8 text-green-600" />
             <div>
               <h1 className="text-xl font-bold text-gray-900">강아지 AI 분석</h1>
-              <p className="text-xs text-gray-500">TALEZ AI Tool - 고급 행동 분석 시스템</p>
+              <p className="text-xs text-gray-500">
+                TALEZ AI Tool - 고급 행동 분석 시스템
+                {user?.name && <span className="ml-2 text-green-600">({user.name}님)</span>}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -77,7 +108,7 @@ export default function DogAnalysisPage() {
         )}
         <iframe
           key={iframeKey}
-          src="https://talezaitool.com"
+          src={iframeSrc}
           className="w-full h-full border-0"
           style={{ minHeight: 'calc(100vh - 80px)' }}
           onLoad={() => setIsLoading(false)}
