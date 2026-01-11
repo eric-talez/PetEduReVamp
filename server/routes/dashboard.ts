@@ -205,22 +205,29 @@ export function registerDashboardRoutes(app: Express) {
 
   // 시스템 상태 API (실시간 서비스 현황용) - 캐싱 적용
   app.get('/api/dashboard/system/status', asyncHandler(async (req: any, res: any) => {
-    console.log('[Dashboard] 시스템 상태 요청받음');
-
     try {
       const now = Date.now();
       
-      // 캐시가 유효하면 캐시된 데이터 반환
+      // 캐시가 유효하면 캐시된 데이터 반환 (uptime만 업데이트)
       if (systemStatusCache && (now - cacheTimestamp) < CACHE_DURATION) {
-        console.log('[Dashboard] 캐시된 시스템 상태 반환');
-        return res.json(successResponse(systemStatusCache));
+        const cachedResponse = {
+          ...systemStatusCache,
+          systemHealth: {
+            ...systemStatusCache.systemHealth,
+            uptime: Math.round(process.uptime())
+          }
+        };
+        return res.json(successResponse(cachedResponse));
       }
 
-      const allUsers = storage.getAllUsers();
-      const allCourses = storage.getAllCourses();
-      const allInstitutes = storage.getAllInstitutes();
-      const allTrainers = storage.getAllTrainers();
-      const allEvents = storage.getAllEvents();
+      // 병렬로 데이터 조회
+      const [allUsers, allCourses, allInstitutes, allTrainers, allEvents] = await Promise.all([
+        Promise.resolve(storage.getAllUsers()),
+        Promise.resolve(storage.getAllCourses()),
+        Promise.resolve(storage.getAllInstitutes()),
+        storage.getAllTrainers(),
+        Promise.resolve(storage.getAllEvents())
+      ]);
 
       // 시스템 건강 상태 계산
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -229,10 +236,10 @@ export function registerDashboardRoutes(app: Express) {
       ).length;
 
       const systemHealth = {
-        uptime: process.uptime(),
+        uptime: Math.round(process.uptime()),
         memoryUsage: process.memoryUsage(),
         activeConnections: activeConnections,
-        errorRate: 0.005 // 실제 환경에서는 실제 에러율을 계산
+        errorRate: 0.005
       };
 
       const stats = {
@@ -249,12 +256,6 @@ export function registerDashboardRoutes(app: Express) {
       // 캐시 업데이트
       systemStatusCache = stats;
       cacheTimestamp = now;
-
-      console.log('[Dashboard] 시스템 상태 응답:', {
-        totalUsers: stats.totalUsers,
-        activeUsers: stats.activeUsers,
-        uptime: Math.round(systemHealth.uptime)
-      });
 
       res.json(successResponse(stats));
     } catch (error: any) {
