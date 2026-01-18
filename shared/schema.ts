@@ -24,6 +24,10 @@ export const users = pgTable("users", {
   isActive: boolean("is_active").default(true),
   emailVerified: boolean("email_verified").default(false),
   isVerified: boolean("is_verified").default(false), // 훈련사 인증 여부
+  approvalStatus: varchar("approval_status", { length: 20 }).default("pending"), // pending, approved, rejected
+  approvedAt: timestamp("approved_at"), // 승인 일시
+  approvedBy: integer("approved_by"), // 승인한 관리자 ID
+  rejectionReason: text("rejection_reason"), // 거부 사유
   instituteId: integer("institute_id").references(() => institutes.id), // 소속 기관
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
