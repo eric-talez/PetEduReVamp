@@ -158,7 +158,7 @@ export default function Home() {
       title: "AI 기반 맞춤형 반려동물 케어",
       subtitle: "TALEZ의 AI 대시보드로 반려동물의 행동을 분석하고 최적의 훈련 방법을 제공받으세요",
       features: ["AI 분석", "맞춤 훈련", "실시간 인사이트", "전문가 추천"],
-      image: "/attached_assets/stock_images/online_pet_dog_train_c9e8e79a.jpg",
+      image: "/attached_assets/stock_images/professional_dog_tra_96215a25.jpg",
       primaryAction: { text: "AI 분석 시작", path: "/home" },
       secondaryAction: { text: "더 알아보기", path: "/about" }
     },
@@ -167,7 +167,7 @@ export default function Home() {
       title: "검증된 전문 훈련사와 함께하는 교육",
       subtitle: "TALEZ 인증 전문 훈련사가 직접 제공하는 1:1 맞춤형 훈련 프로그램",
       features: ["검증된 전문가", "디지털 코칭", "체계적 커리큘럼", "자격증 보유"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
+      image: "/attached_assets/stock_images/professional_dog_tra_ee84aa05.jpg",
       primaryAction: { text: "무료 체험하기", path: "/experience" },
       secondaryAction: { text: "훈련사 찾기", path: "/trainers" }
     },
@@ -176,7 +176,7 @@ export default function Home() {
       title: "스마트한 반려동물 용품 쇼핑",
       subtitle: "AI 추천 시스템으로 우리 반려동물에게 딱 맞는 용품을 찾아보세요",
       features: ["AI 추천", "빠른 배송", "친환경 제품", "로열티 혜택"],
-      image: "/attached_assets/stock_images/eco-friendly_pet_pro_daa059e9.jpg",
+      image: "/attached_assets/stock_images/happy_dog_with_pet_p_0b4dccf7.jpg",
       primaryAction: { text: "쇼핑하기", path: "/shop" },
       secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
     },
@@ -185,7 +185,7 @@ export default function Home() {
       title: "전국 지점 운영 - 편리한 접근성",
       subtitle: "공평점과 석적점에서 전문적인 반려견 교육 서비스를 만나보세요",
       features: ["전국 지점", "편리한 위치", "전문 시설", "개별 맞춤"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
+      image: "/attached_assets/stock_images/professional_dog_tra_c9c39d39.jpg",
       primaryAction: { text: "화상 교육", path: "/video-training" },
       secondaryAction: { text: "훈련사 보기", path: "/trainers" }
     },
@@ -194,7 +194,7 @@ export default function Home() {
       title: "반려견 건강 관리 & 기록",
       subtitle: "반려견의 건강 상태를 체계적으로 관리하고 기록해보세요",
       features: ["건강 기록", "예방접종 알림", "병원 예약", "전문 상담"],
-      image: "/attached_assets/stock_images/happy_healthy_dog_ge_4c9ac208.jpg",
+      image: "/attached_assets/stock_images/veterinarian_examini_05b2b989.jpg",
       primaryAction: { text: "건강 관리", path: "/health" },
       secondaryAction: { text: "기록 시작", path: "/health-record" }
     },
@@ -203,7 +203,7 @@ export default function Home() {
       title: "반려견 교육 용품 쇼핑몰",
       subtitle: "교육에 필요한 다양한 용품들을 한 곳에서 만나보세요",
       features: ["훈련사 추천", "교육 연계 할인", "빠른 배송"],
-      image: "/attached_assets/stock_images/happy_dog_with_pet_s_08e2cb27.jpg",
+      image: "/attached_assets/stock_images/happy_dog_with_pet_p_f665e30e.jpg",
       primaryAction: { text: "쇼핑하기", path: "/shop" },
       secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
     },
@@ -212,7 +212,7 @@ export default function Home() {
       title: "반려인 커뮤니티",
       subtitle: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
       features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
-      image: "/attached_assets/stock_images/pet_owner_with_dog_t_a7acd251.jpg",
+      image: "/attached_assets/stock_images/pet_owner_community__205612cf.jpg",
       primaryAction: { text: "커뮤니티", path: "/community" },
       secondaryAction: { text: "게시글 작성", path: "/community/create" }
     },
@@ -221,7 +221,7 @@ export default function Home() {
       title: "전문 훈련사로 활동하기",
       subtitle: "전문 지식과 경험을 바탕으로 TALEZ 플랫폼에서 훈련사로 활동하세요",
       features: ["훈련사 등록", "고객 매칭", "안정적 수익"],
-      image: "/attached_assets/stock_images/professional_certifi_526f360a.jpg",
+      image: "/attached_assets/stock_images/pet_owner_community__8108ab64.jpg",
       primaryAction: { text: "훈련사 등록", path: "/registration/trainer" },
       secondaryAction: { text: "혜택 보기", path: "/trainer/benefits" }
     },
@@ -230,7 +230,7 @@ export default function Home() {
       title: "교육 기관 및 훈련소 등록",
       subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 TALEZ와 함께하세요",
       features: ["기관 등록", "코스 관리", "수익 창출"],
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
+      image: "/attached_assets/stock_images/veterinarian_examini_fc0ee403.jpg",
       primaryAction: { text: "기관 등록", path: "/registration/institute" },
       secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
