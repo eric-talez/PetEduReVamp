@@ -1287,10 +1287,10 @@ class Storage {
     return this.users?.find(user => user.email === email);
   }
 
-  async getUserByUsername(username: string) {
+  async getUserByUsername(usernameOrEmail: string) {
     try {
-      // 데이터베이스에서 먼저 조회 (존재하는 컬럼만 선택)
-      const [user] = await db.select({
+      // 데이터베이스에서 먼저 조회 (username 또는 email로 검색)
+      const selectFields = {
         id: usersTable.id,
         username: usersTable.username,
         email: usersTable.email,
@@ -1310,7 +1310,19 @@ class Storage {
         createdAt: usersTable.createdAt,
         provider: usersTable.provider,
         socialId: usersTable.socialId
-      }).from(usersTable).where(eq(usersTable.username, username));
+      };
+      
+      // username으로 먼저 검색
+      let [user] = await db.select(selectFields)
+        .from(usersTable)
+        .where(eq(usersTable.username, usernameOrEmail));
+      
+      // username으로 찾지 못하면 email로 검색
+      if (!user) {
+        [user] = await db.select(selectFields)
+          .from(usersTable)
+          .where(eq(usersTable.email, usernameOrEmail));
+      }
       
       if (user) {
         return user;
@@ -1320,7 +1332,7 @@ class Storage {
     }
     
     // 데이터베이스에서 찾지 못하면 메모리에서 검색 (fallback)
-    return this.users?.find(user => user.username === username);
+    return this.users?.find(user => user.username === usernameOrEmail || user.email === usernameOrEmail);
   }
 
   getUserBySocialId(provider: string, socialId: string) {
