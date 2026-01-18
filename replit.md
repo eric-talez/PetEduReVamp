@@ -48,7 +48,16 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Institute-Trainer Connection**: Secure system for trainers to link with institutes via unique codes, including verification and relationship management.
 - **Optimized UI/UX**: Streamlined sidebar menus for various user roles (pet owner, trainer, institute, admin) and consolidated navigation.
 
-## Recent Changes (December 2025)
+## Recent Changes (January 2026)
+- **Simplified Registration with Admin Approval**: Streamlined registration to require only 4 fields (email, password, name, role). New users are created with 'pending' approval status and require admin approval before login. Social login users are auto-approved.
+- **Admin Approval APIs**: Added endpoints for managing user approvals:
+  - GET /api/admin/users/pending - List pending users
+  - POST /api/admin/users/:id/approve - Approve a user
+  - POST /api/admin/users/:id/reject - Reject a user with reason
+- **Database Schema Update**: Added approval_status, approved_at, approved_by, rejection_reason columns to users table.
+- **Authentication Flow**: Login now validates approval status; pending/rejected users receive informative error messages.
+
+## Previous Changes (December 2025)
 - **Routing Fix**: Fixed trainer dashboard routes (/trainer/courses, /trainer/notebook, etc.) returning 404 errors. The issue was caused by AppLayout having an internal Switch that intercepted all routes before AuthenticatedRoutes could handle them. Solution: Modified AppLayout to render children instead of its own Switch.
 - **Trainer Registration**: Enhanced trainer registration to auto-assign to "TALEZ 공식 기관" (default institute) when no institute code is provided.
 - **Login Security**: Added CSRF token handling to login API endpoint.
