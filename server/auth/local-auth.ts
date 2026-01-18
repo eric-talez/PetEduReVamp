@@ -57,6 +57,18 @@ export function setupLocalAuth() {
           return done(null, false, { message: '아이디 또는 비밀번호가 일치하지 않습니다.' });
         }
         
+        // 승인 상태 확인
+        const approvalStatus = (user as any).approvalStatus;
+        if (approvalStatus === 'pending') {
+          console.log(`로그인 실패: '${username}' 승인 대기 중`);
+          return done(null, false, { message: '관리자 승인 대기 중입니다. 승인 후 로그인이 가능합니다.' });
+        }
+        
+        if (approvalStatus === 'rejected') {
+          console.log(`로그인 실패: '${username}' 가입 거부됨`);
+          return done(null, false, { message: '회원가입이 거부되었습니다. 관리자에게 문의해주세요.' });
+        }
+        
         console.log(`로그인 성공: '${username}'`);
         return done(null, user);
       } catch (error) {

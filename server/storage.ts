@@ -1305,6 +1305,7 @@ class Storage {
         isActive: usersTable.isActive,
         emailVerified: usersTable.emailVerified,
         isVerified: usersTable.isVerified,
+        approvalStatus: usersTable.approvalStatus,
         instituteId: usersTable.instituteId,
         createdAt: usersTable.createdAt,
         provider: usersTable.provider,
@@ -1326,18 +1327,44 @@ class Storage {
     return this.users?.find(user => user.provider === provider && user.socialId === socialId);
   }
 
-  createUser(userData: any) {
-    const newUser = {
-      id: (this.users?.length || 0) + 1,
-      ...userData,
-      createdAt: new Date().toISOString()
-    };
+  async createUser(userData: any) {
+    try {
+      const [newUser] = await db.insert(usersTable).values({
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        name: userData.name,
+        role: userData.role || 'pet-owner',
+        phone: userData.phone,
+        phoneNumber: userData.phoneNumber,
+        birthDate: userData.birthDate,
+        gender: userData.gender,
+        age: userData.age,
+        provider: userData.provider,
+        socialId: userData.socialId,
+        verified: userData.verified || false,
+        verifiedAt: userData.verifiedAt,
+        approvalStatus: userData.approvalStatus || 'pending',
+        isActive: true
+      }).returning();
+      
+      console.log('[DB] 사용자 생성됨:', { id: newUser.id, username: newUser.username, approvalStatus: newUser.approvalStatus });
+      return newUser;
+    } catch (error) {
+      console.error('[DB] createUser 오류:', error);
+      
+      const newUser = {
+        id: (this.users?.length || 0) + 1,
+        ...userData,
+        createdAt: new Date().toISOString()
+      };
 
-    if (!this.users) {
-      this.users = [];
+      if (!this.users) {
+        this.users = [];
+      }
+      this.users.push(newUser);
+      return newUser;
     }
-    this.users.push(newUser);
-    return newUser;
   }
 
   updateUser(id: number, userData: Partial<any>) {
@@ -1376,6 +1403,7 @@ class Storage {
         bio: usersTable.bio,
         isActive: usersTable.isActive,
         isVerified: usersTable.isVerified,
+        approvalStatus: usersTable.approvalStatus,
         createdAt: usersTable.createdAt
       }).from(usersTable).where(eq(usersTable.id, id)).limit(1);
       return user || null;

@@ -1,42 +1,31 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// UserRole 타입 정의
-type UserRole = 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
+type UserRole = 'pet-owner' | 'trainer' | 'institute-admin';
 
-/**
- * 회원가입 폼 컴포넌트
- * 새 계정을 등록할 수 있는 폼을 제공합니다.
- */
 export default function RegisterForm() {
   const { toast } = useToast();
   
-  // Form states
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [gender, setGender] = useState<"male" | "female" | "">("");
   const [userRole, setUserRole] = useState<UserRole>("pet-owner");
-  const [instituteCode, setInstituteCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   
-  // 회원가입 처리 함수
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // 입력 검증
-    if (!username || !password || !confirmPassword || !email || !name || !phoneNumber || !birthDate || !gender) {
+    if (!email || !password || !confirmPassword || !name) {
       toast({
         title: "입력 오류",
         description: "모든 필수 필드를 입력해주세요.",
@@ -46,27 +35,21 @@ export default function RegisterForm() {
       return;
     }
 
-    // 생년월일 유효성 검증
-    const birth = new Date(birthDate);
-    const today = new Date();
-    const age = today.getFullYear() - birth.getFullYear();
-    
-    if (age < 14 || age > 100) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       toast({
-        title: "생년월일 오류",
-        description: "올바른 생년월일을 입력해주세요. (만 14세 이상)",
+        title: "이메일 오류",
+        description: "올바른 이메일 형식을 입력해주세요.",
         variant: "destructive",
       });
       setIsLoading(false);
       return;
     }
 
-    // 휴대폰 번호 유효성 검증
-    const phoneRegex = /^010-\d{4}-\d{4}$/;
-    if (!phoneRegex.test(phoneNumber)) {
+    if (password.length < 6) {
       toast({
-        title: "휴대폰 번호 오류",
-        description: "휴대폰 번호는 010-0000-0000 형식으로 입력해주세요.",
+        title: "비밀번호 오류",
+        description: "비밀번호는 6자 이상이어야 합니다.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -84,7 +67,6 @@ export default function RegisterForm() {
     }
     
     try {
-      // 서버에 회원가입 요청
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -92,16 +74,11 @@ export default function RegisterForm() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          username,
+          username: email.split('@')[0] + '_' + Date.now().toString(36),
           password,
           email,
           name,
-          phoneNumber,
-          birthDate,
-          gender,
-          age: new Date().getFullYear() - new Date(birthDate).getFullYear(),
           role: userRole,
-          instituteCode: (userRole === 'trainer' || userRole === 'institute-admin') ? instituteCode : undefined
         }),
       });
 
@@ -110,29 +87,11 @@ export default function RegisterForm() {
         throw new Error(errorData || '회원가입에 실패했습니다.');
       }
 
-      const userData = await response.json();
-      
-      // 회원가입 성공 시 로그인 이벤트 발행
-      const loginEvent = new CustomEvent('login', {
-        detail: {
-          role: userData.role,
-          name: userData.name,
-          userRole: userData.role,
-          userName: userData.name
-        }
-      });
-      window.dispatchEvent(loginEvent);
-
+      setRegistrationSuccess(true);
       toast({
-        title: "회원가입 성공",
-        description: `${userData.name}님, 환영합니다!`,
-        variant: "default",
+        title: "회원가입 신청 완료",
+        description: "관리자 승인 후 로그인하실 수 있습니다.",
       });
-
-      // 로그인 탭으로 전환하거나 대시보드로 이동
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1000);
 
     } catch (error) {
       toast({
@@ -145,22 +104,39 @@ export default function RegisterForm() {
     }
   };
 
+  if (registrationSuccess) {
+    return (
+      <div className="space-y-4 py-4">
+        <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+          <Clock className="h-5 w-5 text-amber-600" />
+          <AlertDescription className="text-amber-800 dark:text-amber-200">
+            <p className="font-semibold mb-2">회원가입 신청이 완료되었습니다!</p>
+            <p>관리자의 승인 후 로그인하실 수 있습니다.</p>
+            <p className="text-sm mt-2">승인 완료 시 이메일로 알려드립니다.</p>
+          </AlertDescription>
+        </Alert>
+        <Button 
+          variant="outline" 
+          className="w-full"
+          onClick={() => window.location.href = '/auth'}
+        >
+          로그인 페이지로 이동
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleRegister} className="space-y-4">
+      <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+        <AlertCircle className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-blue-800 dark:text-blue-200 text-sm">
+          회원가입 후 관리자 승인이 필요합니다.
+        </AlertDescription>
+      </Alert>
+
       <div className="space-y-2">
-        <Label htmlFor="username">아이디</Label>
-        <Input
-          id="username"
-          type="text"
-          placeholder="사용할 아이디를 입력하세요"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="email">이메일</Label>
+        <Label htmlFor="email">이메일 <span className="text-red-500">*</span></Label>
         <Input
           id="email"
           type="email"
@@ -172,7 +148,7 @@ export default function RegisterForm() {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="name">이름</Label>
+        <Label htmlFor="name">이름 <span className="text-red-500">*</span></Label>
         <Input
           id="name"
           type="text"
@@ -182,74 +158,14 @@ export default function RegisterForm() {
           required
         />
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="phone">휴대폰 번호 <span className="text-red-500">*</span></Label>
-        <Input
-          id="phone"
-          type="tel"
-          placeholder="010-0000-0000"
-          value={phoneNumber}
-          onChange={(e) => {
-            const digits = e.target.value.replace(/[^0-9]/g, '');
-            const limitedDigits = digits.slice(0, 11);
-            
-            let formatted = '';
-            if (limitedDigits.length <= 3) {
-              formatted = limitedDigits;
-            } else if (limitedDigits.length <= 7) {
-              formatted = limitedDigits.slice(0, 3) + '-' + limitedDigits.slice(3);
-            } else {
-              formatted = limitedDigits.slice(0, 3) + '-' + limitedDigits.slice(3, 7) + '-' + limitedDigits.slice(7);
-            }
-            
-            setPhoneNumber(formatted);
-          }}
-          maxLength={13}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="birthDate">생년월일 <span className="text-red-500">*</span></Label>
-        <Input
-          id="birthDate"
-          type="date"
-          value={birthDate}
-          onChange={(e) => setBirthDate(e.target.value)}
-          max={new Date().toISOString().split('T')[0]}
-          required
-        />
-        {birthDate && (
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            만 {new Date().getFullYear() - new Date(birthDate).getFullYear()}세
-          </p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="gender">성별 <span className="text-red-500">*</span></Label>
-        <Select
-          value={gender}
-          onValueChange={(value) => setGender(value as "male" | "female")}
-        >
-          <SelectTrigger id="gender">
-            <SelectValue placeholder="성별을 선택하세요" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="male">남성</SelectItem>
-            <SelectItem value="female">여성</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
       
       <div className="space-y-2">
-        <Label htmlFor="password">비밀번호</Label>
+        <Label htmlFor="password">비밀번호 <span className="text-red-500">*</span></Label>
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="비밀번호를 입력하세요"
+            placeholder="6자 이상 입력하세요"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -265,7 +181,7 @@ export default function RegisterForm() {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="confirm-password">비밀번호 확인</Label>
+        <Label htmlFor="confirm-password">비밀번호 확인 <span className="text-red-500">*</span></Label>
         <Input
           id="confirm-password"
           type="password"
@@ -277,13 +193,13 @@ export default function RegisterForm() {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="user-role">사용자 유형</Label>
+        <Label htmlFor="user-role">가입 유형 <span className="text-red-500">*</span></Label>
         <Select
           value={userRole}
           onValueChange={(value) => setUserRole(value as UserRole)}
         >
           <SelectTrigger id="user-role">
-            <SelectValue placeholder="사용자 유형을 선택하세요" />
+            <SelectValue placeholder="가입 유형을 선택하세요" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="pet-owner">반려동물 보호자</SelectItem>
@@ -293,28 +209,14 @@ export default function RegisterForm() {
         </Select>
       </div>
       
-      {(userRole === 'trainer' || userRole === 'institute-admin') && (
-        <div className="space-y-2">
-          <Label htmlFor="institute-code">기관 코드</Label>
-          <Input
-            id="institute-code"
-            type="text"
-            placeholder="소속 기관 코드를 입력하세요"
-            value={instituteCode}
-            onChange={(e) => setInstituteCode(e.target.value)}
-            required={userRole === 'trainer' || userRole === 'institute-admin'}
-          />
-        </div>
-      )}
-      
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? (
           <div className="flex items-center gap-2">
             <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-            <span>회원가입 중...</span>
+            <span>가입 신청 중...</span>
           </div>
         ) : (
-          "회원가입"
+          "회원가입 신청"
         )}
       </Button>
     </form>

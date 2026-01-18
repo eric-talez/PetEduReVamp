@@ -163,7 +163,7 @@ function setupAuthRoutes(app: Express) {
   router.get('/csrf', getCSRFToken);
   
   // 사용자 인증 상태 확인 (표준화 적용)
-  router.get('/me', (req, res) => {
+  router.get('/me', async (req, res) => {
     console.log('세션 확인 - SessionID:', req.sessionID);
     console.log('세션 확인 - 전체 세션:', req.session);
     console.log('세션 확인 - 사용자:', req.user);
@@ -173,6 +173,27 @@ function setupAuthRoutes(app: Express) {
         ApiErrorCode.AUTHENTICATION_REQUIRED,
         '인증이 필요합니다. 로그인 후 다시 시도해주세요.'
       );
+    }
+    
+    // 승인 상태 확인 (DB에서 최신 정보 조회)
+    const user = req.user as SelectUser;
+    if (user) {
+      const dbUser = await storage.getUser(user.id);
+      if (dbUser) {
+        const approvalStatus = (dbUser as any).approvalStatus;
+        if (approvalStatus === 'pending') {
+          return res.error(
+            ApiErrorCode.AUTHENTICATION_REQUIRED,
+            '관리자 승인 대기 중입니다. 승인 후 이용이 가능합니다.'
+          );
+        }
+        if (approvalStatus === 'rejected') {
+          return res.error(
+            ApiErrorCode.AUTHENTICATION_REQUIRED,
+            '회원가입이 거부되었습니다. 관리자에게 문의해주세요.'
+          );
+        }
+      }
     }
     
     return res.success(req.user, '사용자 정보를 조회했습니다.');
@@ -374,12 +395,20 @@ function setupAuthRoutes(app: Express) {
         );
       }
       
-      // 소셜 로그인이 아닌 경우 비밀번호 필수
-      if (!socialSignup && !password) {
-        return res.error(
-          ApiErrorCode.MISSING_REQUIRED_FIELD,
-          '비밀번호를 입력해주세요'
-        );
+      // 소셜 로그인이 아닌 경우 비밀번호 필수 및 길이 검증
+      if (!socialSignup) {
+        if (!password) {
+          return res.error(
+            ApiErrorCode.MISSING_REQUIRED_FIELD,
+            '비밀번호를 입력해주세요'
+          );
+        }
+        if (password.length < 6) {
+          return res.error(
+            ApiErrorCode.VALIDATION_ERROR,
+            '비밀번호는 6자 이상이어야 합니다'
+          );
+        }
       }
       
       // 기존 사용자 확인
@@ -401,7 +430,9 @@ function setupAuthRoutes(app: Express) {
         hashedPassword = await hashPassword(password);
       }
       
-      // 사용자 생성
+      // 사용자 생성 - 소셜 로그인은 approved, 일반 가입은 pending
+      const approvalStatus = socialSignup ? 'approved' : 'pending';
+      
       const user = await storage.createUser({
         username,
         password: hashedPassword,
@@ -413,8 +444,9 @@ function setupAuthRoutes(app: Express) {
         role: (role as UserRole) || 'pet-owner',
         provider: socialSignup?.provider,
         socialId: socialSignup?.socialId,
-        verified: socialSignup ? true : false, // 소셜 로그인은 기본 인증됨
-        verifiedAt: socialSignup ? new Date() : undefined
+        verified: socialSignup ? true : false,
+        verifiedAt: socialSignup ? new Date() : undefined,
+        approvalStatus
       });
       
       // 세션에서 소셜 가입 정보 제거
@@ -422,19 +454,28 @@ function setupAuthRoutes(app: Express) {
         delete req.session.socialSignup;
       }
       
-      // 자동 로그인
-      req.login(user, (err) => {
-        if (err) {
-          console.error('회원가입 후 자동 로그인 오류:', err);
-          return res.error(
-            ApiErrorCode.INTERNAL_SERVER_ERROR,
-            '회원가입은 완료되었으나 자동 로그인 중 오류가 발생했습니다'
-          );
-        }
-        
-        console.log('회원가입 및 자동 로그인 성공:', user.username);
-        return res.success(user, '회원가입에 성공했습니다.', HTTP_STATUS.CREATED);
-      });
+      // 소셜 로그인: 자동 로그인, 일반 가입: 승인 대기
+      if (socialSignup) {
+        req.login(user, (err) => {
+          if (err) {
+            console.error('회원가입 후 자동 로그인 오류:', err);
+            return res.error(
+              ApiErrorCode.INTERNAL_SERVER_ERROR,
+              '회원가입은 완료되었으나 자동 로그인 중 오류가 발생했습니다'
+            );
+          }
+          
+          console.log('회원가입 및 자동 로그인 성공:', user.username);
+          return res.success(user, '회원가입에 성공했습니다.', HTTP_STATUS.CREATED);
+        });
+      } else {
+        console.log('회원가입 신청 완료 (승인 대기):', user.username);
+        return res.success(
+          { id: user.id, username: user.username, name: user.name, approvalStatus: 'pending' },
+          '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인이 가능합니다.',
+          HTTP_STATUS.CREATED
+        );
+      }
     } catch (error) {
       console.error('회원가입 오류:', error);
       return res.error(

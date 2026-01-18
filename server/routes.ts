@@ -1191,6 +1191,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 관리자 전용 승인 대기 사용자 목록 조회
+  app.get('/api/admin/users/pending', requireAuth('admin'), async (req, res) => {
+    try {
+      const pendingUsers = await db.select().from(users).where(eq(users.approvalStatus, 'pending'));
+      res.json({ 
+        success: true, 
+        users: pendingUsers.map(u => ({
+          id: u.id,
+          username: u.username,
+          email: u.email,
+          name: u.name,
+          role: u.role,
+          createdAt: u.createdAt,
+          approvalStatus: u.approvalStatus
+        }))
+      });
+    } catch (error) {
+      console.error('Pending users fetch error:', error);
+      res.status(500).json({ success: false, message: '승인 대기 사용자 조회에 실패했습니다.' });
+    }
+  });
+
+  // 관리자 전용 사용자 승인 API
+  app.post('/api/admin/users/:id/approve', requireAuth('admin'), csrfProtection, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const adminId = (req.user as any)?.id;
+      
+      const existingUser = await storage.getUserFromDB(userId);
+      if (!existingUser) {
+        return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+      }
+
+      if ((existingUser as any).approvalStatus !== 'pending') {
+        return res.status(400).json({ success: false, message: '승인 대기 상태의 사용자가 아닙니다.' });
+      }
+
+      await db.update(users).set({
+        approvalStatus: 'approved',
+        approvedAt: new Date(),
+        approvedBy: adminId
+      }).where(eq(users.id, userId));
+
+      console.log('[Admin] 사용자 승인됨:', { userId, approvedBy: adminId });
+      res.json({ success: true, message: '사용자가 승인되었습니다.' });
+    } catch (error) {
+      console.error('User approval error:', error);
+      res.status(500).json({ success: false, message: '사용자 승인에 실패했습니다.' });
+    }
+  });
+
+  // 관리자 전용 사용자 거부 API
+  app.post('/api/admin/users/:id/reject', requireAuth('admin'), csrfProtection, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { reason } = req.body;
+      const adminId = (req.user as any)?.id;
+      
+      const existingUser = await storage.getUserFromDB(userId);
+      if (!existingUser) {
+        return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+      }
+
+      if ((existingUser as any).approvalStatus !== 'pending') {
+        return res.status(400).json({ success: false, message: '승인 대기 상태의 사용자가 아닙니다.' });
+      }
+
+      await db.update(users).set({
+        approvalStatus: 'rejected',
+        approvedAt: new Date(),
+        approvedBy: adminId,
+        rejectionReason: reason || '사유 미기재'
+      }).where(eq(users.id, userId));
+
+      console.log('[Admin] 사용자 거부됨:', { userId, reason, approvedBy: adminId });
+      res.json({ success: true, message: '사용자가 거부되었습니다.' });
+    } catch (error) {
+      console.error('User rejection error:', error);
+      res.status(500).json({ success: false, message: '사용자 거부에 실패했습니다.' });
+    }
+  });
+
   // 구독 플랜 관련 API
   app.get('/api/subscription-plans', (req, res) => {
     try {
