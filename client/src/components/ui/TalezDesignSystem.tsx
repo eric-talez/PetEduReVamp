@@ -218,7 +218,7 @@ export const TalezSection: React.FC<{
   backgroundImages?: string[];
   backgroundOpacity?: number;
   slideInterval?: number;
-}> = ({ children, className, background = 'default', backgroundImage, backgroundImages, backgroundOpacity = 0.12, slideInterval = 5000 }) => {
+}> = ({ children, className, background = 'default', backgroundImage, backgroundImages, backgroundOpacity = 0.4, slideInterval = 5000 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // 슬라이드용 이미지 배열 (backgroundImages가 있으면 사용, 없으면 backgroundImage 사용)
