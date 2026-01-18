@@ -466,51 +466,87 @@ export default function Home() {
 
     return (
       <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
-        {/* Hero Section - TALEZ Style */}
-        <TalezSection
-          background="glass"
-          className="relative py-16 md:py-20"
-          backgroundImages={heroBackgroundImages}
-          backgroundOpacity={0.15}
-          slideInterval={4000}
-        >
-          <div className="text-center talez-fade-in">
-            <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">
-              우리 아이를 위한<br />
-              <span className="talez-text-gradient">최고의 교육</span>을 찾아보세요
-            </h1>
+        {/* Hero Banner Section - 슬라이드 배너 */}
+        <div className="mb-8 px-4 pt-4">
+          <div className="relative overflow-hidden rounded-xl min-h-[400px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+            <div className="absolute inset-0">
+              <img
+                src={bannerSlides[currentSlide].image}
+                alt={bannerSlides[currentSlide].title}
+                className="w-full h-full object-cover transition-all duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30"></div>
+            </div>
 
-            <p className="text-base md:text-lg mb-2 max-w-2xl mx-auto" style={{ color: 'var(--txt-secondary)' }}>
-              전문 훈련사와 함께하는 맞춤형 반려동물 교육 서비스
-            </p>
-            <p className="text-sm md:text-base mb-6 max-w-2xl mx-auto" style={{ color: 'var(--txt-secondary)' }}>
-              가벼운 우리아이 상태에 대한 상담부터 훈련 컨설팅까지
-            </p>
+            <div className="relative z-10 flex flex-col justify-center min-h-[400px] py-8 px-6 md:px-12">
+              <div className="max-w-4xl mx-auto w-full">
+                <h2 className="text-white text-xl md:text-3xl font-bold mb-3 leading-tight">
+                  {bannerSlides[currentSlide].title}
+                </h2>
+                <p className="text-white/90 text-sm md:text-lg mb-4 leading-relaxed max-w-2xl">
+                  {bannerSlides[currentSlide].subtitle}
+                </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <TalezButton size="lg">
-                <Link
-                  href="/institutes"
-                  className="flex items-center"
-                  onClick={() => setRouteLoading(true, '/institutes', '근처 교육기관 검색 중...')}
-                >
-                  <MapPin className="mr-2 h-4 w-4" />
-                  근처 교육기관 찾기
-                </Link>
-              </TalezButton>
-              <TalezButton variant="outline" size="lg">
-                <Link
-                  href="/video-training"
-                  className="flex items-center"
-                  onClick={() => setRouteLoading(true, '/video-training', '온라인 교육 준비 중...')}
-                >
-                  <Video className="mr-2 h-4 w-4" />
-                  온라인 교육 체험
-                </Link>
-              </TalezButton>
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {bannerSlides[currentSlide].features.map((feature, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center text-sm bg-white/20 text-white px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20"
+                    >
+                      <span className="mr-1.5 text-yellow-300 text-lg">✓</span> {feature}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    size="default"
+                    className="bg-white text-primary font-semibold hover:bg-white/90 border border-white px-6 py-2.5 rounded-lg shadow-md"
+                    onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
+                  >
+                    {bannerSlides[currentSlide].primaryAction.text}
+                  </Button>
+                  <Button
+                    size="default"
+                    variant="outline"
+                    className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-6 py-2.5 rounded-lg backdrop-blur-sm font-semibold"
+                    onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
+                  >
+                    {bannerSlides[currentSlide].secondaryAction.text}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20 border border-white/20"
+              onClick={prevSlide}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20 border border-white/20"
+              onClick={nextSlide}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+              {bannerSlides.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-all duration-200 hover:scale-125 border border-white/30 ${
+                    currentSlide === index
+                      ? 'bg-white shadow-lg'
+                      : 'bg-white/50 hover:bg-white/70'
+                  }`}
+                  onClick={() => setCurrentSlide(index)}
+                />
+              ))}
             </div>
           </div>
-        </TalezSection>
+        </div>
 
         {/* Stats Section - Compact */}
         <TalezSection className="py-8">
