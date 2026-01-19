@@ -101,30 +101,5 @@ export function QuickActions({ userRole, onClick }: QuickActionsProps) {
     );
   }
 
-  return (
-    <div className="px-3 py-3 border-b border-gray-200 dark:border-gray-700">
-      <div className="flex items-center gap-1.5 mb-2">
-        <Zap className="w-4 h-4 text-amber-500" />
-        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">빠른 작업</span>
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        {quickActions.map((action, index) => (
-          <button
-            key={index}
-            onClick={() => handleClick(action.href)}
-            className={cn(
-              "flex flex-col items-center justify-center p-2 rounded-lg text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 group",
-              action.color
-            )}
-            aria-label={action.label}
-          >
-            <div className="transition-transform duration-200 group-hover:scale-110">
-              {action.icon}
-            </div>
-            <span className="text-[10px] mt-1 font-medium truncate w-full text-center">{action.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+  return null;
 }
