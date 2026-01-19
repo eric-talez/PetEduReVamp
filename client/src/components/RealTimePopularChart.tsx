@@ -440,7 +440,7 @@ export function RealTimePopularChart() {
     refetchInterval: 30000, // 30초마다 자동 갱신
   });
 
-  const baseEventData: PopularItem[] = eventData ? eventData.map((event: any) => ({
+  const baseEventData: PopularItem[] = Array.isArray(eventData) ? eventData.map((event: any) => ({
     id: event.id,
     title: event.name,
     description: event.description,
