@@ -365,8 +365,12 @@ import {
   type LogoSettings,
   type InsertLogoSettings,
   type UpdateLogoSettings,
-  type LogoSettingsQuery
+  type LogoSettingsQuery,
+  // 친구 초대 관련 스키마
+  friendInvitations,
+  educationCredits
 } from "../shared/schema";
+import crypto from "crypto";
 import { ilike, or } from "drizzle-orm";
 import { 
   analyzePetBehavior, 
@@ -802,6 +806,237 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 수익화 시스템 라우트 등록 (YouTube형 TALEZ SCORE)
   app.use('/api/monetization', monetizationRoutes);
+
+  // =============================================================================
+  // 친구 초대 API 엔드포인트
+  // =============================================================================
+
+  // GET /api/invite/my-code - 내 초대 코드 조회/생성
+  app.get('/api/invite/my-code', requireAuth(), async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.' });
+      }
+
+      // 사용자의 referralCode 조회
+      const [user] = await db.select({ referralCode: users.referralCode })
+        .from(users)
+        .where(eq(users.id, userId));
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+      }
+
+      let inviteCode = user.referralCode;
+
+      // 초대 코드가 없으면 새로 생성
+      if (!inviteCode) {
+        inviteCode = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6자리 영숫자 코드
+
+        // 중복 확인 및 재생성
+        let attempts = 0;
+        while (attempts < 10) {
+          const [existing] = await db.select({ id: users.id })
+            .from(users)
+            .where(eq(users.referralCode, inviteCode));
+          
+          if (!existing) break;
+          inviteCode = crypto.randomBytes(3).toString('hex').toUpperCase();
+          attempts++;
+        }
+
+        // DB에 저장
+        await db.update(users)
+          .set({ referralCode: inviteCode, updatedAt: new Date() })
+          .where(eq(users.id, userId));
+      }
+
+      res.json({
+        success: true,
+        data: { inviteCode }
+      });
+    } catch (error) {
+      console.error('[친구 초대] 초대 코드 조회 오류:', error);
+      res.status(500).json({ success: false, message: '초대 코드 조회에 실패했습니다.' });
+    }
+  });
+
+  // GET /api/invite/credits - 내 교육 크레딧 조회
+  app.get('/api/invite/credits', requireAuth(), async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.' });
+      }
+
+      // 사용자의 크레딧 조회
+      const credits = await db.select()
+        .from(educationCredits)
+        .where(eq(educationCredits.userId, userId))
+        .orderBy(sql`${educationCredits.createdAt} DESC`);
+
+      // 총 크레딧 수
+      const totalCredits = credits.reduce((sum, c) => sum + (c.amount || 0), 0);
+      
+      // 사용 가능 크레딧 수 (isUsed가 false인 것만)
+      const availableCredits = credits
+        .filter(c => !c.isUsed)
+        .reduce((sum, c) => sum + (c.amount || 0), 0);
+
+      res.json({
+        success: true,
+        data: {
+          totalCredits,
+          availableCredits,
+          usedCredits: totalCredits - availableCredits,
+          history: credits.map(c => ({
+            id: c.id,
+            amount: c.amount,
+            reason: c.reason,
+            isUsed: c.isUsed,
+            usedAt: c.usedAt,
+            usedForCourseId: c.usedForCourseId,
+            expiresAt: c.expiresAt,
+            createdAt: c.createdAt
+          }))
+        }
+      });
+    } catch (error) {
+      console.error('[친구 초대] 크레딧 조회 오류:', error);
+      res.status(500).json({ success: false, message: '크레딧 조회에 실패했습니다.' });
+    }
+  });
+
+  // GET /api/invite/history - 초대 내역 조회
+  app.get('/api/invite/history', requireAuth(), async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.' });
+      }
+
+      // 내가 초대한 친구 목록 조회
+      const invitations = await db.select({
+        id: friendInvitations.id,
+        inviteeEmail: friendInvitations.inviteeEmail,
+        inviteeId: friendInvitations.inviteeId,
+        inviteCode: friendInvitations.inviteCode,
+        status: friendInvitations.status,
+        acceptedAt: friendInvitations.acceptedAt,
+        createdAt: friendInvitations.createdAt,
+        inviteeName: users.name,
+        inviteeUsername: users.username
+      })
+        .from(friendInvitations)
+        .leftJoin(users, eq(friendInvitations.inviteeId, users.id))
+        .where(eq(friendInvitations.inviterId, userId))
+        .orderBy(sql`${friendInvitations.createdAt} DESC`);
+
+      // 통계 계산
+      const totalInvitations = invitations.length;
+      const acceptedCount = invitations.filter(i => i.status === 'accepted').length;
+      const pendingCount = invitations.filter(i => i.status === 'pending').length;
+
+      res.json({
+        success: true,
+        data: {
+          totalInvitations,
+          acceptedCount,
+          pendingCount,
+          invitations: invitations.map(i => ({
+            id: i.id,
+            inviteeEmail: i.inviteeEmail,
+            inviteeId: i.inviteeId,
+            inviteeName: i.inviteeName || i.inviteeUsername,
+            status: i.status,
+            acceptedAt: i.acceptedAt,
+            createdAt: i.createdAt
+          }))
+        }
+      });
+    } catch (error) {
+      console.error('[친구 초대] 초대 내역 조회 오류:', error);
+      res.status(500).json({ success: false, message: '초대 내역 조회에 실패했습니다.' });
+    }
+  });
+
+  // POST /api/invite/accept - 초대 코드로 가입 시 호출
+  app.post('/api/invite/accept', async (req, res) => {
+    try {
+      const { inviteCode, inviteeId } = req.body;
+
+      if (!inviteCode || !inviteeId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '초대 코드와 초대받은 사용자 ID가 필요합니다.' 
+        });
+      }
+
+      // 초대 코드로 초대자 찾기
+      const [inviter] = await db.select({ id: users.id, name: users.name })
+        .from(users)
+        .where(eq(users.referralCode, inviteCode.toUpperCase()));
+
+      if (!inviter) {
+        return res.status(404).json({ success: false, message: '유효하지 않은 초대 코드입니다.' });
+      }
+
+      // 자기 자신 초대 방지
+      if (inviter.id === inviteeId) {
+        return res.status(400).json({ success: false, message: '자기 자신을 초대할 수 없습니다.' });
+      }
+
+      // 이미 처리된 초대인지 확인
+      const [existingInvitation] = await db.select()
+        .from(friendInvitations)
+        .where(and(
+          eq(friendInvitations.inviterId, inviter.id),
+          eq(friendInvitations.inviteeId, inviteeId)
+        ));
+
+      if (existingInvitation) {
+        return res.status(400).json({ success: false, message: '이미 처리된 초대입니다.' });
+      }
+
+      // 초대 기록 생성
+      const [invitation] = await db.insert(friendInvitations)
+        .values({
+          inviterId: inviter.id,
+          inviteeId: inviteeId,
+          inviteCode: inviteCode.toUpperCase(),
+          status: 'accepted',
+          acceptedAt: new Date()
+        })
+        .returning();
+
+      // 초대자에게 교육 크레딧 1회 부여
+      await db.insert(educationCredits)
+        .values({
+          userId: inviter.id,
+          amount: 1,
+          reason: 'friend_invite',
+          sourceId: invitation.id,
+          isUsed: false,
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1년 후 만료
+        });
+
+      console.log(`[친구 초대] 초대 완료: 초대자 ${inviter.id}, 피초대자 ${inviteeId}, 크레딧 1 부여`);
+
+      res.json({
+        success: true,
+        message: '초대가 성공적으로 처리되었습니다.',
+        data: {
+          invitationId: invitation.id,
+          inviterName: inviter.name,
+          creditAwarded: 1
+        }
+      });
+    } catch (error) {
+      console.error('[친구 초대] 초대 수락 오류:', error);
+      res.status(500).json({ success: false, message: '초대 처리에 실패했습니다.' });
+    }
+  });
 
   // 커미션 라우트 등록
   setupCommissionRoutes(app);

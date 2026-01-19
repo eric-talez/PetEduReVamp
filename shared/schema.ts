@@ -2777,3 +2777,38 @@ export const insertFollowSchema = createInsertSchema(follows).omit({ id: true, c
 export type InsertFollow = z.infer<typeof insertFollowSchema>;
 export type Follow = typeof follows.$inferSelect;
 
+// 친구 초대 테이블
+export const friendInvitations = pgTable("friend_invitations", {
+  id: serial("id").primaryKey(),
+  inviterId: integer("inviter_id").notNull().references(() => users.id), // 초대한 사람
+  inviteeEmail: varchar("invitee_email", { length: 255 }), // 초대받은 이메일
+  inviteeId: integer("invitee_id").references(() => users.id), // 초대받은 사용자 (가입 후)
+  inviteCode: varchar("invite_code", { length: 50 }).notNull(), // 초대 코드
+  status: varchar("status", { length: 20 }).default("pending"), // pending, accepted, expired
+  acceptedAt: timestamp("accepted_at"), // 수락 일시
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 교육 참여 크레딧 테이블
+export const educationCredits = pgTable("education_credits", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id), // 크레딧 소유자
+  amount: integer("amount").notNull().default(1), // 크레딧 수량
+  reason: varchar("reason", { length: 100 }).notNull(), // 획득 사유 (friend_invite, event, purchase 등)
+  sourceId: integer("source_id"), // 관련 ID (초대ID, 이벤트ID 등)
+  isUsed: boolean("is_used").default(false), // 사용 여부
+  usedAt: timestamp("used_at"), // 사용 일시
+  usedForCourseId: integer("used_for_course_id").references(() => courses.id), // 사용한 강의
+  expiresAt: timestamp("expires_at"), // 만료 일시
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 친구 초대 스키마 및 타입
+export const insertFriendInvitationSchema = createInsertSchema(friendInvitations).omit({ id: true, createdAt: true });
+export type InsertFriendInvitation = z.infer<typeof insertFriendInvitationSchema>;
+export type FriendInvitation = typeof friendInvitations.$inferSelect;
+
+export const insertEducationCreditSchema = createInsertSchema(educationCredits).omit({ id: true, createdAt: true });
+export type InsertEducationCredit = z.infer<typeof insertEducationCreditSchema>;
+export type EducationCredit = typeof educationCredits.$inferSelect;
+
