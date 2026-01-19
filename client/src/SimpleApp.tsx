@@ -60,7 +60,6 @@ import AdminInstitutes from "./pages/admin/AdminInstitutes";
 import AdminTrainers from "./pages/admin/AdminTrainers";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminMenuManagement from "./pages/admin/menu-management";
-import AdminCommissionPage from "./pages/admin/commission";
 import AdminApprovals from './pages/admin/AdminApprovals';
 import PaymentIntegration from './pages/admin/PaymentIntegration';
 import AdminReports from './pages/admin/AdminReports';
@@ -81,7 +80,6 @@ import AdminCommunityManagement from "./pages/admin/AdminCommunityManagement";
 import InstituteNotebookMonitorPage from "./pages/institute-admin/NotebookMonitor";
 import TrainerActivityLogs from "./pages/admin/TrainerActivityLogs";
 import PointManagement from "./pages/admin/PointManagement";
-import AdminPointsManagement from "./pages/admin/PointsManagement";
 import TrainerMyPoints from "./pages/trainer/MyPoints";
 import InstituteMyPoints from "./pages/institute/MyPoints";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
@@ -1375,18 +1373,6 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/admin/commissions">
-          {() => {
-            const AdminCommission = lazy(() => import('./pages/admin/AdminCommission'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedAdminRoute component={AdminCommission} />
-              </Suspense>
-            );
-          }}
-        </Route>
         <Route path="/admin/commission-settings">
           {() => {
             const CommissionSettings = lazy(() => import('./pages/admin/commission-settings'));
@@ -1452,18 +1438,6 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
-        <Route path="/admin/commission">
-          {() => {
-            const AdminCommission = lazy(() => import('./pages/admin/AdminCommission'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedAdminRoute component={AdminCommission} />
-              </Suspense>
-            );
-          }}
-        </Route>
         <Route path="/admin/service-inspection">
           {() => {
             const ServiceInspection = lazy(() => import('./pages/admin/ServiceInspection'));
@@ -1513,9 +1487,9 @@ function AuthenticatedRoutes() {
             <ProtectedAdminRoute component={AdminContentModeration} />
           )}
         </Route>
-        <Route path="/admin/points-management">
+        <Route path="/admin/points">
           {() => (
-            <ProtectedAdminRoute component={AdminPointsManagement} />
+            <ProtectedAdminRoute component={PointManagement} />
           )}
         </Route>
         <Route path="/admin/api-management">
@@ -1571,11 +1545,6 @@ function AuthenticatedRoutes() {
         <Route path="/admin/activity-logs">
           {() => (
             <ProtectedAdminRoute component={TrainerActivityLogs} />
-          )}
-        </Route>
-        <Route path="/admin/point-management">
-          {() => (
-            <ProtectedAdminRoute component={PointManagement} />
           )}
         </Route>
 
