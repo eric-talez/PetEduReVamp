@@ -1,17 +1,48 @@
-import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { CourseCard } from '@/components/ui/CourseCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, Clock, Hourglass, Star, BarChart } from 'lucide-react';
+import { CheckCircle, Clock, Hourglass, Star, BarChart, BookOpen, Loader2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+
+interface Course {
+  id: number;
+  image: string;
+  title: string;
+  description: string;
+  badge?: { text: string; variant: string };
+  progress?: number;
+  trainer?: { image: string; name: string };
+  status?: string;
+  nextLesson?: string;
+  completedDate?: string;
+  price?: string;
+  duration?: string;
+}
+
+interface MyCoursesData {
+  ongoing: Course[];
+  completed: Course[];
+  wishlist: Course[];
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
+  totalProgress: number;
+}
 
 export default function MyCourses() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+
+  const { data, isLoading, error } = useQuery<MyCoursesData>({
+    queryKey: ['/api/my-courses'],
+  });
 
   const handleEnrollCourse = (courseId: number, courseTitle: string) => {
     toast({
@@ -21,111 +52,49 @@ export default function MyCourses() {
     setLocation(`/courses/${courseId}/enroll`);
   };
 
-  // Mock courses data
-  const ongoingCourses = [
-    {
-      id: 1,
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
-      title: "반려견 기초 훈련 마스터하기",
-      description: "앉아, 기다려, 엎드려 등 기본 명령어부터 산책 예절까지 체계적으로 배우는 초보 견주 필수 코스",
-      badge: { text: "인기", variant: "accent" },
-      progress: 65,
-      trainer: { 
-        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png", 
-        name: "김훈련 트레이너" 
-      },
-      status: "진행 중",
-      nextLesson: "오늘 17:00 - 12주차: 산책 중 만남 훈련"
-    },
-    {
-      id: 2,
-      image: "/attached_assets/image_1746582251297.png",
-      title: "반려견 어질리티 입문",
-      description: "다양한 장애물 코스를 통해 반려견의 민첩성과 집중력을 향상시키는 어질리티 훈련 기초 과정",
-      badge: { text: "중급", variant: "blue" },
-      progress: 30,
-      trainer: { 
-        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png", 
-        name: "박민첩 트레이너" 
-      },
-      status: "진행 중",
-      nextLesson: "내일 14:00 - 6주차: 터널 통과하기"
-    },
-    {
-      id: 3,
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
-      title: "반려견 사회화 훈련",
-      description: "다른 반려견, 사람, 환경에 올바르게 적응하는 방법을 배우는 필수 사회화 과정",
-      badge: { text: "초급", variant: "green" },
-      progress: 45,
-      trainer: { 
-        image: "/attached_assets/image_1746582251297.png", 
-        name: "이사회 트레이너" 
-      },
-      status: "진행 중",
-      nextLesson: "수요일 15:30 - 8주차: 반려견 카페 방문하기"
-    }
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-gray-500">강의 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const completedCourses = [
-    {
-      id: 4,
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
-      title: "퍼피 클래스: 생애 초기 교육",
-      description: "강아지의 발달 단계에 맞춘 초기 교육으로 건강한 성장과 사회화의 기초를 다지는 과정",
-      badge: { text: "완료", variant: "green" },
-      progress: 100,
-      trainer: { 
-        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png", 
-        name: "정퍼피 트레이너" 
-      },
-      status: "완료",
-      completedDate: "2023년 11월 15일"
-    },
-    {
-      id: 5,
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png",
-      title: "집안 예절 교육",
-      description: "실내에서의 바람직한 행동 습관을 기르고 파괴적 행동을 교정하는 집중 교육 과정",
-      badge: { text: "완료", variant: "green" },
-      progress: 100,
-      trainer: { 
-        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png", 
-        name: "최행동 트레이너" 
-      },
-      status: "완료",
-      completedDate: "2023년 9월 22일"
-    }
-  ];
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">강의 목록을 불러오는 중 오류가 발생했습니다.</p>
+          <Button onClick={() => window.location.reload()}>
+            다시 시도
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  const wishlistCourses = [
-    {
-      id: 6,
-      image: "/attached_assets/image_1746582251297.png",
-      title: "분리불안 극복하기",
-      description: "혼자 있는 시간을 두려워하는 반려견을 위한 단계별 행동 교정 프로그램",
-      badge: { text: "행동교정", variant: "red" },
-      trainer: { 
-        image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png", 
-        name: "최행동 트레이너" 
-      },
-      price: "180,000원",
-      duration: "8주 과정"
-    },
-    {
-      id: 7,
-      image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
-      title: "재미있는 트릭 훈련",
-      description: "하이파이브부터 점프, 회전까지 반려견의 두뇌를 자극하는 다양한 트릭 교육",
-      badge: { text: "인기", variant: "accent" },
-      trainer: { 
-        image: "/attached_assets/image_1746582251297.png", 
-        name: "박재미 트레이너" 
-      },
-      price: "130,000원",
-      duration: "6주 과정"
-    }
-  ];
+  const ongoingCourses = data?.ongoing || [];
+  const completedCourses = data?.completed || [];
+  const wishlistCourses = data?.wishlist || [];
+  const userName = data?.user?.name || '사용자';
+  const totalProgress = data?.totalProgress || 0;
+
+  const EmptyState = ({ message, icon: Icon }: { message: string; icon: typeof BookOpen }) => (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <Icon className="w-16 h-16 text-gray-300 mb-4" />
+      <p className="text-gray-500 text-lg">{message}</p>
+      <Button 
+        variant="outline" 
+        className="mt-4"
+        onClick={() => setLocation('/courses')}
+      >
+        강의 둘러보기
+      </Button>
+    </div>
+  );
 
   return (
     <div>
@@ -134,7 +103,7 @@ export default function MyCourses() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex flex-col">
           <div className="text-lg">
-            안녕하세요, <span className="font-semibold">김견주</span>님!
+            안녕하세요, <span className="font-semibold">{userName}</span>님!
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             오늘도 반려견과 함께 즐거운 학습을 시작해보세요.
@@ -144,9 +113,9 @@ export default function MyCourses() {
         <div className="flex items-center gap-4">
           <div className="flex flex-col items-end">
             <div className="text-sm">
-              <span className="text-primary font-semibold">57%</span> 완료
+              <span className="text-primary font-semibold">{totalProgress}%</span> 완료
             </div>
-            <Progress className="h-2 w-32" value={57} />
+            <Progress className="h-2 w-32" value={totalProgress} />
           </div>
           
           <Button>
@@ -173,84 +142,109 @@ export default function MyCourses() {
         </TabsList>
         
         <TabsContent value="ongoing" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ongoingCourses.map((course) => (
-              <CourseCard
-                key={course.id}
-                image={course.image}
-                title={course.title}
-                description={course.description}
-                badge={course.badge}
-                progress={course.progress}
-                trainer={course.trainer}
-                status={course.status}
-                onClick={() => window.location.href = `/courses/${course.id}`}
-              >
-                <div className="mt-3 flex items-center text-xs text-gray-600 dark:text-gray-400">
-                  <Clock className="w-3 h-3 mr-1" />
-                  <span>{course.nextLesson}</span>
-                </div>
-              </CourseCard>
-            ))}
-          </div>
+          {ongoingCourses.length === 0 ? (
+            <EmptyState 
+              message="아직 수강 중인 강의가 없습니다." 
+              icon={Hourglass} 
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {ongoingCourses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  image={course.image}
+                  title={course.title}
+                  description={course.description}
+                  badge={course.badge}
+                  progress={course.progress}
+                  trainer={course.trainer}
+                  status={course.status}
+                  onClick={() => window.location.href = `/courses/${course.id}`}
+                >
+                  {course.nextLesson && (
+                    <div className="mt-3 flex items-center text-xs text-gray-600 dark:text-gray-400">
+                      <Clock className="w-3 h-3 mr-1" />
+                      <span>{course.nextLesson}</span>
+                    </div>
+                  )}
+                </CourseCard>
+              ))}
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="completed" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {completedCourses.map((course) => (
-              <CourseCard
-                key={course.id}
-                image={course.image}
-                title={course.title}
-                description={course.description}
-                badge={course.badge}
-                progress={course.progress}
-                trainer={course.trainer}
-                status={course.status}
-                onClick={() => window.location.href = `/courses/${course.id}/review`}
-              >
-                <div className="mt-3 flex items-center text-xs text-gray-600 dark:text-gray-400">
-                  <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
-                  <span>완료일: {course.completedDate}</span>
-                </div>
-              </CourseCard>
-            ))}
-          </div>
+          {completedCourses.length === 0 ? (
+            <EmptyState 
+              message="아직 완료한 강의가 없습니다." 
+              icon={CheckCircle} 
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {completedCourses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  image={course.image}
+                  title={course.title}
+                  description={course.description}
+                  badge={course.badge}
+                  progress={course.progress}
+                  trainer={course.trainer}
+                  status={course.status}
+                  onClick={() => window.location.href = `/courses/${course.id}/review`}
+                >
+                  {course.completedDate && (
+                    <div className="mt-3 flex items-center text-xs text-gray-600 dark:text-gray-400">
+                      <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
+                      <span>완료일: {course.completedDate}</span>
+                    </div>
+                  )}
+                </CourseCard>
+              ))}
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="wishlist" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {wishlistCourses.map((course) => (
-              <CourseCard
-                key={course.id}
-                image={course.image}
-                title={course.title}
-                description={course.description}
-                badge={course.badge}
-                trainer={course.trainer}
-                onClick={() => window.location.href = `/courses/${course.id}/enroll`}
-              >
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{course.duration}</span>
-                  <span className="text-xs font-medium text-accent">{course.price}</span>
-                </div>
-                <div className="mt-3">
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEnrollCourse(course.id, course.title);
-                    }}
-                    data-testid={`button-enroll-wishlist-${course.id}`}
-                  >
-                    수강 신청
-                  </Button>
-                </div>
-              </CourseCard>
-            ))}
-          </div>
+          {wishlistCourses.length === 0 ? (
+            <EmptyState 
+              message="찜한 강의가 없습니다." 
+              icon={Star} 
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {wishlistCourses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  image={course.image}
+                  title={course.title}
+                  description={course.description}
+                  badge={course.badge}
+                  trainer={course.trainer}
+                  onClick={() => window.location.href = `/courses/${course.id}/enroll`}
+                >
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">{course.duration}</span>
+                    <span className="text-xs font-medium text-accent">{course.price}</span>
+                  </div>
+                  <div className="mt-3">
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEnrollCourse(course.id, course.title);
+                      }}
+                      data-testid={`button-enroll-wishlist-${course.id}`}
+                    >
+                      수강 신청
+                    </Button>
+                  </div>
+                </CourseCard>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

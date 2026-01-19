@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { sql, eq, and, isNotNull } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings } from "../shared/schema";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -30,6 +30,21 @@ const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 // =============================================================================
 // AI 분석 Helper 함수들
 // =============================================================================
+
+// 시간을 상대적 표현으로 변환 (예: "10분 전")
+function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMinutes < 1) return '방금 전';
+  if (diffMinutes < 60) return `${diffMinutes}분 전`;
+  if (diffHours < 24) return `${diffHours}시간 전`;
+  if (diffDays < 7) return `${diffDays}일 전`;
+  return date.toLocaleDateString('ko-KR');
+}
 
 // 알림장 데이터를 분석 프롬프트로 변환
 function generateAnalysisPrompt(logs: any[], selectedSignals: any): string {
@@ -2643,6 +2658,275 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('댓글 작성 오류:', error);
       res.status(500).json({ error: "댓글 작성 중 오류가 발생했습니다" });
+    }
+  });
+
+  // =====================================================
+  // 이벤트 API 엔드포인트
+  // =====================================================
+  
+  // GET /api/events - 이벤트 목록 조회
+  app.get("/api/events", async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = (page - 1) * limit;
+      
+      // events 테이블 존재 여부 확인 후 데이터 조회
+      let eventsList: any[] = [];
+      let totalItems = 0;
+      
+      try {
+        // 이벤트 목록 조회 (활성 이벤트만)
+        const eventsResult = await db.select({
+          id: events.id,
+          title: events.title,
+          description: events.description,
+          date: events.date,
+          location: events.location,
+          category: events.category,
+          organizerId: events.organizerId,
+          isActive: events.isActive,
+          createdAt: events.createdAt,
+          updatedAt: events.updatedAt
+        })
+        .from(events)
+        .where(eq(events.isActive, true))
+        .limit(limit)
+        .offset(offset);
+        
+        // 총 개수 조회
+        const countResult = await db.select({ count: sql<number>`count(*)::int` })
+          .from(events)
+          .where(eq(events.isActive, true));
+        
+        totalItems = countResult[0]?.count || 0;
+        
+        // 주최자 정보와 함께 데이터 구성
+        eventsList = await Promise.all(eventsResult.map(async (event) => {
+          let organizerName = '주최자';
+          let organizerAvatar = 'https://via.placeholder.com/100';
+          
+          if (event.organizerId) {
+            try {
+              const organizer = await db.select({
+                name: users.name,
+                avatar: users.avatar,
+                fullName: users.fullName
+              })
+              .from(users)
+              .where(eq(users.id, event.organizerId))
+              .limit(1);
+              
+              if (organizer[0]) {
+                organizerName = organizer[0].fullName || organizer[0].name || '주최자';
+                organizerAvatar = organizer[0].avatar || 'https://via.placeholder.com/100';
+              }
+            } catch (e) {
+              // 조직자 조회 실패 시 기본값 사용
+            }
+          }
+          
+          // 위치 정보 파싱 (location이 JSON 문자열일 수 있음)
+          let locationData = {
+            id: 0,
+            name: '장소 미정',
+            address: '',
+            lat: 37.5665,
+            lng: 126.978,
+            region: '서울'
+          };
+          
+          if (event.location) {
+            try {
+              if (typeof event.location === 'string') {
+                const parsed = JSON.parse(event.location);
+                locationData = { ...locationData, ...parsed };
+              } else {
+                locationData = { ...locationData, ...event.location };
+              }
+            } catch {
+              locationData.name = event.location;
+              locationData.address = event.location;
+            }
+          }
+          
+          return {
+            id: event.id,
+            title: event.title || '',
+            description: event.description || '',
+            image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400',
+            date: event.date ? new Date(event.date).toISOString().split('T')[0] : '',
+            time: event.date ? new Date(event.date).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '',
+            locationId: locationData.id,
+            locationName: locationData.name,
+            locationAddress: locationData.address,
+            locationLat: String(locationData.lat),
+            locationLng: String(locationData.lng),
+            locationRegion: locationData.region,
+            organizerId: event.organizerId || 0,
+            organizerName,
+            organizerAvatar,
+            category: event.category || '기타',
+            price: '무료',
+            attendees: 0,
+            maxAttendees: null,
+            createdAt: event.createdAt,
+            updatedAt: event.updatedAt
+          };
+        }));
+        
+      } catch (dbError: any) {
+        // 테이블이 없거나 조회 실패 시 빈 배열 반환
+        console.log('이벤트 테이블 조회 실패 (테이블이 없을 수 있음):', dbError.message);
+        eventsList = [];
+        totalItems = 0;
+      }
+      
+      const totalPages = Math.ceil(totalItems / limit);
+      
+      res.json({
+        items: eventsList,
+        meta: {
+          totalItems,
+          itemsPerPage: limit,
+          currentPage: page,
+          totalPages
+        }
+      });
+    } catch (error) {
+      console.error('이벤트 목록 조회 오류:', error);
+      // 오류 발생 시에도 빈 배열 반환
+      res.json({
+        items: [],
+        meta: {
+          totalItems: 0,
+          itemsPerPage: 10,
+          currentPage: 1,
+          totalPages: 0
+        }
+      });
+    }
+  });
+  
+  // GET /api/events/:id - 이벤트 상세 조회
+  app.get("/api/events/:id", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      
+      if (isNaN(eventId)) {
+        return res.status(400).json({ error: '유효하지 않은 이벤트 ID입니다.' });
+      }
+      
+      let eventData = null;
+      
+      try {
+        const result = await db.select({
+          id: events.id,
+          title: events.title,
+          description: events.description,
+          date: events.date,
+          location: events.location,
+          category: events.category,
+          organizerId: events.organizerId,
+          isActive: events.isActive,
+          createdAt: events.createdAt,
+          updatedAt: events.updatedAt
+        })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+        
+        if (result.length === 0) {
+          return res.status(404).json({ error: '이벤트를 찾을 수 없습니다.' });
+        }
+        
+        const event = result[0];
+        
+        // 주최자 정보 조회
+        let organizerName = '주최자';
+        let organizerAvatar = 'https://via.placeholder.com/100';
+        let organizerDescription = '';
+        
+        if (event.organizerId) {
+          try {
+            const organizer = await db.select({
+              name: users.name,
+              avatar: users.avatar,
+              fullName: users.fullName,
+              bio: users.bio
+            })
+            .from(users)
+            .where(eq(users.id, event.organizerId))
+            .limit(1);
+            
+            if (organizer[0]) {
+              organizerName = organizer[0].fullName || organizer[0].name || '주최자';
+              organizerAvatar = organizer[0].avatar || 'https://via.placeholder.com/100';
+              organizerDescription = organizer[0].bio || '';
+            }
+          } catch (e) {
+            // 조직자 조회 실패 시 기본값 사용
+          }
+        }
+        
+        // 위치 정보 파싱
+        let locationData = {
+          id: 0,
+          name: '장소 미정',
+          address: '',
+          lat: 37.5665,
+          lng: 126.978,
+          region: '서울'
+        };
+        
+        if (event.location) {
+          try {
+            if (typeof event.location === 'string') {
+              const parsed = JSON.parse(event.location);
+              locationData = { ...locationData, ...parsed };
+            } else {
+              locationData = { ...locationData, ...event.location };
+            }
+          } catch {
+            locationData.name = event.location;
+            locationData.address = event.location;
+          }
+        }
+        
+        eventData = {
+          id: event.id,
+          title: event.title || '',
+          description: event.description || '',
+          image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400',
+          date: event.date ? new Date(event.date).toISOString().split('T')[0] : '',
+          time: event.date ? new Date(event.date).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '',
+          location: locationData,
+          organizer: {
+            name: organizerName,
+            avatar: organizerAvatar,
+            description: organizerDescription
+          },
+          category: event.category || '기타',
+          price: '무료',
+          attendees: 0,
+          maxAttendees: null,
+          details: event.description || '',
+          requirements: [],
+          faq: [],
+          createdAt: event.createdAt,
+          updatedAt: event.updatedAt
+        };
+        
+      } catch (dbError: any) {
+        console.log('이벤트 상세 조회 실패:', dbError.message);
+        return res.status(404).json({ error: '이벤트를 찾을 수 없습니다.' });
+      }
+      
+      res.json(eventData);
+    } catch (error) {
+      console.error('이벤트 상세 조회 오류:', error);
+      res.status(500).json({ error: '이벤트 조회 중 오류가 발생했습니다.' });
     }
   });
 
@@ -9286,6 +9570,102 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 내 강의 목록 조회 API (진행 중, 완료, 찜 목록)
+  app.get("/api/my-courses", async (req, res) => {
+    try {
+      // 세션에서 사용자 정보 확인
+      const user = req.session?.user || (req as any).user;
+      const userId = user?.id;
+
+      console.log('[My Courses API] 내 강의 목록 조회 - userId:', userId);
+
+      if (!userId) {
+        return res.status(200).json({
+          ongoing: [],
+          completed: [],
+          wishlist: [],
+          user: null,
+          totalProgress: 0
+        });
+      }
+
+      // coursePurchases 테이블에서 사용자의 구매한 강의 조회
+      const purchases = await db.select({
+        purchaseId: coursePurchases.id,
+        courseId: coursePurchases.courseId,
+        purchaseAmount: coursePurchases.purchaseAmount,
+        accessGranted: coursePurchases.accessGranted,
+        purchasedAt: coursePurchases.createdAt
+      }).from(coursePurchases).where(eq(coursePurchases.userId, userId));
+
+      // courseProgress 테이블에서 진행률 조회
+      const progressData = await db.select().from(courseProgress).where(eq(courseProgress.userId, userId));
+
+      // courses 테이블에서 강의 상세 정보 조회
+      const allCourses = await db.select().from(courses);
+      const coursesMap = new Map(allCourses.map(c => [c.id, c]));
+
+      // 진행률 맵 생성
+      const progressMap = new Map(progressData.map(p => [p.courseId, p]));
+
+      // 구매한 강의들을 진행 중/완료로 분류
+      const ongoing: any[] = [];
+      const completed: any[] = [];
+
+      for (const purchase of purchases) {
+        const course = coursesMap.get(purchase.courseId);
+        if (!course) continue;
+
+        const progress = progressMap.get(purchase.courseId);
+        const progressPercentage = progress ? Number(progress.progressPercentage) : 0;
+        const isCompleted = progress?.status === 'completed' || progressPercentage >= 100;
+
+        const courseData = {
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          image: course.thumbnail || '/placeholder-course.jpg',
+          progress: progressPercentage,
+          trainer: {
+            name: course.instructorName || '전문 훈련사',
+            image: '/placeholder-trainer.jpg'
+          },
+          status: isCompleted ? '완료' : '진행 중',
+          nextLesson: progress?.currentLesson ? `${progress.currentLesson}강 진행 중` : '1강 시작하기',
+          completedDate: progress?.completedAt ? new Date(progress.completedAt).toLocaleDateString('ko-KR') : undefined
+        };
+
+        if (isCompleted) {
+          completed.push(courseData);
+        } else {
+          ongoing.push(courseData);
+        }
+      }
+
+      // 총 진행률 계산
+      const totalProgress = ongoing.length > 0 
+        ? Math.round(ongoing.reduce((sum, c) => sum + c.progress, 0) / ongoing.length)
+        : 0;
+
+      const myCoursesData = {
+        ongoing,
+        completed,
+        wishlist: [], // 찜 목록은 별도 테이블 필요
+        user: {
+          id: user.id,
+          name: user.name || user.username || '사용자',
+          email: user.email
+        },
+        totalProgress
+      };
+
+      return res.status(200).json(myCoursesData);
+    } catch (error: any) {
+      console.error("Get my courses error:", error);
+      return res.status(500).json({ message: "내 강의 조회 중 오류가 발생했습니다." });
+    }
+  });
+
   // 정보 수정 요청 목록 조회 API
   app.get('/api/admin/correction-requests', async (req, res) => {
     try {
@@ -11195,6 +11575,485 @@ app.get('/api/search', async (req, res) => {
         success: false,
         message: '기관 삭제 중 오류가 발생했습니다.'
       });
+    }
+  });
+
+  // === Institute Admin API Routes ===
+
+  // 기관 관리자용 - 소속 수강생 목록 조회
+  app.get('/api/institute/students', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const instituteId = req.session.user?.instituteId;
+      
+      if (!instituteId) {
+        return res.json([]);
+      }
+
+      // 기관에 소속된 수강생들 조회 (enrollments 또는 pets 테이블 기반)
+      const studentsQuery = await db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          phone: users.phone,
+          avatar: users.avatar,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(and(
+          eq(users.role, 'pet-owner'),
+          eq(users.instituteId, instituteId)
+        ));
+
+      // 각 수강생의 펫 정보도 함께 조회
+      const studentsWithPets = await Promise.all(
+        studentsQuery.map(async (student) => {
+          const petsData = await db
+            .select()
+            .from(pets)
+            .where(eq(pets.ownerId, student.id));
+
+          const pet = petsData[0] || null;
+          
+          return {
+            id: student.id,
+            name: student.name || '이름 없음',
+            email: student.email || '',
+            phone: student.phone || '',
+            petName: pet?.name || '등록된 반려견 없음',
+            petBreed: pet?.breed || '',
+            petAge: pet?.age || 0,
+            joinDate: student.createdAt ? new Date(student.createdAt).toISOString().split('T')[0] : '',
+            status: 'active' as const,
+            courseCount: 0,
+            completedCourses: 0,
+            image: student.avatar || '',
+            petImage: pet?.profileImage || '',
+            lastActive: student.createdAt ? new Date(student.createdAt).toISOString().split('T')[0] : '',
+            missedClasses: 0,
+            activeCourses: []
+          };
+        })
+      );
+
+      res.json(studentsWithPets);
+    } catch (error) {
+      console.error('기관 수강생 목록 조회 실패:', error);
+      res.json([]);
+    }
+  });
+
+  // 기관 관리자용 - 소속 훈련사 목록 조회
+  app.get('/api/institute/trainers', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const instituteId = req.session.user?.instituteId;
+      
+      if (!instituteId) {
+        return res.json([]);
+      }
+
+      const trainersQuery = await db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          phone: users.phone,
+          specialty: users.specialty,
+          avatar: users.avatar,
+          isVerified: users.isVerified,
+          approvalStatus: users.approvalStatus,
+          approvedAt: users.approvedAt,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(and(
+          eq(users.role, 'trainer'),
+          eq(users.instituteId, instituteId)
+        ));
+
+      const trainersData = trainersQuery.map(trainer => ({
+        id: trainer.id,
+        name: trainer.name || '이름 없음',
+        email: trainer.email || '',
+        phone: trainer.phone || '',
+        specialty: trainer.specialty || '일반 훈련',
+        certification: [],
+        image: trainer.avatar || '',
+        status: trainer.approvalStatus === 'approved' ? 'active' as const : 
+                trainer.approvalStatus === 'pending' ? 'pending' as const : 'inactive' as const,
+        rating: 0,
+        courseCount: 0,
+        studentCount: 0,
+        approvalDate: trainer.approvedAt ? new Date(trainer.approvedAt).toISOString().split('T')[0] : undefined,
+        isVerified: trainer.isVerified || false,
+        completionRate: 0,
+        specialties: trainer.specialty ? [trainer.specialty] : []
+      }));
+
+      res.json(trainersData);
+    } catch (error) {
+      console.error('기관 훈련사 목록 조회 실패:', error);
+      res.json([]);
+    }
+  });
+
+  // 기관 관리자용 - 코스 진행 상태 조회
+  app.get('/api/institute/course-progress', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const instituteId = req.session.user?.instituteId;
+      
+      if (!instituteId) {
+        return res.json([]);
+      }
+
+      // 기관의 코스 목록 조회
+      const coursesQuery = await db
+        .select({
+          id: courses.id,
+          title: courses.title,
+          category: courses.category,
+          enrollmentCount: courses.enrollmentCount,
+        })
+        .from(courses)
+        .where(eq(courses.instituteId, instituteId));
+
+      // 카테고리별로 집계
+      const categoryStats: { [key: string]: { name: string; 수료: number; 진행중: number; trainers: number; total: number } } = {};
+      
+      for (const course of coursesQuery) {
+        const category = course.category || '기타';
+        if (!categoryStats[category]) {
+          categoryStats[category] = { name: category, 수료: 0, 진행중: 0, trainers: 0, total: 0 };
+        }
+        categoryStats[category].진행중 += course.enrollmentCount || 0;
+        categoryStats[category].total += course.enrollmentCount || 0;
+      }
+
+      const result = Object.values(categoryStats);
+      
+      // 결과가 없으면 기본 카테고리 반환
+      if (result.length === 0) {
+        res.json([
+          { name: '기초 훈련', 수료: 0, 진행중: 0, trainers: 0, total: 0 },
+          { name: '중급 훈련', 수료: 0, 진행중: 0, trainers: 0, total: 0 },
+          { name: '고급 훈련', 수료: 0, 진행중: 0, trainers: 0, total: 0 },
+          { name: '행동 교정', 수료: 0, 진행중: 0, trainers: 0, total: 0 },
+          { name: '특수 훈련', 수료: 0, 진행중: 0, trainers: 0, total: 0 },
+        ]);
+      } else {
+        res.json(result);
+      }
+    } catch (error) {
+      console.error('기관 코스 진행 상태 조회 실패:', error);
+      res.json([]);
+    }
+  });
+
+  // 기관 관리자용 - 매출 데이터 조회
+  app.get('/api/institute/revenue', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const instituteId = req.session.user?.instituteId;
+      
+      if (!instituteId) {
+        return res.json([]);
+      }
+
+      // 기관의 코스별 매출 데이터 조회
+      const coursesQuery = await db
+        .select({
+          id: courses.id,
+          title: courses.title,
+          category: courses.category,
+          price: courses.price,
+          enrollmentCount: courses.enrollmentCount,
+        })
+        .from(courses)
+        .where(eq(courses.instituteId, instituteId));
+
+      // 카테고리별 매출 집계
+      const revenueByCategory: { [key: string]: { name: string; value: number } } = {};
+      
+      for (const course of coursesQuery) {
+        const category = course.category || '기타';
+        const revenue = (course.price || 0) * (course.enrollmentCount || 0);
+        
+        if (!revenueByCategory[category]) {
+          revenueByCategory[category] = { name: category, value: 0 };
+        }
+        revenueByCategory[category].value += revenue;
+      }
+
+      const result = Object.values(revenueByCategory);
+      res.json(result);
+    } catch (error) {
+      console.error('기관 매출 데이터 조회 실패:', error);
+      res.json([]);
+    }
+  });
+
+  // 기관 관리자용 - 최근 알림 조회
+  app.get('/api/institute/notifications', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const userId = req.session.user?.id;
+      
+      if (!userId) {
+        return res.json([]);
+      }
+
+      // 사용자의 최근 알림 조회
+      const notificationsQuery = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.userId, userId))
+        .orderBy(sql`${notifications.createdAt} DESC`)
+        .limit(10);
+
+      const result = notificationsQuery.map(notification => ({
+        id: notification.id,
+        type: notification.type || 'info',
+        title: notification.title || '알림',
+        content: notification.message || '',
+        time: notification.createdAt ? formatTimeAgo(new Date(notification.createdAt)) : '방금 전',
+        isRead: notification.isRead || false
+      }));
+
+      res.json(result);
+    } catch (error) {
+      console.error('기관 알림 조회 실패:', error);
+      res.json([]);
+    }
+  });
+
+  // 기관 관리자용 - 대기 중인 승인 요청 조회
+  app.get('/api/institute/pending-approvals', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const instituteId = req.session.user?.instituteId;
+      
+      if (!instituteId) {
+        return res.json([]);
+      }
+
+      // 대기 중인 코스 승인 요청 조회
+      const pendingCourses = await db
+        .select({
+          id: courses.id,
+          title: courses.title,
+          trainerId: courses.trainerId,
+          createdAt: courses.createdAt,
+        })
+        .from(courses)
+        .where(and(
+          eq(courses.instituteId, instituteId),
+          eq(courses.status, 'pending')
+        ))
+        .limit(10);
+
+      const result = pendingCourses.map(course => ({
+        id: course.id,
+        type: '코스' as const,
+        title: course.title || '제목 없음',
+        trainer: '훈련사',
+        date: course.createdAt ? new Date(course.createdAt).toISOString().split('T')[0] : ''
+      }));
+
+      res.json(result);
+    } catch (error) {
+      console.error('기관 대기 승인 조회 실패:', error);
+      res.json([]);
+    }
+  });
+
+  // 기관 관리자용 - 주요 지표 조회
+  app.get('/api/institute/metrics', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const instituteId = req.session.user?.instituteId;
+      
+      if (!instituteId) {
+        return res.json({
+          newRegistrations: 0,
+          completedCourses: 0,
+          issuedCertificates: 0,
+          activeCourses: 0,
+          newRegistrationsChange: '0%',
+          completedCoursesChange: '0%',
+          issuedCertificatesChange: '0%',
+          activeCoursesChange: '0%'
+        });
+      }
+
+      // 활성 코스 수
+      const activeCoursesQuery = await db
+        .select({ count: sql`count(*)` })
+        .from(courses)
+        .where(and(
+          eq(courses.instituteId, instituteId),
+          eq(courses.status, 'active')
+        ));
+      const activeCourses = Number(activeCoursesQuery[0]?.count) || 0;
+
+      // 전체 등록 수 (enrollmentCount 합계)
+      const enrollmentsQuery = await db
+        .select({ total: sql`COALESCE(SUM(${courses.enrollmentCount}), 0)` })
+        .from(courses)
+        .where(eq(courses.instituteId, instituteId));
+      const newRegistrations = Number(enrollmentsQuery[0]?.total) || 0;
+
+      // 완료된 코스 수
+      const completedCoursesQuery = await db
+        .select({ count: sql`count(*)` })
+        .from(courses)
+        .where(and(
+          eq(courses.instituteId, instituteId),
+          eq(courses.status, 'completed')
+        ));
+      const completedCourses = Number(completedCoursesQuery[0]?.count) || 0;
+
+      res.json({
+        newRegistrations,
+        completedCourses,
+        issuedCertificates: 0, // 수료증 테이블이 없으므로 0
+        activeCourses,
+        newRegistrationsChange: '+0%',
+        completedCoursesChange: '+0%',
+        issuedCertificatesChange: '+0%',
+        activeCoursesChange: '+0%'
+      });
+    } catch (error) {
+      console.error('기관 주요 지표 조회 실패:', error);
+      res.json({
+        newRegistrations: 0,
+        completedCourses: 0,
+        issuedCertificates: 0,
+        activeCourses: 0,
+        newRegistrationsChange: '0%',
+        completedCoursesChange: '0%',
+        issuedCertificatesChange: '0%',
+        activeCoursesChange: '0%'
+      });
+    }
+  });
+
+  // 기관 관리자용 - 기관 설정 정보 조회
+  app.get('/api/institute/settings', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const instituteId = req.session.user?.instituteId;
+      
+      if (!instituteId) {
+        return res.json({
+          name: '',
+          description: '',
+          address: '',
+          phone: '',
+          email: '',
+          website: '',
+          businessHours: '',
+          logoUrl: ''
+        });
+      }
+
+      const institute = await storage.getInstitute(instituteId);
+      
+      if (!institute) {
+        return res.json({
+          name: '',
+          description: '',
+          address: '',
+          phone: '',
+          email: '',
+          website: '',
+          businessHours: '',
+          logoUrl: ''
+        });
+      }
+
+      res.json({
+        name: institute.name || '',
+        description: institute.description || '',
+        address: institute.address || '',
+        phone: institute.phone || '',
+        email: institute.email || '',
+        website: institute.website || '',
+        businessHours: institute.businessHours || '',
+        logoUrl: institute.logo || ''
+      });
+    } catch (error) {
+      console.error('기관 설정 정보 조회 실패:', error);
+      res.json({
+        name: '',
+        description: '',
+        address: '',
+        phone: '',
+        email: '',
+        website: '',
+        businessHours: '',
+        logoUrl: ''
+      });
+    }
+  });
+
+  // 기관 관리자용 - 반려견 배정 목록 조회
+  app.get('/api/institute/pet-assignments', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const instituteId = req.session.user?.instituteId;
+      
+      if (!instituteId) {
+        return res.json([]);
+      }
+
+      // 기관 소속 훈련사들의 ID 조회
+      const trainersQuery = await db
+        .select({ id: users.id, name: users.name })
+        .from(users)
+        .where(and(
+          eq(users.role, 'trainer'),
+          eq(users.instituteId, instituteId)
+        ));
+
+      const trainerIds = trainersQuery.map(t => t.id);
+      const trainerMap = new Map(trainersQuery.map(t => [t.id, t.name]));
+
+      if (trainerIds.length === 0) {
+        return res.json([]);
+      }
+
+      // 기관 소속 수강생의 펫들 조회
+      const studentsQuery = await db
+        .select({ id: users.id, name: users.name })
+        .from(users)
+        .where(and(
+          eq(users.role, 'pet-owner'),
+          eq(users.instituteId, instituteId)
+        ));
+
+      const studentIds = studentsQuery.map(s => s.id);
+      const studentMap = new Map(studentsQuery.map(s => [s.id, s.name]));
+
+      if (studentIds.length === 0) {
+        return res.json([]);
+      }
+
+      // 해당 수강생들의 펫 조회
+      const petsQuery = await db
+        .select()
+        .from(pets)
+        .where(sql`${pets.ownerId} = ANY(${studentIds})`);
+
+      // 배정 정보 생성 (실제로는 enrollments 테이블이 있어야 하지만, 현재는 간단히 구현)
+      const assignments = petsQuery.map((pet, index) => ({
+        id: pet.id,
+        petName: pet.name || '이름 없음',
+        ownerName: studentMap.get(pet.ownerId) || '보호자 미확인',
+        trainerName: trainerMap.get(trainerIds[index % trainerIds.length]) || '미배정',
+        courseName: '기본 훈련',
+        startDate: pet.createdAt ? new Date(pet.createdAt).toISOString().split('T')[0] : '',
+        status: 'active' as const,
+        progress: 0
+      }));
+
+      res.json(assignments);
+    } catch (error) {
+      console.error('반려견 배정 목록 조회 실패:', error);
+      res.json([]);
     }
   });
 
@@ -13500,6 +14359,70 @@ app.get('/api/search', async (req, res) => {
 
   // Register social/community routes
   setupSocialRoutes(app);
+
+  // 주문 내역 조회 API
+  app.get('/api/orders', requireAuth(), async (req, res) => {
+    try {
+      const userId = req.session?.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.' });
+      }
+
+      // 사용자의 주문 내역 조회
+      const userOrders = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.userId, userId))
+        .orderBy(sql`${orders.createdAt} DESC`);
+
+      // 각 주문의 아이템과 상품 정보 조회
+      const ordersWithItems = await Promise.all(
+        userOrders.map(async (order) => {
+          // 주문 아이템 조회
+          const items = await db
+            .select({
+              id: orderItems.id,
+              orderId: orderItems.orderId,
+              productId: orderItems.productId,
+              quantity: orderItems.quantity,
+              price: orderItems.price,
+              totalPrice: orderItems.totalPrice,
+              productName: products.name,
+              productImage: products.images,
+            })
+            .from(orderItems)
+            .leftJoin(products, eq(orderItems.productId, products.id))
+            .where(eq(orderItems.orderId, order.id));
+
+          // 아이템 데이터 변환
+          const transformedItems = items.map((item) => ({
+            id: String(item.id),
+            name: item.productName || '상품명 없음',
+            price: Number(item.price),
+            quantity: item.quantity,
+            image: Array.isArray(item.productImage) && item.productImage.length > 0 
+              ? item.productImage[0] 
+              : 'https://placedog.net/100/100?random=1',
+          }));
+
+          return {
+            id: order.orderNumber || `ORD-${order.id}`,
+            date: order.createdAt,
+            totalAmount: Number(order.totalAmount),
+            status: order.status || 'pending',
+            trackingNumber: order.notes?.includes('TRK') ? order.notes : undefined,
+            items: transformedItems,
+          };
+        })
+      );
+
+      res.json(ordersWithItems);
+    } catch (error) {
+      console.error('[Orders API] 주문 내역 조회 오류:', error);
+      res.status(500).json({ success: false, message: '주문 내역 조회 중 오류가 발생했습니다.' });
+    }
+  });
 
   // Register shopping routes
   registerShoppingRoutes(app, storage);

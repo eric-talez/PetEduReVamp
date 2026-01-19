@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 import {
   Card,
   CardContent,
@@ -63,7 +64,8 @@ import {
   BookOpen,
   UserRoundCheck,
   Activity,
-  Sparkles
+  Sparkles,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,7 +115,6 @@ export default function InstituteStudentsManagement() {
   const { userName } = useAuth();
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -126,157 +127,15 @@ export default function InstituteStudentsManagement() {
   const [filterCourse, setFilterCourse] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   
-  // 임시 수강생 데이터
-  const [students, setStudents] = useState<Student[]>([]);
-  
-  // 임시 훈련사 데이터
-  const [trainers, setTrainers] = useState<Trainer[]>([]);
-  
-  // 수강생 데이터 로딩
-  useEffect(() => {
-    const loadStudents = async () => {
-      setIsLoading(true);
-      try {
-        // 실제 API 구현 시 이 부분을 API 호출로 대체
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // 임시 데이터
-        const mockStudents: Student[] = [
-          {
-            id: 1,
-            name: '김철수',
-            email: 'kim@example.com',
-            phone: '010-1234-5678',
-            petName: '코코',
-            petBreed: '푸들',
-            petAge: 3,
-            joinDate: '2023-01-15',
-            status: 'active',
-            courseCount: 2,
-            completedCourses: 1,
-            lastActive: '2023-05-10',
-            missedClasses: 0,
-            activeCourses: [
-              {
-                id: 1,
-                name: '기초 복종 훈련 A반',
-                progress: 75,
-                trainer: '김영수',
-                nextClass: '2023-05-15 14:00'
-              },
-              {
-                id: 3,
-                name: '사회화 훈련',
-                progress: 30,
-                trainer: '박지민',
-                nextClass: '2023-05-17 15:30'
-              }
-            ]
-          },
-          {
-            id: 2,
-            name: '박지영',
-            email: 'park@example.com',
-            phone: '010-9876-5432',
-            petName: '몽이',
-            petBreed: '말티즈',
-            petAge: 2,
-            joinDate: '2023-02-10',
-            status: 'active',
-            courseCount: 1,
-            completedCourses: 0,
-            lastActive: '2023-05-11',
-            missedClasses: 1,
-            activeCourses: [
-              {
-                id: 2,
-                name: '문제행동 교정 과정',
-                progress: 45,
-                trainer: '이하은',
-                nextClass: '2023-05-16 10:00'
-              }
-            ]
-          },
-          {
-            id: 3,
-            name: '이미나',
-            email: 'lee@example.com',
-            phone: '010-5555-7777',
-            petName: '달래',
-            petBreed: '시바견',
-            petAge: 4,
-            joinDate: '2022-11-05',
-            status: 'inactive',
-            courseCount: 3,
-            completedCourses: 3,
-            lastActive: '2023-04-01',
-            missedClasses: 2,
-            activeCourses: []
-          },
-          {
-            id: 4,
-            name: '최준호',
-            email: 'choi@example.com',
-            phone: '010-2222-3333',
-            petName: '뽀삐',
-            petBreed: '골든리트리버',
-            petAge: 1,
-            joinDate: '2023-04-20',
-            status: 'pending',
-            courseCount: 0,
-            completedCourses: 0,
-            lastActive: '2023-04-20',
-            missedClasses: 0,
-            activeCourses: []
-          },
-          {
-            id: 5,
-            name: '정민지',
-            email: 'jung@example.com',
-            phone: '010-8888-9999',
-            petName: '해피',
-            petBreed: '비숑',
-            petAge: 2,
-            joinDate: '2023-03-15',
-            status: 'active',
-            courseCount: 1,
-            completedCourses: 0,
-            lastActive: '2023-05-09',
-            missedClasses: 0,
-            activeCourses: [
-              {
-                id: 1,
-                name: '기초 복종 훈련 A반',
-                progress: 70,
-                trainer: '김영수',
-                nextClass: '2023-05-15 14:00'
-              }
-            ]
-          }
-        ];
-        
-        // 임시 훈련사 데이터
-        const mockTrainers: Trainer[] = [
-          { id: 1, name: '김영수', specialty: '기초 훈련' },
-          { id: 2, name: '이하은', specialty: '문제행동 교정' },
-          { id: 3, name: '박지민', specialty: '사회화' }
-        ];
-        
-        setStudents(mockStudents);
-        setTrainers(mockTrainers);
-      } catch (error) {
-        toast({
-          title: "데이터 로딩 오류",
-          description: "수강생 정보를 불러오는 중 오류가 발생했습니다.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadStudents();
-  }, [toast]);
+  // API에서 수강생 데이터 로딩
+  const { data: students = [], isLoading, isError, refetch } = useQuery<Student[]>({
+    queryKey: ['/api/institute/students'],
+  });
+
+  // API에서 훈련사 데이터 로딩
+  const { data: trainers = [] } = useQuery<Trainer[]>({
+    queryKey: ['/api/institute/trainers'],
+  });
   
   // 수강생 상태에 따른 필터링
   const getFilteredStudents = () => {
@@ -371,14 +230,11 @@ export default function InstituteStudentsManagement() {
   
   // 데이터 새로고침 핸들러
   const handleRefresh = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      toast({
-        title: "데이터 새로고침",
-        description: "수강생 목록이 업데이트되었습니다.",
-      });
-      setIsLoading(false);
-    }, 1000);
+    refetch();
+    toast({
+      title: "데이터 새로고침",
+      description: "수강생 목록이 업데이트되었습니다.",
+    });
   };
 
   if (isLoading) {
@@ -388,6 +244,17 @@ export default function InstituteStudentsManagement() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">수강생 데이터 로딩 중...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+        <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+        <p className="text-lg font-medium mb-2">데이터를 불러오는데 실패했습니다</p>
+        <p className="text-sm text-muted-foreground mb-4">잠시 후 다시 시도해주세요</p>
+        <Button onClick={() => refetch()}>다시 시도</Button>
       </div>
     );
   }

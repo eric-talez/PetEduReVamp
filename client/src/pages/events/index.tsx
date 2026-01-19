@@ -55,127 +55,6 @@ interface EventItem {
   maxAttendees?: number;
 }
 
-// 임시 데이터
-const MOCK_EVENTS: EventItem[] = [
-  {
-    id: 1,
-    title: "강아지 사회화 모임",
-    description: "다양한 강아지들과 함께하는 사회화 모임입니다. 반려견의 사회성 향상을 위한 최고의 기회!",
-    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
-    date: "2025-05-15",
-    time: "14:00 - 16:00",
-    location: {
-      id: 1,
-      name: "강남 애견공원",
-      address: "서울 강남구 삼성동 159",
-      lat: 37.508796,
-      lng: 127.061359,
-      region: "서울"
-    },
-    organizer: {
-      name: "김훈련",
-      avatar: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 002_1751722697071.png"
-    },
-    category: "소셜",
-    price: '무료',
-    attendees: 15,
-    maxAttendees: 20
-  },
-  {
-    id: 2,
-    title: "반려견 건강 세미나",
-    description: "반려견의 건강을 위한 영양과 운동에 대한 전문가 세미나입니다.",
-    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 003_1751722697072.png",
-    date: "2025-05-20",
-    time: "19:00 - 21:00",
-    location: {
-      id: 2,
-      name: "펫케어 센터",
-      address: "서울 서초구 서초동 1445-3",
-      lat: 37.491632,
-      lng: 127.007358,
-      region: "서울"
-    },
-    organizer: {
-      name: "박수의",
-      avatar: "/attached_assets/image_1746582251297.png"
-    },
-    category: "교육",
-    price: 15000,
-    attendees: 28,
-    maxAttendees: 40
-  },
-  {
-    id: 3,
-    title: "반려동물 페스티벌",
-    description: "다양한 반려동물 용품과 먹거리, 체험 부스가 준비된 대규모 페스티벌입니다.",
-    image: "/attached_assets/KakaoTalk_Photo_2025-07-05-22-37-00 001_1751722697059.png",
-    date: "2025-06-05",
-    time: "10:00 - 18:00",
-    location: {
-      id: 3,
-      name: "올림픽공원",
-      address: "서울 송파구 방이동 88",
-      lat: 37.520847,
-      lng: 127.121674,
-      region: "서울"
-    },
-    organizer: {
-      name: "동물사랑협회",
-      avatar: "https://images.unsplash.com/photo-1551887196-72e32bfc7bf3?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-    },
-    category: "축제",
-    price: 20000,
-    attendees: 120
-  },
-  {
-    id: 4,
-    title: "강아지 훈련 워크샵",
-    description: "기본 훈련부터 고급 훈련까지, 실전 강아지 훈련 워크샵입니다.",
-    image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    date: "2025-05-25",
-    time: "13:00 - 17:00",
-    location: {
-      id: 4,
-      name: "부산 반려동물 교육센터",
-      address: "부산 해운대구 우동 1411",
-      lat: 35.162844,
-      lng: 129.159608,
-      region: "부산"
-    },
-    organizer: {
-      name: "최트레이너",
-      avatar: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-    },
-    category: "교육",
-    price: 50000,
-    attendees: 8,
-    maxAttendees: 10
-  },
-  {
-    id: 5,
-    title: "반려동물 입양 행사",
-    description: "새로운 가족을 찾고 있는 유기동물들을 만나볼 수 있는 입양 행사입니다.",
-    image: "https://images.unsplash.com/photo-1541364983171-a8ba01e95cfc?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    date: "2025-06-10",
-    time: "11:00 - 16:00",
-    location: {
-      id: 5,
-      name: "대구 반려동물 문화센터",
-      address: "대구 수성구 범어동 178-1",
-      lat: 35.859971,
-      lng: 128.631049,
-      region: "대구"
-    },
-    organizer: {
-      name: "하트펫구조협회",
-      avatar: "https://images.unsplash.com/photo-1618077360395-f3068be8e001?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-    },
-    category: "입양",
-    price: '무료',
-    attendees: 35
-  }
-];
 
 // 지역 목록
 const REGIONS = ["전체", "서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
@@ -587,21 +466,32 @@ export default function EventsPage() {
           
           {!isLoading && filteredEvents.length === 0 ? (
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center">
-              <h3 className="text-lg font-medium mb-2">검색 결과가 없습니다</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                다른 검색어나 필터 조건을 시도해보세요.
-              </p>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedRegion("전체");
-                  setSelectedCategory("전체");
-                  setSelectedPrice("전체");
-                }}
-              >
-                필터 초기화
-              </Button>
+              {eventsData.length === 0 && !searchTerm && selectedRegion === "전체" && selectedCategory === "전체" && selectedPrice === "전체" ? (
+                <>
+                  <h3 className="text-lg font-medium mb-2">진행 중인 이벤트가 없습니다</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    새로운 이벤트가 등록되면 알려드리겠습니다.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-lg font-medium mb-2">검색 결과가 없습니다</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    다른 검색어나 필터 조건을 시도해보세요.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedRegion("전체");
+                      setSelectedCategory("전체");
+                      setSelectedPrice("전체");
+                    }}
+                  >
+                    필터 초기화
+                  </Button>
+                </>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">

@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingBag, Package, Truck, CheckCircle, Search, FileText, ArrowLeft, Calendar } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ShoppingBag, Package, Truck, CheckCircle, Search, FileText, ArrowLeft, Calendar, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // 주문 상태 타입
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -26,82 +28,12 @@ interface OrderItem {
 // 주문 데이터 타입
 interface Order {
   id: string;
-  date: Date;
+  date: Date | string;
   totalAmount: number;
   status: OrderStatus;
   trackingNumber?: string;
   items: OrderItem[];
 }
-
-// 샘플 주문 데이터
-const sampleOrders: Order[] = [
-  {
-    id: 'ORD-2024-001',
-    date: new Date(2024, 4, 20), // 5월 20일
-    totalAmount: 45000,
-    status: 'delivered',
-    trackingNumber: 'TRK123456789',
-    items: [
-      {
-        id: 'ITEM001',
-        name: '프리미엄 강아지 사료 2kg',
-        price: 25000,
-        quantity: 1,
-        image: 'https://placedog.net/100/100?random=1',
-        options: {
-          '맛': '닭고기',
-          '특징': '알러지 방지'
-        }
-      },
-      {
-        id: 'ITEM002',
-        name: '반려동물 장난감 세트',
-        price: 20000,
-        quantity: 1,
-        image: 'https://placedog.net/100/100?random=2'
-      }
-    ]
-  },
-  {
-    id: 'ORD-2024-002',
-    date: new Date(2024, 4, 15), // 5월 15일
-    totalAmount: 36000,
-    status: 'shipped',
-    trackingNumber: 'TRK987654321',
-    items: [
-      {
-        id: 'ITEM003',
-        name: '강아지 영양제 100정',
-        price: 36000,
-        quantity: 1,
-        image: 'https://placedog.net/100/100?random=3',
-        options: {
-          '성분': '종합 비타민',
-          '복용방법': '1일 1정'
-        }
-      }
-    ]
-  },
-  {
-    id: 'ORD-2024-003',
-    date: new Date(2024, 4, 10), // 5월 10일
-    totalAmount: 58000,
-    status: 'processing',
-    items: [
-      {
-        id: 'ITEM004',
-        name: '반려동물 침대 (중형)',
-        price: 58000,
-        quantity: 1,
-        image: 'https://placedog.net/100/100?random=4',
-        options: {
-          '크기': '중형',
-          '색상': '베이지'
-        }
-      }
-    ]
-  }
-];
 
 // 주문 상태에 따른 UI 정보
 const statusInfo = {
@@ -133,8 +65,9 @@ const statusInfo = {
 };
 
 // 날짜 포맷 함수
-function formatDate(date: Date): string {
-  return format(date, 'yyyy년 MM월 dd일', { locale: ko });
+function formatDate(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return format(dateObj, 'yyyy년 MM월 dd일', { locale: ko });
 }
 
 // 가격 포맷 함수
@@ -143,31 +76,59 @@ function formatPrice(price: number): string {
 }
 
 export default function OrderHistory() {
-  const [orders, setOrders] = useState<Order[]>(sampleOrders);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // 주문 필터링
-  const filteredOrders = orders.filter(order => {
-    // 상태 필터
-    if (filterStatus !== 'all' && order.status !== filterStatus) {
-      return false;
-    }
-    
-    // 검색어 필터
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        order.id.toLowerCase().includes(searchLower) ||
-        order.items.some(item => item.name.toLowerCase().includes(searchLower))
-      );
-    }
-    
-    return true;
+  // API에서 주문 데이터 조회
+  const { data: ordersData, isLoading, isError } = useQuery<Order[]>({
+    queryKey: ['/api/orders'],
   });
+
+  // 기간 및 상태 필터링
+  const filteredOrders = useMemo(() => {
+    if (!ordersData) return [];
+
+    const now = new Date();
+    
+    return ordersData.filter(order => {
+      // 기간 필터
+      const orderDate = new Date(order.date);
+      if (activeTab !== 'all') {
+        let cutoffDate = new Date(now);
+        switch (activeTab) {
+          case '1month':
+            cutoffDate.setMonth(now.getMonth() - 1);
+            break;
+          case '3months':
+            cutoffDate.setMonth(now.getMonth() - 3);
+            break;
+          case '6months':
+            cutoffDate.setMonth(now.getMonth() - 6);
+            break;
+        }
+        if (orderDate < cutoffDate) return false;
+      }
+
+      // 상태 필터
+      if (filterStatus !== 'all' && order.status !== filterStatus) {
+        return false;
+      }
+      
+      // 검색어 필터
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          order.id.toLowerCase().includes(searchLower) ||
+          order.items.some(item => item.name.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      return true;
+    });
+  }, [ordersData, activeTab, filterStatus, searchTerm]);
 
   // 배송 추적 함수
   const trackOrder = (trackingNumber: string) => {
@@ -175,7 +136,6 @@ export default function OrderHistory() {
       title: "배송 추적",
       description: `택배사 웹사이트에서 ${trackingNumber} 번호로 배송 상태를 확인합니다.`,
     });
-    // 실제로는 택배사 추적 페이지로 이동
     window.open(`https://tracker.delivery/#/${trackingNumber}`, '_blank');
   };
 
@@ -185,49 +145,7 @@ export default function OrderHistory() {
       title: "주문 취소 요청",
       description: "주문 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.",
     });
-    
-    // 주문 상태 업데이트 (실제로는 API 호출)
-    setOrders(prevOrders => 
-      prevOrders.map(order => 
-        order.id === orderId 
-          ? { ...order, status: 'cancelled' as OrderStatus } 
-          : order
-      )
-    );
   };
-
-  // 기간별 탭 변경 시 필터링
-  useEffect(() => {
-    if (activeTab === 'all') {
-      setOrders(sampleOrders);
-      return;
-    }
-    
-    const now = new Date();
-    const filterOrders = () => {
-      switch (activeTab) {
-        case '1month':
-          // 1개월 이내 주문
-          const oneMonthAgo = new Date(now);
-          oneMonthAgo.setMonth(now.getMonth() - 1);
-          return sampleOrders.filter(order => order.date >= oneMonthAgo);
-        case '3months':
-          // 3개월 이내 주문
-          const threeMonthsAgo = new Date(now);
-          threeMonthsAgo.setMonth(now.getMonth() - 3);
-          return sampleOrders.filter(order => order.date >= threeMonthsAgo);
-        case '6months':
-          // 6개월 이내 주문
-          const sixMonthsAgo = new Date(now);
-          sixMonthsAgo.setMonth(now.getMonth() - 6);
-          return sampleOrders.filter(order => order.date >= sixMonthsAgo);
-        default:
-          return sampleOrders;
-      }
-    };
-    
-    setOrders(filterOrders());
-  }, [activeTab]);
 
   return (
     <div className="container max-w-6xl py-8">
@@ -297,12 +215,41 @@ export default function OrderHistory() {
         </div>
       </div>
       
-      {filteredOrders.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-8">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="overflow-hidden border-2">
+              <CardHeader className="bg-muted/30 border-b-2 border-primary/10">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                  <div>
+                    <Skeleton className="h-6 w-32 mb-2" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                  <Skeleton className="h-8 w-24 rounded-full" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="flex gap-4">
+                  <Skeleton className="w-20 h-20 rounded-md" />
+                  <div className="flex-grow">
+                    <Skeleton className="h-5 w-48 mb-2" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : filteredOrders.length === 0 ? (
         <Card className="text-center p-10">
           <div className="flex flex-col items-center">
             <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4 opacity-20" />
             <p className="text-xl font-medium mb-2">주문 내역이 없습니다</p>
-            <p className="text-muted-foreground mb-6">해당 기간에 주문한 내역이 없거나 검색 조건에 맞는 주문이 없습니다.</p>
+            <p className="text-muted-foreground mb-6">
+              {!ordersData || ordersData.length === 0 
+                ? '아직 주문하신 내역이 없습니다.' 
+                : '해당 기간에 주문한 내역이 없거나 검색 조건에 맞는 주문이 없습니다.'}
+            </p>
             <Button onClick={() => setLocation('/shop')}>
               테일즈 샵 가기
             </Button>

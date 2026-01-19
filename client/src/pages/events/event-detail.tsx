@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Calendar, 
   MapPin, 
@@ -56,100 +57,6 @@ interface EventItem {
   }>;
 }
 
-// 이벤트 상세 데이터
-const MOCK_EVENTS: EventItem[] = [
-  {
-    id: 1,
-    title: "강아지 사회화 모임",
-    description: "다양한 강아지들과 함께하는 사회화 모임입니다. 반려견의 사회성 향상을 위한 최고의 기회!",
-    image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    date: "2025-05-15",
-    time: "14:00 - 16:00",
-    location: {
-      id: 1,
-      name: "강남 애견공원",
-      address: "서울 강남구 삼성동 159",
-      lat: 37.508796,
-      lng: 127.061359,
-      region: "서울"
-    },
-    organizer: {
-      name: "김훈련",
-      avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-      description: "10년 경력의 반려견 행동 전문가입니다. 사회화 모임을 통해 많은 반려견들의 사회성 향상을 도왔습니다."
-    },
-    category: "소셜",
-    price: '무료',
-    attendees: 15,
-    maxAttendees: 20,
-    details: "이번 사회화 모임에서는 반려견의 연령과 성격에 맞게 그룹을 나누어 진행됩니다. 소심한 강아지, 활발한 강아지, 공격성이 있는 강아지 등 다양한 성향의 반려견들이 안전하게 사회화할 수 있도록 전문 트레이너가 함께합니다.\n\n모임 전 간단한 반려견 행동 평가를 통해 적절한 그룹을 배정받게 됩니다. 이를 통해 모든 참가자들이 안전하고 즐거운 시간을 보낼 수 있습니다.\n\n집에서 미리 간식과 장난감을 준비해오시면 더욱 풍성한 시간을 보낼 수 있습니다.",
-    requirements: [
-      "광견병 등 필수 예방접종을 완료한 반려견",
-      "기본적인 리드 훈련이 된 반려견",
-      "당일 반려견 건강상태가 양호할 것",
-      "반려견 배변봉투 필수 지참"
-    ],
-    faq: [
-      {
-        question: "모든 견종이 참가할 수 있나요?",
-        answer: "네, 모든 견종이 참가 가능합니다. 다만 공격성이 심한 경우 별도의 세션으로 진행될 수 있습니다."
-      },
-      {
-        question: "반려견이 아직 예방접종을 완료하지 않았는데도 참가할 수 있나요?",
-        answer: "죄송합니다만, 모든 반려견의 안전을 위해 기본 예방접종(광견병, 종합백신)이 완료된 반려견만 참가 가능합니다."
-      },
-      {
-        question: "비가 오면 어떻게 되나요?",
-        answer: "우천시에는 실내 대체 장소에서 진행되거나, 행사가 연기될 수 있습니다. 변경사항은 참가자에게 개별 연락드립니다."
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: "반려견 건강 세미나",
-    description: "반려견의 건강을 위한 영양과 운동에 대한 전문가 세미나입니다.",
-    image: "https://images.unsplash.com/photo-1597633425046-08f5110420b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    date: "2025-05-20",
-    time: "19:00 - 21:00",
-    location: {
-      id: 2,
-      name: "펫케어 센터",
-      address: "서울 서초구 서초동 1445-3",
-      lat: 37.491632,
-      lng: 127.007358,
-      region: "서울"
-    },
-    organizer: {
-      name: "박수의",
-      avatar: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-      description: "수의사이자 반려동물 영양학 전문가로 활동하고 있습니다. 영양과 운동을 통한 반려견 건강관리에 대한 다수의 저서를 집필했습니다."
-    },
-    category: "교육",
-    price: 15000,
-    attendees: 28,
-    maxAttendees: 40,
-    details: "이번 세미나에서는 다음과 같은 내용을 다룹니다:\n\n1. 연령별 반려견 영양 관리법\n2. 비만 반려견을 위한 식이요법\n3. 알레르기가 있는 반려견을 위한 식단\n4. 실내에서 할 수 있는 반려견 운동법\n5. 반려견 건강 체크리스트\n\n모든 참가자에게는 세미나 자료집과 반려견 영양제 샘플이 제공됩니다.",
-    requirements: [
-      "반려견 동반 불가 (세미나만 진행됩니다)",
-      "필기구 지참 권장",
-      "질문이 있으신 분들은 미리 준비해오시면 좋습니다"
-    ],
-    faq: [
-      {
-        question: "반려견을 동반해도 되나요?",
-        answer: "본 세미나는 반려인만 참석 가능합니다. 장소 특성상 반려견 동반은 불가합니다."
-      },
-      {
-        question: "주차 시설이 있나요?",
-        answer: "센터 내 주차장이 있으며, 2시간 무료 주차가 가능합니다."
-      },
-      {
-        question: "영상 녹화나 사진 촬영이 가능한가요?",
-        answer: "저작권 보호를 위해 영상 녹화는 금지되어 있으며, 사진 촬영은 발표자의 허락 하에 가능합니다."
-      }
-    ]
-  }
-];
 
 // 로그인 유도 함수
 function promptLogin() {
@@ -161,32 +68,14 @@ function promptLogin() {
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [event, setEvent] = useState<EventItem | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const { toast } = useToast();
   
-  useEffect(() => {
-    // 실제 구현에서는 API 호출로 대체
-    const fetchEvent = async () => {
-      try {
-        setIsLoading(true);
-        // 목업 데이터에서 ID로 이벤트 찾기
-        const foundEvent = MOCK_EVENTS.find(e => e.id.toString() === id);
-        
-        if (foundEvent) {
-          setEvent(foundEvent);
-        }
-        
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch event:", error);
-        setIsLoading(false);
-      }
-    };
-    
-    fetchEvent();
-  }, [id]);
+  const { data: event, isLoading, error } = useQuery<EventItem>({
+    queryKey: ['/api/events', id],
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
   
   const auth = useAuth();
   
@@ -229,7 +118,7 @@ export default function EventDetailPage() {
     );
   }
   
-  if (!event) {
+  if (error || (!isLoading && !event)) {
     return (
       <div className="container mx-auto px-4 py-10">
         <div className="text-center">
@@ -242,6 +131,14 @@ export default function EventDetailPage() {
             </Button>
           </Link>
         </div>
+      </div>
+    );
+  }
+  
+  if (!event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }

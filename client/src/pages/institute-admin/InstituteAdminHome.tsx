@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-compat';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Dialog,
   DialogContent,
@@ -30,49 +31,47 @@ interface CourseProgressData {
   total?: number;
 }
 
-// 초기 차트 데이터
-const initialCourseData: CourseProgressData[] = [
-  { name: '기초 훈련', 수료: 0, 진행중: 0 },
-  { name: '중급 훈련', 수료: 0, 진행중: 0 },
-  { name: '고급 훈련', 수료: 0, 진행중: 0 },
-  { name: '행동 교정', 수료: 0, 진행중: 0 },
-  { name: '특수 훈련', 수료: 0, 진행중: 0 },
-];
-
-// 파이 차트 데이터
-const revenueData = [
-  { name: '기초 훈련', value: 1150000 },
-  { name: '중급 훈련', value: 980000 },
-  { name: '고급 훈련', value: 750000 },
-  { name: '행동 교정', value: 850000 },
-  { name: '특수 훈련', value: 550000 },
-];
 
 // 파이 차트 색상
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-// 최근 알림 데이터
-const recentNotifications = [
-  { id: 1, type: 'approval', title: '코스 승인 요청', content: '김훈련님이 "반려견 행동 수정 고급 과정" 코스 승인을 요청했습니다.', time: '10분 전' },
-  { id: 2, type: 'info', title: '신규 등록 완료', content: '박지민님이 "기초 훈련 과정"에 등록했습니다.', time: '30분 전' },
-  { id: 3, type: 'warning', title: '수료증 발급 필요', content: '"중급 훈련 과정" 5명의 수료증 발급이 필요합니다.', time: '1시간 전' },
-  { id: 4, type: 'info', title: '정산 완료', content: '5월 정산이 완료되었습니다. 정산 내역을 확인해주세요.', time: '2시간 전' },
-];
+// 매출 데이터 타입 정의
+interface RevenueData {
+  name: string;
+  value: number;
+}
 
-// 대기 중인 승인 요청 데이터
-const pendingApprovals = [
-  { id: 1, type: '코스', title: '반려견 행동 수정 고급 과정', trainer: '김훈련', date: '2023-05-10' },
-  { id: 2, type: '코스', title: '특수 상황 대처 훈련', trainer: '이강사', date: '2023-05-09' },
-  { id: 3, type: '수료증', title: '기초 훈련 과정', students: 5, date: '2023-05-08' },
-];
+// 알림 데이터 타입 정의
+interface NotificationData {
+  id: number;
+  type: string;
+  title: string;
+  content: string;
+  time: string;
+  isRead?: boolean;
+}
 
-// 이번 달 주요 지표 데이터
-const keyMetrics = [
-  { name: '신규 등록', value: 45, change: '+12%', icon: Users, color: 'text-blue-500' },
-  { name: '완료된 과정', value: 28, change: '+5%', icon: CheckCircle2, color: 'text-green-500' },
-  { name: '발급 수료증', value: 65, change: '+18%', icon: Award, color: 'text-yellow-500' },
-  { name: '운영 중 과정', value: 12, change: '+2%', icon: Zap, color: 'text-purple-500' },
-];
+// 승인 요청 데이터 타입 정의
+interface ApprovalData {
+  id: number;
+  type: string;
+  title: string;
+  trainer?: string;
+  students?: number;
+  date: string;
+}
+
+// 지표 데이터 타입 정의
+interface MetricsData {
+  newRegistrations: number;
+  completedCourses: number;
+  issuedCertificates: number;
+  activeCourses: number;
+  newRegistrationsChange: string;
+  completedCoursesChange: string;
+  issuedCertificatesChange: string;
+  activeCoursesChange: string;
+}
 
 export default function InstituteAdminHome() {
   const { userName } = useAuth();
@@ -80,9 +79,6 @@ export default function InstituteAdminHome() {
   const [location, setLocation] = useLocation();
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [isLoadingCourseData, setIsLoadingCourseData] = useState(false);
-  const [courseData, setCourseData] = useState<CourseProgressData[]>(initialCourseData);
-  const [courseError, setCourseError] = useState<string | null>(null);
   
   // 일정 알림 상태
   const [showNotificationBadge, setShowNotificationBadge] = useState(true);
@@ -145,68 +141,79 @@ export default function InstituteAdminHome() {
     setLocation(`/trainers/${trainerId}`);
   };
   
-  // 코스 진행 상태 데이터 가져오기
-  const fetchCourseProgressData = async () => {
-    setIsLoadingCourseData(true);
-    setCourseError(null);
-    
-    try {
-      // API 호출 시뮬레이션
-      console.log("코스 진행 상태 데이터 요청 중...");
-      
-      // 실제 API 구현 전 임시 데이터 로딩 시뮬레이션
-      // 실제 구현 시 아래 코드를 실제 API 호출로 대체
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      // 실제 API 호출 코드는 다음과 같이 구현 (현재는 주석 처리)
-      /*
-      const response = await fetch('/api/institute/course-progress', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('코스 진행 상태 데이터를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      setCourseData(data);
-      */
-      
-      // 임시 데이터로 설정 (API 연동 전)
-      const mockData: CourseProgressData[] = [
-        { name: '기초 훈련', 수료: 75, 진행중: 25, trainers: 4, total: 100 },
-        { name: '중급 훈련', 수료: 60, 진행중: 40, trainers: 3, total: 100 },
-        { name: '고급 훈련', 수료: 45, 진행중: 55, trainers: 2, total: 100 },
-        { name: '행동 교정', 수료: 70, 진행중: 30, trainers: 5, total: 100 },
-        { name: '특수 훈련', 수료: 35, 진행중: 65, trainers: 1, total: 100 },
-      ];
-      
-      setCourseData(mockData);
-      console.log("코스 진행 상태 데이터 로드 완료:", mockData);
-      
-    } catch (error) {
-      console.error("코스 진행 상태 데이터 로딩 오류:", error);
-      setCourseError(error instanceof Error ? error.message : '데이터 로딩 중 오류가 발생했습니다.');
-      toast({
-        title: "데이터 로딩 오류",
-        description: "코스 진행 상태 데이터를 불러오는 중 문제가 발생했습니다.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingCourseData(false);
-    }
+  // API에서 코스 진행 상태 데이터 로딩
+  const { 
+    data: courseProgressData = [], 
+    isLoading: isLoadingCourseData, 
+    error: courseQueryError,
+    refetch: refetchCourseData 
+  } = useQuery<CourseProgressData[]>({
+    queryKey: ['/api/institute/course-progress'],
+  });
+
+  // API에서 매출 데이터 로딩
+  const {
+    data: revenueData = [],
+    isLoading: isLoadingRevenue,
+    error: revenueError
+  } = useQuery<RevenueData[]>({
+    queryKey: ['/api/institute/revenue'],
+  });
+
+  // API에서 최근 알림 로딩
+  const {
+    data: recentNotifications = [],
+    isLoading: isLoadingNotifications,
+    error: notificationsError
+  } = useQuery<NotificationData[]>({
+    queryKey: ['/api/institute/notifications'],
+  });
+
+  // API에서 대기 중인 승인 요청 로딩
+  const {
+    data: pendingApprovals = [],
+    isLoading: isLoadingApprovals,
+    error: approvalsError
+  } = useQuery<ApprovalData[]>({
+    queryKey: ['/api/institute/pending-approvals'],
+  });
+
+  // API에서 주요 지표 로딩
+  const defaultMetrics: MetricsData = {
+    newRegistrations: 0,
+    completedCourses: 0,
+    issuedCertificates: 0,
+    activeCourses: 0,
+    newRegistrationsChange: '0%',
+    completedCoursesChange: '0%',
+    issuedCertificatesChange: '0%',
+    activeCoursesChange: '0%'
   };
+  const {
+    data: metricsData = defaultMetrics,
+    isLoading: isLoadingMetrics,
+    error: metricsError
+  } = useQuery<MetricsData>({
+    queryKey: ['/api/institute/metrics'],
+  });
+
+  // 지표 카드 데이터 구성
+  const keyMetrics = [
+    { name: '신규 등록', value: metricsData.newRegistrations, change: metricsData.newRegistrationsChange, icon: Users, color: 'text-blue-500' },
+    { name: '완료된 과정', value: metricsData.completedCourses, change: metricsData.completedCoursesChange, icon: CheckCircle2, color: 'text-green-500' },
+    { name: '발급 수료증', value: metricsData.issuedCertificates, change: metricsData.issuedCertificatesChange, icon: Award, color: 'text-yellow-500' },
+    { name: '운영 중 과정', value: metricsData.activeCourses, change: metricsData.activeCoursesChange, icon: Zap, color: 'text-purple-500' },
+  ];
+
+  // courseData를 useQuery 데이터로 설정
+  const courseData = courseProgressData;
+  const courseError = courseQueryError ? '데이터 로딩 중 오류가 발생했습니다.' : null;
   
   useEffect(() => {
-    // 데이터 로딩 시뮬레이션
+    // 초기 로딩 상태 설정
     const timer = setTimeout(() => {
       setIsLoaded(true);
-      // 컴포넌트가 로드된 후 코스 데이터 가져오기
-      fetchCourseProgressData();
-    }, 800);
+    }, 500);
     
     return () => clearTimeout(timer);
   }, []);
@@ -217,7 +224,7 @@ export default function InstituteAdminHome() {
       title: "데이터 새로고침",
       description: "코스 진행 상태 데이터를 새로고침합니다.",
     });
-    fetchCourseProgressData();
+    refetchCourseData();
   };
   
   if (!isLoaded) {
@@ -252,25 +259,42 @@ export default function InstituteAdminHome() {
       
       {/* 주요 지표 카드 - 4칸 그리드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {keyMetrics.map((metric, index) => (
-          <Card key={index} className="shadow-sm hover:shadow-md transition-shadow duration-200">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{metric.name}</p>
-                  <p className="text-2xl font-bold">{metric.value}</p>
-                  <div className="flex items-center mt-1">
-                    <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
-                    <span className="text-xs font-medium text-green-500">{metric.change}</span>
+        {isLoadingMetrics ? (
+          [1, 2, 3, 4].map((index) => (
+            <Card key={index} className="shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start animate-pulse">
+                  <div className="space-y-2">
+                    <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-8 w-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-3 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  </div>
+                  <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          keyMetrics.map((metric, index) => (
+            <Card key={index} className="shadow-sm hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{metric.name}</p>
+                    <p className="text-2xl font-bold">{metric.value}</p>
+                    <div className="flex items-center mt-1">
+                      <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
+                      <span className="text-xs font-medium text-green-500">{metric.change}</span>
+                    </div>
+                  </div>
+                  <div className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-800 ${metric.color}`}>
+                    <metric.icon className="h-6 w-6" />
                   </div>
                 </div>
-                <div className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-800 ${metric.color}`}>
-                  <metric.icon className="h-6 w-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
       
       {/* 탭 컴포넌트 */}
@@ -391,35 +415,55 @@ export default function InstituteAdminHome() {
             <Card className="shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xl">과정별 매출 현황</CardTitle>
-                <CardDescription>5월 과정별 매출 분포</CardDescription>
+                <CardDescription>과정별 매출 분포</CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={revenueData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        nameKey="name"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {revenueData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => {
-                        // value 타입 검사 추가
-                        const numValue = typeof value === 'number' ? value : 
-                          typeof value === 'string' ? parseFloat(value) : 0;
-                        return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(numValue);
-                      }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+                {isLoadingRevenue ? (
+                  <div className="h-64 w-full flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                      <p className="text-sm text-muted-foreground">매출 데이터 로딩 중...</p>
+                    </div>
+                  </div>
+                ) : revenueError ? (
+                  <div className="h-64 w-full flex flex-col items-center justify-center text-center p-4">
+                    <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
+                    <p className="text-lg font-medium">데이터 로딩 오류</p>
+                    <p className="text-sm text-muted-foreground">매출 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                  </div>
+                ) : revenueData.length === 0 ? (
+                  <div className="h-64 w-full flex flex-col items-center justify-center text-center p-4">
+                    <Info className="h-10 w-10 text-muted-foreground mb-2" />
+                    <p className="text-lg font-medium">매출 데이터 없음</p>
+                    <p className="text-sm text-muted-foreground">아직 등록된 매출 데이터가 없습니다.</p>
+                  </div>
+                ) : (
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={revenueData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          nameKey="name"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {revenueData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => {
+                          const numValue = typeof value === 'number' ? value : 
+                            typeof value === 'string' ? parseFloat(value) : 0;
+                          return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(numValue);
+                        }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="pt-0">
                 <p className="text-sm text-muted-foreground">
@@ -440,35 +484,56 @@ export default function InstituteAdminHome() {
               <CardDescription>처리가 필요한 승인 요청 {pendingApprovals.length}건</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {pendingApprovals.map((approval) => (
-                  <div key={approval.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-full">
-                        {approval.type === '코스' ? <FileText className="h-5 w-5 text-orange-500" /> : <Award className="h-5 w-5 text-orange-500" />}
-                      </div>
-                      <div>
-                        <p className="font-medium">{approval.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {approval.type === '코스' 
-                            ? `${approval.trainer} 훈련사의 요청`
-                            : `${approval.students}명 수료 대기`}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground">{approval.date}</span>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleApprovalReview(approval)}
-                      >
-                        검토
-                      </Button>
-                    </div>
+              {isLoadingApprovals ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                    <p className="text-sm text-muted-foreground">승인 요청 로딩 중...</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : approvalsError ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
+                  <p className="text-lg font-medium">데이터 로딩 오류</p>
+                  <p className="text-sm text-muted-foreground">승인 요청을 불러오는 중 오류가 발생했습니다.</p>
+                </div>
+              ) : pendingApprovals.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <CheckCircle2 className="h-10 w-10 text-green-500 mb-2" />
+                  <p className="text-lg font-medium">대기 중인 승인 요청 없음</p>
+                  <p className="text-sm text-muted-foreground">처리가 필요한 승인 요청이 없습니다.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pendingApprovals.map((approval) => (
+                    <div key={approval.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                          {approval.type === '코스' ? <FileText className="h-5 w-5 text-orange-500" /> : <Award className="h-5 w-5 text-orange-500" />}
+                        </div>
+                        <div>
+                          <p className="font-medium">{approval.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {approval.type === '코스' 
+                              ? `${approval.trainer || '훈련사'} 훈련사의 요청`
+                              : `${approval.students || 0}명 수료 대기`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground">{approval.date}</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleApprovalReview(approval)}
+                        >
+                          검토
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
             <CardFooter className="flex justify-between">
               <p className="text-sm text-muted-foreground">모든 요청은 48시간 내에 처리해주세요</p>
@@ -535,32 +600,53 @@ export default function InstituteAdminHome() {
           <CardDescription>지난 24시간 동안의 알림</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentNotifications.map((notification) => (
-              <div key={notification.id} className="flex gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <div className={`p-2 rounded-full flex-shrink-0 ${
-                  notification.type === 'approval' ? 'bg-blue-100 dark:bg-blue-900/30' :
-                  notification.type === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30' :
-                  'bg-gray-100 dark:bg-gray-800'
-                }`}>
-                  {notification.type === 'approval' ? (
-                    <FileText className="h-5 w-5 text-blue-500" />
-                  ) : notification.type === 'warning' ? (
-                    <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  ) : (
-                    <Info className="h-5 w-5 text-gray-500" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between">
-                    <p className="font-medium">{notification.title}</p>
-                    <span className="text-xs text-muted-foreground">{notification.time}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{notification.content}</p>
-                </div>
+          {isLoadingNotifications ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                <p className="text-sm text-muted-foreground">알림 로딩 중...</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ) : notificationsError ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
+              <p className="text-lg font-medium">알림 로딩 오류</p>
+              <p className="text-sm text-muted-foreground">알림을 불러오는 중 오류가 발생했습니다.</p>
+            </div>
+          ) : recentNotifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Info className="h-10 w-10 text-muted-foreground mb-2" />
+              <p className="text-lg font-medium">알림 없음</p>
+              <p className="text-sm text-muted-foreground">최근 알림이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentNotifications.map((notification) => (
+                <div key={notification.id} className="flex gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <div className={`p-2 rounded-full flex-shrink-0 ${
+                    notification.type === 'approval' ? 'bg-blue-100 dark:bg-blue-900/30' :
+                    notification.type === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30' :
+                    'bg-gray-100 dark:bg-gray-800'
+                  }`}>
+                    {notification.type === 'approval' ? (
+                      <FileText className="h-5 w-5 text-blue-500" />
+                    ) : notification.type === 'warning' ? (
+                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    ) : (
+                      <Info className="h-5 w-5 text-gray-500" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <p className="font-medium">{notification.title}</p>
+                      <span className="text-xs text-muted-foreground">{notification.time}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{notification.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between">
           <p className="text-sm text-muted-foreground">모든 알림은 7일간 유지됩니다</p>

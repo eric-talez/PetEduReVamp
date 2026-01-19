@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,8 @@ import {
   MapPin,
   Phone,
   Mail,
-  Globe
+  Globe,
+  AlertTriangle
 } from 'lucide-react';
 
 interface InstituteInfo {
@@ -40,41 +42,19 @@ export default function InstituteSettings() {
     businessHours: '',
     logoUrl: ''
   });
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  // API에서 기관 설정 정보 로딩
+  const { data: settingsData, isLoading, isError, refetch } = useQuery<InstituteInfo>({
+    queryKey: ['/api/institute/settings'],
+  });
+
+  // 데이터가 로드되면 상태 업데이트
   useEffect(() => {
-    const loadInstituteInfo = async () => {
-      setIsLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockInfo: InstituteInfo = {
-          name: '펫에듀 훈련원',
-          description: '반려견과 보호자가 함께 행복한 삶을 위한 전문 훈련기관입니다.',
-          address: '서울시 강남구 테헤란로 123',
-          phone: '02-1234-5678',
-          email: 'contact@petedu.com',
-          website: 'https://petedu.com',
-          businessHours: '평일 09:00-18:00, 토요일 09:00-15:00',
-          logoUrl: ''
-        };
-        
-        setInstituteInfo(mockInfo);
-      } catch (error) {
-        console.error('기관 정보 로딩 오류:', error);
-        toast({
-          title: '데이터 로딩 오류',
-          description: '기관 정보를 불러오는 중 오류가 발생했습니다.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadInstituteInfo();
-  }, [toast]);
+    if (settingsData) {
+      setInstituteInfo(settingsData);
+    }
+  }, [settingsData]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -103,6 +83,17 @@ export default function InstituteSettings() {
           <Settings className="h-8 w-8 animate-pulse text-primary" />
           <p className="text-sm text-muted-foreground">기관 설정 로딩 중...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+        <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+        <p className="text-lg font-medium mb-2">데이터를 불러오는데 실패했습니다</p>
+        <p className="text-sm text-muted-foreground mb-4">잠시 후 다시 시도해주세요</p>
+        <Button onClick={() => refetch()}>다시 시도</Button>
       </div>
     );
   }

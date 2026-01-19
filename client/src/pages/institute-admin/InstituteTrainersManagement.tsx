@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 import {
   Card,
   CardContent,
@@ -64,7 +65,8 @@ import {
   FileText,
   Award,
   MessagesSquare,
-  FileBarChart
+  FileBarChart,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,7 +101,6 @@ export default function InstituteTrainersManagement() {
   const { userName } = useAuth();
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
@@ -111,129 +112,10 @@ export default function InstituteTrainersManagement() {
   const [filterSpecialty, setFilterSpecialty] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   
-  // 임시 훈련사 데이터
-  const [trainers, setTrainers] = useState<Trainer[]>([]);
-  
-  // 훈련사 데이터 로딩
-  useEffect(() => {
-    const loadTrainers = async () => {
-      setIsLoading(true);
-      try {
-        // 현재 기관의 소속 훈련사 조회
-        const instituteId = 1; // 실제로는 로그인된 기관 관리자의 기관 ID
-        const response = await fetch(`/api/institutes/${instituteId}/trainers`);
-        
-        if (!response.ok) {
-          throw new Error('훈련사 목록을 불러올 수 없습니다.');
-        }
-        
-        const trainersData = await response.json();
-        setTrainers(trainersData);
-        
-        console.log('소속 훈련사 목록 로드:', trainersData);
-        
-        // 기존 임시 데이터는 백업용으로 유지
-        const mockTrainers: Trainer[] = [
-          {
-            id: 1,
-            name: '김영수',
-            email: 'kim@example.com',
-            phone: '010-1234-5678',
-            specialty: '기초 훈련',
-            certification: ['KKC 공인 트레이너', '반려견 행동 전문가'],
-            image: '',
-            status: 'active',
-            rating: 4.8,
-            courseCount: 5,
-            studentCount: 27,
-            approvalDate: '2023-01-15',
-            isVerified: true,
-            completionRate: 92,
-            specialties: ['기초 훈련', '사회화', '문제행동 교정']
-          },
-          {
-            id: 2,
-            name: '박지민',
-            email: 'park@example.com',
-            phone: '010-9876-5432',
-            specialty: '고급 훈련',
-            certification: ['APDT 인증 트레이너'],
-            image: '',
-            status: 'active',
-            rating: 4.5,
-            courseCount: 3,
-            studentCount: 18,
-            approvalDate: '2023-02-20',
-            isVerified: true,
-            completionRate: 88,
-            specialties: ['고급 훈련', '특수 작업견 훈련']
-          },
-          {
-            id: 3,
-            name: '이하은',
-            email: 'lee@example.com',
-            phone: '010-5555-7777',
-            specialty: '문제행동 교정',
-            certification: ['동물행동학 석사'],
-            image: '',
-            status: 'pending',
-            rating: 0,
-            courseCount: 0,
-            studentCount: 0,
-            isVerified: false,
-            completionRate: 0,
-            specialties: ['문제행동 교정', '공격성 관리']
-          },
-          {
-            id: 4,
-            name: '최준호',
-            email: 'choi@example.com',
-            phone: '010-2222-3333',
-            specialty: '사회화',
-            certification: ['펫 트레이너 자격증'],
-            image: '',
-            status: 'inactive',
-            rating: 3.9,
-            courseCount: 2,
-            studentCount: 9,
-            approvalDate: '2022-11-05',
-            isVerified: true,
-            completionRate: 75,
-            specialties: ['사회화', '기초 훈련']
-          },
-          {
-            id: 5,
-            name: '정민지',
-            email: 'jung@example.com',
-            phone: '010-8888-9999',
-            specialty: '특수 작업견 훈련',
-            certification: ['서치 독 트레이너', '어질리티 전문가'],
-            image: '',
-            status: 'active',
-            rating: 4.9,
-            courseCount: 4,
-            studentCount: 22,
-            approvalDate: '2023-03-10',
-            isVerified: true,
-            completionRate: 95,
-            specialties: ['특수 작업견 훈련', '어질리티', '냄새 탐지']
-          }
-        ];
-        
-        setTrainers(mockTrainers);
-      } catch (error) {
-        toast({
-          title: "데이터 로딩 오류",
-          description: "훈련사 정보를 불러오는 중 오류가 발생했습니다.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadTrainers();
-  }, [toast]);
+  // API에서 훈련사 데이터 로딩
+  const { data: trainers = [], isLoading, isError, refetch } = useQuery<Trainer[]>({
+    queryKey: ['/api/institute/trainers'],
+  });
   
   // 훈련사 상태에 따른 필터링
   const getFilteredTrainers = () => {
@@ -328,14 +210,11 @@ export default function InstituteTrainersManagement() {
   
   // 새로고침 핸들러
   const handleRefresh = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      toast({
-        title: "데이터 새로고침",
-        description: "훈련사 목록이 업데이트되었습니다.",
-      });
-      setIsLoading(false);
-    }, 1000);
+    refetch();
+    toast({
+      title: "데이터 새로고침",
+      description: "훈련사 목록이 업데이트되었습니다.",
+    });
   };
 
   if (isLoading) {
@@ -345,6 +224,17 @@ export default function InstituteTrainersManagement() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">훈련사 데이터 로딩 중...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+        <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+        <p className="text-lg font-medium mb-2">데이터를 불러오는데 실패했습니다</p>
+        <p className="text-sm text-muted-foreground mb-4">잠시 후 다시 시도해주세요</p>
+        <Button onClick={() => refetch()}>다시 시도</Button>
       </div>
     );
   }

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +12,8 @@ import {
   UserCheck,
   Plus,
   Search,
-  Filter
+  Filter,
+  AlertTriangle
 } from 'lucide-react';
 
 interface Assignment {
@@ -28,53 +30,11 @@ interface Assignment {
 export default function InstitutePetAssignments() {
   const { userName } = useGlobalAuth();
   const { toast } = useToast();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadAssignments = async () => {
-      setIsLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockAssignments: Assignment[] = [
-          {
-            id: 1,
-            petName: '콩이',
-            ownerName: '김철수',
-            trainerName: '김영수',
-            courseName: '기본 훈련',
-            startDate: '2024-05-15',
-            status: 'active',
-            progress: 60
-          },
-          {
-            id: 2,
-            petName: '바둑이',
-            ownerName: '이영희',
-            trainerName: '이서연',
-            courseName: '퍼피 사회화',
-            startDate: '2024-05-10',
-            status: 'active',
-            progress: 40
-          }
-        ];
-        
-        setAssignments(mockAssignments);
-      } catch (error) {
-        console.error('배정 데이터 로딩 오류:', error);
-        toast({
-          title: '데이터 로딩 오류',
-          description: '반려견 배정 정보를 불러오는 중 오류가 발생했습니다.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadAssignments();
-  }, [toast]);
+  // API에서 반려견 배정 데이터 로딩
+  const { data: assignments = [], isLoading, isError, refetch } = useQuery<Assignment[]>({
+    queryKey: ['/api/institute/pet-assignments'],
+  });
 
   if (isLoading) {
     return (
@@ -83,6 +43,17 @@ export default function InstitutePetAssignments() {
           <Heart className="h-8 w-8 animate-pulse text-primary" />
           <p className="text-sm text-muted-foreground">반려견 배정 정보 로딩 중...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+        <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+        <p className="text-lg font-medium mb-2">데이터를 불러오는데 실패했습니다</p>
+        <p className="text-sm text-muted-foreground mb-4">잠시 후 다시 시도해주세요</p>
+        <Button onClick={() => refetch()}>다시 시도</Button>
       </div>
     );
   }
@@ -100,40 +71,56 @@ export default function InstitutePetAssignments() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {assignments.map((assignment) => (
-          <Card key={assignment.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-red-500" />
-                {assignment.petName}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">보호자</p>
-                  <p className="font-medium">{assignment.ownerName}</p>
+      {assignments.length === 0 ? (
+        <Card className="p-12 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <Heart className="h-12 w-12 text-muted-foreground" />
+            <div>
+              <h3 className="text-lg font-semibold">배정된 반려견이 없습니다</h3>
+              <p className="text-muted-foreground mt-1">새로운 배정을 추가하여 시작하세요</p>
+            </div>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              첫 번째 배정 추가
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {assignments.map((assignment) => (
+            <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-red-500" />
+                  {assignment.petName}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">보호자</p>
+                    <p className="font-medium">{assignment.ownerName}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">담당 훈련사</p>
+                    <p className="font-medium">{assignment.trainerName}</p>
+                  </div>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">담당 훈련사</p>
-                  <p className="font-medium">{assignment.trainerName}</p>
+                  <p className="text-sm text-muted-foreground mb-1">진행률</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full" 
+                      style={{ width: `${assignment.progress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{assignment.progress}% 완료</p>
                 </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">진행률</p>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full" 
-                    style={{ width: `${assignment.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{assignment.progress}% 완료</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
