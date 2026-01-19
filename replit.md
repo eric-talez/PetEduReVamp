@@ -49,6 +49,12 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Optimized UI/UX**: Streamlined sidebar menus for various user roles (pet owner, trainer, institute, admin) and consolidated navigation.
 
 ## Recent Changes (January 2026)
+- **Codebase Cleanup (Jan 19)**: 
+  - Removed 25+ duplicate page files (auth variants, unused admin pages, etc.)
+  - Consolidated routes: /admin/points (unified), /admin/commission (deduplicated)
+  - Reduced total page count from 257 to ~230 files (10% reduction)
+  - Removed unused imports and backup files
+- **AI Services**: Using OpenAI GPT-4.1 exclusively for all AI features
 - **Simplified Registration with Admin Approval**: Streamlined registration to require only 4 fields (email, password, name, role). New users are created with 'pending' approval status and require admin approval before login. Social login users are auto-approved.
 - **Admin Approval APIs**: Added endpoints for managing user approvals:
   - GET /api/admin/users/pending - List pending users
@@ -56,6 +62,15 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
   - POST /api/admin/users/:id/reject - Reject a user with reason
 - **Database Schema Update**: Added approval_status, approved_at, approved_by, rejection_reason columns to users table.
 - **Authentication Flow**: Login now validates approval status; pending/rejected users receive informative error messages.
+
+## Known Issues - Database Schema Duplicates (Migration Required)
+The following duplicate fields exist in the users table and require future migration:
+- `phone` vs `phoneNumber` → standardize to `phone`
+- `avatar` vs `profileImage` → standardize to `profileImage`
+- `name` vs `fullName` → standardize to `name`
+- `verified` vs `isVerified` vs `emailVerified` → standardize to `emailVerified`
+- `subscriptionTier` vs `membershipTier` → standardize to `membershipTier`
+Note: Migration should be done carefully to avoid data loss.
 
 ## Previous Changes (December 2025)
 - **Routing Fix**: Fixed trainer dashboard routes (/trainer/courses, /trainer/notebook, etc.) returning 404 errors. The issue was caused by AppLayout having an internal Switch that intercepted all routes before AuthenticatedRoutes could handle them. Solution: Modified AppLayout to render children instead of its own Switch.
