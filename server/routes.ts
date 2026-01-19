@@ -1194,7 +1194,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 전용 승인 대기 사용자 목록 조회
   app.get('/api/admin/users/pending', requireAuth('admin'), async (req, res) => {
     try {
+      console.log('[Admin] 승인 대기 사용자 목록 조회 요청');
       const pendingUsers = await db.select().from(users).where(eq(users.approvalStatus, 'pending'));
+      console.log('[Admin] 승인 대기 사용자 수:', pendingUsers.length);
       res.json({ 
         success: true, 
         users: pendingUsers.map(u => ({

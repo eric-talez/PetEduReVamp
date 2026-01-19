@@ -130,7 +130,7 @@ export default function AdminApprovals() {
       const response = await apiRequest('GET', '/api/admin/users/pending');
       const data = await response.json();
       
-      if (data.success && data.users) {
+      if (data.success && data.users && data.users.length > 0) {
         // 실제 데이터를 PendingApproval 형식으로 변환
         const realApprovals: PendingApproval[] = data.users.map((user: any) => ({
           id: user.id,
@@ -138,7 +138,7 @@ export default function AdminApprovals() {
           applicantName: user.name || user.username,
           applicantEmail: user.email,
           appliedAt: user.createdAt,
-          status: 'pending',
+          status: 'pending' as const,
           details: {
             title: user.role === 'trainer' ? '훈련사 등록 신청' : 
                    user.role === 'institute_admin' ? '기관 관리자 등록 신청' : 
