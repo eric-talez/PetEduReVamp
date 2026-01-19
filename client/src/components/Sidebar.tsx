@@ -912,9 +912,6 @@ export function Sidebar({
                 {/* 관리 대시보드 */}
                 {showAdminMenu && (
                   <>
-                    {/* 빠른 작업 - 관리자 */}
-                    <QuickActions userRole={userRole} onClick={handleItemClick} />
-
                     <SidebarMenuGroup expanded={expanded} title="관리" groupName="adminDashboard" isOpen={menuGroups.adminDashboard} toggleGroup={toggleMenuGroup} icon={<Monitor className="w-5 h-5 text-primary" />} />
                     {menuGroups.adminDashboard && (
                       <>
