@@ -90,7 +90,8 @@ import {
   Brain,
   Zap,
   Syringe,
-  Dog
+  Dog,
+  Link2
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -889,6 +890,7 @@ export function Sidebar({
                     {menuGroups.management && (
                       <>
                         <AccessibleNavItem href="/institute/trainers" icon={<UserCog className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/trainers")} onClick={handleItemClick} show={isMenuVisible('institute-trainers')} highlighted badge="핵심">훈련사 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/trainer-approvals" icon={<Clock className="w-5 h-5 mr-2" />} hoverIcon={<CheckCircle className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/trainer-approvals")} onClick={handleItemClick} show={isMenuVisible('trainer-approvals')} highlighted badge="승인">연결 승인</AccessibleNavItem>
                         <AccessibleNavItem href="/trainer/courses" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/courses")} onClick={handleItemClick} show={isMenuVisible('trainer-courses')} highlighted>강의 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/trainer/earnings" icon={<DollarSign className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/earnings")} onClick={handleItemClick} show={isMenuVisible('trainer-earnings')} highlighted>수익</AccessibleNavItem>
                         <AccessibleNavItem href="/institute/facility" icon={<Building className="w-5 h-5 mr-2" />} hoverIcon={<MapPin className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/facility")} onClick={handleItemClick} show={isMenuVisible('institute-facility')}>시설 관리</AccessibleNavItem>
@@ -920,6 +922,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/admin/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/trainers")} onClick={handleItemClick} show={isMenuVisible('trainers-management')}>훈련사 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/members-status" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/members-status")} onClick={handleItemClick} show={isMenuVisible('members-status')}>회원 현황</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/approvals" icon={<Clock className="w-5 h-5 mr-2" />} hoverIcon={<CheckCircle className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/approvals")} onClick={handleItemClick} show={isMenuVisible('user-approvals')} highlighted badge="승인">회원 승인</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/matching" icon={<Link2 className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/matching")} onClick={handleItemClick} show={isMenuVisible('matching-management')} highlighted badge="매칭">매칭 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/analytics" icon={<Activity className="w-5 h-5 mr-2" />} hoverIcon={<BarChart3 className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/analytics")} onClick={handleItemClick} show={isMenuVisible('admin-analytics')}>분석</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/revenue" icon={<DollarSign className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/revenue")} onClick={handleItemClick} show={isMenuVisible('revenue-management')} highlighted>수익</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/settings" icon={<Settings className="w-5 h-5 mr-2" />} hoverIcon={<Wrench className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/settings")} onClick={handleItemClick} show={isMenuVisible('system-settings')}>설정</AccessibleNavItem>

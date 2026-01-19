@@ -1276,6 +1276,47 @@ export const trainerInstitutes = pgTable("trainer_institutes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 훈련사-사용자 매칭 테이블 (훈련사가 담당하는 일반 사용자)
+export const trainerClientAssignments = pgTable("trainer_client_assignments", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  clientId: integer("client_id").references(() => users.id).notNull(),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, active, completed, cancelled
+  assignedAt: timestamp("assigned_at").defaultNow(),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  serviceType: varchar("service_type", { length: 50 }), // training, consultation, behavior-correction
+  notes: text("notes"),
+  petId: integer("pet_id").references(() => pets.id), // 관련 반려동물
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 훈련사-기관 연결 신청 테이블 (기관관리자 승인 필요)
+export const trainerInstituteApplications = pgTable("trainer_institute_applications", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected
+  applicationMessage: text("application_message"),
+  rejectionReason: text("rejection_reason"),
+  appliedAt: timestamp("applied_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Zod 스키마
+export const insertTrainerClientAssignmentSchema = createInsertSchema(trainerClientAssignments);
+export const selectTrainerClientAssignmentSchema = createSelectSchema(trainerClientAssignments);
+export type TrainerClientAssignment = typeof trainerClientAssignments.$inferSelect;
+export type InsertTrainerClientAssignment = typeof trainerClientAssignments.$inferInsert;
+
+export const insertTrainerInstituteApplicationSchema = createInsertSchema(trainerInstituteApplications);
+export const selectTrainerInstituteApplicationSchema = createSelectSchema(trainerInstituteApplications);
+export type TrainerInstituteApplication = typeof trainerInstituteApplications.$inferSelect;
+export type InsertTrainerInstituteApplication = typeof trainerInstituteApplications.$inferInsert;
+
 // 커리큘럼 테이블
 export const curriculums = pgTable("curriculums", {
   id: serial("id").primaryKey(),

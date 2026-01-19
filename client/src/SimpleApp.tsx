@@ -1268,6 +1268,28 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/admin/matching">
+          {() => {
+            const AdminMatching = lazy(() => import('./pages/admin/AdminMatching'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedAdminRoute component={AdminMatching} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/institute/trainer-approvals">
+          {() => {
+            const TrainerApprovals = lazy(() => import('./pages/institute/TrainerApprovals'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={TrainerApprovals} allowedRoles={['institute-admin']} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         <Route path="/admin/info-correction-requests">
           {() => {
             const InfoCorrectionRequests = lazy(() => import('./pages/admin/InfoCorrectionRequests'));

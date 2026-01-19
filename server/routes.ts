@@ -2,8 +2,8 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
-import { sql, eq, and, isNotNull } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses } from "../shared/schema";
+import { sql, eq, and, isNotNull, desc } from "drizzle-orm";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -1522,6 +1522,351 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('User rejection error:', error);
       res.status(500).json({ success: false, message: '사용자 거부에 실패했습니다.' });
+    }
+  });
+
+  // ====== 훈련사-기관 매칭 API ======
+  
+  // 훈련사가 기관에 연결 신청
+  app.post('/api/trainer/institute/apply', requireAuth('trainer'), csrfProtection, async (req, res) => {
+    try {
+      const trainerId = (req.user as any)?.id;
+      const { instituteId, message } = req.body;
+      
+      if (!instituteId) {
+        return res.status(400).json({ success: false, message: '기관 ID가 필요합니다.' });
+      }
+      
+      // 이미 신청했는지 확인
+      const existing = await db.select().from(trainerInstituteApplications)
+        .where(and(
+          eq(trainerInstituteApplications.trainerId, trainerId),
+          eq(trainerInstituteApplications.instituteId, instituteId),
+          eq(trainerInstituteApplications.status, 'pending')
+        ));
+      
+      if (existing.length > 0) {
+        return res.status(400).json({ success: false, message: '이미 해당 기관에 신청 중입니다.' });
+      }
+      
+      const [application] = await db.insert(trainerInstituteApplications).values({
+        trainerId,
+        instituteId,
+        applicationMessage: message || '',
+        status: 'pending'
+      }).returning();
+      
+      console.log('[Matching] 훈련사-기관 연결 신청:', { trainerId, instituteId });
+      res.json({ success: true, data: application, message: '기관 연결 신청이 완료되었습니다.' });
+    } catch (error) {
+      console.error('Trainer institute application error:', error);
+      res.status(500).json({ success: false, message: '기관 연결 신청에 실패했습니다.' });
+    }
+  });
+  
+  // 기관관리자: 훈련사 연결 신청 목록 조회
+  app.get('/api/institute/trainer-applications', requireAuth('institute-admin'), async (req, res) => {
+    try {
+      const user = req.user as any;
+      const instituteId = user?.instituteId;
+      
+      if (!instituteId) {
+        return res.status(400).json({ success: false, message: '기관 정보가 없습니다.' });
+      }
+      
+      const applications = await db.select({
+        id: trainerInstituteApplications.id,
+        trainerId: trainerInstituteApplications.trainerId,
+        instituteId: trainerInstituteApplications.instituteId,
+        status: trainerInstituteApplications.status,
+        applicationMessage: trainerInstituteApplications.applicationMessage,
+        appliedAt: trainerInstituteApplications.appliedAt,
+        trainerName: users.name,
+        trainerEmail: users.email
+      })
+      .from(trainerInstituteApplications)
+      .leftJoin(users, eq(trainerInstituteApplications.trainerId, users.id))
+      .where(eq(trainerInstituteApplications.instituteId, instituteId))
+      .orderBy(desc(trainerInstituteApplications.appliedAt));
+      
+      console.log('[Matching] 기관 훈련사 신청 목록:', applications.length);
+      res.json({ success: true, data: applications });
+    } catch (error) {
+      console.error('Get trainer applications error:', error);
+      res.status(500).json({ success: false, message: '신청 목록 조회에 실패했습니다.' });
+    }
+  });
+  
+  // 기관관리자: 훈련사 연결 신청 승인
+  app.post('/api/institute/trainer-applications/:id/approve', requireAuth('institute-admin'), csrfProtection, async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const reviewerId = (req.user as any)?.id;
+      const instituteId = (req.user as any)?.instituteId;
+      
+      const [application] = await db.select().from(trainerInstituteApplications)
+        .where(eq(trainerInstituteApplications.id, applicationId));
+      
+      if (!application) {
+        return res.status(404).json({ success: false, message: '신청을 찾을 수 없습니다.' });
+      }
+      
+      if (application.instituteId !== instituteId) {
+        return res.status(403).json({ success: false, message: '권한이 없습니다.' });
+      }
+      
+      // 신청 승인
+      await db.update(trainerInstituteApplications).set({
+        status: 'approved',
+        reviewedAt: new Date(),
+        reviewedBy: reviewerId
+      }).where(eq(trainerInstituteApplications.id, applicationId));
+      
+      // 훈련사-기관 관계 생성
+      await db.insert(trainerInstitutes).values({
+        trainerId: application.trainerId,
+        instituteId: application.instituteId,
+        role: 'trainer',
+        status: 'active'
+      });
+      
+      // 훈련사의 기관 ID 업데이트
+      await db.update(users).set({
+        instituteId: application.instituteId
+      }).where(eq(users.id, application.trainerId));
+      
+      console.log('[Matching] 훈련사-기관 연결 승인:', { applicationId, trainerId: application.trainerId });
+      res.json({ success: true, message: '훈련사 연결이 승인되었습니다.' });
+    } catch (error) {
+      console.error('Approve trainer application error:', error);
+      res.status(500).json({ success: false, message: '승인 처리에 실패했습니다.' });
+    }
+  });
+  
+  // 기관관리자: 훈련사 연결 신청 거부
+  app.post('/api/institute/trainer-applications/:id/reject', requireAuth('institute-admin'), csrfProtection, async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const { reason } = req.body;
+      const reviewerId = (req.user as any)?.id;
+      const instituteId = (req.user as any)?.instituteId;
+      
+      const [application] = await db.select().from(trainerInstituteApplications)
+        .where(eq(trainerInstituteApplications.id, applicationId));
+      
+      if (!application) {
+        return res.status(404).json({ success: false, message: '신청을 찾을 수 없습니다.' });
+      }
+      
+      if (application.instituteId !== instituteId) {
+        return res.status(403).json({ success: false, message: '권한이 없습니다.' });
+      }
+      
+      await db.update(trainerInstituteApplications).set({
+        status: 'rejected',
+        rejectionReason: reason || '사유 미기재',
+        reviewedAt: new Date(),
+        reviewedBy: reviewerId
+      }).where(eq(trainerInstituteApplications.id, applicationId));
+      
+      console.log('[Matching] 훈련사-기관 연결 거부:', { applicationId, reason });
+      res.json({ success: true, message: '훈련사 연결이 거부되었습니다.' });
+    } catch (error) {
+      console.error('Reject trainer application error:', error);
+      res.status(500).json({ success: false, message: '거부 처리에 실패했습니다.' });
+    }
+  });
+  
+  // ====== 훈련사-사용자 매칭 API ======
+  
+  // 관리자/훈련사: 훈련사-사용자 매칭 생성
+  app.post('/api/trainer/client-assignments', requireAuth('trainer', 'admin'), csrfProtection, async (req, res) => {
+    try {
+      const { trainerId, clientId, petId, serviceType, notes, startDate, endDate } = req.body;
+      const currentUser = req.user as any;
+      
+      // 훈련사인 경우 자신만 매칭 가능
+      const actualTrainerId = currentUser.role === 'trainer' ? currentUser.id : trainerId;
+      
+      if (!actualTrainerId || !clientId) {
+        return res.status(400).json({ success: false, message: '훈련사와 사용자 ID가 필요합니다.' });
+      }
+      
+      const [assignment] = await db.insert(trainerClientAssignments).values({
+        trainerId: actualTrainerId,
+        clientId,
+        petId: petId || null,
+        serviceType: serviceType || 'training',
+        notes: notes || '',
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        status: 'pending'
+      }).returning();
+      
+      console.log('[Matching] 훈련사-사용자 매칭 생성:', { trainerId: actualTrainerId, clientId });
+      res.json({ success: true, data: assignment, message: '매칭이 생성되었습니다.' });
+    } catch (error) {
+      console.error('Create client assignment error:', error);
+      res.status(500).json({ success: false, message: '매칭 생성에 실패했습니다.' });
+    }
+  });
+  
+  // 훈련사-사용자 매칭 목록 조회
+  app.get('/api/trainer/client-assignments', requireAuth('trainer', 'admin'), async (req, res) => {
+    try {
+      const currentUser = req.user as any;
+      const { trainerId, status } = req.query;
+      
+      let query = db.select({
+        id: trainerClientAssignments.id,
+        trainerId: trainerClientAssignments.trainerId,
+        clientId: trainerClientAssignments.clientId,
+        petId: trainerClientAssignments.petId,
+        status: trainerClientAssignments.status,
+        serviceType: trainerClientAssignments.serviceType,
+        notes: trainerClientAssignments.notes,
+        startDate: trainerClientAssignments.startDate,
+        endDate: trainerClientAssignments.endDate,
+        assignedAt: trainerClientAssignments.assignedAt,
+        clientName: users.name,
+        clientEmail: users.email
+      })
+      .from(trainerClientAssignments)
+      .leftJoin(users, eq(trainerClientAssignments.clientId, users.id));
+      
+      // 훈련사인 경우 자신의 매칭만 조회
+      if (currentUser.role === 'trainer') {
+        query = query.where(eq(trainerClientAssignments.trainerId, currentUser.id)) as any;
+      } else if (trainerId) {
+        query = query.where(eq(trainerClientAssignments.trainerId, parseInt(trainerId as string))) as any;
+      }
+      
+      const assignments = await query.orderBy(desc(trainerClientAssignments.assignedAt));
+      
+      console.log('[Matching] 훈련사-사용자 매칭 목록:', assignments.length);
+      res.json({ success: true, data: assignments });
+    } catch (error) {
+      console.error('Get client assignments error:', error);
+      res.status(500).json({ success: false, message: '매칭 목록 조회에 실패했습니다.' });
+    }
+  });
+  
+  // 훈련사-사용자 매칭 상태 업데이트
+  app.patch('/api/trainer/client-assignments/:id', requireAuth('trainer', 'admin'), csrfProtection, async (req, res) => {
+    try {
+      const assignmentId = parseInt(req.params.id);
+      const { status, notes, startDate, endDate } = req.body;
+      const currentUser = req.user as any;
+      
+      const [assignment] = await db.select().from(trainerClientAssignments)
+        .where(eq(trainerClientAssignments.id, assignmentId));
+      
+      if (!assignment) {
+        return res.status(404).json({ success: false, message: '매칭을 찾을 수 없습니다.' });
+      }
+      
+      // 권한 확인
+      if (currentUser.role === 'trainer' && assignment.trainerId !== currentUser.id) {
+        return res.status(403).json({ success: false, message: '권한이 없습니다.' });
+      }
+      
+      const updateData: any = { updatedAt: new Date() };
+      if (status) updateData.status = status;
+      if (notes !== undefined) updateData.notes = notes;
+      if (startDate) updateData.startDate = new Date(startDate);
+      if (endDate) updateData.endDate = new Date(endDate);
+      
+      await db.update(trainerClientAssignments).set(updateData)
+        .where(eq(trainerClientAssignments.id, assignmentId));
+      
+      console.log('[Matching] 매칭 상태 업데이트:', { assignmentId, status });
+      res.json({ success: true, message: '매칭이 업데이트되었습니다.' });
+    } catch (error) {
+      console.error('Update client assignment error:', error);
+      res.status(500).json({ success: false, message: '매칭 업데이트에 실패했습니다.' });
+    }
+  });
+  
+  // 관리자: 전체 매칭 현황 조회
+  app.get('/api/admin/matching-overview', requireAuth('admin'), async (req, res) => {
+    try {
+      // 훈련사-기관 신청 현황
+      const instituteApplications = await db.select({
+        id: trainerInstituteApplications.id,
+        trainerId: trainerInstituteApplications.trainerId,
+        instituteId: trainerInstituteApplications.instituteId,
+        status: trainerInstituteApplications.status,
+        appliedAt: trainerInstituteApplications.appliedAt,
+        trainerName: users.name
+      })
+      .from(trainerInstituteApplications)
+      .leftJoin(users, eq(trainerInstituteApplications.trainerId, users.id))
+      .orderBy(desc(trainerInstituteApplications.appliedAt))
+      .limit(50);
+      
+      // 훈련사-사용자 매칭 현황
+      const clientAssignments = await db.select({
+        id: trainerClientAssignments.id,
+        trainerId: trainerClientAssignments.trainerId,
+        clientId: trainerClientAssignments.clientId,
+        status: trainerClientAssignments.status,
+        serviceType: trainerClientAssignments.serviceType,
+        assignedAt: trainerClientAssignments.assignedAt
+      })
+      .from(trainerClientAssignments)
+      .orderBy(desc(trainerClientAssignments.assignedAt))
+      .limit(50);
+      
+      // 통계
+      const stats = {
+        pendingInstituteApplications: instituteApplications.filter(a => a.status === 'pending').length,
+        activeClientAssignments: clientAssignments.filter(a => a.status === 'active').length,
+        totalInstituteApplications: instituteApplications.length,
+        totalClientAssignments: clientAssignments.length
+      };
+      
+      console.log('[Matching] 관리자 매칭 현황 조회:', stats);
+      res.json({ 
+        success: true, 
+        data: { 
+          instituteApplications, 
+          clientAssignments,
+          stats 
+        } 
+      });
+    } catch (error) {
+      console.error('Get matching overview error:', error);
+      res.status(500).json({ success: false, message: '매칭 현황 조회에 실패했습니다.' });
+    }
+  });
+  
+  // 사용자: 내 담당 훈련사 조회
+  app.get('/api/user/my-trainer', requireAuth(), async (req, res) => {
+    try {
+      const userId = (req.user as any)?.id;
+      
+      const assignments = await db.select({
+        id: trainerClientAssignments.id,
+        trainerId: trainerClientAssignments.trainerId,
+        status: trainerClientAssignments.status,
+        serviceType: trainerClientAssignments.serviceType,
+        startDate: trainerClientAssignments.startDate,
+        endDate: trainerClientAssignments.endDate,
+        trainerName: users.name,
+        trainerEmail: users.email
+      })
+      .from(trainerClientAssignments)
+      .leftJoin(users, eq(trainerClientAssignments.trainerId, users.id))
+      .where(and(
+        eq(trainerClientAssignments.clientId, userId),
+        eq(trainerClientAssignments.status, 'active')
+      ));
+      
+      console.log('[Matching] 사용자의 담당 훈련사 조회:', assignments.length);
+      res.json({ success: true, data: assignments });
+    } catch (error) {
+      console.error('Get my trainer error:', error);
+      res.status(500).json({ success: false, message: '담당 훈련사 조회에 실패했습니다.' });
     }
   });
 
