@@ -24,6 +24,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [userRole, setUserRole] = useState<UserRole>("pet-owner");
+  const [inviteCode, setInviteCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
@@ -109,6 +110,7 @@ export default function Register() {
           email,
           name,
           role: userRole,
+          inviteCode: inviteCode.trim() || undefined,
         }),
       });
       
@@ -279,6 +281,20 @@ export default function Register() {
                   <SelectItem value="institute-admin">기관 관리자</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="inviteCode">초대 코드 (선택)</Label>
+              <Input
+                id="inviteCode"
+                type="text"
+                placeholder="친구에게 받은 초대 코드를 입력하세요"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                maxLength={10}
+                className="uppercase"
+              />
+              <p className="text-xs text-muted-foreground">초대 코드 입력 시 친구에게 교육 참여 기회가 제공됩니다</p>
             </div>
             
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-sm">

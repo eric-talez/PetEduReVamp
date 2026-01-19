@@ -874,6 +874,17 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/invite">
+          {() => {
+            const FriendInvite = lazy(() => import('./pages/invite/FriendInvite'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={FriendInvite} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         <Route path="/subscriptions">
           {() => {
             console.log("구독 관리 페이지 접근");

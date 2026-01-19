@@ -9,8 +9,10 @@ import jwt from 'jsonwebtoken';
 import { hashPassword, setupLocalAuth } from './local-auth';
 import { setupSocialAuth } from './social-auth';
 import { storage } from '../storage';
-import { User as SelectUser } from '@shared/schema';
+import { db } from '../db';
+import { User as SelectUser, users, friendInvitations, educationCredits } from '@shared/schema';
 import { UserRole } from '@shared/schema';
+import { eq, and, sql } from 'drizzle-orm';
 import { csrfProtection, getCSRFToken } from '../middleware/csrf';
 import { 
   ApiErrorCode, 
@@ -382,7 +384,7 @@ function setupAuthRoutes(app: Express) {
   // 회원가입 API (표준화 적용) - 비인증 상태에서 접근하므로 CSRF 보호 제외
   router.post('/register', async (req, res) => {
     try {
-      const { username, password, email, name, phoneNumber, birthDate, gender, role } = req.body;
+      const { username, password, email, name, phoneNumber, birthDate, gender, role, inviteCode } = req.body;
       
       // 소셜 로그인 정보 확인
       const socialSignup = req.session.socialSignup;
@@ -452,6 +454,50 @@ function setupAuthRoutes(app: Express) {
       // 세션에서 소셜 가입 정보 제거
       if (socialSignup) {
         delete req.session.socialSignup;
+      }
+      
+      // 초대 코드가 있으면 초대자에게 교육 참여 기회 1회 부여
+      if (inviteCode && inviteCode.trim()) {
+        try {
+          const trimmedCode = inviteCode.trim().toUpperCase();
+          // 초대자 찾기 (대소문자 구분 없이)
+          const inviterResult = await db.select().from(users)
+            .where(sql`UPPER(${users.referralCode}) = ${trimmedCode}`);
+          
+          if (inviterResult.length > 0) {
+            const inviter = inviterResult[0];
+            
+            // 자기 자신 초대 방지
+            if (inviter.id !== user.id) {
+              // 초대 기록 생성
+              const invitationResult = await db.insert(friendInvitations).values({
+                inviterId: inviter.id,
+                inviteeEmail: email,
+                inviteeId: user.id,
+                inviteCode: trimmedCode,
+                status: 'accepted',
+                acceptedAt: new Date()
+              }).returning();
+              
+              // 초대자에게 교육 크레딧 1회 부여 (1년 유효)
+              const expiresAt = new Date();
+              expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+              
+              await db.insert(educationCredits).values({
+                userId: inviter.id,
+                amount: 1,
+                reason: 'friend_invite',
+                sourceId: invitationResult[0]?.id,
+                expiresAt
+              });
+              
+              console.log(`[Invite] 초대 성공: ${inviter.username} ← ${user.username} (코드: ${trimmedCode})`);
+            }
+          }
+        } catch (inviteError) {
+          console.error('[Invite] 초대 코드 처리 오류:', inviteError);
+          // 초대 코드 처리 실패는 회원가입 성공에 영향을 주지 않음
+        }
       }
       
       // 소셜 로그인: 자동 로그인, 일반 가입: 승인 대기
