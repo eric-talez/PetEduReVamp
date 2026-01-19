@@ -450,10 +450,11 @@ export default function AdminTrainers() {
                 </div>
                 <div>{getRatingStars(trainer.rating || 0)}</div>
                 <div>{getStatusBadge(trainer.status || 'active')}</div>
-                <div className="flex gap-2">
+                <div className="flex gap-1 flex-shrink-0">
                   <Button 
                     variant="ghost" 
-                    size="sm"
+                    size="icon"
+                    className="h-8 w-8"
                     onClick={() => {
                       alert(`훈련사 상세 정보: ${trainer.name}\n이메일: ${trainer.email}\n전화: ${trainer.phone}\n기관: ${trainer.institute}`);
                     }}
@@ -461,27 +462,27 @@ export default function AdminTrainers() {
                     <Eye className="h-4 w-4" />
                   </Button>
                   <Button 
-                    variant="outline" 
-                    size="sm"
+                    variant="ghost" 
+                    size="icon"
+                    className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
                     onClick={() => {
                       const newName = prompt('훈련사 이름 수정:', trainer.name);
                       if (newName && newName !== trainer.name) {
                         alert(`훈련사 이름이 "${newName}"로 변경되었습니다.`);
                       }
                     }}
-                    className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button 
-                    variant="outline" 
-                    size="sm"
+                    variant="ghost" 
+                    size="icon"
+                    className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700"
                     onClick={() => {
                       if (confirm(`정말로 "${trainer.name}" 훈련사를 삭제하시겠습니까?`)) {
                         alert(`${trainer.name} 훈련사가 삭제되었습니다.`);
                       }
                     }}
-                    className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
