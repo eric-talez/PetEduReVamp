@@ -208,15 +208,6 @@ export default function Home() {
       secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
     },
     {
-      id: 7,
-      title: "반려인 커뮤니티",
-      subtitle: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
-      features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
-      image: "/attached_assets/stock_images/pet_owner_community__205612cf.jpg",
-      primaryAction: { text: "커뮤니티", path: "/community" },
-      secondaryAction: { text: "게시글 작성", path: "/community/create" }
-    },
-    {
       id: 8,
       title: "전문 훈련사로 활동하기",
       subtitle: "전문 지식과 경험을 바탕으로 TALEZ 플랫폼에서 훈련사로 활동하세요",

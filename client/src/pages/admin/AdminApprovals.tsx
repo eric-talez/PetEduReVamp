@@ -125,9 +125,33 @@ export default function AdminApprovals() {
   const loadApprovals = async () => {
     try {
       setIsLoading(true);
-      // 실제 API 호출 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setApprovals(sampleApprovals);
+      
+      // 실제 API에서 pending 사용자 목록 가져오기
+      const response = await apiRequest('GET', '/api/admin/users/pending');
+      const data = await response.json();
+      
+      if (data.success && data.users) {
+        // 실제 데이터를 PendingApproval 형식으로 변환
+        const realApprovals: PendingApproval[] = data.users.map((user: any) => ({
+          id: user.id,
+          type: user.role === 'trainer' ? 'trainer' : user.role === 'institute_admin' ? 'institute' : 'user',
+          applicantName: user.name || user.username,
+          applicantEmail: user.email,
+          appliedAt: user.createdAt,
+          status: 'pending',
+          details: {
+            title: user.role === 'trainer' ? '훈련사 등록 신청' : 
+                   user.role === 'institute_admin' ? '기관 관리자 등록 신청' : 
+                   '사용자 계정 승인 요청',
+            description: `${user.role} 역할로 등록 요청`
+          }
+        }));
+        
+        setApprovals(realApprovals);
+      } else {
+        // API 실패 시 빈 배열
+        setApprovals([]);
+      }
     } catch (error) {
       console.error('승인 목록 로딩 실패:', error);
       toast({
@@ -135,6 +159,7 @@ export default function AdminApprovals() {
         description: "승인 목록을 불러올 수 없습니다.",
         variant: "destructive"
       });
+      setApprovals([]);
     } finally {
       setIsLoading(false);
     }
@@ -165,26 +190,34 @@ export default function AdminApprovals() {
   const handleApprovalAction = async (approvalId: number, action: 'approve' | 'reject', comment?: string) => {
     setIsProcessing(true);
     try {
-      // API 호출 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // 실제 API 호출
+      const endpoint = action === 'approve' 
+        ? `/api/admin/users/${approvalId}/approve`
+        : `/api/admin/users/${approvalId}/reject`;
+      
+      const body = action === 'reject' && comment 
+        ? { reason: comment }
+        : undefined;
+      
+      const response = await apiRequest('POST', endpoint, body);
+      const data = await response.json();
 
-      setApprovals(prev => 
-        prev.map(approval => 
-          approval.id === approvalId 
-            ? { ...approval, status: action === 'approve' ? 'approved' : 'rejected' as const }
-            : approval
-        )
-      );
+      if (data.success) {
+        // 목록에서 승인된/거부된 사용자 제거
+        setApprovals(prev => prev.filter(approval => approval.id !== approvalId));
 
-      toast({
-        title: action === 'approve' ? "승인 완료" : "거부 완료",
-        description: `${action === 'approve' ? '승인' : '거부'}이 정상적으로 처리되었습니다.`,
-        variant: action === 'approve' ? "default" : "destructive"
-      });
+        toast({
+          title: action === 'approve' ? "승인 완료" : "거부 완료",
+          description: `${action === 'approve' ? '승인' : '거부'}이 정상적으로 처리되었습니다.`,
+          variant: action === 'approve' ? "default" : "destructive"
+        });
 
-      setIsDetailModalOpen(false);
-      setSelectedApproval(null);
-      setReviewComment('');
+        setIsDetailModalOpen(false);
+        setSelectedApproval(null);
+        setReviewComment('');
+      } else {
+        throw new Error(data.message || '처리 실패');
+      }
     } catch (error) {
       console.error('승인 처리 실패:', error);
       toast({
