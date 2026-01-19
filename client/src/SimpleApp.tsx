@@ -2,6 +2,7 @@ import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import { SimpleChatBot } from './components/ui/SimpleChatBot';
+import { OnboardingModal } from './components/OnboardingModal';
 import { UserPreferencesProvider } from './hooks/use-user-preferences';
 import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
 import { NotificationsProvider } from './components/NotificationsProvider';
@@ -95,6 +96,7 @@ import AIApiManagement from "./pages/admin/AIApiManagement";
 import AIOptimizationDashboard from "./pages/admin/AIOptimizationDashboard";
 import MenuVisibilityControl from "./pages/admin/MenuVisibilityControl";
 import NavigationProgress from "./components/NavigationProgress";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 import { SimpleLoading, SimpleLoadingInline } from "./components/ui/simple-loading";
 import { SplashScreen, useSplashScreen, PageLoadingProvider } from "./components/SplashScreen";
 import { WeatherProvider, useWeather } from "./contexts/WeatherContext";
@@ -341,7 +343,7 @@ function AppLayout({ children }: { children: ReactNode }) {
             />
 
             {/* 메인 컨텐츠 영역 */}
-            <main id="main-content" className="flex-grow" tabIndex={-1}>
+            <main id="main-content" className="flex-grow pb-16 lg:pb-0" tabIndex={-1}>
               <ErrorBoundary>
                 {children}
               </ErrorBoundary>
@@ -354,6 +356,12 @@ function AppLayout({ children }: { children: ReactNode }) {
 
         {/* AI 챗봇 */}
         <SimpleChatBot />
+
+        {/* 모바일 하단 네비게이션 */}
+        <MobileBottomNav />
+
+        {/* 온보딩 모달 - 로그인 후 첫 방문 시에만 표시 */}
+        <OnboardingModal isAuthenticated={auth.isAuthenticated} />
       </div>
       </PageLoadingProvider>
     </ErrorBoundary>

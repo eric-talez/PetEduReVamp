@@ -49,6 +49,17 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Optimized UI/UX**: Streamlined sidebar menus for various user roles (pet owner, trainer, institute, admin) and consolidated navigation.
 
 ## Recent Changes (January 2026)
+- **Home Screen UX Improvement (Jan 19)**: 
+  - Added role-specific Quick Action section in Home.tsx renderDefaultHome function
+  - Quick actions positioned below hero banner and above statistics section
+  - Responsive grid layout: 2 columns on mobile (grid-cols-2), 4 columns on desktop (lg:grid-cols-4)
+  - Role-specific action buttons with icons and descriptions:
+    - Pet Owner: 내 반려동물 관리, 강의 둘러보기, 예방접종 관리, 시설 찾기
+    - Trainer: 내 강의 관리, 수강생 확인, 수익 현황, 일정 관리
+    - Institute Admin: 소속 훈련사, 등록 강의, 수익 현황, 설정
+    - Not Logged In: 회원가입, 서비스 소개, 무료 체험
+  - Card design with colored icon backgrounds, hover effects (scale-105, shadow-lg)
+  - All text in Korean
 - **Codebase Cleanup (Jan 19)**: 
   - Removed 25+ duplicate page files (auth variants, unused admin pages, etc.)
   - Consolidated routes: /admin/points (unified), /admin/commission (deduplicated)

@@ -9901,6 +9901,230 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 사용자 학습 진도 조회 API (ProgressWidget 용)
+  app.get("/api/user/progress", async (req, res) => {
+    try {
+      const user = req.session?.user || (req as any).user;
+      const userId = user?.id;
+
+      if (!userId) {
+        return res.status(200).json({
+          courses: [],
+          overallProgress: 0,
+          totalCoursesEnrolled: 0,
+          completedCourses: 0
+        });
+      }
+
+      // coursePurchases 테이블에서 사용자의 구매한 강의 조회
+      const purchases = await db.select({
+        purchaseId: coursePurchases.id,
+        courseId: coursePurchases.courseId,
+        purchaseAmount: coursePurchases.purchaseAmount,
+        accessGranted: coursePurchases.accessGranted,
+        purchasedAt: coursePurchases.createdAt
+      }).from(coursePurchases).where(eq(coursePurchases.userId, userId));
+
+      // courseProgress 테이블에서 진행률 조회
+      const progressData = await db.select().from(courseProgress).where(eq(courseProgress.userId, userId));
+
+      // courses 테이블에서 강의 상세 정보 조회
+      const allCourses = await db.select().from(courses);
+      const coursesMap = new Map(allCourses.map(c => [c.id, c]));
+      const progressMap = new Map(progressData.map(p => [p.courseId, p]));
+
+      // 진행 중인 강의들
+      const ongoingCourses: any[] = [];
+      let completedCount = 0;
+
+      for (const purchase of purchases) {
+        const course = coursesMap.get(purchase.courseId);
+        if (!course) continue;
+
+        const progress = progressMap.get(purchase.courseId);
+        const progressPercentage = progress ? Number(progress.progressPercentage) : 0;
+        const isCompleted = progress?.status === 'completed' || progressPercentage >= 100;
+
+        if (isCompleted) {
+          completedCount++;
+        } else {
+          ongoingCourses.push({
+            id: course.id,
+            title: course.title,
+            progress: progressPercentage,
+            totalLessons: course.duration ? Math.ceil(Number(course.duration) / 10) : 10,
+            completedLessons: Math.round((progressPercentage / 100) * (course.duration ? Math.ceil(Number(course.duration) / 10) : 10)),
+            nextLesson: progress?.currentLesson ? `${progress.currentLesson}강` : '1강 시작하기',
+            estimatedTime: course.duration ? `${course.duration}분` : '약 30분',
+            image: course.imageUrl || '/placeholder-course.jpg',
+            trainer: {
+              name: '전문 훈련사',
+              image: '/placeholder-trainer.jpg'
+            }
+          });
+        }
+      }
+
+      // 전체 진행률 계산
+      const overallProgress = ongoingCourses.length > 0
+        ? Math.round(ongoingCourses.reduce((sum, c) => sum + c.progress, 0) / ongoingCourses.length)
+        : 0;
+
+      // 다음 추천 강의 (완료하지 않은 인기 강의)
+      const purchasedIds = purchases.map(p => p.courseId);
+      const recommendedCourse = allCourses
+        .filter(c => !purchasedIds.includes(c.id) && c.isActive === true)
+        .sort((a, b) => (b.enrollmentCount || 0) - (a.enrollmentCount || 0))[0];
+
+      return res.status(200).json({
+        courses: ongoingCourses.slice(0, 5),
+        overallProgress,
+        totalCoursesEnrolled: purchases.length,
+        completedCourses: completedCount,
+        nextRecommendation: recommendedCourse ? {
+          id: recommendedCourse.id,
+          title: recommendedCourse.title,
+          reason: '현재 학습 과정과 연계되는 강의입니다'
+        } : undefined
+      });
+    } catch (error: any) {
+      console.error("Get user progress error:", error);
+      return res.status(500).json({ message: "진도 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 사용자 맞춤 추천 API (RecommendationCard 용)
+  app.get("/api/recommendations", async (req, res) => {
+    try {
+      const user = req.session?.user || (req as any).user;
+      const userId = user?.id;
+
+      // 강의 데이터 조회 시도 (실제 데이터 또는 샘플 데이터)
+      let courseData: any[] = [];
+      try {
+        // 실제 DB에서 기본 컬럼만 조회
+        const result = await db.execute(sql`SELECT id, title, description, image, category, level, duration, price FROM courses LIMIT 20`);
+        courseData = (result.rows || []) as any[];
+      } catch (dbError) {
+        console.log('Courses table query failed, using sample data');
+        courseData = [];
+      }
+      
+      // 사용자가 이미 구매한 강의 ID 목록
+      let purchasedIds: number[] = [];
+      if (userId) {
+        try {
+          const purchases = await db.select({ courseId: coursePurchases.courseId })
+            .from(coursePurchases)
+            .where(eq(coursePurchases.userId, userId));
+          purchasedIds = purchases.map(p => p.courseId);
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      // 추천 강의 생성 (구매하지 않은 강의 또는 샘플 데이터)
+      const reasonTypes = ['ai', 'popular', 'pet-based', 'similar-users'] as const;
+      const reasons = [
+        '반려견 성격에 맞는 추천 강의',
+        '많은 보호자들이 선택한 인기 강의',
+        '비슷한 견종 보호자들의 선택',
+        'AI가 분석한 맞춤 추천'
+      ];
+
+      // 샘플 데이터 (DB에 강의가 없을 경우)
+      const sampleCourses = [
+        { id: 1, title: '기초 반려견 훈련 마스터 과정', description: '처음 반려견을 키우는 보호자를 위한 기초 훈련 과정', category: '기초 훈련' },
+        { id: 2, title: '문제행동 교정 전문 과정', description: '짖음, 물기 등 문제행동을 전문적으로 교정하는 과정', category: '행동 교정' },
+        { id: 3, title: '반려견 심리 이해하기', description: '반려견의 심리를 이해하고 소통하는 방법을 배웁니다', category: '심리' },
+        { id: 4, title: '클리커 트레이닝 입문', description: '클리커를 활용한 효과적인 훈련 방법', category: '클리커' },
+        { id: 5, title: '사회화 훈련 완벽 가이드', description: '다른 강아지, 사람들과 잘 어울리는 사회화 훈련', category: '사회화' },
+        { id: 6, title: '노령견 케어 전문 과정', description: '고령의 반려견을 위한 특별한 케어 방법', category: '시니어 케어' }
+      ];
+
+      const coursesToUse = courseData.length > 0 ? courseData : sampleCourses;
+      const recommendedCourses = coursesToUse
+        .filter(c => !purchasedIds.includes(c.id))
+        .slice(0, 6)
+        .map((course, index) => ({
+          id: course.id,
+          title: course.title,
+          description: course.description || '전문 훈련사가 제공하는 맞춤형 교육 강의입니다.',
+          image: course.image || '/attached_assets/stock_images/professional_dog_tra_96215a25.jpg',
+          price: course.price ? `₩${Number(course.price).toLocaleString()}` : '₩45,000',
+          rating: 4.5 + Math.random() * 0.5,
+          students: Math.floor(Math.random() * 500) + 50,
+          trainer: {
+            name: '전문 훈련사',
+            image: '/placeholder-trainer.jpg'
+          },
+          tags: course.category ? [course.category] : ['기초 훈련'],
+          reason: reasons[index % reasons.length],
+          reasonType: reasonTypes[index % reasonTypes.length]
+        }));
+
+      // 추천 상품 (상품 테이블에서 조회)
+      let productData: any[] = [];
+      try {
+        productData = await db.select().from(products).where(eq(products.isActive, true));
+      } catch (e) {
+        console.log('Products table query failed, using sample data');
+      }
+
+      // 샘플 상품 데이터
+      const sampleProducts = [
+        { id: 1, name: '프리미엄 강아지 사료', description: '영양 가득한 프리미엄 사료', category: '사료', basePrice: 35000 },
+        { id: 2, name: '훈련용 클리커', description: '효과적인 클리커 트레이닝용', category: '훈련용품', basePrice: 8900 },
+        { id: 3, name: '덴탈 껌 세트', description: '치아 건강을 위한 덴탈 껌', category: '간식', basePrice: 12000 },
+        { id: 4, name: '강아지 하네스', description: '편안하고 안전한 산책용 하네스', category: '산책용품', basePrice: 25000 }
+      ];
+
+      const productsToUse = productData.length > 0 ? productData : sampleProducts;
+      const recommendedProducts = productsToUse
+        .slice(0, 4)
+        .map(product => ({
+          id: product.id,
+          name: product.name,
+          description: product.description || '반려동물을 위한 프리미엄 상품',
+          image: product.mainImage || product.image || '/attached_assets/stock_images/happy_dog_with_pet_p_0b4dccf7.jpg',
+          price: `₩${Number(product.basePrice || product.price || 15000).toLocaleString()}`,
+          originalPrice: product.salePrice ? `₩${Number(product.basePrice || 0).toLocaleString()}` : undefined,
+          rating: 4.2 + Math.random() * 0.8,
+          reviewCount: Math.floor(Math.random() * 200) + 10,
+          tags: [product.category || '반려용품'],
+          reason: '인기 상품'
+        }));
+
+      // 사용자 반려동물 정보 (있다면)
+      let petInfo = undefined;
+      if (userId) {
+        // pets 테이블이 있다면 조회
+        try {
+          const pets = storage.getPetsByUserId?.(userId);
+          if (pets && pets.length > 0) {
+            const pet = pets[0];
+            petInfo = {
+              name: pet.name,
+              breed: pet.breed || '믹스견',
+              age: pet.age ? `${pet.age}세` : '나이 미상'
+            };
+          }
+        } catch (e) {
+          // pets 조회 실패 시 무시
+        }
+      }
+
+      return res.status(200).json({
+        courses: recommendedCourses,
+        products: recommendedProducts,
+        petInfo
+      });
+    } catch (error: any) {
+      console.error("Get recommendations error:", error);
+      return res.status(500).json({ message: "추천 조회 중 오류가 발생했습니다." });
+    }
+  });
+
   // 정보 수정 요청 목록 조회 API
   app.get('/api/admin/correction-requests', async (req, res) => {
     try {

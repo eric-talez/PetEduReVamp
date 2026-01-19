@@ -10,7 +10,8 @@ import {
   Check, 
   ChevronDown, 
   ChevronUp,
-  Info
+  Info,
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +46,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { FreeShippingProgressBar, TrustBadges, RecommendedProducts } from '@/components/shop/MiniCart';
 
 export default function Cart() {
   const [, navigate] = useLocation();
@@ -317,9 +319,35 @@ export default function Cart() {
     );
   }
   
+  const handleAddRecommendedProduct = (product: any) => {
+    const newItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1
+    };
+    
+    const updatedCart = [...cartItems, newItem];
+    setCartItems(updatedCart);
+    setSelectedItems([...selectedItems, product.id]);
+    setItemCounts({...itemCounts, [product.id]: 1});
+    localStorage.setItem('petedu_cart', JSON.stringify(updatedCart));
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: updatedCart } }));
+    
+    toast({
+      title: "상품이 추가되었습니다",
+      description: product.name,
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">장바구니</h1>
+      <h1 className="text-2xl font-bold mb-4">장바구니</h1>
+      
+      <div className="mb-6">
+        <FreeShippingProgressBar currentTotal={subtotal} />
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* 왼쪽: 장바구니 아이템 목록 */}
@@ -603,28 +631,12 @@ export default function Cart() {
             </CardFooter>
           </Card>
           
-          {/* 안내사항 */}
-          <div className="mt-6 text-sm space-y-4">
-            <div className="flex items-start">
-              <Shield className="h-4 w-4 text-[#03c75a] mr-2 mt-0.5" />
-              <span className="text-gray-700 dark:text-gray-300">
-                안전 결제: SSL 보안 통신을 이용한 안전한 결제 시스템을 이용합니다.
-              </span>
-            </div>
-            
-            <div className="flex items-start">
-              <Check className="h-4 w-4 text-[#03c75a] mr-2 mt-0.5" />
-              <span className="text-gray-700 dark:text-gray-300">
-                3만원 이상 구매 시 무료 배송입니다 (일부 지역 및 상품 제외).
-              </span>
-            </div>
-            
-            <div className="flex items-start">
-              <Check className="h-4 w-4 text-[#03c75a] mr-2 mt-0.5" />
-              <span className="text-gray-700 dark:text-gray-300">
-                배송 완료 후 7일 이내 교환/반품이 가능합니다.
-              </span>
-            </div>
+          <div className="mt-4">
+            <TrustBadges />
+          </div>
+          
+          <div className="mt-4">
+            <RecommendedProducts onAddToCart={handleAddRecommendedProduct} />
           </div>
         </div>
       </div>

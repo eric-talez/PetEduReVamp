@@ -1,10 +1,11 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
-import { NewSidebar } from "@/components/NewSidebar"; // 새로운 사이드바 컴포넌트 추가
+import { NewSidebar } from "@/components/NewSidebar";
 import { TopBar } from "@/components/TopBar";
 import { Chatbot } from "@/components/features/Chatbot";
 import { useAuth } from "@/hooks/useAuth";
 import SkipLink from "@/components/accessibility/SkipLink";
+import { CartAbandonmentNotification } from "@/components/shop/MiniCart";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -82,6 +83,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* 챗봇 컴포넌트 */}
       <Chatbot />
+      
+      {/* 장바구니 이탈 알림 */}
+      <CartAbandonmentNotification />
     </div>
   );
 }

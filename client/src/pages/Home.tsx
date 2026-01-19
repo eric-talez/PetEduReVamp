@@ -7,8 +7,10 @@ import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { RealTimePopularChart } from '@/components/RealTimePopularChart';
+import { ProgressWidget } from '@/components/ProgressWidget';
+import { RecommendationCard } from '@/components/RecommendationCard';
 import { useState, lazy, Suspense, useEffect, useMemo } from 'react';
-import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCircle, MapPin, Video, ArrowRight, BookOpen, Users as LucideUsers } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCircle, MapPin, Video, ArrowRight, BookOpen, Users as LucideUsers, Heart, Syringe, BarChart3, Calendar, Settings, UserPlus, Zap, Info, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { useQuery } from '@tanstack/react-query';
@@ -538,6 +540,347 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Quick Action Section - Role-based */}
+        <TalezSection className="py-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>
+              {isAuthenticated ? '빠른 접근' : '지금 시작하세요'}
+            </h2>
+            <p className="text-sm" style={{ color: 'var(--txt-secondary)' }}>
+              {isAuthenticated 
+                ? '자주 사용하는 기능을 빠르게 접근하세요'
+                : '탈레즈의 다양한 서비스를 경험해보세요'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {isAuthenticated && userRole === 'pet-owner' ? (
+              <>
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/my-pets')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-pink-100 dark:bg-pink-900/30 group-hover:bg-pink-200 dark:group-hover:bg-pink-800/40 transition-colors">
+                      <Heart className="h-5 w-5 text-pink-600 dark:text-pink-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        내 반려동물 관리
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        반려동물 프로필 확인
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/courses')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40 transition-colors">
+                      <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        강의 둘러보기
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        전문가 강의 수강
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/pet-care')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30 group-hover:bg-green-200 dark:group-hover:bg-green-800/40 transition-colors">
+                      <Syringe className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        예방접종 관리
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        건강 기록 관리
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/facilities')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-900/30 group-hover:bg-orange-200 dark:group-hover:bg-orange-800/40 transition-colors">
+                      <MapPin className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        시설 찾기
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        근처 교육 시설 검색
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+              </>
+            ) : isAuthenticated && userRole === 'trainer' ? (
+              <>
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/trainer/courses')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40 transition-colors">
+                      <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        내 강의 관리
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        강의 등록 및 수정
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/trainer/students')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/40 transition-colors">
+                      <LucideUsers className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        수강생 확인
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        수강생 목록 및 진행도
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/trainer/revenue')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30 group-hover:bg-green-200 dark:group-hover:bg-green-800/40 transition-colors">
+                      <BarChart3 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        수익 현황
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        정산 내역 확인
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/trainer/schedule')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
+                      <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        일정 관리
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        예약 일정 확인
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+              </>
+            ) : isAuthenticated && userRole === 'institute-admin' ? (
+              <>
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/institute-admin/trainers')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/40 transition-colors">
+                      <LucideUsers className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        소속 훈련사
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        훈련사 관리
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/institute-admin/courses')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40 transition-colors">
+                      <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        등록 강의
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        강의 현황 확인
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/institute-admin/revenue')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30 group-hover:bg-green-200 dark:group-hover:bg-green-800/40 transition-colors">
+                      <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        수익 현황
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        수익 통계 확인
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/institute-admin/settings')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+                      <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        설정
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        기관 정보 관리
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+              </>
+            ) : (
+              <>
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/auth/register')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40 transition-colors">
+                      <UserPlus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        회원가입
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        새로운 계정 만들기
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setLocation('/about')}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/40 transition-colors">
+                      <Info className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        서비스 소개
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        탈레즈 알아보기
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+
+                <TalezCard 
+                  className="p-4 cursor-pointer group hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setShowExperience(true)}
+                >
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="p-3 rounded-full bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
+                      <Zap className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm" style={{ color: 'var(--txt-strong)' }}>
+                        무료 체험
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'var(--txt-secondary)' }}>
+                        AI 분석 미리보기
+                      </p>
+                    </div>
+                  </div>
+                </TalezCard>
+              </>
+            )}
+          </div>
+        </TalezSection>
+
+        {/* Learning Progress Section - 로그인 사용자만 표시 */}
+        {isAuthenticated && (
+          <TalezSection className="py-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>
+                나의 학습 현황
+              </h2>
+              <p className="text-sm" style={{ color: 'var(--txt-secondary)' }}>
+                현재 진행 중인 강의와 학습 진도를 확인하세요
+              </p>
+            </div>
+            <ProgressWidget />
+          </TalezSection>
+        )}
+
+        {/* AI Recommendation Section */}
+        <TalezSection className="py-6">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--txt-strong)' }}>
+              {isAuthenticated ? '맞춤 추천' : '인기 강의 & 상품'}
+            </h2>
+            <p className="text-sm" style={{ color: 'var(--txt-secondary)' }}>
+              {isAuthenticated 
+                ? 'AI가 분석한 맞춤형 추천 콘텐츠입니다'
+                : '많은 보호자들이 선택한 인기 강의와 상품을 만나보세요'}
+            </p>
+          </div>
+          <RecommendationCard />
+        </TalezSection>
 
         {/* Stats Section - Compact */}
         <TalezSection className="py-8">

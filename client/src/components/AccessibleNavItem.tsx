@@ -12,6 +12,8 @@ interface AccessibleNavItemProps {
   active?: boolean;
   onClick?: (path: string) => void;
   show: boolean;
+  highlighted?: boolean;
+  badge?: string;
 }
 
 /**
@@ -20,7 +22,7 @@ interface AccessibleNavItemProps {
  * - 사이드바 닫힘 상태: 아이콘만 표시하되 툴팁으로 제목 표시
  * - 접근성 레이블 추가
  */
-export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onClick, show }: AccessibleNavItemProps) {
+export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onClick, show, highlighted, badge }: AccessibleNavItemProps) {
   const { expanded } = useContext(SidebarContext);
   const [, setLocation] = useLocation();
   
@@ -50,8 +52,10 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
             <a
               href={href}
               className={cn(
-                "sidebar-link flex items-center justify-center py-3 text-xs font-medium rounded-md transition-all duration-200 ease-in-out px-2 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[2.75rem]",
-                active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
+                "sidebar-link flex items-center justify-center py-3 text-xs font-medium rounded-md transition-all duration-200 ease-in-out px-2 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[2.75rem] relative",
+                active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : 
+                highlighted ? "bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 ring-1 ring-emerald-300/50" :
+                "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
               )}
               onClick={handleClick}
               onKeyDown={(e) => {
@@ -69,7 +73,7 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
             >
               <div className="relative w-5 h-5">
                 <div className="absolute inset-0 transition-all duration-300 group-hover:scale-0 group-hover:opacity-0">
-                  {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+                  {React.cloneElement(icon as React.ReactElement, { className: cn("w-5 h-5", highlighted && "text-emerald-600 dark:text-emerald-400") })}
                 </div>
                 {hoverIcon && (
                   <div className="absolute inset-0 transition-all duration-300 scale-0 opacity-0 group-hover:scale-110 group-hover:opacity-100 group-hover:rotate-12">
@@ -77,10 +81,13 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
                   </div>
                 )}
               </div>
+              {highlighted && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              )}
             </a>
           </TooltipTrigger>
           <TooltipContent side="right">
-            <p>{children}</p>
+            <p>{children}{badge && <span className="ml-1.5 px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium rounded">{badge}</span>}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -92,8 +99,10 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center py-3 text-xs font-medium rounded-md transition-all duration-200 ease-in-out px-3 group shadow-sm hover:shadow-md min-h-[2.75rem]",
-        active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105",
+        "sidebar-link flex items-center py-3 text-xs font-medium rounded-md transition-all duration-200 ease-in-out px-3 group shadow-sm hover:shadow-md min-h-[2.75rem] relative",
+        active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : 
+        highlighted ? "bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 ring-1 ring-emerald-300/50" :
+        "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       )}
       onClick={handleClick}
@@ -114,7 +123,7 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
     >
       <div className="relative w-5 h-5 mr-3">
         <div className="absolute inset-0 transition-all duration-300 group-hover:scale-0 group-hover:opacity-0">
-          {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+          {React.cloneElement(icon as React.ReactElement, { className: cn("w-5 h-5", highlighted && "text-emerald-600 dark:text-emerald-400") })}
         </div>
         {hoverIcon && (
           <div className="absolute inset-0 transition-all duration-300 scale-0 opacity-0 group-hover:scale-110 group-hover:opacity-100 group-hover:rotate-12">
@@ -122,7 +131,15 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
           </div>
         )}
       </div>
-      <span className="transition-all duration-200 group-hover:translate-x-1">{children}</span>
+      <span className="flex-1 transition-all duration-200 group-hover:translate-x-1">{children}</span>
+      {badge && (
+        <span className="ml-2 px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium rounded">
+          {badge}
+        </span>
+      )}
+      {highlighted && !badge && (
+        <span className="ml-2 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+      )}
     </a>
   );
 }

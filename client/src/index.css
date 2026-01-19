@@ -31,9 +31,9 @@
     --secondary: 43 96% 60%;
     --secondary-foreground: 240 10% 10%;
 
-    /* 뮤트 색상 */
+    /* 뮤트 색상 - WCAG 2.1 개선: 대비율 4.5:1 이상 */
     --muted: 240 10% 96%;
-    --muted-foreground: 240 5% 45%;
+    --muted-foreground: 240 5% 35%; /* 기존 45% -> 35% (대비율 7:1 달성) */
 
     /* 액센트 색상 - 오렌지 액센트 */
     --accent: 24 92% 58%;
@@ -73,9 +73,9 @@
     --secondary: 43 96% 65%;
     --secondary-foreground: 0 0% 10%;
 
-    /* 다크 모드 뮤트 */
+    /* 다크 모드 뮤트 - WCAG 2.1 개선: 대비율 4.5:1 이상 */
     --muted: 240 10% 18%;
-    --muted-foreground: 240 5% 65%;
+    --muted-foreground: 240 5% 75%; /* 기존 65% -> 75% (대비율 7:1 달성) */
 
     /* 다크 모드 액센트 - 오렌지 */
     --accent: 24 92% 65%;
@@ -216,20 +216,99 @@
   .text-overline {
     @apply text-xs font-semibold uppercase tracking-widest;
   }
+
+  /* ===== WCAG 2.1 접근성 개선 ===== */
+
+  /* 링크 접근성 개선 - 최소 터치 타겟 및 명확한 대비 */
+  a {
+    @apply touch-manipulation;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* 인라인 텍스트 링크 (본문 내) */
+  p a, span a, li a {
+    min-height: auto;
+    display: inline;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+
+  p a:hover, span a:hover, li a:hover {
+    text-decoration-thickness: 2px;
+  }
 }
 
+/* ===== WCAG 2.1 접근성 전역 스타일 ===== */
 @layer components {
+  /* 터치 타겟 최소 크기 유틸리티 (WCAG 2.5.5 Level AAA) */
+  .touch-target {
+    @apply min-w-[44px] min-h-[44px] inline-flex items-center justify-center;
+  }
+
+  .touch-target-sm {
+    @apply min-w-[44px] min-h-[44px];
+  }
+
+  /* 포커스 표시 개선 (WCAG 2.4.7 Level AA) */
+  .a11y-focus {
+    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+    @apply focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+
+  /* 높은 대비 텍스트 (WCAG 1.4.3 Level AA - 4.5:1 비율) */
+  .a11y-text {
+    @apply text-foreground;
+    color: hsl(240 10% 10%); /* #1a1a1f - 흰 배경에서 15.9:1 대비 */
+  }
+
+  .dark .a11y-text {
+    color: hsl(0 0% 95%); /* #f2f2f2 - 어두운 배경에서 13.9:1 대비 */
+  }
+
+  /* 높은 대비 보조 텍스트 (WCAG 1.4.3 Level AA) */
+  .a11y-text-secondary {
+    color: hsl(240 5% 35%); /* #545459 - 흰 배경에서 7.1:1 대비 */
+  }
+
+  .dark .a11y-text-secondary {
+    color: hsl(240 5% 70%); /* #b0b0b5 - 어두운 배경에서 8.5:1 대비 */
+  }
+
+  /* 색맹 친화적 상태 색상 (색상만으로 정보 전달하지 않음 - WCAG 1.4.1) */
+  .a11y-success {
+    @apply bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200;
+    @apply border-l-4 border-green-600;
+  }
+
+  .a11y-warning {
+    @apply bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200;
+    @apply border-l-4 border-yellow-600;
+  }
+
+  .a11y-error {
+    @apply bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200;
+    @apply border-l-4 border-red-600;
+  }
+
+  .a11y-info {
+    @apply bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200;
+    @apply border-l-4 border-blue-600;
+  }
+
   /* 개선된 버튼 크기 */
   .btn-sm {
-    @apply px-3 py-2 text-sm min-h-[2.25rem];
+    @apply px-3 py-2.5 text-sm min-h-[44px] min-w-[44px];
   }
 
   .btn-md {
-    @apply px-4 py-2.5 text-base min-h-[2.75rem];
+    @apply px-4 py-3 text-base min-h-[44px] min-w-[44px];
   }
 
   .btn-lg {
-    @apply px-6 py-3 text-lg min-h-[3rem];
+    @apply px-6 py-3.5 text-lg min-h-[48px] min-w-[48px];
   }
 
   /* 카드 컴포넌트 개선 */
@@ -237,14 +316,67 @@
     @apply bg-card text-card-foreground rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200;
   }
 
-  /* 폼 요소 개선 */
+  /* 폼 요소 개선 - WCAG 2.5.5 터치 타겟 크기 */
   .form-input-enhanced {
-    @apply min-h-[2.75rem] px-3 py-2 text-base border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors;
+    @apply min-h-[44px] px-4 py-3 text-base border rounded-md;
+    @apply focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none;
+    @apply transition-all duration-200;
+    @apply placeholder:text-muted-foreground placeholder:opacity-70;
   }
 
-  /* 메뉴 아이템 크기 개선 */
+  /* 메뉴 아이템 크기 개선 - WCAG 2.5.5 */
   .menu-item-enhanced {
-    @apply min-h-[2.75rem] px-3 py-2 text-base flex items-center gap-3 transition-colors duration-200;
+    @apply min-h-[44px] px-4 py-3 text-base flex items-center gap-3;
+    @apply transition-colors duration-200;
+    @apply focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2;
+  }
+
+  /* 체크박스/라디오 터치 타겟 확대 */
+  .a11y-checkbox,
+  .a11y-radio {
+    @apply w-6 h-6 min-w-[24px] min-h-[24px];
+    @apply cursor-pointer;
+  }
+
+  /* 체크박스/라디오 터치 영역 확대 래퍼 */
+  .a11y-checkbox-wrapper,
+  .a11y-radio-wrapper {
+    @apply inline-flex items-center gap-3 min-h-[44px] px-2 py-2 cursor-pointer;
+    @apply rounded-md hover:bg-muted/50 transition-colors;
+  }
+
+  /* 텍스트 선택 영역 개선 */
+  .a11y-selectable {
+    @apply select-text cursor-text;
+  }
+
+  /* 읽기 전용 콘텐츠 스타일 */
+  .a11y-readonly {
+    @apply bg-muted/30 cursor-default;
+  }
+
+  /* 스크린 리더 전용 텍스트 */
+  .a11y-sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  /* 포커스 시에만 표시 (스킵 링크 등) */
+  .a11y-sr-only-focusable:focus,
+  .a11y-sr-only-focusable:focus-visible {
+    @apply static w-auto h-auto p-4 m-0 overflow-visible whitespace-normal;
+    clip: auto;
+  }
+
+  /* 라이브 리전 스타일 */
+  .a11y-live-region {
+    @apply absolute -left-[9999px] w-px h-px overflow-hidden;
+  }
+
+  /* 가시적 라이브 리전 */
+  .a11y-live-region-visible {
+    @apply relative left-0 w-auto h-auto overflow-visible p-4;
+    @apply bg-card border rounded-lg shadow-md;
   }
 }
 
