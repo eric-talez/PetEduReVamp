@@ -219,6 +219,23 @@ function setupAuthRoutes(app: Express) {
         );
       }
       
+      // 승인 상태 확인 (pending/rejected 사용자 로그인 차단)
+      const approvalStatus = (user as any).approvalStatus;
+      if (approvalStatus === 'pending') {
+        console.log('[Auth] 승인 대기 사용자 로그인 시도:', user.username);
+        return res.error(
+          ApiErrorCode.AUTHENTICATION_REQUIRED,
+          '관리자 승인 대기 중입니다. 승인 후 이용이 가능합니다.'
+        );
+      }
+      if (approvalStatus === 'rejected') {
+        console.log('[Auth] 거부된 사용자 로그인 시도:', user.username);
+        return res.error(
+          ApiErrorCode.AUTHENTICATION_REQUIRED,
+          '회원가입이 거부되었습니다. 관리자에게 문의해주세요.'
+        );
+      }
+      
       // JWT 토큰 생성
       const token = generateJwtToken(user);
       
