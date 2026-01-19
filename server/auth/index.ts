@@ -10,8 +10,8 @@ import { hashPassword, setupLocalAuth } from './local-auth';
 import { setupSocialAuth } from './social-auth';
 import { storage } from '../storage';
 import { db } from '../db';
-import { User as SelectUser, users, friendInvitations, educationCredits } from '@shared/schema';
-import { UserRole } from '@shared/schema';
+import { User as SelectUser, users, friendInvitations, educationCredits } from '../../shared/schema';
+import { UserRole } from '../../shared/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { csrfProtection, getCSRFToken } from '../middleware/csrf';
 import { 
@@ -467,31 +467,43 @@ function setupAuthRoutes(app: Express) {
           if (inviterResult.length > 0) {
             const inviter = inviterResult[0];
             
-            // 자기 자신 초대 방지
+            // 자기 자신 초대 방지 (초대자 ID와 신규 사용자 ID 비교)
             if (inviter.id !== user.id) {
-              // 초대 기록 생성
-              const invitationResult = await db.insert(friendInvitations).values({
-                inviterId: inviter.id,
-                inviteeEmail: email,
-                inviteeId: user.id,
-                inviteCode: trimmedCode,
-                status: 'accepted',
-                acceptedAt: new Date()
-              }).returning();
+              // 중복 초대 체크: 동일한 이메일로 이미 초대된 기록이 있는지 확인
+              const existingInvitation = await db.select().from(friendInvitations)
+                .where(
+                  sql`${friendInvitations.inviteeEmail} = ${email} OR ${friendInvitations.inviteeId} = ${user.id}`
+                );
               
-              // 초대자에게 교육 크레딧 1회 부여 (1년 유효)
-              const expiresAt = new Date();
-              expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-              
-              await db.insert(educationCredits).values({
-                userId: inviter.id,
-                amount: 1,
-                reason: 'friend_invite',
-                sourceId: invitationResult[0]?.id,
-                expiresAt
-              });
-              
-              console.log(`[Invite] 초대 성공: ${inviter.username} ← ${user.username} (코드: ${trimmedCode})`);
+              if (existingInvitation.length === 0) {
+                // 초대 기록 생성
+                const invitationResult = await db.insert(friendInvitations).values({
+                  inviterId: inviter.id,
+                  inviteeEmail: email,
+                  inviteeId: user.id,
+                  inviteCode: trimmedCode,
+                  status: 'accepted',
+                  acceptedAt: new Date()
+                }).returning();
+                
+                // 초대자에게 교육 크레딧 1회 부여 (1년 유효)
+                const expiresAt = new Date();
+                expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+                
+                await db.insert(educationCredits).values({
+                  userId: inviter.id,
+                  amount: 1,
+                  reason: 'friend_invite',
+                  sourceId: invitationResult[0]?.id,
+                  expiresAt
+                });
+                
+                console.log(`[Invite] 초대 성공: ${inviter.username} ← ${user.username} (코드: ${trimmedCode})`);
+              } else {
+                console.log(`[Invite] 중복 초대 무시: ${email} 이미 초대됨`);
+              }
+            } else {
+              console.log(`[Invite] 자기 자신 초대 시도 무시: ${user.username}`);
             }
           }
         } catch (inviteError) {
