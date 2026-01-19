@@ -52,8 +52,9 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Codebase Cleanup (Jan 19)**: 
   - Removed 25+ duplicate page files (auth variants, unused admin pages, etc.)
   - Consolidated routes: /admin/points (unified), /admin/commission (deduplicated)
-  - Reduced total page count from 257 to ~230 files (10% reduction)
-  - Removed unused imports and backup files
+  - Removed 29 unused components (76 → 47 components)
+  - Total tsx files reduced from ~500 to 457
+  - Removed all backup files (.bak, .backup)
 - **AI Services**: Using OpenAI GPT-4.1 exclusively for all AI features
 - **Simplified Registration with Admin Approval**: Streamlined registration to require only 4 fields (email, password, name, role). New users are created with 'pending' approval status and require admin approval before login. Social login users are auto-approved.
 - **Admin Approval APIs**: Added endpoints for managing user approvals:
