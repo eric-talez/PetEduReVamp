@@ -6,39 +6,14 @@
     "auditLog": "/home/runner/workspace/logs/.096e1c15fa6b67cb89654e1d2c4090d3c7198205-audit.json",
     "files": [
         {
-            "date": 1766251621332,
-            "name": "/home/runner/workspace/logs/error-2025-12-20.log",
-            "hash": "bab9ac543c0f698e5621079b822881240e7b7021ef7fc9732fb985277f0e1f97"
+            "date": 1774487132672,
+            "name": "/home/runner/workspace/logs/error-2026-03-26.log",
+            "hash": "5112c7952d1d7cbcc1b2f061efb85d51a3d99a7c0dc875653d835094f36a937a"
         },
         {
-            "date": 1766287253176,
-            "name": "/home/runner/workspace/logs/error-2025-12-21.log",
-            "hash": "e9d5cf9416393300226acddc44b2a392b0bb1857b2a262dc383e56b1912ddbe7"
-        },
-        {
-            "date": 1766407438356,
-            "name": "/home/runner/workspace/logs/error-2025-12-22.log",
-            "hash": "1b7db98c261db0e6a6e5ebb53e2cf64f95c96ba9ca35868be92973905290d55a"
-        },
-        {
-            "date": 1766881098052,
-            "name": "/home/runner/workspace/logs/error-2025-12-28.log",
-            "hash": "81c21aaa112a9839aa9897d273469da17ea8a5101997a21ad2315341c8a35787"
-        },
-        {
-            "date": 1768105424795,
-            "name": "/home/runner/workspace/logs/error-2026-01-11.log",
-            "hash": "166faea571d450379b981e05e0d3815e8b5cb73d1ccd80f1a4cb9e3b50965c13"
-        },
-        {
-            "date": 1768700737894,
-            "name": "/home/runner/workspace/logs/error-2026-01-18.log",
-            "hash": "f98b38e8408a61c938c2be30ef6a0a05bbd1dafe9c75ac94182ff151b8003e7e"
-        },
-        {
-            "date": 1768788889003,
-            "name": "/home/runner/workspace/logs/error-2026-01-19.log",
-            "hash": "3f2e7e88e1ec16f0208d4e92730aa76fe1ae96c19470f993afb19071e1f3a344"
+            "date": 1774642686519,
+            "name": "/home/runner/workspace/logs/error-2026-03-27.log",
+            "hash": "79b72971560ea241f3e63439401fe9c44c245deb25f8b55d3ea6a0c128e368bf"
         }
     ],
     "hashType": "sha256"
