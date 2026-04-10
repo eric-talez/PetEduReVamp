@@ -111,6 +111,8 @@ if (process.env.NODE_ENV === 'production') {
 // CORS 설정 개선
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
+      'https://hitalez.com',
+      'https://www.hitalez.com',
       'https://funnytalez.com',
       'https://www.funnytalez.com',
       'https://*.replit.app',

@@ -20,14 +20,19 @@ export function setupSecurity(app: Express) {
           "https://ka-f.fontawesome.com",
           "https://static.nid.naver.com",
           "https://developers.kakao.com",
+          "https://dapi.kakao.com",
           "https://maps.googleapis.com",
           "https://maps.gstatic.com",
-          "https://*.googleapis.com"
+          "https://*.googleapis.com",
+          "https://replit.com",
+          "https://*.replit.com",
+          "https://*.replit.app"
         ],
         styleSrc: [
           "'self'", 
           "'unsafe-inline'", 
-          "https://fonts.googleapis.com"
+          "https://fonts.googleapis.com",
+          "https://cdn.jsdelivr.net"
         ],
         imgSrc: [
           "'self'", 
@@ -42,7 +47,8 @@ export function setupSecurity(app: Express) {
         fontSrc: [
           "'self'", 
           "https://fonts.gstatic.com", 
-          "https://ka-f.fontawesome.com"
+          "https://ka-f.fontawesome.com",
+          "https://cdn.jsdelivr.net"
         ],
         connectSrc: [
           "'self'", 

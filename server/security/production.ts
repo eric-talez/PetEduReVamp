@@ -15,7 +15,12 @@ export function setupProductionSecurity(app: Express) {
           "'unsafe-eval'",
           "https://dapi.kakao.com", 
           "https://developers.kakao.com",
+          "https://static.nid.naver.com",
+          "https://maps.googleapis.com",
+          "https://maps.gstatic.com",
+          "https://*.googleapis.com",
           "https://replit.com",
+          "https://*.replit.com",
           "https://*.replit.app"
         ],
         styleSrc: [
@@ -30,7 +35,18 @@ export function setupProductionSecurity(app: Express) {
           "https://cdn.jsdelivr.net"
         ],
         imgSrc: ["'self'", "data:", "https:", "blob:"],
-        connectSrc: ["'self'", "https://dapi.kakao.com", "wss:", "ws:", "https:"],
+        connectSrc: [
+          "'self'", 
+          "https://dapi.kakao.com",
+          "https://maps.googleapis.com",
+          "https://*.googleapis.com",
+          "https://api.openai.com",
+          "https://kauth.kakao.com",
+          "https://nid.naver.com",
+          "wss:", 
+          "ws:", 
+          "https:"
+        ],
         frameSrc: ["'self'", "https://replit.com"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
