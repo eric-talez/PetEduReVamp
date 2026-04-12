@@ -92,7 +92,8 @@ import {
   Syringe,
   Dog,
   Link2,
-  QrCode
+  QrCode,
+  AlertCircle
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -850,6 +851,8 @@ export function Sidebar({
                         <AccessibleNavItem href="/messages" icon={<MessageCircle className="w-5 h-5 mr-2" />} hoverIcon={<Mail className="w-5 h-5 mr-2 text-primary" />} active={isActive("/messages")} onClick={handleItemClick} show={isMenuVisible('messages')}>메시지</AccessibleNavItem>
                         <AccessibleNavItem href="/ai-analysis" icon={<Brain className="w-5 h-5 mr-2" />} hoverIcon={<Sparkles className="w-5 h-5 mr-2 text-primary" />} active={isActive("/ai-analysis")} onClick={handleItemClick} show={isMenuVisible('ai-analysis')}>AI 분석</AccessibleNavItem>
                         <AccessibleNavItem href="/consultation-records" icon={<ClipboardList className="w-5 h-5 mr-2" />} hoverIcon={<ClipboardList className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation-records")} onClick={handleItemClick} show={true}>상담 기록</AccessibleNavItem>
+                        <AccessibleNavItem href="/emergency-info" icon={<AlertCircle className="w-5 h-5 mr-2" />} hoverIcon={<AlertCircle className="w-5 h-5 mr-2 text-red-500" />} active={isActive("/emergency-info")} onClick={handleItemClick} show={true}>응급 정보</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/consent-management" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<FileText className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/consent-management")} onClick={handleItemClick} show={true}>동의 관리</AccessibleNavItem>
                       </>
                     )}
                   </>
@@ -869,6 +872,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/trainer/notebook" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<Edit className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/notebook")} onClick={handleItemClick} show={isMenuVisible('trainer-notebook')}>알림장</AccessibleNavItem>
                         <AccessibleNavItem href="/consultation-records" icon={<ClipboardList className="w-5 h-5 mr-2" />} hoverIcon={<ClipboardList className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation-records")} onClick={handleItemClick} show={true} badge="상담">상담 기록</AccessibleNavItem>
                         <AccessibleNavItem href="/institute/checkin-dashboard" icon={<QrCode className="w-5 h-5 mr-2" />} hoverIcon={<QrCode className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/checkin-dashboard")} onClick={handleItemClick} show={true} badge="체크인">체크인 현황</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/incident-protocols" icon={<AlertCircle className="w-5 h-5 mr-2" />} hoverIcon={<AlertCircle className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/incident-protocols")} onClick={handleItemClick} show={true}>사고 처리</AccessibleNavItem>
                       </>
                     )}
 
@@ -902,6 +906,9 @@ export function Sidebar({
                         <AccessibleNavItem href="/consultation-records" icon={<ClipboardList className="w-5 h-5 mr-2" />} hoverIcon={<ClipboardList className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation-records")} onClick={handleItemClick} show={true} badge="상담">상담 기록</AccessibleNavItem>
                         <AccessibleNavItem href="/institute/qr-codes" icon={<QrCode className="w-5 h-5 mr-2" />} hoverIcon={<QrCode className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/qr-codes")} onClick={handleItemClick} show={true} badge="QR">QR 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/institute/checkin-dashboard" icon={<UserCheck className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/checkin-dashboard")} onClick={handleItemClick} show={true} badge="체크인">체크인 현황</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/store-policies" icon={<Shield className="w-5 h-5 mr-2" />} hoverIcon={<Shield className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/store-policies")} onClick={handleItemClick} show={true}>매장 규정</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/consent-management" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<FileText className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/consent-management")} onClick={handleItemClick} show={true}>동의 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/incident-protocols" icon={<AlertCircle className="w-5 h-5 mr-2" />} hoverIcon={<AlertCircle className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/incident-protocols")} onClick={handleItemClick} show={true}>사고 처리</AccessibleNavItem>
                       </>
                     )}
 

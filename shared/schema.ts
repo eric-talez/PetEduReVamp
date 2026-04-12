@@ -2921,3 +2921,85 @@ export const insertEducationCreditSchema = createInsertSchema(educationCredits).
 export type InsertEducationCredit = z.infer<typeof insertEducationCreditSchema>;
 export type EducationCredit = typeof educationCredits.$inferSelect;
 
+export const emergencyContacts = pgTable("emergency_contacts", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id).notNull(),
+  ownerId: integer("owner_id").references(() => users.id).notNull(),
+  contactName: varchar("contact_name", { length: 100 }).notNull(),
+  contactPhone: varchar("contact_phone", { length: 30 }).notNull(),
+  relationship: varchar("relationship", { length: 50 }),
+  designatedHospital: varchar("designated_hospital", { length: 200 }),
+  hospitalPhone: varchar("hospital_phone", { length: 30 }),
+  hospitalAddress: text("hospital_address"),
+  emergencyTransportConsent: boolean("emergency_transport_consent").default(false),
+  specialInstructions: text("special_instructions"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertEmergencyContactSchema = createInsertSchema(emergencyContacts).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertEmergencyContact = z.infer<typeof insertEmergencyContactSchema>;
+export type EmergencyContact = typeof emergencyContacts.$inferSelect;
+
+export const storePolicies = pgTable("store_policies", {
+  id: serial("id").primaryKey(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  leashRequired: boolean("leash_required").default(true),
+  maxLeashLength: varchar("max_leash_length", { length: 20 }),
+  noChairJumping: boolean("no_chair_jumping").default(true),
+  sofaUsageAllowed: boolean("sofa_usage_allowed").default(false),
+  otherDogContact: varchar("other_dog_contact", { length: 50 }).default("ask_first"),
+  treatPolicy: varchar("treat_policy", { length: 50 }).default("provided_only"),
+  outsideFoodAllowed: boolean("outside_food_allowed").default(false),
+  childrenPolicy: varchar("children_policy", { length: 100 }),
+  customRules: jsonb("custom_rules"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertStorePolicySchema = createInsertSchema(storePolicies).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertStorePolicy = z.infer<typeof insertStorePolicySchema>;
+export type StorePolicy = typeof storePolicies.$inferSelect;
+
+export const consentRecords = pgTable("consent_records", {
+  id: serial("id").primaryKey(),
+  ownerId: integer("owner_id").references(() => users.id).notNull(),
+  petId: integer("pet_id").references(() => pets.id),
+  instituteId: integer("institute_id").references(() => institutes.id),
+  consentType: varchar("consent_type", { length: 50 }).notNull(),
+  photoBeforeAfter: boolean("photo_before_after").default(false),
+  snsUsage: boolean("sns_usage").default(false),
+  faceHidden: boolean("face_hidden").default(false),
+  petOnlyPhoto: boolean("pet_only_photo").default(false),
+  caseCardNews: boolean("case_card_news").default(false),
+  storePolicyAgreed: boolean("store_policy_agreed").default(false),
+  emergencyTransportAgreed: boolean("emergency_transport_agreed").default(false),
+  signatureData: text("signature_data"),
+  consentDetails: jsonb("consent_details"),
+  agreedAt: timestamp("agreed_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+  isRevoked: boolean("is_revoked").default(false),
+  revokedAt: timestamp("revoked_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertConsentRecordSchema = createInsertSchema(consentRecords).omit({ id: true, createdAt: true });
+export type InsertConsentRecord = z.infer<typeof insertConsentRecordSchema>;
+export type ConsentRecord = typeof consentRecords.$inferSelect;
+
+export const incidentProtocols = pgTable("incident_protocols", {
+  id: serial("id").primaryKey(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  incidentType: varchar("incident_type", { length: 50 }).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  steps: jsonb("steps").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertIncidentProtocolSchema = createInsertSchema(incidentProtocols).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertIncidentProtocol = z.infer<typeof insertIncidentProtocolSchema>;
+export type IncidentProtocol = typeof incidentProtocols.$inferSelect;
+

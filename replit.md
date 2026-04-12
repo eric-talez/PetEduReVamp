@@ -49,6 +49,16 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Optimized UI/UX**: Streamlined sidebar menus for various user roles (pet owner, trainer, institute, admin) and consolidated navigation.
 
 ## Recent Changes (April 2026)
+- **운영 정책 시스템 (Apr 12)**:
+  - New `emergency_contacts` table for per-pet emergency contact info (designated hospital, transport consent)
+  - New `store_policies` table for institute-level safety rules (leash, treats, contact, children policy)
+  - New `consent_records` table for photo/SNS/store-policy/emergency consent management
+  - New `incident_protocols` table for incident-type checklists (bite, fight, injury, escape, health emergency)
+  - API endpoints: CRUD `/api/emergency-contacts`, GET/POST `/api/store-policies`, CRUD `/api/consent-records`, CRUD `/api/incident-protocols`
+  - Role-based access: owner-only emergency contacts, institute-admin store policies, owner consent management, trainer/institute incident protocols
+  - Frontend pages: EmergencyInfoPage, StorePolicyManagement, ConsentManagement, IncidentProtocols
+  - Sidebar: 매장 규정 + 동의 관리 + 사고 처리 for institute-admin, 사고 처리 for trainer, 응급 정보 + 동의 관리 for pet-owner
+  - Routes: `/institute/store-policies`, `/institute/consent-management`, `/institute/incident-protocols`, `/emergency-info`
 - **QR 체크인 CRM 시스템 (Apr 12)**:
   - New `institute_qr_codes` table for QR code management per institute
   - New `checkin_records` table for visitor checkin tracking

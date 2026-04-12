@@ -820,6 +820,46 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/institute/store-policies">
+          {() => {
+            const StorePolicyManagement = lazy(() => import('./pages/institute/operational-policies/StorePolicyManagement'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={StorePolicyManagement} requiredRoles={['institute-admin', 'admin']} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/consent-management">
+          {() => {
+            const ConsentManagement = lazy(() => import('./pages/institute/operational-policies/ConsentManagement'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={ConsentManagement} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/incident-protocols">
+          {() => {
+            const IncidentProtocols = lazy(() => import('./pages/institute/operational-policies/IncidentProtocols'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={IncidentProtocols} requiredRoles={['trainer', 'institute-admin', 'admin']} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/emergency-info">
+          {() => {
+            const EmergencyInfoPage = lazy(() => import('./pages/institute/operational-policies/EmergencyInfoPage'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={EmergencyInfoPage} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/consultation-records">
           {() => {
             const ConsultationRecords = lazy(() => import('./pages/consultation/ConsultationRecords'));

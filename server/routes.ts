@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { sql, eq, and, isNotNull, desc, or, ilike } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes, instituteQrCodes, checkinRecords } from "../shared/schema";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes, instituteQrCodes, checkinRecords, emergencyContacts, storePolicies, consentRecords, incidentProtocols } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -19148,6 +19148,339 @@ export function registerTrainerCertificationRoutes(app: Express) {
   });
 
   console.log('[QR 체크인 API] QR 체크인 CRM API가 등록되었습니다.');
+
+  // =============================================
+  // 운영 정책 시스템 API (응급/안전/동의/사진활용)
+  // =============================================
+
+  // 응급 연락처 CRUD — owner-only (admin bypasses)
+  app.get("/api/emergency-contacts/:petId", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const petId = parseInt(req.params.petId);
+      if (isNaN(petId)) return res.status(400).json({ error: "유효하지 않은 반려동물 ID입니다." });
+      const [pet] = await db.select().from(pets).where(eq(pets.id, petId)).limit(1);
+      if (!pet) return res.status(404).json({ error: "반려동물을 찾을 수 없습니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (role !== 'admin' && pet.ownerId !== sessionUser.id) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const contacts = await db.select().from(emergencyContacts).where(eq(emergencyContacts.petId, petId));
+      res.json({ success: true, contacts });
+    } catch (error) {
+      console.error("응급 연락처 조회 오류:", error);
+      res.status(500).json({ error: "응급 연락처 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/emergency-contacts", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const { petId, contactName, contactPhone, relationship, designatedHospital, hospitalPhone, hospitalAddress, emergencyTransportConsent, specialInstructions } = req.body;
+      if (!petId || !contactName || !contactPhone) return res.status(400).json({ error: "필수 항목을 입력해주세요." });
+      const [pet] = await db.select().from(pets).where(eq(pets.id, petId)).limit(1);
+      if (!pet) return res.status(404).json({ error: "반려동물을 찾을 수 없습니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (role !== 'admin' && pet.ownerId !== sessionUser.id) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const [contact] = await db.insert(emergencyContacts).values({
+        petId, ownerId: pet.ownerId!, contactName, contactPhone, relationship,
+        designatedHospital, hospitalPhone, hospitalAddress,
+        emergencyTransportConsent: emergencyTransportConsent || false, specialInstructions
+      }).returning();
+      res.json({ success: true, contact });
+    } catch (error) {
+      console.error("응급 연락처 등록 오류:", error);
+      res.status(500).json({ error: "응급 연락처 등록 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/emergency-contacts/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "유효하지 않은 ID입니다." });
+      const [existing] = await db.select().from(emergencyContacts).where(eq(emergencyContacts.id, id)).limit(1);
+      if (!existing) return res.status(404).json({ error: "응급 연락처를 찾을 수 없습니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (role !== 'admin' && existing.ownerId !== sessionUser.id) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const { contactName, contactPhone, relationship, designatedHospital, hospitalPhone, hospitalAddress, emergencyTransportConsent, specialInstructions } = req.body;
+      const [updated] = await db.update(emergencyContacts).set({
+        contactName, contactPhone, relationship, designatedHospital,
+        hospitalPhone, hospitalAddress, emergencyTransportConsent, specialInstructions,
+        updatedAt: new Date()
+      }).where(eq(emergencyContacts.id, id)).returning();
+      res.json({ success: true, contact: updated });
+    } catch (error) {
+      console.error("응급 연락처 수정 오류:", error);
+      res.status(500).json({ error: "응급 연락처 수정 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.delete("/api/emergency-contacts/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "유효하지 않은 ID입니다." });
+      const [existing] = await db.select().from(emergencyContacts).where(eq(emergencyContacts.id, id)).limit(1);
+      if (!existing) return res.status(404).json({ error: "응급 연락처를 찾을 수 없습니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (role !== 'admin' && existing.ownerId !== sessionUser.id) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      await db.delete(emergencyContacts).where(eq(emergencyContacts.id, id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error("응급 연락처 삭제 오류:", error);
+      res.status(500).json({ error: "응급 연락처 삭제 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 매장 안전 규정 API
+  app.get("/api/store-policies/:instituteId", async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.instituteId);
+      if (isNaN(instituteId)) return res.status(400).json({ error: "유효하지 않은 기관 ID입니다." });
+      const [policy] = await db.select().from(storePolicies)
+        .where(and(eq(storePolicies.instituteId, instituteId), eq(storePolicies.isActive, true))).limit(1);
+      res.json({ success: true, policy: policy || null });
+    } catch (error) {
+      console.error("매장 규정 조회 오류:", error);
+      res.status(500).json({ error: "매장 규정 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/store-policies", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "기관 관리자만 규정을 설정할 수 있습니다." });
+      }
+      const { instituteId, leashRequired, maxLeashLength, noChairJumping, sofaUsageAllowed,
+        otherDogContact, treatPolicy, outsideFoodAllowed, childrenPolicy, customRules } = req.body;
+      if (!instituteId) return res.status(400).json({ error: "기관 ID가 필요합니다." });
+      if (role === 'institute-admin' && sessionUser.instituteId !== instituteId) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const [existing] = await db.select().from(storePolicies)
+        .where(and(eq(storePolicies.instituteId, instituteId), eq(storePolicies.isActive, true))).limit(1);
+      let policy;
+      if (existing) {
+        [policy] = await db.update(storePolicies).set({
+          leashRequired, maxLeashLength, noChairJumping, sofaUsageAllowed,
+          otherDogContact, treatPolicy, outsideFoodAllowed, childrenPolicy, customRules,
+          updatedAt: new Date()
+        }).where(eq(storePolicies.id, existing.id)).returning();
+      } else {
+        [policy] = await db.insert(storePolicies).values({
+          instituteId, leashRequired, maxLeashLength, noChairJumping, sofaUsageAllowed,
+          otherDogContact, treatPolicy, outsideFoodAllowed, childrenPolicy, customRules
+        }).returning();
+      }
+      res.json({ success: true, policy });
+    } catch (error) {
+      console.error("매장 규정 저장 오류:", error);
+      res.status(500).json({ error: "매장 규정 저장 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 동의 기록 API
+  app.get("/api/consent-records", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      let records;
+      if (role === 'pet-owner') {
+        records = await db.select().from(consentRecords)
+          .where(eq(consentRecords.ownerId, sessionUser.id)).orderBy(desc(consentRecords.createdAt));
+      } else if (role === 'institute-admin') {
+        const instId = sessionUser.instituteId;
+        if (instId) {
+          records = await db.select().from(consentRecords)
+            .where(eq(consentRecords.instituteId, instId)).orderBy(desc(consentRecords.createdAt));
+        } else {
+          records = [];
+        }
+      } else if (role === 'admin') {
+        records = await db.select().from(consentRecords).orderBy(desc(consentRecords.createdAt)).limit(200);
+      } else {
+        records = [];
+      }
+      res.json({ success: true, records });
+    } catch (error) {
+      console.error("동의 기록 조회 오류:", error);
+      res.status(500).json({ error: "동의 기록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/consent-records", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const { petId, instituteId, consentType, photoBeforeAfter, snsUsage, faceHidden,
+        petOnlyPhoto, caseCardNews, storePolicyAgreed, emergencyTransportAgreed, signatureData, consentDetails } = req.body;
+      if (!consentType) return res.status(400).json({ error: "동의 유형을 선택해주세요." });
+      if (petId) {
+        const [pet] = await db.select().from(pets).where(eq(pets.id, petId)).limit(1);
+        if (!pet || pet.ownerId !== sessionUser.id) {
+          return res.status(403).json({ error: "본인의 반려동물만 동의할 수 있습니다." });
+        }
+      }
+      const [record] = await db.insert(consentRecords).values({
+        ownerId: sessionUser.id, petId: petId || null, instituteId: instituteId || null, consentType,
+        photoBeforeAfter: photoBeforeAfter || false,
+        snsUsage: snsUsage || false,
+        faceHidden: faceHidden || false,
+        petOnlyPhoto: petOnlyPhoto || false,
+        caseCardNews: caseCardNews || false,
+        storePolicyAgreed: storePolicyAgreed || false,
+        emergencyTransportAgreed: emergencyTransportAgreed || false,
+        signatureData, consentDetails
+      }).returning();
+      res.json({ success: true, record });
+    } catch (error) {
+      console.error("동의 기록 저장 오류:", error);
+      res.status(500).json({ error: "동의 기록 저장 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/consent-records/:id/revoke", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "유효하지 않은 ID입니다." });
+      const [existing] = await db.select().from(consentRecords).where(eq(consentRecords.id, id)).limit(1);
+      if (!existing) return res.status(404).json({ error: "동의 기록을 찾을 수 없습니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (role !== 'admin' && existing.ownerId !== sessionUser.id) {
+        return res.status(403).json({ error: "본인의 동의만 철회할 수 있습니다." });
+      }
+      const [updated] = await db.update(consentRecords).set({
+        isRevoked: true, revokedAt: new Date()
+      }).where(eq(consentRecords.id, id)).returning();
+      res.json({ success: true, record: updated });
+    } catch (error) {
+      console.error("동의 철회 오류:", error);
+      res.status(500).json({ error: "동의 철회 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 사고 처리 프로토콜 API
+  app.get("/api/incident-protocols/:instituteId", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const instituteId = parseInt(req.params.instituteId);
+      if (isNaN(instituteId)) return res.status(400).json({ error: "유효하지 않은 기관 ID입니다." });
+      if (role !== 'admin') {
+        const userInstituteId = sessionUser.instituteId;
+        if (!userInstituteId || userInstituteId !== instituteId) {
+          return res.status(403).json({ error: "소속 기관의 프로토콜만 조회할 수 있습니다." });
+        }
+      }
+      const protocols = await db.select().from(incidentProtocols)
+        .where(and(eq(incidentProtocols.instituteId, instituteId), eq(incidentProtocols.isActive, true)));
+      res.json({ success: true, protocols });
+    } catch (error) {
+      console.error("사고 프로토콜 조회 오류:", error);
+      res.status(500).json({ error: "사고 프로토콜 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/incident-protocols", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "기관 관리자만 프로토콜을 설정할 수 있습니다." });
+      }
+      const { instituteId, incidentType, title, steps } = req.body;
+      if (!instituteId || !incidentType || !title || !steps) {
+        return res.status(400).json({ error: "필수 항목을 입력해주세요." });
+      }
+      if (role === 'institute-admin' && sessionUser.instituteId !== instituteId) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const [protocol] = await db.insert(incidentProtocols).values({
+        instituteId, incidentType, title, steps
+      }).returning();
+      res.json({ success: true, protocol });
+    } catch (error) {
+      console.error("사고 프로토콜 등록 오류:", error);
+      res.status(500).json({ error: "사고 프로토콜 등록 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/incident-protocols/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "유효하지 않은 ID입니다." });
+      const [existing] = await db.select().from(incidentProtocols).where(eq(incidentProtocols.id, id)).limit(1);
+      if (!existing) return res.status(404).json({ error: "프로토콜을 찾을 수 없습니다." });
+      if (role === 'institute-admin' && sessionUser.instituteId !== existing.instituteId) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const { incidentType, title, steps, isActive } = req.body;
+      const [updated] = await db.update(incidentProtocols).set({
+        incidentType: incidentType || existing.incidentType,
+        title: title || existing.title,
+        steps: steps || existing.steps,
+        isActive: isActive !== undefined ? isActive : existing.isActive,
+        updatedAt: new Date()
+      }).where(eq(incidentProtocols.id, id)).returning();
+      res.json({ success: true, protocol: updated });
+    } catch (error) {
+      console.error("사고 프로토콜 수정 오류:", error);
+      res.status(500).json({ error: "사고 프로토콜 수정 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.delete("/api/incident-protocols/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "기관 관리자만 프로토콜을 삭제할 수 있습니다." });
+      }
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "유효하지 않은 ID입니다." });
+      const [existing] = await db.select().from(incidentProtocols).where(eq(incidentProtocols.id, id)).limit(1);
+      if (!existing) return res.status(404).json({ error: "프로토콜을 찾을 수 없습니다." });
+      if (role === 'institute-admin' && sessionUser.instituteId !== existing.instituteId) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      await db.delete(incidentProtocols).where(eq(incidentProtocols.id, id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error("사고 프로토콜 삭제 오류:", error);
+      res.status(500).json({ error: "사고 프로토콜 삭제 중 오류가 발생했습니다." });
+    }
+  });
+
+  console.log('[운영 정책 API] 응급/안전/동의/사고 처리 API가 등록되었습니다.');
 
   const httpServer = createServer(app);
   return httpServer;
