@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { sql, eq, and, isNotNull, desc, or, ilike } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes } from "../shared/schema";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes, instituteQrCodes, checkinRecords } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -18844,6 +18844,306 @@ export function registerTrainerCertificationRoutes(app: Express) {
   });
 
   console.log('[Consultation API] 상담 기록 API가 등록되었습니다.');
+
+  // =============================================
+  // QR 체크인 CRM 시스템 API
+  // =============================================
+
+  app.post("/api/institute/qr-codes", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "기관 관리자 또는 관리자만 QR 코드를 생성할 수 있습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'admin' && req.body.instituteId) {
+        instituteId = Number(req.body.instituteId);
+      }
+      if (!instituteId) {
+        return res.status(400).json({ error: "소속 기관이 없습니다." });
+      }
+      const token = crypto.randomBytes(16).toString('hex');
+      const label = req.body.label || '기본 QR 코드';
+      const [qrCode] = await db.insert(instituteQrCodes).values({
+        instituteId,
+        token,
+        label,
+        isActive: true,
+        createdBy: sessionUser.id,
+      }).returning();
+      res.json({ success: true, qrCode });
+    } catch (error) {
+      console.error("QR 코드 생성 오류:", error);
+      res.status(500).json({ error: "QR 코드 생성 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/institute/qr-codes", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'admin' && req.query.instituteId) {
+        instituteId = Number(req.query.instituteId);
+      }
+      if (!instituteId) {
+        return res.json({ success: true, qrCodes: [] });
+      }
+      const qrCodes = await db.select().from(instituteQrCodes)
+        .where(eq(instituteQrCodes.instituteId, instituteId))
+        .orderBy(desc(instituteQrCodes.createdAt));
+      res.json({ success: true, qrCodes });
+    } catch (error) {
+      console.error("QR 코드 목록 조회 오류:", error);
+      res.status(500).json({ error: "QR 코드 목록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/institute/qr-codes/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const id = Number(req.params.id);
+      const [existing] = await db.select().from(instituteQrCodes).where(eq(instituteQrCodes.id, id));
+      if (!existing) return res.status(404).json({ error: "QR 코드를 찾을 수 없습니다." });
+      if (role === 'institute-admin' && existing.instituteId !== sessionUser.instituteId) {
+        return res.status(403).json({ error: "소속 기관의 QR 코드만 수정할 수 있습니다." });
+      }
+      const updateData: any = { updatedAt: new Date() };
+      if (req.body.label !== undefined) updateData.label = req.body.label;
+      if (req.body.isActive !== undefined) updateData.isActive = req.body.isActive;
+      const [updated] = await db.update(instituteQrCodes).set(updateData).where(eq(instituteQrCodes.id, id)).returning();
+      res.json({ success: true, qrCode: updated });
+    } catch (error) {
+      console.error("QR 코드 수정 오류:", error);
+      res.status(500).json({ error: "QR 코드 수정 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.delete("/api/institute/qr-codes/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const id = Number(req.params.id);
+      const [existing] = await db.select().from(instituteQrCodes).where(eq(instituteQrCodes.id, id));
+      if (!existing) return res.status(404).json({ error: "QR 코드를 찾을 수 없습니다." });
+      if (role === 'institute-admin' && existing.instituteId !== sessionUser.instituteId) {
+        return res.status(403).json({ error: "소속 기관의 QR 코드만 삭제할 수 있습니다." });
+      }
+      await db.delete(instituteQrCodes).where(eq(instituteQrCodes.id, id));
+      res.json({ success: true, message: "QR 코드가 삭제되었습니다." });
+    } catch (error) {
+      console.error("QR 코드 삭제 오류:", error);
+      res.status(500).json({ error: "QR 코드 삭제 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/checkin/qr/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const [qrCode] = await db.select().from(instituteQrCodes)
+        .where(and(eq(instituteQrCodes.token, token), eq(instituteQrCodes.isActive, true)));
+      if (!qrCode) return res.status(404).json({ error: "유효하지 않은 QR 코드입니다." });
+      const [institute] = await db.select({ id: institutes.id, name: institutes.name, address: institutes.address, phone: institutes.phone })
+        .from(institutes).where(eq(institutes.id, qrCode.instituteId));
+      if (!institute) return res.status(404).json({ error: "기관을 찾을 수 없습니다." });
+      const sessionUser = (req as any).user;
+      let userPets: any[] = [];
+      if (sessionUser) {
+        userPets = await db.select({ id: pets.id, name: pets.name, breed: pets.breed, species: pets.species })
+          .from(pets).where(eq(pets.ownerId, sessionUser.id));
+      }
+      res.json({ success: true, institute, qrCodeId: qrCode.id, userPets, isLoggedIn: !!sessionUser, userName: sessionUser?.name || null });
+    } catch (error) {
+      console.error("QR 코드 조회 오류:", error);
+      res.status(500).json({ error: "QR 코드 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/checkin", async (req, res) => {
+    try {
+      const { qrToken, petId, ownerName, petName, todayConcern, recentProblemBehavior, todayGoal, nextReservationDate, hasPackage, packageNote } = req.body;
+      if (!qrToken) return res.status(400).json({ error: "QR 토큰이 필요합니다." });
+      const [qrCode] = await db.select().from(instituteQrCodes)
+        .where(and(eq(instituteQrCodes.token, qrToken), eq(instituteQrCodes.isActive, true)));
+      if (!qrCode) return res.status(404).json({ error: "유효하지 않은 QR 코드입니다." });
+      const sessionUser = (req as any).user;
+      const ownerId = sessionUser?.id || null;
+      const isNewVisitor = !sessionUser;
+      const resolvedPetId = petId ? Number(petId) : null;
+      if (resolvedPetId && sessionUser) {
+        const [pet] = await db.select({ ownerId: pets.ownerId }).from(pets).where(eq(pets.id, resolvedPetId));
+        if (pet && pet.ownerId !== sessionUser.id) {
+          return res.status(403).json({ error: "본인의 반려동물만 체크인할 수 있습니다." });
+        }
+      }
+      const [record] = await db.insert(checkinRecords).values({
+        instituteId: qrCode.instituteId,
+        qrCodeId: qrCode.id,
+        ownerId,
+        petId: resolvedPetId,
+        ownerName: ownerName || sessionUser?.name || null,
+        petName: petName || null,
+        todayConcern: todayConcern || null,
+        recentProblemBehavior: recentProblemBehavior || null,
+        todayGoal: todayGoal || null,
+        nextReservationDate: nextReservationDate || null,
+        hasPackage: hasPackage || false,
+        packageNote: packageNote || null,
+        isNewVisitor,
+        checkinAt: new Date(),
+      }).returning();
+      res.json({ success: true, checkin: record });
+    } catch (error) {
+      console.error("체크인 오류:", error);
+      res.status(500).json({ error: "체크인 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/institute/checkins", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'trainer' && !instituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+        if (trainerInst) instituteId = trainerInst.instituteId;
+      }
+      if (role === 'admin' && req.query.instituteId) {
+        instituteId = Number(req.query.instituteId);
+      }
+      if (!instituteId) return res.json({ success: true, checkins: [] });
+      const dateFilter = req.query.date as string || new Date().toISOString().split('T')[0];
+      const startOfDay = new Date(dateFilter + 'T00:00:00.000Z');
+      const endOfDay = new Date(dateFilter + 'T23:59:59.999Z');
+      const checkins = await db.select().from(checkinRecords)
+        .where(and(
+          eq(checkinRecords.instituteId, instituteId),
+          sql`${checkinRecords.checkinAt} >= ${startOfDay}`,
+          sql`${checkinRecords.checkinAt} <= ${endOfDay}`
+        ))
+        .orderBy(desc(checkinRecords.checkinAt));
+      const enriched = await Promise.all(checkins.map(async (c: any) => {
+        let petInfo = null;
+        let ownerInfo = null;
+        if (c.petId) {
+          const [pet] = await db.select({ name: pets.name, breed: pets.breed, species: pets.species, temperamentLevel: pets.temperamentLevel })
+            .from(pets).where(eq(pets.id, c.petId));
+          petInfo = pet;
+        }
+        if (c.ownerId) {
+          const [owner] = await db.select({ name: users.name, phone: users.phone })
+            .from(users).where(eq(users.id, c.ownerId));
+          ownerInfo = owner;
+        }
+        return { ...c, petInfo, ownerInfo };
+      }));
+      res.json({ success: true, checkins: enriched });
+    } catch (error) {
+      console.error("체크인 목록 조회 오류:", error);
+      res.status(500).json({ error: "체크인 목록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/institute/checkins/history/:ownerId", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'trainer' && !instituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+        if (trainerInst) instituteId = trainerInst.instituteId;
+      }
+      if (role === 'admin' && req.query.instituteId) {
+        instituteId = Number(req.query.instituteId);
+      }
+      const ownerId = Number(req.params.ownerId);
+      if (role !== 'admin' && !instituteId) {
+        return res.status(403).json({ error: "소속 기관이 확인되지 않습니다." });
+      }
+      const scopeFilter = role === 'admin'
+        ? eq(checkinRecords.ownerId, ownerId)
+        : and(eq(checkinRecords.ownerId, ownerId), eq(checkinRecords.instituteId, instituteId!));
+      const history = await db.select().from(checkinRecords)
+        .where(scopeFilter)
+        .orderBy(desc(checkinRecords.checkinAt));
+      if (history.length === 0 && role !== 'admin') {
+        return res.status(404).json({ error: "해당 고객의 방문 기록이 없습니다." });
+      }
+      const [ownerInfo] = await db.select({ name: users.name, phone: users.phone })
+        .from(users).where(eq(users.id, ownerId));
+      const ownerPets = await db.select({ id: pets.id, name: pets.name, breed: pets.breed, temperamentLevel: pets.temperamentLevel })
+        .from(pets).where(eq(pets.ownerId, ownerId));
+      const totalVisits = history.length;
+      const concerns = history.filter((h: any) => h.todayConcern).map((h: any) => ({ date: h.checkinAt, concern: h.todayConcern }));
+      res.json({ success: true, owner: ownerInfo ? { name: ownerInfo.name, phone: ownerInfo.phone } : null, pets: ownerPets, history, totalVisits, concerns });
+    } catch (error) {
+      console.error("고객 히스토리 조회 오류:", error);
+      res.status(500).json({ error: "고객 히스토리 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/institute/checkins/stats", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'trainer' && !instituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+        if (trainerInst) instituteId = trainerInst.instituteId;
+      }
+      if (!instituteId) return res.json({ success: true, stats: { todayCount: 0, weekCount: 0, monthCount: 0, uniqueVisitors: 0 } });
+      const today = new Date();
+      const startOfToday = new Date(today.toISOString().split('T')[0] + 'T00:00:00.000Z');
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - 7);
+      const startOfMonth = new Date(today);
+      startOfMonth.setDate(today.getDate() - 30);
+      const [todayResult] = await db.select({ count: sql<number>`count(*)` }).from(checkinRecords)
+        .where(and(eq(checkinRecords.instituteId, instituteId), sql`${checkinRecords.checkinAt} >= ${startOfToday}`));
+      const [weekResult] = await db.select({ count: sql<number>`count(*)` }).from(checkinRecords)
+        .where(and(eq(checkinRecords.instituteId, instituteId), sql`${checkinRecords.checkinAt} >= ${startOfWeek}`));
+      const [monthResult] = await db.select({ count: sql<number>`count(*)` }).from(checkinRecords)
+        .where(and(eq(checkinRecords.instituteId, instituteId), sql`${checkinRecords.checkinAt} >= ${startOfMonth}`));
+      const [uniqueResult] = await db.select({ count: sql<number>`count(distinct ${checkinRecords.ownerId})` }).from(checkinRecords)
+        .where(and(eq(checkinRecords.instituteId, instituteId), isNotNull(checkinRecords.ownerId)));
+      res.json({ success: true, stats: { todayCount: Number(todayResult?.count || 0), weekCount: Number(weekResult?.count || 0), monthCount: Number(monthResult?.count || 0), uniqueVisitors: Number(uniqueResult?.count || 0) } });
+    } catch (error) {
+      console.error("체크인 통계 조회 오류:", error);
+      res.status(500).json({ error: "통계 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  console.log('[QR 체크인 API] QR 체크인 CRM API가 등록되었습니다.');
 
   const httpServer = createServer(app);
   return httpServer;

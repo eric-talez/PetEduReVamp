@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import { SimpleChatBot } from './components/ui/SimpleChatBot';
@@ -790,6 +790,36 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/institute/qr-codes">
+          {() => {
+            const QrCodeManagement = lazy(() => import('./pages/institute/qr-checkin/QrCodeManagement'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={QrCodeManagement} requiredRoles={['institute-admin', 'admin']} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/checkin-dashboard">
+          {() => {
+            const CheckinDashboard = lazy(() => import('./pages/institute/qr-checkin/CheckinDashboard'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={CheckinDashboard} requiredRoles={['trainer', 'institute-admin', 'admin']} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/customer-history/:ownerId">
+          {() => {
+            const CustomerHistory = lazy(() => import('./pages/institute/qr-checkin/CustomerHistory'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={CustomerHistory} requiredRoles={['trainer', 'institute-admin', 'admin']} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/consultation-records">
           {() => {
             const ConsultationRecords = lazy(() => import('./pages/consultation/ConsultationRecords'));
@@ -1903,9 +1933,19 @@ function UnauthenticatedRoutes() {
   );
 }
 
-/**
- * 디버그 버튼 컴포넌트 - 챗봇 버튼 가시성을 위해 비활성화
- */
+function PublicCheckinRoute() {
+  const CheckinPage = lazy(() => import('./pages/institute/qr-checkin/CheckinPage'));
+  return (
+    <Switch>
+      <Route path="/checkin/:token">
+        <Suspense fallback={<SimpleLoading />}>
+          <CheckinPage />
+        </Suspense>
+      </Route>
+    </Switch>
+  );
+}
+
 function DebugButton() {
   return null;
 }
@@ -1950,7 +1990,7 @@ function SimpleApp() {
                     <WeatherEffectsWrapper />
                     {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
                     <NavigationProgress />
-                    {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+                    {window.location.pathname.startsWith('/checkin/') ? <PublicCheckinRoute /> : (auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />)}
                     <DebugButton />
                     <Toaster />
                     <NotificationPermissionPopup />

@@ -91,7 +91,8 @@ import {
   Zap,
   Syringe,
   Dog,
-  Link2
+  Link2,
+  QrCode
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -867,6 +868,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/education-schedule" icon={<Calendar className="w-5 h-5 mr-2" />} hoverIcon={<CalendarDays className="w-5 h-5 mr-2 text-primary" />} active={isActive("/education-schedule")} onClick={handleItemClick} show={true}>일정</AccessibleNavItem>
                         <AccessibleNavItem href="/trainer/notebook" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<Edit className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/notebook")} onClick={handleItemClick} show={isMenuVisible('trainer-notebook')}>알림장</AccessibleNavItem>
                         <AccessibleNavItem href="/consultation-records" icon={<ClipboardList className="w-5 h-5 mr-2" />} hoverIcon={<ClipboardList className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation-records")} onClick={handleItemClick} show={true} badge="상담">상담 기록</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/checkin-dashboard" icon={<QrCode className="w-5 h-5 mr-2" />} hoverIcon={<QrCode className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/checkin-dashboard")} onClick={handleItemClick} show={true} badge="체크인">체크인 현황</AccessibleNavItem>
                       </>
                     )}
 
@@ -898,6 +900,8 @@ export function Sidebar({
                         <AccessibleNavItem href="/institute/facility" icon={<Building className="w-5 h-5 mr-2" />} hoverIcon={<MapPin className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/facility")} onClick={handleItemClick} show={isMenuVisible('institute-facility')}>시설 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/institute/notebook-monitor" icon={<Monitor className="w-5 h-5 mr-2" />} hoverIcon={<FileText className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/notebook-monitor")} onClick={handleItemClick} show={isMenuVisible('notebook-monitor')}>알림장</AccessibleNavItem>
                         <AccessibleNavItem href="/consultation-records" icon={<ClipboardList className="w-5 h-5 mr-2" />} hoverIcon={<ClipboardList className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation-records")} onClick={handleItemClick} show={true} badge="상담">상담 기록</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/qr-codes" icon={<QrCode className="w-5 h-5 mr-2" />} hoverIcon={<QrCode className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/qr-codes")} onClick={handleItemClick} show={true} badge="QR">QR 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/institute/checkin-dashboard" icon={<UserCheck className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/checkin-dashboard")} onClick={handleItemClick} show={true} badge="체크인">체크인 현황</AccessibleNavItem>
                       </>
                     )}
 

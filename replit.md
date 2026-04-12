@@ -49,6 +49,15 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Optimized UI/UX**: Streamlined sidebar menus for various user roles (pet owner, trainer, institute, admin) and consolidated navigation.
 
 ## Recent Changes (April 2026)
+- **QR 체크인 CRM 시스템 (Apr 12)**:
+  - New `institute_qr_codes` table for QR code management per institute
+  - New `checkin_records` table for visitor checkin tracking
+  - API endpoints: POST/GET/PUT/DELETE `/api/institute/qr-codes`, GET `/api/checkin/qr/:token` (public), POST `/api/checkin` (public), GET `/api/institute/checkins`, GET `/api/institute/checkins/history/:ownerId`, GET `/api/institute/checkins/stats`
+  - Role-based access: institute-admin creates/manages QR codes, trainer/institute-admin views checkins, public checkin page for visitors
+  - Public checkin page at `/checkin/:token` - mobile-optimized, works for both logged-in and guest visitors
+  - QR management page, checkin dashboard with stats, customer history with visit timeline
+  - Sidebar integration: QR 관리 + 체크인 현황 for institute-admin, 체크인 현황 for trainer
+  - Routes: `/institute/qr-codes`, `/institute/checkin-dashboard`, `/institute/customer-history/:ownerId`, `/checkin/:token`
 - **First Visit Consultation Records + Temperament Grading (Apr 12)**:
   - New `consultation_records` table for first-visit pet consultation documentation
   - API endpoints: Full CRUD - POST/GET/PUT/DELETE `/api/consultation-records`, GET `/api/consultation-records/:id`, GET `/api/consultation-records/pet/:petId`, PUT `/api/pets/:petId/temperament`, GET `/api/pets/all-owners`

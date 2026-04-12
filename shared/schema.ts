@@ -2872,6 +2872,46 @@ export const educationCredits = pgTable("education_credits", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// QR 체크인 - 기관별 QR 코드 테이블
+export const instituteQrCodes = pgTable("institute_qr_codes", {
+  id: serial("id").primaryKey(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  token: varchar("token", { length: 100 }).notNull().unique(),
+  label: varchar("label", { length: 200 }),
+  isActive: boolean("is_active").default(true),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// QR 체크인 기록 테이블
+export const checkinRecords = pgTable("checkin_records", {
+  id: serial("id").primaryKey(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  qrCodeId: integer("qr_code_id").references(() => instituteQrCodes.id),
+  ownerId: integer("owner_id").references(() => users.id),
+  petId: integer("pet_id").references(() => pets.id),
+  ownerName: varchar("owner_name", { length: 100 }),
+  petName: varchar("pet_name", { length: 100 }),
+  todayConcern: text("today_concern"),
+  recentProblemBehavior: text("recent_problem_behavior"),
+  todayGoal: text("today_goal"),
+  nextReservationDate: date("next_reservation_date"),
+  hasPackage: boolean("has_package").default(false),
+  packageNote: text("package_note"),
+  isNewVisitor: boolean("is_new_visitor").default(false),
+  checkinAt: timestamp("checkin_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertInstituteQrCodeSchema = createInsertSchema(instituteQrCodes).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertInstituteQrCode = z.infer<typeof insertInstituteQrCodeSchema>;
+export type InstituteQrCode = typeof instituteQrCodes.$inferSelect;
+
+export const insertCheckinRecordSchema = createInsertSchema(checkinRecords).omit({ id: true, createdAt: true });
+export type InsertCheckinRecord = z.infer<typeof insertCheckinRecordSchema>;
+export type CheckinRecord = typeof checkinRecords.$inferSelect;
+
 // 친구 초대 스키마 및 타입
 export const insertFriendInvitationSchema = createInsertSchema(friendInvitations).omit({ id: true, createdAt: true });
 export type InsertFriendInvitation = z.infer<typeof insertFriendInvitationSchema>;
