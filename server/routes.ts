@@ -18672,6 +18672,9 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const sessionUser = (req as any).user;
       if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
       const role = sessionUser.role || sessionUser.userRole;
+      if (!['admin', 'trainer', 'institute-admin', 'pet-owner'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
       const id = Number(req.params.id);
       const [record] = await db.select().from(consultationRecords).where(eq(consultationRecords.id, id));
       if (!record) return res.status(404).json({ error: "상담 기록을 찾을 수 없습니다." });
