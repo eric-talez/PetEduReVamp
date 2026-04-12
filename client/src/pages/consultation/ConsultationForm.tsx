@@ -63,7 +63,7 @@ export default function ConsultationForm() {
   });
 
   const ownerPets = ownerPetsData?.ownerPets || [];
-  const uniqueOwners = Array.from(new Map(ownerPets.map((op: any) => [op.ownerId, { id: op.ownerId, name: op.ownerName, email: op.ownerEmail }])).values());
+  const uniqueOwners = Array.from(new Map(ownerPets.map((op: any) => [op.ownerId, { id: op.ownerId, name: op.ownerName }])).values());
   const filteredPets = ownerPets.filter((op: any) => String(op.ownerId) === selectedOwnerId);
 
   const createMutation = useMutation({
@@ -133,7 +133,7 @@ export default function ConsultationForm() {
                 <SelectContent>
                   {uniqueOwners.map((owner: any) => (
                     <SelectItem key={owner.id} value={String(owner.id)}>
-                      {owner.name} ({owner.email})
+                      {owner.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

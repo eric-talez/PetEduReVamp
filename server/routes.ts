@@ -18446,14 +18446,22 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (role === 'pet-owner' && pet.ownerId !== sessionUser.id) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
-      let petRecordsQuery = eq(consultationRecords.petId, petId);
+      const petRecordsQuery = eq(consultationRecords.petId, petId);
       let records;
-      if (role === 'trainer') {
-        records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.trainerId, sessionUser.id))).orderBy(desc(consultationRecords.createdAt));
-      } else if (role === 'institute-admin' && sessionUser.instituteId) {
-        records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.instituteId, sessionUser.instituteId))).orderBy(desc(consultationRecords.createdAt));
-      } else {
+      if (role === 'admin') {
         records = await db.select().from(consultationRecords).where(petRecordsQuery).orderBy(desc(consultationRecords.createdAt));
+      } else if (role === 'pet-owner') {
+        records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.ownerId, sessionUser.id))).orderBy(desc(consultationRecords.createdAt));
+      } else if (role === 'trainer') {
+        records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.trainerId, sessionUser.id))).orderBy(desc(consultationRecords.createdAt));
+      } else if (role === 'institute-admin') {
+        if (!sessionUser.instituteId) {
+          records = [];
+        } else {
+          records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.instituteId, sessionUser.instituteId))).orderBy(desc(consultationRecords.createdAt));
+        }
+      } else {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
       const enriched = await Promise.all(records.map(async (r: any) => {
         const [trainer] = await db.select({ name: users.name }).from(users).where(eq(users.id, r.trainerId));
@@ -18480,8 +18488,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (role === 'trainer' && record.trainerId !== sessionUser.id) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
-      if (role === 'institute-admin' && sessionUser.instituteId && record.instituteId !== sessionUser.instituteId) {
-        return res.status(403).json({ error: "소속 기관의 상담 기록만 조회할 수 있습니다." });
+      if (role === 'institute-admin') {
+        if (!sessionUser.instituteId || record.instituteId !== sessionUser.instituteId) {
+          return res.status(403).json({ error: "소속 기관의 상담 기록만 조회할 수 있습니다." });
+        }
       }
       const [pet] = await db.select().from(pets).where(eq(pets.id, record.petId));
       const [owner] = await db.select({ name: users.name, email: users.email, phone: users.phone }).from(users).where(eq(users.id, record.ownerId));
@@ -18507,8 +18517,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (role === 'trainer' && existing.trainerId !== sessionUser.id) {
         return res.status(403).json({ error: "본인이 작성한 상담 기록만 수정할 수 있습니다." });
       }
-      if (role === 'institute-admin' && sessionUser.instituteId && existing.instituteId !== sessionUser.instituteId) {
-        return res.status(403).json({ error: "소속 기관의 상담 기록만 수정할 수 있습니다." });
+      if (role === 'institute-admin') {
+        if (!sessionUser.instituteId || existing.instituteId !== sessionUser.instituteId) {
+          return res.status(403).json({ error: "소속 기관의 상담 기록만 수정할 수 있습니다." });
+        }
       }
       const { visitPurpose, mainProblemBehavior, behaviorTiming, behaviorTarget, recentChanges, walkDuration, mealPattern, ownerReactionStyle, previousTrainingExperience, desiredGoal, temperamentLevel, additionalNotes } = req.body;
       if (temperamentLevel && !['A','B','C','D','E'].includes(temperamentLevel)) {
@@ -18552,8 +18564,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (role === 'trainer' && existing.trainerId !== sessionUser.id) {
         return res.status(403).json({ error: "본인이 작성한 상담 기록만 삭제할 수 있습니다." });
       }
-      if (role === 'institute-admin' && sessionUser.instituteId && existing.instituteId !== sessionUser.instituteId) {
-        return res.status(403).json({ error: "소속 기관의 상담 기록만 삭제할 수 있습니다." });
+      if (role === 'institute-admin') {
+        if (!sessionUser.instituteId || existing.instituteId !== sessionUser.instituteId) {
+          return res.status(403).json({ error: "소속 기관의 상담 기록만 삭제할 수 있습니다." });
+        }
       }
       await db.delete(consultationRecords).where(eq(consultationRecords.id, id));
       res.json({ success: true, message: "상담 기록이 삭제되었습니다." });
@@ -18578,10 +18592,20 @@ export function registerTrainerCertificationRoutes(app: Express) {
       }
       const [pet] = await db.select().from(pets).where(eq(pets.id, petId));
       if (!pet) return res.status(404).json({ error: "반려동물을 찾을 수 없습니다." });
-      if (role === 'institute-admin' && sessionUser.instituteId) {
-        const ownerRecords = await db.select().from(consultationRecords)
+      if (role === 'trainer') {
+        const trainerRecords = await db.select().from(consultationRecords)
+          .where(and(eq(consultationRecords.petId, petId), eq(consultationRecords.trainerId, sessionUser.id)));
+        if (trainerRecords.length === 0) {
+          return res.status(403).json({ error: "담당 반려동물의 성향만 변경할 수 있습니다." });
+        }
+      }
+      if (role === 'institute-admin') {
+        if (!sessionUser.instituteId) {
+          return res.status(403).json({ error: "소속 기관이 없어 성향을 변경할 수 없습니다." });
+        }
+        const instRecords = await db.select().from(consultationRecords)
           .where(and(eq(consultationRecords.petId, petId), eq(consultationRecords.instituteId, sessionUser.instituteId)));
-        if (ownerRecords.length === 0) {
+        if (instRecords.length === 0) {
           return res.status(403).json({ error: "소속 기관과 관련된 반려동물의 성향만 변경할 수 있습니다." });
         }
       }
@@ -18601,17 +18625,46 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
-      const ownerPets = await db.select({
+      const selectFields = {
         petId: pets.id,
         petName: pets.name,
         petBreed: pets.breed,
         petAge: pets.age,
         ownerId: pets.ownerId,
         ownerName: users.name,
-        ownerEmail: users.email,
-      }).from(pets)
-        .innerJoin(users, eq(pets.ownerId, users.id))
-        .orderBy(users.name);
+      };
+      let ownerPets;
+      if (role === 'admin') {
+        ownerPets = await db.select(selectFields).from(pets)
+          .innerJoin(users, eq(pets.ownerId, users.id))
+          .orderBy(users.name);
+      } else if (role === 'trainer') {
+        const trainerRecords = await db.selectDistinct({ petId: consultationRecords.petId }).from(consultationRecords).where(eq(consultationRecords.trainerId, sessionUser.id));
+        const trainerPetIds = trainerRecords.map((r: { petId: number }) => r.petId);
+        if (trainerPetIds.length > 0) {
+          ownerPets = await db.select(selectFields).from(pets)
+            .innerJoin(users, eq(pets.ownerId, users.id))
+            .where(sql`${pets.id} = ANY(${trainerPetIds})`)
+            .orderBy(users.name);
+        } else {
+          ownerPets = await db.select(selectFields).from(pets)
+            .innerJoin(users, eq(pets.ownerId, users.id))
+            .orderBy(users.name);
+        }
+      } else if (role === 'institute-admin' && sessionUser.instituteId) {
+        const instRecords = await db.selectDistinct({ petId: consultationRecords.petId }).from(consultationRecords).where(eq(consultationRecords.instituteId, sessionUser.instituteId));
+        const instPetIds = instRecords.map((r: { petId: number }) => r.petId);
+        if (instPetIds.length > 0) {
+          ownerPets = await db.select(selectFields).from(pets)
+            .innerJoin(users, eq(pets.ownerId, users.id))
+            .where(sql`${pets.id} = ANY(${instPetIds})`)
+            .orderBy(users.name);
+        } else {
+          ownerPets = [];
+        }
+      } else {
+        ownerPets = [];
+      }
       res.json({ success: true, ownerPets });
     } catch (error) {
       console.error("보호자-반려동물 목록 조회 오류:", error);
