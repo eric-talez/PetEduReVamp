@@ -18638,29 +18638,13 @@ export function registerTrainerCertificationRoutes(app: Express) {
         ownerPets = await db.select(selectFields).from(pets)
           .innerJoin(users, eq(pets.ownerId, users.id))
           .orderBy(users.name);
-      } else if (role === 'trainer') {
-        const trainerRecords = await db.selectDistinct({ petId: consultationRecords.petId }).from(consultationRecords).where(eq(consultationRecords.trainerId, sessionUser.id));
-        const trainerPetIds = trainerRecords.map((r: { petId: number }) => r.petId);
-        if (trainerPetIds.length > 0) {
-          ownerPets = await db.select(selectFields).from(pets)
-            .innerJoin(users, eq(pets.ownerId, users.id))
-            .where(sql`${pets.id} = ANY(${trainerPetIds})`)
-            .orderBy(users.name);
-        } else {
-          ownerPets = await db.select(selectFields).from(pets)
-            .innerJoin(users, eq(pets.ownerId, users.id))
-            .orderBy(users.name);
-        }
-      } else if (role === 'institute-admin' && sessionUser.instituteId) {
-        const instRecords = await db.selectDistinct({ petId: consultationRecords.petId }).from(consultationRecords).where(eq(consultationRecords.instituteId, sessionUser.instituteId));
-        const instPetIds = instRecords.map((r: { petId: number }) => r.petId);
-        if (instPetIds.length > 0) {
-          ownerPets = await db.select(selectFields).from(pets)
-            .innerJoin(users, eq(pets.ownerId, users.id))
-            .where(sql`${pets.id} = ANY(${instPetIds})`)
-            .orderBy(users.name);
-        } else {
+      } else if (role === 'trainer' || role === 'institute-admin') {
+        if (role === 'institute-admin' && !sessionUser.instituteId) {
           ownerPets = [];
+        } else {
+          ownerPets = await db.select(selectFields).from(pets)
+            .innerJoin(users, eq(pets.ownerId, users.id))
+            .orderBy(users.name);
         }
       } else {
         ownerPets = [];
