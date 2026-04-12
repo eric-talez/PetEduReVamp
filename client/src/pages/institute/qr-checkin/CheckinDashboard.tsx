@@ -6,17 +6,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, Calendar, TrendingUp, UserCheck, PawPrint, AlertTriangle, Clock, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
+import type { CheckinRecord } from "@shared/schema";
+
+interface PetInfo {
+  name: string | null;
+  breed: string | null;
+  species: string | null;
+  temperamentLevel: string | null;
+}
+
+interface OwnerInfo {
+  name: string | null;
+  phone: string | null;
+}
+
+interface EnrichedCheckin extends CheckinRecord {
+  petInfo: PetInfo | null;
+  ownerInfo: OwnerInfo | null;
+}
+
+interface CheckinListResponse {
+  success: boolean;
+  checkins: EnrichedCheckin[];
+}
+
+interface StatsResponse {
+  success: boolean;
+  stats: {
+    todayCount: number;
+    weekCount: number;
+    monthCount: number;
+    uniqueVisitors: number;
+  };
+}
 
 export default function CheckinDashboard() {
   const [, navigate] = useLocation();
   const today = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(today);
 
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: statsData, isLoading: statsLoading } = useQuery<StatsResponse>({
     queryKey: ["/api/institute/checkins/stats"],
   });
 
-  const { data: checkinsData, isLoading: checkinsLoading } = useQuery({
+  const { data: checkinsData, isLoading: checkinsLoading } = useQuery<CheckinListResponse>({
     queryKey: ["/api/institute/checkins", selectedDate],
     queryFn: async () => {
       const res = await fetch(`/api/institute/checkins?date=${selectedDate}`);
@@ -25,8 +58,8 @@ export default function CheckinDashboard() {
     },
   });
 
-  const stats = (statsData as any)?.stats || { todayCount: 0, weekCount: 0, monthCount: 0, uniqueVisitors: 0 };
-  const checkins = (checkinsData as any)?.checkins || [];
+  const stats = statsData?.stats ?? { todayCount: 0, weekCount: 0, monthCount: 0, uniqueVisitors: 0 };
+  const checkins = checkinsData?.checkins ?? [];
 
   const temperamentBadge = (level: string | null) => {
     const map: Record<string, { label: string; color: string }> = {
@@ -122,7 +155,7 @@ export default function CheckinDashboard() {
             </div>
           ) : (
             <div className="space-y-3">
-              {checkins.map((checkin: any) => (
+              {checkins.map((checkin) => (
                 <div
                   key={checkin.id}
                   className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -159,7 +192,7 @@ export default function CheckinDashboard() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                       <Clock className="w-4 h-4" />
-                      {new Date(checkin.checkinAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(checkin.checkinAt!).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
                       {checkin.ownerId && <ChevronRight className="w-4 h-4" />}
                     </div>
                   </div>

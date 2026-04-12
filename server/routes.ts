@@ -18919,7 +18919,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (role === 'institute-admin' && existing.instituteId !== sessionUser.instituteId) {
         return res.status(403).json({ error: "소속 기관의 QR 코드만 수정할 수 있습니다." });
       }
-      const updateData: any = { updatedAt: new Date() };
+      const updateData: Partial<{ label: string; isActive: boolean; updatedAt: Date }> = { updatedAt: new Date() };
       if (req.body.label !== undefined) updateData.label = req.body.label;
       if (req.body.isActive !== undefined) updateData.isActive = req.body.isActive;
       const [updated] = await db.update(instituteQrCodes).set(updateData).where(eq(instituteQrCodes.id, id)).returning();
@@ -19042,18 +19042,18 @@ export function registerTrainerCertificationRoutes(app: Express) {
           sql`${checkinRecords.checkinAt} <= ${endOfDay}`
         ))
         .orderBy(desc(checkinRecords.checkinAt));
-      const enriched = await Promise.all(checkins.map(async (c: any) => {
-        let petInfo = null;
-        let ownerInfo = null;
+      const enriched = await Promise.all(checkins.map(async (c) => {
+        let petInfo: { name: string | null; breed: string | null; species: string | null; temperamentLevel: string | null } | null = null;
+        let ownerInfo: { name: string | null; phone: string | null } | null = null;
         if (c.petId) {
           const [pet] = await db.select({ name: pets.name, breed: pets.breed, species: pets.species, temperamentLevel: pets.temperamentLevel })
             .from(pets).where(eq(pets.id, c.petId));
-          petInfo = pet;
+          petInfo = pet ?? null;
         }
         if (c.ownerId) {
           const [owner] = await db.select({ name: users.name, phone: users.phone })
             .from(users).where(eq(users.id, c.ownerId));
-          ownerInfo = owner;
+          ownerInfo = owner ?? null;
         }
         return { ...c, petInfo, ownerInfo };
       }));
@@ -19099,7 +19099,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const ownerPets = await db.select({ id: pets.id, name: pets.name, breed: pets.breed, temperamentLevel: pets.temperamentLevel })
         .from(pets).where(eq(pets.ownerId, ownerId));
       const totalVisits = history.length;
-      const concerns = history.filter((h: any) => h.todayConcern).map((h: any) => ({ date: h.checkinAt, concern: h.todayConcern }));
+      const concerns = history.filter((h) => h.todayConcern).map((h) => ({ date: h.checkinAt, concern: h.todayConcern }));
       res.json({ success: true, owner: ownerInfo ? { name: ownerInfo.name, phone: ownerInfo.phone } : null, pets: ownerPets, history, totalVisits, concerns });
     } catch (error) {
       console.error("고객 히스토리 조회 오류:", error);
