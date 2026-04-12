@@ -23,6 +23,14 @@ import {
   Plus
 } from 'lucide-react';
 
+const TEMPERAMENT_BADGE: Record<string, { label: string; color: string }> = {
+  A: { label: 'A - 사회성 양호', color: 'bg-green-100 text-green-800' },
+  B: { label: 'B - 흥분 조절', color: 'bg-blue-100 text-blue-800' },
+  C: { label: 'C - 짖음/경계', color: 'bg-yellow-100 text-yellow-800' },
+  D: { label: 'D - 공격성 주의', color: 'bg-orange-100 text-orange-800' },
+  E: { label: 'E - 분리불안', color: 'bg-red-100 text-red-800' },
+};
+
 interface Pet {
   id: number;
   name: string;
@@ -34,6 +42,7 @@ interface Pet {
   description?: string;
   health?: string;
   temperament?: string;
+  temperamentLevel?: string;
   allergies?: string;
   avatar?: string;
 }
@@ -177,6 +186,11 @@ export default function PetDetailPage() {
                     {pet.gender}
                   </Badge>
                 )}
+                {pet.temperamentLevel && TEMPERAMENT_BADGE[pet.temperamentLevel] && (
+                  <Badge className={`text-sm ${TEMPERAMENT_BADGE[pet.temperamentLevel].color}`}>
+                    {TEMPERAMENT_BADGE[pet.temperamentLevel].label}
+                  </Badge>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
@@ -226,14 +240,18 @@ export default function PetDetailPage() {
 
       {/* 상세 정보 탭 */}
       <Tabs defaultValue="vaccinations" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="vaccinations" className="flex items-center gap-2">
             <Syringe className="w-4 h-4" />
-            예방접종 기록
+            예방접종
           </TabsTrigger>
           <TabsTrigger value="checkups" className="flex items-center gap-2">
             <Activity className="w-4 h-4" />
-            건강검진 기록
+            건강검진
+          </TabsTrigger>
+          <TabsTrigger value="consultations" className="flex items-center gap-2">
+            <Edit className="w-4 h-4" />
+            상담 이력
           </TabsTrigger>
         </TabsList>
 
@@ -411,7 +429,83 @@ export default function PetDetailPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* 상담 이력 탭 */}
+        <TabsContent value="consultations">
+          <ConsultationHistoryTab petId={Number(petId)} />
+        </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function ConsultationHistoryTab({ petId }: { petId: number }) {
+  const { data, isLoading } = useQuery<{ success: boolean; consultations: any[] }>({
+    queryKey: [`/api/consultation-records/pet/${petId}`],
+    enabled: !!petId,
+  });
+
+  const consultations = data?.consultations || [];
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const TEMP_LABELS: Record<string, string> = {
+    A: 'A - 사회성 양호', B: 'B - 흥분 조절', C: 'C - 짖음/경계',
+    D: 'D - 공격성 주의', E: 'E - 분리불안',
+  };
+  const TEMP_COLORS: Record<string, string> = {
+    A: 'bg-green-100 text-green-800', B: 'bg-blue-100 text-blue-800', C: 'bg-yellow-100 text-yellow-800',
+    D: 'bg-orange-100 text-orange-800', E: 'bg-red-100 text-red-800',
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>상담 이력</CardTitle>
+        <Link href="/consultation-records">
+          <Button size="sm" variant="outline">전체 보기</Button>
+        </Link>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="animate-pulse h-20 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        ) : consultations.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Edit className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>상담 기록이 없습니다.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {consultations.map((c: any) => (
+              <Link key={c.id} href={`/consultation-records/${c.id}`}>
+                <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-medium">{c.visitPurpose}</p>
+                      <p className="text-sm text-gray-600">훈련사: {c.trainerName || '-'}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {c.temperamentLevel && (
+                        <Badge className={`text-xs ${TEMP_COLORS[c.temperamentLevel] || ''}`}>
+                          {TEMP_LABELS[c.temperamentLevel]}
+                        </Badge>
+                      )}
+                      <span className="text-xs text-gray-500">{formatDate(c.createdAt)}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 line-clamp-2">{c.mainProblemBehavior}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -12,6 +12,14 @@ import { Plus, Edit, Trash2, Heart, Calendar, Weight, Upload, X, User, BookOpen,
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 
+const TEMPERAMENT_BADGE: Record<string, { label: string; color: string }> = {
+  A: { label: 'A - 사회성 양호', color: 'bg-green-100 text-green-800' },
+  B: { label: 'B - 흥분 조절', color: 'bg-blue-100 text-blue-800' },
+  C: { label: 'C - 짖음/경계', color: 'bg-yellow-100 text-yellow-800' },
+  D: { label: 'D - 공격성 주의', color: 'bg-orange-100 text-orange-800' },
+  E: { label: 'E - 분리불안', color: 'bg-red-100 text-red-800' },
+};
+
 interface Pet {
   id: number;
   name: string;
@@ -28,7 +36,7 @@ interface Pet {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  // 훈련소 매칭 정보 추가
+  temperamentLevel?: string | null;
   trainingStatus: 'not_assigned' | 'assigned' | 'in_progress' | 'completed';
   assignedTrainer?: {
     id: number;
@@ -581,6 +589,11 @@ export default function MyPetsPage() {
                   <Badge variant="outline">
                     {pet.gender === 'male' ? '♂' : '♀'}
                   </Badge>
+                  {pet.temperamentLevel && TEMPERAMENT_BADGE[pet.temperamentLevel] && (
+                    <Badge className={`text-xs ${TEMPERAMENT_BADGE[pet.temperamentLevel].color}`}>
+                      {TEMPERAMENT_BADGE[pet.temperamentLevel].label}
+                    </Badge>
+                  )}
                 </div>
                 
                 {pet.color && (

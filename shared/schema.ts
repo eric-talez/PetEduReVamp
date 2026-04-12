@@ -152,6 +152,7 @@ export const pets = pgTable("pets", {
   notebookEnabled: boolean("notebook_enabled").default(false),
   trainingStartDate: timestamp("training_start_date"),
   lastNotebookEntry: text("last_notebook_entry"),
+  temperamentLevel: varchar("temperament_level", { length: 1 }),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

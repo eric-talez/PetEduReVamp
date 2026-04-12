@@ -18367,6 +18367,11 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (temperamentLevel && !['A','B','C','D','E'].includes(temperamentLevel)) {
         return res.status(400).json({ error: "성향 등급은 A~E 중 하나여야 합니다." });
       }
+      const [pet] = await db.select({ ownerId: pets.ownerId }).from(pets).where(eq(pets.id, Number(petId)));
+      if (!pet) return res.status(404).json({ error: "반려동물을 찾을 수 없습니다." });
+      if (pet.ownerId !== Number(ownerId)) {
+        return res.status(400).json({ error: "보호자와 반려동물이 일치하지 않습니다." });
+      }
       const [record] = await db.insert(consultationRecords).values({
         petId: Number(petId),
         ownerId: Number(ownerId),
@@ -18385,6 +18390,9 @@ export function registerTrainerCertificationRoutes(app: Express) {
         temperamentLevel: temperamentLevel || null,
         additionalNotes: additionalNotes || null,
       }).returning();
+      if (temperamentLevel) {
+        await db.update(pets).set({ temperamentLevel }).where(eq(pets.id, Number(petId)));
+      }
       res.json({ success: true, consultation: record });
     } catch (error) {
       console.error("상담 기록 생성 오류:", error);
@@ -18403,7 +18411,13 @@ export function registerTrainerCertificationRoutes(app: Express) {
       } else if (role === 'trainer') {
         records = await db.select().from(consultationRecords).where(eq(consultationRecords.trainerId, sessionUser.id)).orderBy(desc(consultationRecords.createdAt));
       } else if (role === 'institute-admin') {
-        records = await db.select().from(consultationRecords).orderBy(desc(consultationRecords.createdAt));
+        const userInstitutes = await db.select({ instituteId: trainerInstitutes.instituteId }).from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id));
+        const instituteIds = userInstitutes.map((ti: any) => ti.instituteId);
+        if (instituteIds.length > 0) {
+          records = await db.select().from(consultationRecords).where(sql`${consultationRecords.instituteId} = ANY(${instituteIds})`).orderBy(desc(consultationRecords.createdAt));
+        } else {
+          records = [];
+        }
       } else if (role === 'pet-owner') {
         records = await db.select().from(consultationRecords).where(eq(consultationRecords.ownerId, sessionUser.id)).orderBy(desc(consultationRecords.createdAt));
       } else {
@@ -18466,6 +18480,106 @@ export function registerTrainerCertificationRoutes(app: Express) {
     } catch (error) {
       console.error("상담 기록 상세 조회 오류:", error);
       res.status(500).json({ error: "상담 기록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/consultation-records/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "수정 권한이 없습니다." });
+      }
+      const id = Number(req.params.id);
+      const [existing] = await db.select().from(consultationRecords).where(eq(consultationRecords.id, id));
+      if (!existing) return res.status(404).json({ error: "상담 기록을 찾을 수 없습니다." });
+      if (role === 'trainer' && existing.trainerId !== sessionUser.id) {
+        return res.status(403).json({ error: "본인이 작성한 상담 기록만 수정할 수 있습니다." });
+      }
+      if (role === 'institute-admin' && sessionUser.instituteId && existing.instituteId !== sessionUser.instituteId) {
+        return res.status(403).json({ error: "소속 기관의 상담 기록만 수정할 수 있습니다." });
+      }
+      const { visitPurpose, mainProblemBehavior, behaviorTiming, behaviorTarget, recentChanges, walkDuration, mealPattern, ownerReactionStyle, previousTrainingExperience, desiredGoal, temperamentLevel, additionalNotes } = req.body;
+      if (temperamentLevel && !['A','B','C','D','E'].includes(temperamentLevel)) {
+        return res.status(400).json({ error: "성향 등급은 A~E 중 하나여야 합니다." });
+      }
+      const updateData: any = { updatedAt: new Date() };
+      if (visitPurpose !== undefined) updateData.visitPurpose = visitPurpose;
+      if (mainProblemBehavior !== undefined) updateData.mainProblemBehavior = mainProblemBehavior;
+      if (behaviorTiming !== undefined) updateData.behaviorTiming = behaviorTiming;
+      if (behaviorTarget !== undefined) updateData.behaviorTarget = behaviorTarget;
+      if (recentChanges !== undefined) updateData.recentChanges = recentChanges;
+      if (walkDuration !== undefined) updateData.walkDuration = walkDuration;
+      if (mealPattern !== undefined) updateData.mealPattern = mealPattern;
+      if (ownerReactionStyle !== undefined) updateData.ownerReactionStyle = ownerReactionStyle;
+      if (previousTrainingExperience !== undefined) updateData.previousTrainingExperience = previousTrainingExperience;
+      if (desiredGoal !== undefined) updateData.desiredGoal = desiredGoal;
+      if (temperamentLevel !== undefined) updateData.temperamentLevel = temperamentLevel;
+      if (additionalNotes !== undefined) updateData.additionalNotes = additionalNotes;
+      const [updated] = await db.update(consultationRecords).set(updateData).where(eq(consultationRecords.id, id)).returning();
+      if (temperamentLevel !== undefined) {
+        await db.update(pets).set({ temperamentLevel: temperamentLevel || null }).where(eq(pets.id, existing.petId));
+      }
+      res.json({ success: true, consultation: updated });
+    } catch (error) {
+      console.error("상담 기록 수정 오류:", error);
+      res.status(500).json({ error: "상담 기록 수정 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.delete("/api/consultation-records/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "삭제 권한이 없습니다." });
+      }
+      const id = Number(req.params.id);
+      const [existing] = await db.select().from(consultationRecords).where(eq(consultationRecords.id, id));
+      if (!existing) return res.status(404).json({ error: "상담 기록을 찾을 수 없습니다." });
+      if (role === 'trainer' && existing.trainerId !== sessionUser.id) {
+        return res.status(403).json({ error: "본인이 작성한 상담 기록만 삭제할 수 있습니다." });
+      }
+      if (role === 'institute-admin' && sessionUser.instituteId && existing.instituteId !== sessionUser.instituteId) {
+        return res.status(403).json({ error: "소속 기관의 상담 기록만 삭제할 수 있습니다." });
+      }
+      await db.delete(consultationRecords).where(eq(consultationRecords.id, id));
+      res.json({ success: true, message: "상담 기록이 삭제되었습니다." });
+    } catch (error) {
+      console.error("상담 기록 삭제 오류:", error);
+      res.status(500).json({ error: "상담 기록 삭제 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/pets/:petId/temperament", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "성향 등급 변경 권한이 없습니다." });
+      }
+      const petId = Number(req.params.petId);
+      const { temperamentLevel } = req.body;
+      if (!temperamentLevel || !['A','B','C','D','E'].includes(temperamentLevel)) {
+        return res.status(400).json({ error: "성향 등급은 A~E 중 하나여야 합니다." });
+      }
+      const [pet] = await db.select().from(pets).where(eq(pets.id, petId));
+      if (!pet) return res.status(404).json({ error: "반려동물을 찾을 수 없습니다." });
+      if (role === 'institute-admin' && sessionUser.instituteId) {
+        const ownerRecords = await db.select().from(consultationRecords)
+          .where(and(eq(consultationRecords.petId, petId), eq(consultationRecords.instituteId, sessionUser.instituteId)));
+        if (ownerRecords.length === 0) {
+          return res.status(403).json({ error: "소속 기관과 관련된 반려동물의 성향만 변경할 수 있습니다." });
+        }
+      }
+      const [updated] = await db.update(pets).set({ temperamentLevel }).where(eq(pets.id, petId)).returning();
+      res.json({ success: true, pet: updated });
+    } catch (error) {
+      console.error("성향 등급 업데이트 오류:", error);
+      res.status(500).json({ error: "성향 등급 업데이트 중 오류가 발생했습니다." });
     }
   });
 
