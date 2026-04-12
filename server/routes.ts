@@ -18360,7 +18360,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
         return res.status(403).json({ error: "훈련사, 기관관리자 또는 관리자만 상담 기록을 작성할 수 있습니다." });
       }
-      const { petId, ownerId, visitPurpose, mainProblemBehavior, behaviorTiming, behaviorTarget, recentChanges, walkDuration, mealPattern, ownerReactionStyle, previousTrainingExperience, desiredGoal, temperamentLevel, additionalNotes, instituteId } = req.body;
+      const { petId, ownerId, visitPurpose, mainProblemBehavior, behaviorTiming, behaviorTarget, recentChanges, walkDuration, mealPattern, ownerReactionStyle, previousTrainingExperience, desiredGoal, temperamentLevel, additionalNotes } = req.body;
       if (!petId || !ownerId || !visitPurpose || !mainProblemBehavior) {
         return res.status(400).json({ error: "필수 항목을 입력해주세요. (반려동물, 보호자, 방문 목적, 주요 문제 행동)" });
       }
@@ -18372,11 +18372,12 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (pet.ownerId !== Number(ownerId)) {
         return res.status(400).json({ error: "보호자와 반려동물이 일치하지 않습니다." });
       }
+      const serverInstituteId = sessionUser.instituteId || null;
       const [record] = await db.insert(consultationRecords).values({
         petId: Number(petId),
         ownerId: Number(ownerId),
         trainerId: sessionUser.id,
-        instituteId: instituteId ? Number(instituteId) : null,
+        instituteId: serverInstituteId,
         visitPurpose,
         mainProblemBehavior,
         behaviorTiming: behaviorTiming || null,
@@ -18411,10 +18412,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
       } else if (role === 'trainer') {
         records = await db.select().from(consultationRecords).where(eq(consultationRecords.trainerId, sessionUser.id)).orderBy(desc(consultationRecords.createdAt));
       } else if (role === 'institute-admin') {
-        const userInstitutes = await db.select({ instituteId: trainerInstitutes.instituteId }).from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id));
-        const instituteIds = userInstitutes.map((ti: any) => ti.instituteId);
-        if (instituteIds.length > 0) {
-          records = await db.select().from(consultationRecords).where(sql`${consultationRecords.instituteId} = ANY(${instituteIds})`).orderBy(desc(consultationRecords.createdAt));
+        if (sessionUser.instituteId) {
+          records = await db.select().from(consultationRecords).where(eq(consultationRecords.instituteId, sessionUser.instituteId)).orderBy(desc(consultationRecords.createdAt));
         } else {
           records = [];
         }
@@ -18447,7 +18446,15 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (role === 'pet-owner' && pet.ownerId !== sessionUser.id) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
-      const records = await db.select().from(consultationRecords).where(eq(consultationRecords.petId, petId)).orderBy(desc(consultationRecords.createdAt));
+      let petRecordsQuery = eq(consultationRecords.petId, petId);
+      let records;
+      if (role === 'trainer') {
+        records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.trainerId, sessionUser.id))).orderBy(desc(consultationRecords.createdAt));
+      } else if (role === 'institute-admin' && sessionUser.instituteId) {
+        records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.instituteId, sessionUser.instituteId))).orderBy(desc(consultationRecords.createdAt));
+      } else {
+        records = await db.select().from(consultationRecords).where(petRecordsQuery).orderBy(desc(consultationRecords.createdAt));
+      }
       const enriched = await Promise.all(records.map(async (r: any) => {
         const [trainer] = await db.select({ name: users.name }).from(users).where(eq(users.id, r.trainerId));
         return { ...r, trainerName: trainer?.name };
@@ -18472,6 +18479,9 @@ export function registerTrainerCertificationRoutes(app: Express) {
       }
       if (role === 'trainer' && record.trainerId !== sessionUser.id) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      if (role === 'institute-admin' && sessionUser.instituteId && record.instituteId !== sessionUser.instituteId) {
+        return res.status(403).json({ error: "소속 기관의 상담 기록만 조회할 수 있습니다." });
       }
       const [pet] = await db.select().from(pets).where(eq(pets.id, record.petId));
       const [owner] = await db.select({ name: users.name, email: users.email, phone: users.phone }).from(users).where(eq(users.id, record.ownerId));
