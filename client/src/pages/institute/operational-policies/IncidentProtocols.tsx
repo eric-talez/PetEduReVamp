@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/lib/auth-compat';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,9 +83,17 @@ const DEFAULT_STEPS: Record<string, string[]> = {
 export default function IncidentProtocols() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const auth = useAuth();
-  const userRole = auth.userRole;
-  const instituteId = (auth as Record<string, number | undefined>).instituteId;
+
+  const { data: meData } = useQuery<{ success: boolean; data: { role?: string; instituteId?: number } }>({
+    queryKey: ['/api/auth/me'],
+    queryFn: async () => {
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed');
+      return res.json();
+    },
+  });
+  const userRole = meData?.data?.role || null;
+  const instituteId = meData?.data?.instituteId;
   const isManager = userRole === 'institute-admin' || userRole === 'admin';
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [checkedSteps, setCheckedSteps] = useState<Record<number, Set<number>>>({});

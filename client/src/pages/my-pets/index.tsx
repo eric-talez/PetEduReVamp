@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Edit, Trash2, Heart, Calendar, Weight, Upload, X, User, BookOpen, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Heart, Calendar, Weight, Upload, X, User, BookOpen, AlertCircle, Phone, Hospital } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 
@@ -62,11 +62,29 @@ interface PetFormData {
   imageUrl?: string;
 }
 
+interface EmergencyFormData {
+  designatedHospital: string;
+  hospitalPhone: string;
+  hospitalAddress: string;
+  emergencyPhone: string;
+  transportConsent: boolean;
+}
+
+const defaultEmergencyData: EmergencyFormData = {
+  designatedHospital: '',
+  hospitalPhone: '',
+  hospitalAddress: '',
+  emergencyPhone: '',
+  transportConsent: false,
+};
+
 export default function MyPetsPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
+  const [emergencyData, setEmergencyData] = useState<EmergencyFormData>({ ...defaultEmergencyData });
+  const [existingEmergencyId, setExistingEmergencyId] = useState<number | null>(null);
   const [formData, setFormData] = useState<PetFormData>({
     name: '',
     species: 'dog',
@@ -137,7 +155,23 @@ export default function MyPetsPage() {
       if (response.ok) {
         const result = await response.json();
         console.log('반려동물 등록 성공:', result);
-        
+        const petId = editingPet?.id || result.pet?.id;
+        if (petId && (emergencyData.designatedHospital || emergencyData.emergencyPhone)) {
+          try {
+            const emergencyUrl = existingEmergencyId
+              ? `/api/emergency-contacts/${existingEmergencyId}`
+              : '/api/emergency-contacts';
+            const emergencyMethod = existingEmergencyId ? 'PUT' : 'POST';
+            await fetch(emergencyUrl, {
+              method: emergencyMethod,
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ petId, ...emergencyData }),
+            });
+          } catch (err) {
+            console.error('응급 정보 저장 오류:', err);
+          }
+        }
         toast({
           title: "성공",
           description: editingPet ? "반려동물 정보가 수정되었습니다." : "새 반려동물이 등록되었습니다."
@@ -161,7 +195,7 @@ export default function MyPetsPage() {
     }
   };
 
-  const handleEdit = (pet: Pet) => {
+  const handleEdit = async (pet: Pet) => {
     setEditingPet(pet);
     setFormData({
       name: pet.name,
@@ -176,6 +210,30 @@ export default function MyPetsPage() {
       specialNotes: pet.specialNotes,
       imageUrl: pet.imageUrl || ''
     });
+    try {
+      const res = await fetch(`/api/emergency-contacts/${pet.id}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        const contacts = data.contacts || [];
+        if (contacts.length > 0) {
+          const c = contacts[0];
+          setEmergencyData({
+            designatedHospital: c.designatedHospital || '',
+            hospitalPhone: c.hospitalPhone || '',
+            hospitalAddress: c.hospitalAddress || '',
+            emergencyPhone: c.emergencyPhone || '',
+            transportConsent: c.transportConsent || false,
+          });
+          setExistingEmergencyId(c.id);
+        } else {
+          setEmergencyData({ ...defaultEmergencyData });
+          setExistingEmergencyId(null);
+        }
+      }
+    } catch {
+      setEmergencyData({ ...defaultEmergencyData });
+      setExistingEmergencyId(null);
+    }
     setIsDialogOpen(true);
   };
 
@@ -205,6 +263,8 @@ export default function MyPetsPage() {
   };
 
   const resetForm = () => {
+    setEmergencyData({ ...defaultEmergencyData });
+    setExistingEmergencyId(null);
     setFormData({
       name: '',
       species: 'dog',
@@ -505,6 +565,63 @@ export default function MyPetsPage() {
                     onChange={(e) => setFormData({ ...formData, specialNotes: e.target.value })}
                     placeholder="특별히 주의할 점이나 기타 사항을 기록해주세요"
                   />
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <Hospital className="w-4 h-4" />
+                  응급 정보
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="designatedHospital">지정 병원</Label>
+                    <Input
+                      id="designatedHospital"
+                      value={emergencyData.designatedHospital}
+                      onChange={(e) => setEmergencyData({ ...emergencyData, designatedHospital: e.target.value })}
+                      placeholder="지정 동물병원 이름"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="hospitalPhone">병원 전화번호</Label>
+                    <Input
+                      id="hospitalPhone"
+                      value={emergencyData.hospitalPhone}
+                      onChange={(e) => setEmergencyData({ ...emergencyData, hospitalPhone: e.target.value })}
+                      placeholder="02-1234-5678"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="hospitalAddress">병원 주소</Label>
+                    <Input
+                      id="hospitalAddress"
+                      value={emergencyData.hospitalAddress}
+                      onChange={(e) => setEmergencyData({ ...emergencyData, hospitalAddress: e.target.value })}
+                      placeholder="병원 주소"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="emergencyPhone">보호자 비상 연락처</Label>
+                    <Input
+                      id="emergencyPhone"
+                      value={emergencyData.emergencyPhone}
+                      onChange={(e) => setEmergencyData({ ...emergencyData, emergencyPhone: e.target.value })}
+                      placeholder="010-0000-0000"
+                    />
+                  </div>
+                  <div className="col-span-2 flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="transportConsent"
+                      checked={emergencyData.transportConsent}
+                      onChange={(e) => setEmergencyData({ ...emergencyData, transportConsent: e.target.checked })}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="transportConsent" className="text-sm cursor-pointer">
+                      응급 시 지정 병원으로의 이송에 동의합니다
+                    </Label>
+                  </div>
                 </div>
               </div>
               
