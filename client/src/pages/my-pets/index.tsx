@@ -63,19 +63,21 @@ interface PetFormData {
 }
 
 interface EmergencyFormData {
+  contactName: string;
+  contactPhone: string;
   designatedHospital: string;
   hospitalPhone: string;
   hospitalAddress: string;
-  emergencyPhone: string;
-  transportConsent: boolean;
+  emergencyTransportConsent: boolean;
 }
 
 const defaultEmergencyData: EmergencyFormData = {
+  contactName: '',
+  contactPhone: '',
   designatedHospital: '',
   hospitalPhone: '',
   hospitalAddress: '',
-  emergencyPhone: '',
-  transportConsent: false,
+  emergencyTransportConsent: false,
 };
 
 export default function MyPetsPage() {
@@ -156,20 +158,33 @@ export default function MyPetsPage() {
         const result = await response.json();
         console.log('반려동물 등록 성공:', result);
         const petId = editingPet?.id || result.pet?.id;
-        if (petId && (emergencyData.designatedHospital || emergencyData.emergencyPhone)) {
+        if (petId && emergencyData.contactName && emergencyData.contactPhone) {
           try {
             const emergencyUrl = existingEmergencyId
               ? `/api/emergency-contacts/${existingEmergencyId}`
               : '/api/emergency-contacts';
             const emergencyMethod = existingEmergencyId ? 'PUT' : 'POST';
-            await fetch(emergencyUrl, {
+            const emergencyRes = await fetch(emergencyUrl, {
               method: emergencyMethod,
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
               body: JSON.stringify({ petId, ...emergencyData }),
             });
+            if (!emergencyRes.ok) {
+              const errData = await emergencyRes.json().catch(() => ({}));
+              toast({
+                title: "응급 정보 저장 실패",
+                description: errData.error || "응급 정보 저장 중 오류가 발생했습니다.",
+                variant: "destructive"
+              });
+            }
           } catch (err) {
             console.error('응급 정보 저장 오류:', err);
+            toast({
+              title: "응급 정보 저장 오류",
+              description: "응급 정보 저장 중 오류가 발생했습니다.",
+              variant: "destructive"
+            });
           }
         }
         toast({
@@ -218,11 +233,12 @@ export default function MyPetsPage() {
         if (contacts.length > 0) {
           const c = contacts[0];
           setEmergencyData({
+            contactName: c.contactName || '',
+            contactPhone: c.contactPhone || '',
             designatedHospital: c.designatedHospital || '',
             hospitalPhone: c.hospitalPhone || '',
             hospitalAddress: c.hospitalAddress || '',
-            emergencyPhone: c.emergencyPhone || '',
-            transportConsent: c.transportConsent || false,
+            emergencyTransportConsent: c.emergencyTransportConsent || false,
           });
           setExistingEmergencyId(c.id);
         } else {
@@ -575,6 +591,24 @@ export default function MyPetsPage() {
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
+                    <Label htmlFor="contactName">비상 연락처 이름 *</Label>
+                    <Input
+                      id="contactName"
+                      value={emergencyData.contactName}
+                      onChange={(e) => setEmergencyData({ ...emergencyData, contactName: e.target.value })}
+                      placeholder="보호자 또는 비상 연락 대상"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contactPhone">비상 연락처 전화번호 *</Label>
+                    <Input
+                      id="contactPhone"
+                      value={emergencyData.contactPhone}
+                      onChange={(e) => setEmergencyData({ ...emergencyData, contactPhone: e.target.value })}
+                      placeholder="010-0000-0000"
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="designatedHospital">지정 병원</Label>
                     <Input
                       id="designatedHospital"
@@ -592,7 +626,7 @@ export default function MyPetsPage() {
                       placeholder="02-1234-5678"
                     />
                   </div>
-                  <div>
+                  <div className="col-span-2">
                     <Label htmlFor="hospitalAddress">병원 주소</Label>
                     <Input
                       id="hospitalAddress"
@@ -601,24 +635,15 @@ export default function MyPetsPage() {
                       placeholder="병원 주소"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="emergencyPhone">보호자 비상 연락처</Label>
-                    <Input
-                      id="emergencyPhone"
-                      value={emergencyData.emergencyPhone}
-                      onChange={(e) => setEmergencyData({ ...emergencyData, emergencyPhone: e.target.value })}
-                      placeholder="010-0000-0000"
-                    />
-                  </div>
                   <div className="col-span-2 flex items-center gap-2">
                     <input
                       type="checkbox"
-                      id="transportConsent"
-                      checked={emergencyData.transportConsent}
-                      onChange={(e) => setEmergencyData({ ...emergencyData, transportConsent: e.target.checked })}
+                      id="emergencyTransportConsent"
+                      checked={emergencyData.emergencyTransportConsent}
+                      onChange={(e) => setEmergencyData({ ...emergencyData, emergencyTransportConsent: e.target.checked })}
                       className="rounded border-gray-300"
                     />
-                    <Label htmlFor="transportConsent" className="text-sm cursor-pointer">
+                    <Label htmlFor="emergencyTransportConsent" className="text-sm cursor-pointer">
                       응급 시 지정 병원으로의 이송에 동의합니다
                     </Label>
                   </div>
