@@ -5918,6 +5918,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/pets/all-owners", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const searchQuery = (req.query.q as string || '').trim();
+      if (!searchQuery || searchQuery.length < 2) {
+        return res.json({ success: true, ownerPets: [] });
+      }
+      const selectFields = {
+        petId: pets.id,
+        petName: pets.name,
+        petBreed: pets.breed,
+        petAge: pets.age,
+        ownerId: pets.ownerId,
+        ownerName: users.name,
+      };
+      const searchPattern = `%${searchQuery}%`;
+      const searchCondition = or(
+        ilike(users.name, searchPattern),
+        ilike(pets.name, searchPattern)
+      );
+      let ownerPets;
+      if (role === 'admin') {
+        ownerPets = await db.select(selectFields).from(pets)
+          .innerJoin(users, eq(pets.ownerId, users.id))
+          .where(searchCondition!)
+          .orderBy(users.name)
+          .limit(50);
+      } else if (role === 'trainer') {
+        const assignedPetIds = await db.selectDistinct({ petId: trainerClientAssignments.petId })
+          .from(trainerClientAssignments)
+          .where(and(eq(trainerClientAssignments.trainerId, sessionUser.id), isNotNull(trainerClientAssignments.petId)));
+        const consultedPetIds = await db.selectDistinct({ petId: consultationRecords.petId })
+          .from(consultationRecords)
+          .where(eq(consultationRecords.trainerId, sessionUser.id));
+        const assignedClientIds = await db.selectDistinct({ clientId: trainerClientAssignments.clientId })
+          .from(trainerClientAssignments)
+          .where(eq(trainerClientAssignments.trainerId, sessionUser.id));
+        const scopedPetIds = [...new Set([
+          ...assignedPetIds.filter((r: { petId: number | null }) => r.petId).map((r: { petId: number | null }) => r.petId),
+          ...consultedPetIds.map((r: { petId: number }) => r.petId),
+        ])];
+        const scopedOwnerIds = assignedClientIds.map((r: { clientId: number }) => r.clientId);
+        if (scopedPetIds.length > 0 || scopedOwnerIds.length > 0) {
+          const scopeConditions: ReturnType<typeof sql>[] = [];
+          if (scopedPetIds.length > 0) scopeConditions.push(sql`${pets.id} = ANY(${scopedPetIds})`);
+          if (scopedOwnerIds.length > 0) scopeConditions.push(sql`${pets.ownerId} = ANY(${scopedOwnerIds})`);
+          const scopeCondition = scopeConditions.length > 1 ? or(...scopeConditions) : scopeConditions[0];
+          ownerPets = await db.select(selectFields).from(pets)
+            .innerJoin(users, eq(pets.ownerId, users.id))
+            .where(and(searchCondition!, scopeCondition!))
+            .orderBy(users.name)
+            .limit(50);
+        } else {
+          ownerPets = [];
+        }
+      } else if (role === 'institute-admin') {
+        if (!sessionUser.instituteId) {
+          ownerPets = [];
+        } else {
+          const instTrainers = await db.select({ trainerId: trainerInstitutes.trainerId })
+            .from(trainerInstitutes)
+            .where(eq(trainerInstitutes.instituteId, sessionUser.instituteId));
+          const instTrainerIds = instTrainers.map((t: { trainerId: number }) => t.trainerId);
+          if (instTrainerIds.length > 0) {
+            const instAssignedPetIds = await db.selectDistinct({ petId: trainerClientAssignments.petId })
+              .from(trainerClientAssignments)
+              .where(sql`${trainerClientAssignments.trainerId} = ANY(${instTrainerIds})`);
+            const instConsultedPetIds = await db.selectDistinct({ petId: consultationRecords.petId })
+              .from(consultationRecords)
+              .where(sql`${consultationRecords.trainerId} = ANY(${instTrainerIds})`);
+            const instAssignedClientIds = await db.selectDistinct({ clientId: trainerClientAssignments.clientId })
+              .from(trainerClientAssignments)
+              .where(sql`${trainerClientAssignments.trainerId} = ANY(${instTrainerIds})`);
+            const scopedPetIds = [...new Set([
+              ...instAssignedPetIds.filter((r: { petId: number | null }) => r.petId).map((r: { petId: number | null }) => r.petId),
+              ...instConsultedPetIds.map((r: { petId: number }) => r.petId),
+            ])];
+            const scopedOwnerIds = instAssignedClientIds.map((r: { clientId: number }) => r.clientId);
+            if (scopedPetIds.length > 0 || scopedOwnerIds.length > 0) {
+              const scopeConditions: ReturnType<typeof sql>[] = [];
+              if (scopedPetIds.length > 0) scopeConditions.push(sql`${pets.id} = ANY(${scopedPetIds})`);
+              if (scopedOwnerIds.length > 0) scopeConditions.push(sql`${pets.ownerId} = ANY(${scopedOwnerIds})`);
+              const scopeCondition = scopeConditions.length > 1 ? or(...scopeConditions) : scopeConditions[0];
+              ownerPets = await db.select(selectFields).from(pets)
+                .innerJoin(users, eq(pets.ownerId, users.id))
+                .where(and(searchCondition!, scopeCondition!))
+                .orderBy(users.name)
+                .limit(50);
+            } else {
+              ownerPets = [];
+            }
+          } else {
+            ownerPets = [];
+          }
+        }
+      } else {
+        ownerPets = [];
+      }
+      res.json({ success: true, ownerPets });
+    } catch (error) {
+      console.error("보호자-반려동물 검색 오류:", error);
+      res.status(500).json({ error: "검색 중 오류가 발생했습니다." });
+    }
+  });
+
   // 반려동물 목록 조회 API (사용자별 데이터 분리)
   app.get("/api/pets", async (req, res) => {
     try {
@@ -18371,6 +18481,62 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (pet.ownerId !== Number(ownerId)) {
         return res.status(400).json({ error: "보호자와 반려동물이 일치하지 않습니다." });
       }
+
+      if (role === 'trainer') {
+        const [assigned] = await db.select({ id: trainerClientAssignments.id })
+          .from(trainerClientAssignments)
+          .where(and(
+            eq(trainerClientAssignments.trainerId, sessionUser.id),
+            or(
+              eq(trainerClientAssignments.petId, Number(petId)),
+              eq(trainerClientAssignments.clientId, Number(ownerId))
+            )
+          ))
+          .limit(1);
+        const [consulted] = await db.select({ id: consultationRecords.id })
+          .from(consultationRecords)
+          .where(and(
+            eq(consultationRecords.trainerId, sessionUser.id),
+            eq(consultationRecords.petId, Number(petId))
+          ))
+          .limit(1);
+        if (!assigned && !consulted) {
+          return res.status(403).json({ error: "담당하지 않는 반려동물에 대한 상담 기록을 작성할 수 없습니다." });
+        }
+      } else if (role === 'institute-admin') {
+        if (!sessionUser.instituteId) {
+          return res.status(403).json({ error: "소속 기관이 없어 상담 기록을 작성할 수 없습니다." });
+        }
+        const instTrainers = await db.select({ trainerId: trainerInstitutes.trainerId })
+          .from(trainerInstitutes)
+          .where(eq(trainerInstitutes.instituteId, sessionUser.instituteId));
+        const instTrainerIds = instTrainers.map((t: { trainerId: number }) => t.trainerId);
+        if (instTrainerIds.length > 0) {
+          const [instAssigned] = await db.select({ id: trainerClientAssignments.id })
+            .from(trainerClientAssignments)
+            .where(and(
+              sql`${trainerClientAssignments.trainerId} = ANY(${instTrainerIds})`,
+              or(
+                eq(trainerClientAssignments.petId, Number(petId)),
+                eq(trainerClientAssignments.clientId, Number(ownerId))
+              )
+            ))
+            .limit(1);
+          const [instConsulted] = await db.select({ id: consultationRecords.id })
+            .from(consultationRecords)
+            .where(and(
+              sql`${consultationRecords.trainerId} = ANY(${instTrainerIds})`,
+              eq(consultationRecords.petId, Number(petId))
+            ))
+            .limit(1);
+          if (!instAssigned && !instConsulted) {
+            return res.status(403).json({ error: "소속 기관의 담당 범위에 없는 반려동물에 대한 상담 기록을 작성할 수 없습니다." });
+          }
+        } else {
+          return res.status(403).json({ error: "소속 기관에 훈련사가 없어 상담 기록을 작성할 수 없습니다." });
+        }
+      }
+
       const serverInstituteId = sessionUser.instituteId || null;
       const [record] = await db.insert(consultationRecords).values({
         petId: Number(petId),
@@ -18613,117 +18779,6 @@ export function registerTrainerCertificationRoutes(app: Express) {
     } catch (error) {
       console.error("성향 등급 업데이트 오류:", error);
       res.status(500).json({ error: "성향 등급 업데이트 중 오류가 발생했습니다." });
-    }
-  });
-
-  app.get("/api/pets/all-owners", requireAuth(), async (req, res) => {
-    try {
-      const sessionUser = (req as any).user;
-      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
-      const role = sessionUser.role || sessionUser.userRole;
-      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
-        return res.status(403).json({ error: "접근 권한이 없습니다." });
-      }
-      const searchQuery = (req.query.q as string || '').trim();
-      if (!searchQuery || searchQuery.length < 2) {
-        return res.json({ success: true, ownerPets: [] });
-      }
-      const selectFields = {
-        petId: pets.id,
-        petName: pets.name,
-        petBreed: pets.breed,
-        petAge: pets.age,
-        ownerId: pets.ownerId,
-        ownerName: users.name,
-      };
-      const searchPattern = `%${searchQuery}%`;
-      const searchCondition = or(
-        ilike(users.name, searchPattern),
-        ilike(pets.name, searchPattern)
-      );
-      let ownerPets;
-      if (role === 'admin') {
-        ownerPets = await db.select(selectFields).from(pets)
-          .innerJoin(users, eq(pets.ownerId, users.id))
-          .where(searchCondition!)
-          .orderBy(users.name)
-          .limit(50);
-      } else if (role === 'trainer') {
-        const assignedPetIds = await db.selectDistinct({ petId: trainerClientAssignments.petId })
-          .from(trainerClientAssignments)
-          .where(and(eq(trainerClientAssignments.trainerId, sessionUser.id), isNotNull(trainerClientAssignments.petId)));
-        const consultedPetIds = await db.selectDistinct({ petId: consultationRecords.petId })
-          .from(consultationRecords)
-          .where(eq(consultationRecords.trainerId, sessionUser.id));
-        const assignedClientIds = await db.selectDistinct({ clientId: trainerClientAssignments.clientId })
-          .from(trainerClientAssignments)
-          .where(eq(trainerClientAssignments.trainerId, sessionUser.id));
-        const scopedPetIds = [...new Set([
-          ...assignedPetIds.filter((r: any) => r.petId).map((r: any) => r.petId),
-          ...consultedPetIds.map((r: any) => r.petId),
-        ])];
-        const scopedOwnerIds = assignedClientIds.map((r: any) => r.clientId);
-        if (scopedPetIds.length > 0 || scopedOwnerIds.length > 0) {
-          const conditions = [searchCondition!];
-          const scopeConditions: any[] = [];
-          if (scopedPetIds.length > 0) scopeConditions.push(sql`${pets.id} = ANY(${scopedPetIds})`);
-          if (scopedOwnerIds.length > 0) scopeConditions.push(sql`${pets.ownerId} = ANY(${scopedOwnerIds})`);
-          const scopeCondition = scopeConditions.length > 1 ? or(...scopeConditions) : scopeConditions[0];
-          ownerPets = await db.select(selectFields).from(pets)
-            .innerJoin(users, eq(pets.ownerId, users.id))
-            .where(and(searchCondition!, scopeCondition!))
-            .orderBy(users.name)
-            .limit(50);
-        } else {
-          ownerPets = [];
-        }
-      } else if (role === 'institute-admin') {
-        if (!sessionUser.instituteId) {
-          ownerPets = [];
-        } else {
-          const instTrainers = await db.select({ trainerId: trainerInstitutes.trainerId })
-            .from(trainerInstitutes)
-            .where(eq(trainerInstitutes.instituteId, sessionUser.instituteId));
-          const instTrainerIds = instTrainers.map((t: any) => t.trainerId);
-          if (instTrainerIds.length > 0) {
-            const instAssignedPetIds = await db.selectDistinct({ petId: trainerClientAssignments.petId })
-              .from(trainerClientAssignments)
-              .where(sql`${trainerClientAssignments.trainerId} = ANY(${instTrainerIds})`);
-            const instConsultedPetIds = await db.selectDistinct({ petId: consultationRecords.petId })
-              .from(consultationRecords)
-              .where(sql`${consultationRecords.trainerId} = ANY(${instTrainerIds})`);
-            const instAssignedClientIds = await db.selectDistinct({ clientId: trainerClientAssignments.clientId })
-              .from(trainerClientAssignments)
-              .where(sql`${trainerClientAssignments.trainerId} = ANY(${instTrainerIds})`);
-            const scopedPetIds = [...new Set([
-              ...instAssignedPetIds.filter((r: any) => r.petId).map((r: any) => r.petId),
-              ...instConsultedPetIds.map((r: any) => r.petId),
-            ])];
-            const scopedOwnerIds = instAssignedClientIds.map((r: any) => r.clientId);
-            if (scopedPetIds.length > 0 || scopedOwnerIds.length > 0) {
-              const scopeConditions: any[] = [];
-              if (scopedPetIds.length > 0) scopeConditions.push(sql`${pets.id} = ANY(${scopedPetIds})`);
-              if (scopedOwnerIds.length > 0) scopeConditions.push(sql`${pets.ownerId} = ANY(${scopedOwnerIds})`);
-              const scopeCondition = scopeConditions.length > 1 ? or(...scopeConditions) : scopeConditions[0];
-              ownerPets = await db.select(selectFields).from(pets)
-                .innerJoin(users, eq(pets.ownerId, users.id))
-                .where(and(searchCondition!, scopeCondition!))
-                .orderBy(users.name)
-                .limit(50);
-            } else {
-              ownerPets = [];
-            }
-          } else {
-            ownerPets = [];
-          }
-        }
-      } else {
-        ownerPets = [];
-      }
-      res.json({ success: true, ownerPets });
-    } catch (error) {
-      console.error("보호자-반려동물 검색 오류:", error);
-      res.status(500).json({ error: "검색 중 오류가 발생했습니다." });
     }
   });
 
