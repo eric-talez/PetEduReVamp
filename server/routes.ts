@@ -19244,7 +19244,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
   });
 
   // 매장 안전 규정 API
-  app.get("/api/store-policies/:instituteId", async (req, res) => {
+  app.get("/api/store-policies/:instituteId", requireAuth(), async (req, res) => {
     try {
       const instituteId = parseInt(req.params.instituteId);
       if (isNaN(instituteId)) return res.status(400).json({ error: "유효하지 않은 기관 ID입니다." });

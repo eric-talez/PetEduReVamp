@@ -835,7 +835,7 @@ function AuthenticatedRoutes() {
             const ConsentManagement = lazy(() => import('./pages/institute/operational-policies/ConsentManagement'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedRoute component={ConsentManagement} />
+                <ProtectedRoute component={ConsentManagement} requiredRoles={['pet-owner', 'institute-admin', 'admin']} />
               </Suspense>
             );
           }}
@@ -855,7 +855,7 @@ function AuthenticatedRoutes() {
             const EmergencyInfoPage = lazy(() => import('./pages/institute/operational-policies/EmergencyInfoPage'));
             return (
               <Suspense fallback={<SimpleLoading />}>
-                <ProtectedRoute component={EmergencyInfoPage} />
+                <ProtectedRoute component={EmergencyInfoPage} requiredRoles={['pet-owner', 'admin']} />
               </Suspense>
             );
           }}
