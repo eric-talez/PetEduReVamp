@@ -1933,17 +1933,21 @@ function UnauthenticatedRoutes() {
   );
 }
 
-function PublicCheckinRoute() {
-  const CheckinPage = lazy(() => import('./pages/institute/qr-checkin/CheckinPage'));
-  return (
-    <Switch>
-      <Route path="/checkin/:token">
-        <Suspense fallback={<SimpleLoading />}>
-          <CheckinPage />
-        </Suspense>
-      </Route>
-    </Switch>
-  );
+function CheckinOrAppRoutes({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const [location] = useLocation();
+  if (location.startsWith('/checkin/')) {
+    const CheckinPage = lazy(() => import('./pages/institute/qr-checkin/CheckinPage'));
+    return (
+      <Switch>
+        <Route path="/checkin/:token">
+          <Suspense fallback={<SimpleLoading />}>
+            <CheckinPage />
+          </Suspense>
+        </Route>
+      </Switch>
+    );
+  }
+  return isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />;
 }
 
 function DebugButton() {
@@ -1990,7 +1994,7 @@ function SimpleApp() {
                     <WeatherEffectsWrapper />
                     {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
                     <NavigationProgress />
-                    {window.location.pathname.startsWith('/checkin/') ? <PublicCheckinRoute /> : (auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />)}
+                    <CheckinOrAppRoutes isAuthenticated={auth.isAuthenticated} />
                     <DebugButton />
                     <Toaster />
                     <NotificationPermissionPopup />

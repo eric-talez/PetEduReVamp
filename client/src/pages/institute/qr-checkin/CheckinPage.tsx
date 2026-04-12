@@ -12,6 +12,22 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, PawPrint, Building, Calendar, ClipboardList } from "lucide-react";
 
+interface PetOption {
+  id: number;
+  name: string | null;
+  breed: string | null;
+  species: string | null;
+}
+
+interface QrLookupResponse {
+  success: boolean;
+  institute: { id: number; name: string; address: string | null; phone: string | null } | null;
+  qrCodeId: number;
+  userPets: PetOption[];
+  isLoggedIn: boolean;
+  userName: string | null;
+}
+
 export default function CheckinPage() {
   const { token } = useParams<{ token: string }>();
   const { toast } = useToast();
@@ -28,7 +44,7 @@ export default function CheckinPage() {
     packageNote: "",
   });
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<QrLookupResponse>({
     queryKey: ["/api/checkin/qr", token],
     queryFn: async () => {
       const res = await fetch(`/api/checkin/qr/${token}`);
@@ -142,7 +158,7 @@ export default function CheckinPage() {
                     <SelectValue placeholder="반려동물을 선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    {userPets.map((pet: any) => (
+                    {userPets.map((pet: PetOption) => (
                       <SelectItem key={pet.id} value={String(pet.id)}>
                         {pet.name} ({pet.breed || pet.species || '반려동물'})
                       </SelectItem>
