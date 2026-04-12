@@ -18962,7 +18962,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
         .from(institutes).where(eq(institutes.id, qrCode.instituteId));
       if (!institute) return res.status(404).json({ error: "기관을 찾을 수 없습니다." });
       const sessionUser = (req as any).user;
-      let userPets: any[] = [];
+      let userPets: Array<{ id: number; name: string | null; breed: string | null; species: string | null }> = [];
       if (sessionUser) {
         userPets = await db.select({ id: pets.id, name: pets.name, breed: pets.breed, species: pets.species })
           .from(pets).where(eq(pets.ownerId, sessionUser.id));
@@ -18984,10 +18984,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const sessionUser = (req as any).user;
       const ownerId = sessionUser?.id || null;
       const isNewVisitor = !sessionUser;
-      const resolvedPetId = petId ? Number(petId) : null;
-      if (resolvedPetId && sessionUser) {
+      let resolvedPetId: number | null = null;
+      if (petId) {
+        if (!sessionUser) {
+          return res.status(400).json({ error: "반려동물 선택은 로그인 후 이용 가능합니다." });
+        }
+        resolvedPetId = Number(petId);
         const [pet] = await db.select({ ownerId: pets.ownerId }).from(pets).where(eq(pets.id, resolvedPetId));
-        if (pet && pet.ownerId !== sessionUser.id) {
+        if (!pet || pet.ownerId !== sessionUser.id) {
           return res.status(403).json({ error: "본인의 반려동물만 체크인할 수 있습니다." });
         }
       }
