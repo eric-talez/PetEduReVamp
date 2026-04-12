@@ -848,6 +848,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/video-call" icon={<Video className="w-5 h-5 mr-2" />} hoverIcon={<Video className="w-5 h-5 mr-2 text-primary" />} active={isActive("/video-call")} onClick={handleItemClick} show={isMenuVisible('video-call')}>화상 강의</AccessibleNavItem>
                         <AccessibleNavItem href="/messages" icon={<MessageCircle className="w-5 h-5 mr-2" />} hoverIcon={<Mail className="w-5 h-5 mr-2 text-primary" />} active={isActive("/messages")} onClick={handleItemClick} show={isMenuVisible('messages')}>메시지</AccessibleNavItem>
                         <AccessibleNavItem href="/ai-analysis" icon={<Brain className="w-5 h-5 mr-2" />} hoverIcon={<Sparkles className="w-5 h-5 mr-2 text-primary" />} active={isActive("/ai-analysis")} onClick={handleItemClick} show={isMenuVisible('ai-analysis')}>AI 분석</AccessibleNavItem>
+                        <AccessibleNavItem href="/consultation-records" icon={<ClipboardList className="w-5 h-5 mr-2" />} hoverIcon={<ClipboardList className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation-records")} onClick={handleItemClick} show={true}>상담 기록</AccessibleNavItem>
                       </>
                     )}
                   </>
@@ -865,6 +866,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/trainer/earnings" icon={<DollarSign className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/earnings")} onClick={handleItemClick} show={isMenuVisible('trainer-earnings')} highlighted>수익</AccessibleNavItem>
                         <AccessibleNavItem href="/education-schedule" icon={<Calendar className="w-5 h-5 mr-2" />} hoverIcon={<CalendarDays className="w-5 h-5 mr-2 text-primary" />} active={isActive("/education-schedule")} onClick={handleItemClick} show={true}>일정</AccessibleNavItem>
                         <AccessibleNavItem href="/trainer/notebook" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<Edit className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/notebook")} onClick={handleItemClick} show={isMenuVisible('trainer-notebook')}>알림장</AccessibleNavItem>
+                        <AccessibleNavItem href="/consultation-records" icon={<ClipboardList className="w-5 h-5 mr-2" />} hoverIcon={<ClipboardList className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation-records")} onClick={handleItemClick} show={true} badge="상담">상담 기록</AccessibleNavItem>
                       </>
                     )}
 
@@ -895,6 +897,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/trainer/earnings" icon={<DollarSign className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/earnings")} onClick={handleItemClick} show={isMenuVisible('trainer-earnings')} highlighted>수익</AccessibleNavItem>
                         <AccessibleNavItem href="/institute/facility" icon={<Building className="w-5 h-5 mr-2" />} hoverIcon={<MapPin className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/facility")} onClick={handleItemClick} show={isMenuVisible('institute-facility')}>시설 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/institute/notebook-monitor" icon={<Monitor className="w-5 h-5 mr-2" />} hoverIcon={<FileText className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/notebook-monitor")} onClick={handleItemClick} show={isMenuVisible('notebook-monitor')}>알림장</AccessibleNavItem>
+                        <AccessibleNavItem href="/consultation-records" icon={<ClipboardList className="w-5 h-5 mr-2" />} hoverIcon={<ClipboardList className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation-records")} onClick={handleItemClick} show={true} badge="상담">상담 기록</AccessibleNavItem>
                       </>
                     )}
 

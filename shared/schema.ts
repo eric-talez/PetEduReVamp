@@ -2818,6 +2818,33 @@ export const insertFollowSchema = createInsertSchema(follows).omit({ id: true, c
 export type InsertFollow = z.infer<typeof insertFollowSchema>;
 export type Follow = typeof follows.$inferSelect;
 
+// 첫 방문 상담 기록 테이블
+export const consultationRecords = pgTable("consultation_records", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id).notNull(),
+  ownerId: integer("owner_id").references(() => users.id).notNull(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  instituteId: integer("institute_id").references(() => institutes.id),
+  visitPurpose: text("visit_purpose").notNull(),
+  mainProblemBehavior: text("main_problem_behavior").notNull(),
+  behaviorTiming: text("behavior_timing"),
+  behaviorTarget: text("behavior_target"),
+  recentChanges: text("recent_changes"),
+  walkDuration: varchar("walk_duration", { length: 100 }),
+  mealPattern: text("meal_pattern"),
+  ownerReactionStyle: text("owner_reaction_style"),
+  previousTrainingExperience: text("previous_training_experience"),
+  desiredGoal: text("desired_goal"),
+  temperamentLevel: varchar("temperament_level", { length: 1 }),
+  additionalNotes: text("additional_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertConsultationRecordSchema = createInsertSchema(consultationRecords).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertConsultationRecord = z.infer<typeof insertConsultationRecordSchema>;
+export type ConsultationRecord = typeof consultationRecords.$inferSelect;
+
 // 친구 초대 테이블
 export const friendInvitations = pgTable("friend_invitations", {
   id: serial("id").primaryKey(),

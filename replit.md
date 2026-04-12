@@ -48,6 +48,16 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
 - **Institute-Trainer Connection**: Secure system for trainers to link with institutes via unique codes, including verification and relationship management.
 - **Optimized UI/UX**: Streamlined sidebar menus for various user roles (pet owner, trainer, institute, admin) and consolidated navigation.
 
+## Recent Changes (April 2026)
+- **First Visit Consultation Records + Temperament Grading (Apr 12)**:
+  - New `consultation_records` table for first-visit pet consultation documentation
+  - API endpoints: POST/GET `/api/consultation-records`, GET `/api/consultation-records/:id`, GET `/api/consultation-records/pet/:petId`, GET `/api/pets/all-owners`
+  - Role-based access: trainers/institute-admins/admins can create; pet-owners can view their own
+  - Temperament grading system: A (사회성 양호), B (흥분 조절), C (짖음/경계), D (공격성 주의), E (분리불안)
+  - UI pages: ConsultationRecords (list), ConsultationForm (create), ConsultationDetail (view)
+  - Sidebar menu integration for all roles (trainer, institute-admin, pet-owner)
+  - Routes: `/consultation-records`, `/consultation-records/new`, `/consultation-records/:id`
+
 ## Recent Changes (January 2026)
 - **Home Screen UX Improvement (Jan 19)**: 
   - Added role-specific Quick Action section in Home.tsx renderDefaultHome function

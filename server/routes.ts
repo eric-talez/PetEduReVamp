@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { sql, eq, and, isNotNull, desc } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments } from "../shared/schema";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -18349,6 +18349,153 @@ export function registerTrainerCertificationRoutes(app: Express) {
   });
 
   console.log('[Profile API] 사용자 프로필 API가 등록되었습니다.');
+
+  // ========== 첫 방문 상담 기록 API ==========
+
+  app.post("/api/consultation-records", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "훈련사, 기관관리자 또는 관리자만 상담 기록을 작성할 수 있습니다." });
+      }
+      const { petId, ownerId, visitPurpose, mainProblemBehavior, behaviorTiming, behaviorTarget, recentChanges, walkDuration, mealPattern, ownerReactionStyle, previousTrainingExperience, desiredGoal, temperamentLevel, additionalNotes, instituteId } = req.body;
+      if (!petId || !ownerId || !visitPurpose || !mainProblemBehavior) {
+        return res.status(400).json({ error: "필수 항목을 입력해주세요. (반려동물, 보호자, 방문 목적, 주요 문제 행동)" });
+      }
+      if (temperamentLevel && !['A','B','C','D','E'].includes(temperamentLevel)) {
+        return res.status(400).json({ error: "성향 등급은 A~E 중 하나여야 합니다." });
+      }
+      const [record] = await db.insert(consultationRecords).values({
+        petId: Number(petId),
+        ownerId: Number(ownerId),
+        trainerId: sessionUser.id,
+        instituteId: instituteId ? Number(instituteId) : null,
+        visitPurpose,
+        mainProblemBehavior,
+        behaviorTiming: behaviorTiming || null,
+        behaviorTarget: behaviorTarget || null,
+        recentChanges: recentChanges || null,
+        walkDuration: walkDuration || null,
+        mealPattern: mealPattern || null,
+        ownerReactionStyle: ownerReactionStyle || null,
+        previousTrainingExperience: previousTrainingExperience || null,
+        desiredGoal: desiredGoal || null,
+        temperamentLevel: temperamentLevel || null,
+        additionalNotes: additionalNotes || null,
+      }).returning();
+      res.json({ success: true, consultation: record });
+    } catch (error) {
+      console.error("상담 기록 생성 오류:", error);
+      res.status(500).json({ error: "상담 기록 생성 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/consultation-records", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      let records;
+      if (role === 'admin') {
+        records = await db.select().from(consultationRecords).orderBy(desc(consultationRecords.createdAt));
+      } else if (role === 'trainer') {
+        records = await db.select().from(consultationRecords).where(eq(consultationRecords.trainerId, sessionUser.id)).orderBy(desc(consultationRecords.createdAt));
+      } else if (role === 'institute-admin') {
+        records = await db.select().from(consultationRecords).orderBy(desc(consultationRecords.createdAt));
+      } else if (role === 'pet-owner') {
+        records = await db.select().from(consultationRecords).where(eq(consultationRecords.ownerId, sessionUser.id)).orderBy(desc(consultationRecords.createdAt));
+      } else {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const enriched = await Promise.all(records.map(async (r: any) => {
+        const [pet] = await db.select({ name: pets.name, breed: pets.breed }).from(pets).where(eq(pets.id, r.petId));
+        const [owner] = await db.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, r.ownerId));
+        const [trainer] = await db.select({ name: users.name }).from(users).where(eq(users.id, r.trainerId));
+        return { ...r, petName: pet?.name, petBreed: pet?.breed, ownerName: owner?.name, ownerEmail: owner?.email, trainerName: trainer?.name };
+      }));
+      res.json({ success: true, consultations: enriched });
+    } catch (error) {
+      console.error("상담 기록 조회 오류:", error);
+      res.status(500).json({ error: "상담 기록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/consultation-records/pet/:petId", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      const petId = Number(req.params.petId);
+      const [pet] = await db.select({ ownerId: pets.ownerId }).from(pets).where(eq(pets.id, petId));
+      if (!pet) return res.status(404).json({ error: "반려동물을 찾을 수 없습니다." });
+      if (role === 'pet-owner' && pet.ownerId !== sessionUser.id) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const records = await db.select().from(consultationRecords).where(eq(consultationRecords.petId, petId)).orderBy(desc(consultationRecords.createdAt));
+      const enriched = await Promise.all(records.map(async (r: any) => {
+        const [trainer] = await db.select({ name: users.name }).from(users).where(eq(users.id, r.trainerId));
+        return { ...r, trainerName: trainer?.name };
+      }));
+      res.json({ success: true, consultations: enriched });
+    } catch (error) {
+      console.error("반려동물 상담 기록 조회 오류:", error);
+      res.status(500).json({ error: "상담 기록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/consultation-records/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      const id = Number(req.params.id);
+      const [record] = await db.select().from(consultationRecords).where(eq(consultationRecords.id, id));
+      if (!record) return res.status(404).json({ error: "상담 기록을 찾을 수 없습니다." });
+      if (role === 'pet-owner' && record.ownerId !== sessionUser.id) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      if (role === 'trainer' && record.trainerId !== sessionUser.id) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const [pet] = await db.select().from(pets).where(eq(pets.id, record.petId));
+      const [owner] = await db.select({ name: users.name, email: users.email, phone: users.phone }).from(users).where(eq(users.id, record.ownerId));
+      const [trainer] = await db.select({ name: users.name }).from(users).where(eq(users.id, record.trainerId));
+      res.json({ success: true, consultation: { ...record, pet, ownerName: owner?.name, ownerEmail: owner?.email, ownerPhone: owner?.phone, trainerName: trainer?.name } });
+    } catch (error) {
+      console.error("상담 기록 상세 조회 오류:", error);
+      res.status(500).json({ error: "상담 기록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.get("/api/pets/all-owners", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const ownerPets = await db.select({
+        petId: pets.id,
+        petName: pets.name,
+        petBreed: pets.breed,
+        petAge: pets.age,
+        ownerId: pets.ownerId,
+        ownerName: users.name,
+        ownerEmail: users.email,
+      }).from(pets)
+        .innerJoin(users, eq(pets.ownerId, users.id))
+        .orderBy(users.name);
+      res.json({ success: true, ownerPets });
+    } catch (error) {
+      console.error("보호자-반려동물 목록 조회 오류:", error);
+      res.status(500).json({ error: "목록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  console.log('[Consultation API] 상담 기록 API가 등록되었습니다.');
 
   const httpServer = createServer(app);
   return httpServer;

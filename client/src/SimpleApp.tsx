@@ -790,6 +790,37 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/consultation-records">
+          {() => {
+            const ConsultationRecords = lazy(() => import('./pages/consultation/ConsultationRecords'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={ConsultationRecords} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/consultation-records/new">
+          {() => {
+            const ConsultationForm = lazy(() => import('./pages/consultation/ConsultationForm'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={ConsultationForm} requiredRoles={['trainer', 'institute-admin', 'admin']} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/consultation-records/:id">
+          {() => {
+            const ConsultationDetail = lazy(() => import('./pages/consultation/ConsultationDetail'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={ConsultationDetail} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         <Route path="/trainer/profile">
           {() => {
             const TrainerProfile = lazy(() => import('./pages/trainer/profile'));
