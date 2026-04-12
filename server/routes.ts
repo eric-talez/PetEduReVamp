@@ -18532,7 +18532,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
         }
       }
 
-      const serverInstituteId = sessionUser.instituteId || null;
+      let serverInstituteId = sessionUser.instituteId || null;
+      if (role === 'trainer' && !serverInstituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes)
+          .where(eq(trainerInstitutes.trainerId, sessionUser.id))
+          .limit(1);
+        if (trainerInst) serverInstituteId = trainerInst.instituteId;
+      }
       const [record] = await db.insert(consultationRecords).values({
         petId: Number(petId),
         ownerId: Number(ownerId),
@@ -18573,7 +18580,20 @@ export function registerTrainerCertificationRoutes(app: Express) {
         records = await db.select().from(consultationRecords).where(eq(consultationRecords.trainerId, sessionUser.id)).orderBy(desc(consultationRecords.createdAt));
       } else if (role === 'institute-admin') {
         if (sessionUser.instituteId) {
-          records = await db.select().from(consultationRecords).where(eq(consultationRecords.instituteId, sessionUser.instituteId)).orderBy(desc(consultationRecords.createdAt));
+          const instTrainers = await db.select({ trainerId: trainerInstitutes.trainerId })
+            .from(trainerInstitutes)
+            .where(eq(trainerInstitutes.instituteId, sessionUser.instituteId));
+          const instTrainerIds = instTrainers.map((t: { trainerId: number }) => t.trainerId);
+          if (instTrainerIds.length > 0) {
+            records = await db.select().from(consultationRecords)
+              .where(or(
+                eq(consultationRecords.instituteId, sessionUser.instituteId),
+                sql`${consultationRecords.trainerId} = ANY(${instTrainerIds})`
+              ))
+              .orderBy(desc(consultationRecords.createdAt));
+          } else {
+            records = await db.select().from(consultationRecords).where(eq(consultationRecords.instituteId, sessionUser.instituteId)).orderBy(desc(consultationRecords.createdAt));
+          }
         } else {
           records = [];
         }
@@ -18618,7 +18638,20 @@ export function registerTrainerCertificationRoutes(app: Express) {
         if (!sessionUser.instituteId) {
           records = [];
         } else {
-          records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.instituteId, sessionUser.instituteId))).orderBy(desc(consultationRecords.createdAt));
+          const instTrainers = await db.select({ trainerId: trainerInstitutes.trainerId })
+            .from(trainerInstitutes)
+            .where(eq(trainerInstitutes.instituteId, sessionUser.instituteId));
+          const instTrainerIds = instTrainers.map((t: { trainerId: number }) => t.trainerId);
+          if (instTrainerIds.length > 0) {
+            records = await db.select().from(consultationRecords)
+              .where(and(petRecordsQuery, or(
+                eq(consultationRecords.instituteId, sessionUser.instituteId),
+                sql`${consultationRecords.trainerId} = ANY(${instTrainerIds})`
+              )))
+              .orderBy(desc(consultationRecords.createdAt));
+          } else {
+            records = await db.select().from(consultationRecords).where(and(petRecordsQuery, eq(consultationRecords.instituteId, sessionUser.instituteId))).orderBy(desc(consultationRecords.createdAt));
+          }
         }
       } else {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
@@ -18649,8 +18682,18 @@ export function registerTrainerCertificationRoutes(app: Express) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
       if (role === 'institute-admin') {
-        if (!sessionUser.instituteId || record.instituteId !== sessionUser.instituteId) {
+        if (!sessionUser.instituteId) {
           return res.status(403).json({ error: "소속 기관의 상담 기록만 조회할 수 있습니다." });
+        }
+        const instMatch = record.instituteId === sessionUser.instituteId;
+        if (!instMatch) {
+          const [trainerInInst] = await db.select({ id: trainerInstitutes.id })
+            .from(trainerInstitutes)
+            .where(and(eq(trainerInstitutes.trainerId, record.trainerId), eq(trainerInstitutes.instituteId, sessionUser.instituteId)))
+            .limit(1);
+          if (!trainerInInst) {
+            return res.status(403).json({ error: "소속 기관의 상담 기록만 조회할 수 있습니다." });
+          }
         }
       }
       const [pet] = await db.select().from(pets).where(eq(pets.id, record.petId));
@@ -18678,8 +18721,18 @@ export function registerTrainerCertificationRoutes(app: Express) {
         return res.status(403).json({ error: "본인이 작성한 상담 기록만 수정할 수 있습니다." });
       }
       if (role === 'institute-admin') {
-        if (!sessionUser.instituteId || existing.instituteId !== sessionUser.instituteId) {
+        if (!sessionUser.instituteId) {
           return res.status(403).json({ error: "소속 기관의 상담 기록만 수정할 수 있습니다." });
+        }
+        const instMatch = existing.instituteId === sessionUser.instituteId;
+        if (!instMatch) {
+          const [trainerInInst] = await db.select({ id: trainerInstitutes.id })
+            .from(trainerInstitutes)
+            .where(and(eq(trainerInstitutes.trainerId, existing.trainerId), eq(trainerInstitutes.instituteId, sessionUser.instituteId)))
+            .limit(1);
+          if (!trainerInInst) {
+            return res.status(403).json({ error: "소속 기관의 상담 기록만 수정할 수 있습니다." });
+          }
         }
       }
       const { visitPurpose, mainProblemBehavior, behaviorTiming, behaviorTarget, recentChanges, walkDuration, mealPattern, ownerReactionStyle, previousTrainingExperience, desiredGoal, temperamentLevel, additionalNotes } = req.body;
@@ -18725,8 +18778,18 @@ export function registerTrainerCertificationRoutes(app: Express) {
         return res.status(403).json({ error: "본인이 작성한 상담 기록만 삭제할 수 있습니다." });
       }
       if (role === 'institute-admin') {
-        if (!sessionUser.instituteId || existing.instituteId !== sessionUser.instituteId) {
+        if (!sessionUser.instituteId) {
           return res.status(403).json({ error: "소속 기관의 상담 기록만 삭제할 수 있습니다." });
+        }
+        const instMatch = existing.instituteId === sessionUser.instituteId;
+        if (!instMatch) {
+          const [trainerInInst] = await db.select({ id: trainerInstitutes.id })
+            .from(trainerInstitutes)
+            .where(and(eq(trainerInstitutes.trainerId, existing.trainerId), eq(trainerInstitutes.instituteId, sessionUser.instituteId)))
+            .limit(1);
+          if (!trainerInInst) {
+            return res.status(403).json({ error: "소속 기관의 상담 기록만 삭제할 수 있습니다." });
+          }
         }
       }
       await db.delete(consultationRecords).where(eq(consultationRecords.id, id));
