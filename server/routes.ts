@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
-import { sql, eq, and, isNotNull, desc } from "drizzle-orm";
+import { sql, eq, and, isNotNull, desc, or, ilike } from "drizzle-orm";
 import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
@@ -371,7 +371,6 @@ import {
   educationCredits
 } from "../shared/schema";
 import crypto from "crypto";
-import { ilike, or } from "drizzle-orm";
 import { 
   analyzePetBehavior, 
   generateTrainingPlan, 
@@ -18650,20 +18649,73 @@ export function registerTrainerCertificationRoutes(app: Express) {
           .orderBy(users.name)
           .limit(50);
       } else if (role === 'trainer') {
-        ownerPets = await db.select(selectFields).from(pets)
-          .innerJoin(users, eq(pets.ownerId, users.id))
-          .where(searchCondition!)
-          .orderBy(users.name)
-          .limit(50);
+        const assignedPetIds = await db.selectDistinct({ petId: trainerClientAssignments.petId })
+          .from(trainerClientAssignments)
+          .where(and(eq(trainerClientAssignments.trainerId, sessionUser.id), isNotNull(trainerClientAssignments.petId)));
+        const consultedPetIds = await db.selectDistinct({ petId: consultationRecords.petId })
+          .from(consultationRecords)
+          .where(eq(consultationRecords.trainerId, sessionUser.id));
+        const assignedClientIds = await db.selectDistinct({ clientId: trainerClientAssignments.clientId })
+          .from(trainerClientAssignments)
+          .where(eq(trainerClientAssignments.trainerId, sessionUser.id));
+        const scopedPetIds = [...new Set([
+          ...assignedPetIds.filter((r: any) => r.petId).map((r: any) => r.petId),
+          ...consultedPetIds.map((r: any) => r.petId),
+        ])];
+        const scopedOwnerIds = assignedClientIds.map((r: any) => r.clientId);
+        if (scopedPetIds.length > 0 || scopedOwnerIds.length > 0) {
+          const conditions = [searchCondition!];
+          const scopeConditions: any[] = [];
+          if (scopedPetIds.length > 0) scopeConditions.push(sql`${pets.id} = ANY(${scopedPetIds})`);
+          if (scopedOwnerIds.length > 0) scopeConditions.push(sql`${pets.ownerId} = ANY(${scopedOwnerIds})`);
+          const scopeCondition = scopeConditions.length > 1 ? or(...scopeConditions) : scopeConditions[0];
+          ownerPets = await db.select(selectFields).from(pets)
+            .innerJoin(users, eq(pets.ownerId, users.id))
+            .where(and(searchCondition!, scopeCondition!))
+            .orderBy(users.name)
+            .limit(50);
+        } else {
+          ownerPets = [];
+        }
       } else if (role === 'institute-admin') {
         if (!sessionUser.instituteId) {
           ownerPets = [];
         } else {
-          ownerPets = await db.select(selectFields).from(pets)
-            .innerJoin(users, eq(pets.ownerId, users.id))
-            .where(searchCondition!)
-            .orderBy(users.name)
-            .limit(50);
+          const instTrainers = await db.select({ trainerId: trainerInstitutes.trainerId })
+            .from(trainerInstitutes)
+            .where(eq(trainerInstitutes.instituteId, sessionUser.instituteId));
+          const instTrainerIds = instTrainers.map((t: any) => t.trainerId);
+          if (instTrainerIds.length > 0) {
+            const instAssignedPetIds = await db.selectDistinct({ petId: trainerClientAssignments.petId })
+              .from(trainerClientAssignments)
+              .where(sql`${trainerClientAssignments.trainerId} = ANY(${instTrainerIds})`);
+            const instConsultedPetIds = await db.selectDistinct({ petId: consultationRecords.petId })
+              .from(consultationRecords)
+              .where(sql`${consultationRecords.trainerId} = ANY(${instTrainerIds})`);
+            const instAssignedClientIds = await db.selectDistinct({ clientId: trainerClientAssignments.clientId })
+              .from(trainerClientAssignments)
+              .where(sql`${trainerClientAssignments.trainerId} = ANY(${instTrainerIds})`);
+            const scopedPetIds = [...new Set([
+              ...instAssignedPetIds.filter((r: any) => r.petId).map((r: any) => r.petId),
+              ...instConsultedPetIds.map((r: any) => r.petId),
+            ])];
+            const scopedOwnerIds = instAssignedClientIds.map((r: any) => r.clientId);
+            if (scopedPetIds.length > 0 || scopedOwnerIds.length > 0) {
+              const scopeConditions: any[] = [];
+              if (scopedPetIds.length > 0) scopeConditions.push(sql`${pets.id} = ANY(${scopedPetIds})`);
+              if (scopedOwnerIds.length > 0) scopeConditions.push(sql`${pets.ownerId} = ANY(${scopedOwnerIds})`);
+              const scopeCondition = scopeConditions.length > 1 ? or(...scopeConditions) : scopeConditions[0];
+              ownerPets = await db.select(selectFields).from(pets)
+                .innerJoin(users, eq(pets.ownerId, users.id))
+                .where(and(searchCondition!, scopeCondition!))
+                .orderBy(users.name)
+                .limit(50);
+            } else {
+              ownerPets = [];
+            }
+          } else {
+            ownerPets = [];
+          }
         }
       } else {
         ownerPets = [];
