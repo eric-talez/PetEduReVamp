@@ -289,13 +289,8 @@ import { ObjectPermission } from "./objectAcl";
 import { eventRoutes } from "./routes/events";
 import { eventUpdater } from "./services/eventUpdater";
 import { 
-  courses, 
-  users, 
-  institutes, 
   createPetSchema, 
   updatePetValidationSchema, 
-  pets,
-  // 커리큘럼/강의 관련 스키마 추가
   curriculums,
   insertCurriculumSchema,
   updateCurriculumSchema,
