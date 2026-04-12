@@ -18625,6 +18625,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (!['trainer', 'institute-admin', 'admin'].includes(role)) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
+      const searchQuery = (req.query.q as string || '').trim();
+      if (!searchQuery || searchQuery.length < 2) {
+        return res.json({ success: true, ownerPets: [] });
+      }
       const selectFields = {
         petId: pets.id,
         petName: pets.name,
@@ -18633,26 +18637,41 @@ export function registerTrainerCertificationRoutes(app: Express) {
         ownerId: pets.ownerId,
         ownerName: users.name,
       };
+      const searchPattern = `%${searchQuery}%`;
+      const searchCondition = or(
+        ilike(users.name, searchPattern),
+        ilike(pets.name, searchPattern)
+      );
       let ownerPets;
       if (role === 'admin') {
         ownerPets = await db.select(selectFields).from(pets)
           .innerJoin(users, eq(pets.ownerId, users.id))
-          .orderBy(users.name);
-      } else if (role === 'trainer' || role === 'institute-admin') {
-        if (role === 'institute-admin' && !sessionUser.instituteId) {
+          .where(searchCondition!)
+          .orderBy(users.name)
+          .limit(50);
+      } else if (role === 'trainer') {
+        ownerPets = await db.select(selectFields).from(pets)
+          .innerJoin(users, eq(pets.ownerId, users.id))
+          .where(searchCondition!)
+          .orderBy(users.name)
+          .limit(50);
+      } else if (role === 'institute-admin') {
+        if (!sessionUser.instituteId) {
           ownerPets = [];
         } else {
           ownerPets = await db.select(selectFields).from(pets)
             .innerJoin(users, eq(pets.ownerId, users.id))
-            .orderBy(users.name);
+            .where(searchCondition!)
+            .orderBy(users.name)
+            .limit(50);
         }
       } else {
         ownerPets = [];
       }
       res.json({ success: true, ownerPets });
     } catch (error) {
-      console.error("보호자-반려동물 목록 조회 오류:", error);
-      res.status(500).json({ error: "목록 조회 중 오류가 발생했습니다." });
+      console.error("보호자-반려동물 검색 오류:", error);
+      res.status(500).json({ error: "검색 중 오류가 발생했습니다." });
     }
   });
 

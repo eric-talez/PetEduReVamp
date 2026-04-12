@@ -43,6 +43,8 @@ export default function ConsultationForm() {
 
   const [selectedOwnerId, setSelectedOwnerId] = useState<string>('');
   const [selectedPetId, setSelectedPetId] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const [formData, setFormData] = useState({
     visitPurpose: '',
     mainProblemBehavior: '',
@@ -58,8 +60,20 @@ export default function ConsultationForm() {
     additionalNotes: '',
   });
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const { data: ownerPetsData, isLoading: isOwnerPetsLoading } = useQuery<{ success: boolean; ownerPets: any[] }>({
-    queryKey: ['/api/pets/all-owners'],
+    queryKey: ['/api/pets/all-owners', debouncedSearch],
+    queryFn: async () => {
+      if (!debouncedSearch || debouncedSearch.length < 2) return { success: true, ownerPets: [] };
+      const res = await fetch(`/api/pets/all-owners?q=${encodeURIComponent(debouncedSearch)}`, { credentials: 'include' });
+      if (!res.ok) throw new Error('검색 실패');
+      return res.json();
+    },
+    enabled: debouncedSearch.length >= 2,
   });
 
   const ownerPets = ownerPetsData?.ownerPets || [];
@@ -125,20 +139,33 @@ export default function ConsultationForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="owner">보호자 선택 *</Label>
-              <Select value={selectedOwnerId} onValueChange={(val) => { setSelectedOwnerId(val); setSelectedPetId(''); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="보호자를 선택하세요" />
-                </SelectTrigger>
-                <SelectContent>
-                  {uniqueOwners.map((owner: any) => (
-                    <SelectItem key={owner.id} value={String(owner.id)}>
-                      {owner.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="search">보호자/반려동물 검색 *</Label>
+              <Input
+                id="search"
+                placeholder="보호자 이름 또는 반려동물 이름으로 검색 (2자 이상)"
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); setSelectedOwnerId(''); setSelectedPetId(''); }}
+              />
+              {isOwnerPetsLoading && <p className="text-sm text-muted-foreground mt-1">검색 중...</p>}
             </div>
+
+            {uniqueOwners.length > 0 && (
+              <div>
+                <Label htmlFor="owner">보호자 선택 *</Label>
+                <Select value={selectedOwnerId} onValueChange={(val) => { setSelectedOwnerId(val); setSelectedPetId(''); }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="보호자를 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {uniqueOwners.map((owner: any) => (
+                      <SelectItem key={owner.id} value={String(owner.id)}>
+                        {owner.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {selectedOwnerId && (
               <div>
