@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode, useRef } from 'react';
 import { useLocation } from 'wouter';
 
 interface SplashScreenProps {
@@ -204,15 +204,17 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
 
 export function SplashScreen({ onComplete, minDisplayTime = 2000 }: SplashScreenProps) {
   const [fadeOut, setFadeOut] = useState(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setFadeOut(true);
-      setTimeout(onComplete, 500);
+      setTimeout(() => onCompleteRef.current(), 500);
     }, minDisplayTime);
 
     return () => clearTimeout(timer);
-  }, [onComplete, minDisplayTime]);
+  }, [minDisplayTime]);
 
   return (
     <div 
@@ -275,10 +277,10 @@ export function useSplashScreen() {
     return !hasSeenSplash;
   });
 
-  const handleSplashComplete = () => {
+  const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem('talez_splash_shown', 'true');
     setShowSplash(false);
-  };
+  }, []);
 
   return { showSplash, handleSplashComplete };
 }

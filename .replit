@@ -35,6 +35,14 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Check and Fix"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Production Build"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -46,33 +54,29 @@ waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Production Build"
-author = 37268622
+author = "agent"
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node optimize-production.js"
+args = "node optimize-production.cjs && npm run build && NODE_ENV=production node production-start.cjs"
+waitForPort = 5000
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run build"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "NODE_ENV=production node production-start.js"
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[workflows.workflow]]
 name = "Check and Fix"
-author = 37268622
+author = "agent"
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node scripts/check-missing-endpoints.js"
+args = "node scripts/check-missing-endpoints.cjs && npm run dev"
+waitForPort = 5000
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [languages.typescript]
 pattern = "**/{*.ts,*.tsx}"
