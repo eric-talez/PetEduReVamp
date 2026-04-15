@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { QrCode, Plus, Trash2, Copy, Edit2, Check, X, Download, Printer } from "lucide-react";
+import { QrCode, Plus, Trash2, Copy, Edit2, Check, X, Download, Printer, Shield, ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 import { QRCodeSVG } from "qrcode.react";
 import type { InstituteQrCode } from "@shared/schema";
 
@@ -25,6 +26,7 @@ interface QrUpdatePayload {
 
 export default function QrCodeManagement() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [newLabel, setNewLabel] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editLabel, setEditLabel] = useState("");
@@ -123,6 +125,23 @@ export default function QrCodeManagement() {
           <p className="text-gray-500 text-sm">기관 체크인용 QR 코드를 생성하고 관리합니다</p>
         </div>
       </div>
+
+      <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/institute/visit-sessions")}>
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-bold text-primary">방문 신뢰 QR 발급</p>
+                <p className="text-sm text-muted-foreground">접종·성향 기반 1회용 신뢰 인증 QR을 발급합니다</p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-primary" />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
