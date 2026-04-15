@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { QrCode, Plus, Search, Clock, CheckCircle, XCircle, PawPrint, User, Shield, Download, Printer, RefreshCw, AlertTriangle } from "lucide-react";
+import { QrCode, Plus, Search, Clock, CheckCircle, XCircle, PawPrint, User, Shield, Printer, AlertTriangle, Syringe, MapPin } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
 interface Member {
   id: number;
   name: string | null;
-  phone: string | null;
   email: string | null;
 }
 
@@ -30,13 +29,18 @@ interface Pet {
   profileImage: string | null;
 }
 
+interface VaccineInfo {
+  valid: boolean;
+  vaccines: Array<{ name: string; status: string; date: string | null; nextDue: string | null }>;
+}
+
 interface VisitSession {
   id: number;
   token: string;
   instituteId: number;
   memberId: number;
   petIds: number[];
-  vaccineStatus: Record<number, { valid: boolean; vaccines: any[] }>;
+  vaccineStatus: Record<number, VaccineInfo>;
   temperamentLevels: Record<number, string | null>;
   zonePermissions: Record<number, string[]>;
   todayConcern: string | null;
@@ -48,6 +52,12 @@ interface VisitSession {
   memberName?: string;
   petNames?: string[];
   status?: string;
+}
+
+interface GenerateResponse {
+  success: boolean;
+  session?: VisitSession;
+  error?: string;
 }
 
 const TEMPERAMENT_COLORS: Record<string, string> = {
@@ -62,8 +72,26 @@ const TEMPERAMENT_LABELS: Record<string, string> = {
   A: "사회성 양호", B: "흥분 조절", C: "짖음/경계", D: "공격성 주의", E: "분리불안",
 };
 
+function useCountdown() {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  return now;
+}
+
+function formatRemaining(expiresAt: string, currentTime: number): string {
+  const diff = new Date(expiresAt).getTime() - currentTime;
+  if (diff <= 0) return "만료됨";
+  const mins = Math.floor(diff / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  return `${mins}분 ${secs}초`;
+}
+
 export default function VisitSessionManager() {
   const { toast } = useToast();
+  const now = useCountdown();
   const [showCreate, setShowCreate] = useState(false);
   const [showQr, setShowQr] = useState<VisitSession | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,6 +99,7 @@ export default function VisitSessionManager() {
   const [selectedPetIds, setSelectedPetIds] = useState<number[]>([]);
   const [todayConcern, setTodayConcern] = useState("");
   const [todayGoal, setTodayGoal] = useState("");
+  const [previewData, setPreviewData] = useState<GenerateResponse | null>(null);
   const qrRef = useRef<HTMLDivElement>(null);
 
   const { data: sessionsData, isLoading } = useQuery<{ success: boolean; sessions: VisitSession[] }>({
@@ -97,16 +126,17 @@ export default function VisitSessionManager() {
     enabled: !!selectedMember,
   });
 
-  const generateMutation = useMutation({
-    mutationFn: async (data: any) => {
+  const generateMutation = useMutation<GenerateResponse, Error, { memberId: number; petIds: number[]; todayConcern: string | null; todayGoal: string | null }>({
+    mutationFn: async (data) => {
       const res = await apiRequest("POST", "/api/visit-sessions/generate", data);
       return res.json();
     },
-    onSuccess: (json: any) => {
+    onSuccess: (json) => {
       queryClient.invalidateQueries({ queryKey: ["/api/visit-sessions"] });
       if (json.success && json.session) {
         setShowCreate(false);
         setShowQr(json.session);
+        setPreviewData(json);
         resetCreateForm();
       }
       toast({ title: "방문 세션 QR 발급 완료", description: "10분 내 스캔하여 체크인해 주세요." });
@@ -145,25 +175,14 @@ export default function VisitSessionManager() {
     );
   }
 
-  function getStatusBadge(status: string) {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-100 text-green-800 gap-1"><Clock className="w-3 h-3" /> 유효</Badge>;
-      case "used":
-        return <Badge className="bg-gray-100 text-gray-600 gap-1"><CheckCircle className="w-3 h-3" /> 사용됨</Badge>;
-      case "expired":
-        return <Badge className="bg-red-100 text-red-800 gap-1"><XCircle className="w-3 h-3" /> 만료</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
+  function getStatusBadge(session: VisitSession) {
+    if (session.usedAt) return <Badge className="bg-gray-100 text-gray-600 gap-1"><CheckCircle className="w-3 h-3" /> 사용됨</Badge>;
+    if (new Date(session.expiresAt).getTime() < now) return <Badge className="bg-red-100 text-red-800 gap-1"><XCircle className="w-3 h-3" /> 만료</Badge>;
+    return <Badge className="bg-green-100 text-green-800 gap-1"><Clock className="w-3 h-3" /> 유효</Badge>;
   }
 
-  function getRemainingTime(expiresAt: string) {
-    const diff = new Date(expiresAt).getTime() - Date.now();
-    if (diff <= 0) return "만료됨";
-    const mins = Math.floor(diff / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
-    return `${mins}분 ${secs}초`;
+  function isActive(session: VisitSession): boolean {
+    return !session.usedAt && new Date(session.expiresAt).getTime() > now;
   }
 
   function handlePrintQr() {
@@ -240,7 +259,7 @@ export default function VisitSessionManager() {
       ) : (
         <div className="space-y-3">
           {sessions.map(session => (
-            <Card key={session.id} className={session.status === 'active' ? 'border-green-200' : ''}>
+            <Card key={session.id} className={isActive(session) ? 'border-green-200' : ''}>
               <CardContent className="py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -250,7 +269,7 @@ export default function VisitSessionManager() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{session.memberName || '보호자'}</span>
-                        {getStatusBadge(session.status || 'active')}
+                        {getStatusBadge(session)}
                       </div>
                       <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                         <PawPrint className="w-3 h-3" />
@@ -262,11 +281,11 @@ export default function VisitSessionManager() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {session.status === 'active' && (
+                    {isActive(session) && (
                       <>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs font-mono">
                           <Clock className="w-3 h-3 mr-1" />
-                          {getRemainingTime(session.expiresAt)}
+                          {formatRemaining(session.expiresAt, now)}
                         </Badge>
                         <Button variant="outline" size="sm" onClick={() => setShowQr(session)} className="gap-1">
                           <QrCode className="w-4 h-4" />
@@ -311,7 +330,7 @@ export default function VisitSessionManager() {
                       onClick={() => { setSelectedMember(m); setSelectedPetIds([]); }}
                     >
                       <span className="font-medium">{m.name || '미입력'}</span>
-                      <span className="text-sm text-muted-foreground">{m.phone || m.email}</span>
+                      <span className="text-sm text-muted-foreground">{m.email || ''}</span>
                     </button>
                   ))}
                 </div>
@@ -321,7 +340,6 @@ export default function VisitSessionManager() {
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-primary" />
                     <span className="font-medium">{selectedMember.name}</span>
-                    <span className="text-sm text-muted-foreground">{selectedMember.phone}</span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => { setSelectedMember(null); setSelectedPetIds([]); }}>
                     변경
@@ -393,13 +411,13 @@ export default function VisitSessionManager() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!showQr} onOpenChange={() => setShowQr(null)}>
-        <DialogContent className="max-w-sm">
+      <Dialog open={!!showQr} onOpenChange={() => { setShowQr(null); setPreviewData(null); }}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center">방문 신뢰 QR</DialogTitle>
           </DialogHeader>
           {showQr && (
-            <div className="text-center space-y-4">
+            <div className="space-y-4">
               <div ref={qrRef} className="flex justify-center p-4 bg-white rounded-lg">
                 <QRCodeSVG
                   value={`${baseUrl}/visit/${showQr.token}`}
@@ -408,13 +426,57 @@ export default function VisitSessionManager() {
                   includeMargin
                 />
               </div>
-              <div className="space-y-2 text-sm">
-                <Badge className="bg-green-100 text-green-800">
+              <div className="text-center space-y-2 text-sm">
+                <Badge className="bg-green-100 text-green-800 font-mono">
                   <Clock className="w-3 h-3 mr-1" />
-                  {getRemainingTime(showQr.expiresAt)}
+                  {formatRemaining(showQr.expiresAt, now)}
                 </Badge>
                 <p className="text-muted-foreground">1회 스캔 후 자동 폐기 · 10분 유효</p>
               </div>
+
+              {showQr.vaccineStatus && Object.keys(showQr.vaccineStatus).length > 0 && (
+                <div className="border rounded-lg p-3 space-y-2">
+                  <p className="font-medium text-sm flex items-center gap-1">
+                    <Syringe className="w-4 h-4" /> 접종·성향 사전 검증 결과
+                  </p>
+                  {showQr.petNames?.map((name, idx) => {
+                    const petId = showQr.petIds[idx];
+                    const vaccine = showQr.vaccineStatus[petId];
+                    const temperament = showQr.temperamentLevels[petId];
+                    const zones = showQr.zonePermissions[petId] || [];
+                    return (
+                      <div key={petId} className="text-sm pl-2 border-l-2 border-primary/30 ml-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <PawPrint className="w-3 h-3" />
+                          <span className="font-medium">{name}</span>
+                          {temperament && (
+                            <Badge className={`text-xs ${TEMPERAMENT_COLORS[temperament] || ''}`}>
+                              {temperament}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <Syringe className="w-3 h-3" />
+                          {vaccine?.valid ? (
+                            <span className="text-green-600">접종 완료</span>
+                          ) : (
+                            <span className="text-red-600">미접종/만료</span>
+                          )}
+                        </div>
+                        {zones.length > 0 && (
+                          <div className="flex items-center gap-1 text-xs flex-wrap">
+                            <MapPin className="w-3 h-3" />
+                            {zones.map(z => (
+                              <Badge key={z} variant="outline" className="text-xs py-0">{z}</Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               <div className="flex justify-center gap-2">
                 <Button variant="outline" size="sm" onClick={handlePrintQr} className="gap-1">
                   <Printer className="w-4 h-4" />

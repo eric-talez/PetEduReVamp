@@ -75,7 +75,7 @@ export default function ZoneManagement() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/institute/zones", data),
+    mutationFn: (data: typeof emptyForm) => apiRequest("POST", "/api/institute/zones", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/institute/zones"] });
       setShowDialog(false);
@@ -86,7 +86,7 @@ export default function ZoneManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest("PUT", `/api/institute/zones/${id}`, data),
+    mutationFn: ({ id, data }: { id: number; data: typeof emptyForm }) => apiRequest("PUT", `/api/institute/zones/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/institute/zones"] });
       setShowDialog(false);

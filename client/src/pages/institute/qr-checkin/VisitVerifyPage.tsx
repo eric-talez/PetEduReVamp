@@ -3,6 +3,7 @@ import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { LucideIcon } from "lucide-react";
 import {
   Shield, CheckCircle, XCircle, Clock, PawPrint, Building,
   Syringe, MapPin, AlertTriangle, Loader2
@@ -17,7 +18,7 @@ interface VerifyResponse {
     expiresAt: string;
     todayConcern: string | null;
     todayGoal: string | null;
-    vaccineStatus: Record<number, { valid: boolean; vaccines: any[] }>;
+    vaccineStatus: Record<number, { valid: boolean; vaccines: Array<{ name: string; status: string }> }>;
     temperamentLevels: Record<number, string | null>;
     zonePermissions: Record<number, string[]>;
   };
@@ -66,7 +67,7 @@ export default function VisitVerifyPage() {
   }
 
   if (!data?.success || data.error) {
-    const errorMessages: Record<string, { icon: any; title: string; desc: string; bgColor: string }> = {
+    const errorMessages: Record<string, { icon: LucideIcon; title: string; desc: string; bgColor: string }> = {
       INVALID: { icon: XCircle, title: "유효하지 않은 QR", desc: "해당 방문 세션을 찾을 수 없습니다. 올바른 QR 코드인지 확인해 주세요.", bgColor: "from-red-50" },
       USED: { icon: CheckCircle, title: "이미 사용된 QR", desc: "이 방문 세션은 이미 체크인에 사용되었습니다. 1회용 QR은 재사용할 수 없습니다.", bgColor: "from-gray-50" },
       EXPIRED: { icon: Clock, title: "만료된 QR", desc: "이 방문 세션의 유효시간(10분)이 경과했습니다. 새 QR을 발급받아 주세요.", bgColor: "from-orange-50" },

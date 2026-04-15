@@ -18387,7 +18387,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const { name, email, phoneNumber, birthDate, gender, bio, address } = req.body;
       
       // 업데이트할 값이 있는지 확인
-      const updateData: Record<string, any> = {};
+      const updateData: Partial<{
+        name: string; email: string; phoneNumber: string;
+        birthDate: string; gender: string; bio: string; address: string;
+      }> = {};
       if (name !== undefined && name !== '') updateData.name = name;
       if (email !== undefined && email !== '') updateData.email = email;
       if (phoneNumber !== undefined && phoneNumber !== '') updateData.phoneNumber = phoneNumber;
@@ -19554,7 +19557,12 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (role === 'institute-admin' && existing.instituteId !== sessionUser.instituteId) {
         return res.status(403).json({ error: "소속 기관의 존만 수정할 수 있습니다." });
       }
-      const updateData: Record<string, any> = { updatedAt: new Date() };
+      const updateData: Partial<{
+        name: string; zoneType: string; description: string;
+        requiresVaccination: boolean; maxTemperamentLevel: string | null;
+        minTrainingLevel: string | null; capacity: number | null;
+        isActive: boolean; updatedAt: Date;
+      }> = { updatedAt: new Date() };
       if (req.body.name !== undefined) updateData.name = req.body.name;
       if (req.body.zoneType !== undefined) updateData.zoneType = req.body.zoneType;
       if (req.body.description !== undefined) updateData.description = req.body.description;
