@@ -1,10 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { LucideIcon } from "lucide-react";
 import {
   Shield, CheckCircle, XCircle, Clock, PawPrint, Building,
@@ -43,28 +41,26 @@ const TEMPERAMENT_MAP: Record<string, { label: string; color: string; bg: string
 
 export default function VisitVerifyPage() {
   const { token } = useParams<{ token: string }>();
-  const [confirmResult, setConfirmResult] = useState<VerifyResponse | null>(null);
+  const [data, setData] = useState<VerifyResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const calledRef = useRef(false);
 
-  const { data, isLoading } = useQuery<VerifyResponse>({
-    queryKey: ["/api/visit-sessions/verify", token],
-    queryFn: async () => {
-      const res = await fetch(`/api/visit-sessions/verify/${token}`);
-      return res.json();
-    },
-    retry: false,
-    refetchOnWindowFocus: false,
-    staleTime: Infinity,
-  });
+  useEffect(() => {
+    if (!token || calledRef.current) return;
+    calledRef.current = true;
 
-  const confirmMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", `/api/visit-sessions/confirm/${token}`);
-      return res.json() as Promise<VerifyResponse>;
-    },
-    onSuccess: (result) => {
-      setConfirmResult(result);
-    },
-  });
+    (async () => {
+      try {
+        const res = await apiRequest("POST", `/api/visit-sessions/confirm/${token}`);
+        const result: VerifyResponse = await res.json();
+        setData(result);
+      } catch {
+        setData({ success: false, error: "네트워크 오류가 발생했습니다.", errorCode: "NETWORK" });
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [token]);
 
   if (isLoading) {
     return (
@@ -85,6 +81,7 @@ export default function VisitVerifyPage() {
       INVALID: { icon: XCircle, title: "유효하지 않은 QR", desc: "해당 방문 세션을 찾을 수 없습니다. 올바른 QR 코드인지 확인해 주세요.", bgColor: "from-red-50" },
       USED: { icon: CheckCircle, title: "이미 사용된 QR", desc: "이 방문 세션은 이미 체크인에 사용되었습니다. 1회용 QR은 재사용할 수 없습니다.", bgColor: "from-gray-50" },
       EXPIRED: { icon: Clock, title: "만료된 QR", desc: "이 방문 세션의 유효시간(10분)이 경과했습니다. 새 QR을 발급받아 주세요.", bgColor: "from-orange-50" },
+      NETWORK: { icon: AlertTriangle, title: "연결 오류", desc: "서버와 통신할 수 없습니다. 인터넷 연결을 확인해 주세요.", bgColor: "from-red-50" },
     };
     const errInfo = errorMessages[data?.errorCode || ''] || { icon: AlertTriangle, title: "오류", desc: data?.error || "알 수 없는 오류", bgColor: "from-red-50" };
     const ErrIcon = errInfo.icon;
@@ -102,9 +99,7 @@ export default function VisitVerifyPage() {
     );
   }
 
-  const displayData = confirmResult || data;
-  const isConfirmed = confirmResult?.consumed === true;
-  const session = displayData.session!;
+  const session = data.session!;
   const vaccineStatus = session.vaccineStatus || {};
   const temperamentLevels = session.temperamentLevels || {};
   const zonePermissions = session.zonePermissions || {};
@@ -113,32 +108,22 @@ export default function VisitVerifyPage() {
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-background p-4">
       <div className="max-w-md mx-auto space-y-4 pt-4">
         <div className="text-center mb-6">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 ${isConfirmed ? 'bg-green-100' : 'bg-blue-100'}`}>
-            {isConfirmed ? (
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            ) : (
-              <Shield className="w-10 h-10 text-blue-600" />
-            )}
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+            <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className={`text-xl font-bold ${isConfirmed ? 'text-green-800' : 'text-blue-800'}`}>
-            {isConfirmed ? '체크인 완료!' : '방문 신뢰 QR 인증'}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {isConfirmed
-              ? 'QR 체크인이 완료되었습니다.'
-              : '아래 정보를 확인한 후 체크인 버튼을 눌러주세요.'}
-          </p>
+          <h1 className="text-xl font-bold text-green-800">체크인 완료!</h1>
+          <p className="text-sm text-muted-foreground mt-1">QR 스캔과 동시에 체크인이 자동 완료되었습니다.</p>
         </div>
 
-        {displayData.institute && (
+        {data.institute && (
           <Card>
             <CardContent className="py-4">
               <div className="flex items-center gap-3">
                 <Building className="w-8 h-8 text-primary" />
                 <div>
-                  <p className="font-bold text-lg">{displayData.institute.name}</p>
-                  {displayData.institute.address && (
-                    <p className="text-sm text-muted-foreground">{displayData.institute.address}</p>
+                  <p className="font-bold text-lg">{data.institute.name}</p>
+                  {data.institute.address && (
+                    <p className="text-sm text-muted-foreground">{data.institute.address}</p>
                   )}
                 </div>
               </div>
@@ -146,19 +131,19 @@ export default function VisitVerifyPage() {
           </Card>
         )}
 
-        {displayData.member && (
+        {data.member && (
           <Card>
             <CardContent className="py-3">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium">보호자:</span>
-                <span>{displayData.member.name}</span>
+                <span>{data.member.name}</span>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {displayData.pets && displayData.pets.length > 0 && (
+        {data.pets && data.pets.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
@@ -167,7 +152,7 @@ export default function VisitVerifyPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {displayData.pets.map(pet => {
+              {data.pets.map(pet => {
                 const petVaccine = vaccineStatus[pet.id];
                 const petTemperament = temperamentLevels[pet.id] as string;
                 const petZones = zonePermissions[pet.id] || [];
@@ -253,36 +238,8 @@ export default function VisitVerifyPage() {
           </Card>
         )}
 
-        {!isConfirmed && (
-          <Button
-            className="w-full py-6 text-lg font-bold"
-            onClick={() => confirmMutation.mutate()}
-            disabled={confirmMutation.isPending}
-          >
-            {confirmMutation.isPending ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                체크인 처리 중...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-5 h-5 mr-2" />
-                체크인 확인
-              </>
-            )}
-          </Button>
-        )}
-
-        {confirmMutation.isError && (
-          <p className="text-center text-sm text-red-500">
-            체크인 처리 중 오류가 발생했습니다. 다시 시도해 주세요.
-          </p>
-        )}
-
         <p className="text-center text-xs text-muted-foreground pb-4">
-          {isConfirmed
-            ? '이 QR은 1회용으로, 체크인 완료 시 자동 폐기되었습니다.'
-            : '이 QR은 10분간 유효하며, 체크인 확인 시 자동 폐기됩니다.'}
+          이 QR은 1회용으로, 스캔 즉시 자동 폐기되었습니다.
         </p>
       </div>
     </div>

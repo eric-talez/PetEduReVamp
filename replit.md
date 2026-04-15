@@ -64,7 +64,9 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
   - New `pet_visit_sessions` table for single-use 10-min session tokens with vaccine status, temperament levels, zone permissions
   - API endpoints: CRUD `/api/institute/zones`, POST `/api/visit-sessions/generate`, GET `/api/visit-sessions/verify/:token`, POST `/api/visit-sessions/confirm/:token`, GET `/api/visit-sessions`, GET `/api/institute/members`, GET `/api/institute/members/:memberId/pets`
   - Patent-differentiated design: atomic single-scan invalidation (verify endpoint atomically consumes token via UPDATE WHERE usedAt IS NULL), 10-min expiry, pet-centric trust verification, zone-based permissions
-  - Verify atomically: creates checkin_records + marks token used in single request; no separate confirm step needed
+  - Two-endpoint design: GET `/api/visit-sessions/verify/:token` (read-only, bot-safe), POST `/api/visit-sessions/confirm/:token` (atomic consume + checkin via db.transaction)
+  - Frontend auto-calls POST on page load for "scan = consume" UX; GET verify available for admin tooling
+  - Admin status check: GET `/api/visit-sessions/status/:token` (authenticated, separate from public confirm)
   - Public verify page at `/visit/:token` - scans once, shows checkin confirmation with vaccine/temperament/zone status
   - Members endpoint scoped to institute (via checkin_records join) — no global pet-owner exposure
   - UI pages: VisitSessionManager (QR issuance), ZoneManagement (zone CRUD), VisitVerifyPage (public scan page)

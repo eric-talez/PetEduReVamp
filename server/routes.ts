@@ -19884,8 +19884,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
-  // 방문 세션 상태 조회 (관리자/훈련사용)
-  app.post("/api/visit-sessions/confirm/:token", requireAuth(), async (req, res) => {
+  // 방문 세션 상태 조회 (관리자/훈련사용 — 인증 필요)
+  app.get("/api/visit-sessions/status/:token", requireAuth(), async (req, res) => {
     try {
       const sessionUser = (req as any).user;
       if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
