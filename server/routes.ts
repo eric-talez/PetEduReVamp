@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
+import { randomBytes } from "crypto";
 import { db } from "./db";
 import { sql, eq, and, isNotNull, desc, or, ilike } from "drizzle-orm";
 import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes, instituteQrCodes, checkinRecords, emergencyContacts, storePolicies, consentRecords, incidentProtocols, instituteZones, petVisitSessions, vaccinations } from "../shared/schema";
@@ -365,7 +366,6 @@ import {
   friendInvitations,
   educationCredits
 } from "../shared/schema";
-import crypto from "crypto";
 import { 
   analyzePetBehavior, 
   generateTrainingPlan, 
@@ -826,7 +826,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // 초대 코드가 없으면 새로 생성
       if (!inviteCode) {
-        inviteCode = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6자리 영숫자 코드
+        inviteCode = randomBytes(3).toString('hex').toUpperCase(); // 6자리 영숫자 코드
 
         // 중복 확인 및 재생성
         let attempts = 0;
@@ -836,7 +836,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .where(eq(users.referralCode, inviteCode));
           
           if (!existing) break;
-          inviteCode = crypto.randomBytes(3).toString('hex').toUpperCase();
+          inviteCode = randomBytes(3).toString('hex').toUpperCase();
           attempts++;
         }
 
@@ -18867,7 +18867,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (!instituteId) {
         return res.status(400).json({ error: "소속 기관이 없습니다." });
       }
-      const token = crypto.randomBytes(16).toString('hex');
+      const token = randomBytes(16).toString('hex');
       const label = req.body.label || '기본 QR 코드';
       const [qrCode] = await db.insert(instituteQrCodes).values({
         instituteId,
@@ -19700,7 +19700,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
         zonePermissions[pid] = allowedZones;
       }
 
-      const token = crypto.randomBytes(24).toString('hex');
+      const token = randomBytes(24).toString('hex');
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
       const petRegInfo = memberPets
@@ -19746,21 +19746,40 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
-  // 방문 세션 QR 검증 (공개 엔드포인트 — 스캔 시 호출)
+  // 방문 세션 QR 검증 (공개 엔드포인트 — 스캔 시 호출, 원자적 토큰 소비)
   app.get("/api/visit-sessions/verify/:token", async (req, res) => {
     try {
       const { token } = req.params;
 
-      const [consumed] = await db.update(petVisitSessions)
-        .set({ usedAt: new Date() })
-        .where(and(
-          eq(petVisitSessions.token, token),
-          sql`${petVisitSessions.usedAt} IS NULL`,
-          sql`${petVisitSessions.expiresAt} > NOW()`
-        ))
-        .returning();
+      const result = await db.transaction(async (tx) => {
+        const [consumed] = await tx.update(petVisitSessions)
+          .set({ usedAt: new Date() })
+          .where(and(
+            eq(petVisitSessions.token, token),
+            sql`${petVisitSessions.usedAt} IS NULL`,
+            sql`${petVisitSessions.expiresAt} > NOW()`
+          ))
+          .returning();
 
-      if (!consumed) {
+        if (!consumed) return null;
+
+        const petIdArr = consumed.petIds as number[];
+        for (const pid of petIdArr) {
+          await tx.insert(checkinRecords).values({
+            instituteId: consumed.instituteId,
+            ownerId: consumed.memberId,
+            petId: pid,
+            todayConcern: consumed.todayConcern || null,
+            todayGoal: consumed.todayGoal || null,
+            isNewVisitor: false,
+            checkinAt: new Date(),
+          });
+        }
+
+        return consumed;
+      });
+
+      if (!result) {
         const [existing] = await db.select().from(petVisitSessions).where(eq(petVisitSessions.token, token));
         if (!existing) {
           return res.status(404).json({ success: false, error: "유효하지 않은 방문 세션입니다.", errorCode: "INVALID" });
@@ -19772,14 +19791,14 @@ export function registerTrainerCertificationRoutes(app: Express) {
       }
 
       const [institute] = await db.select({ id: institutes.id, name: institutes.name, address: institutes.address })
-        .from(institutes).where(eq(institutes.id, consumed.instituteId));
+        .from(institutes).where(eq(institutes.id, result.instituteId));
 
       const memberInitial = await db.select({ name: users.name })
-        .from(users).where(eq(users.id, consumed.memberId)).limit(1);
+        .from(users).where(eq(users.id, result.memberId)).limit(1);
       const memberName = memberInitial[0]?.name;
 
-      const petIdArr = consumed.petIds as number[];
-      const petList = [];
+      const petIdArr = result.petIds as number[];
+      const petList: Array<{ id: number; name: string | null; breed: string | null; species: string | null; temperamentLevel: string | null }> = [];
       for (const pid of petIdArr) {
         const [pet] = await db.select({
           id: pets.id, name: pets.name, breed: pets.breed,
@@ -19788,28 +19807,16 @@ export function registerTrainerCertificationRoutes(app: Express) {
         if (pet) petList.push(pet);
       }
 
-      for (const pid of petIdArr) {
-        await db.insert(checkinRecords).values({
-          instituteId: consumed.instituteId,
-          ownerId: consumed.memberId,
-          petId: pid,
-          todayConcern: consumed.todayConcern || null,
-          todayGoal: consumed.todayGoal || null,
-          isNewVisitor: false,
-          checkinAt: new Date(),
-        });
-      }
-
       res.json({
         success: true,
         session: {
-          id: consumed.id,
-          expiresAt: consumed.expiresAt,
-          todayConcern: consumed.todayConcern,
-          todayGoal: consumed.todayGoal,
-          vaccineStatus: consumed.vaccineStatus,
-          temperamentLevels: consumed.temperamentLevels,
-          zonePermissions: consumed.zonePermissions,
+          id: result.id,
+          expiresAt: result.expiresAt,
+          todayConcern: result.todayConcern,
+          todayGoal: result.todayGoal,
+          vaccineStatus: result.vaccineStatus,
+          temperamentLevels: result.temperamentLevels,
+          zonePermissions: result.zonePermissions,
         },
         institute: institute ? { name: institute.name, address: institute.address } : null,
         member: memberName ? { name: memberName } : null,
