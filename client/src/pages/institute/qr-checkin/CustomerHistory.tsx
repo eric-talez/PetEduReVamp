@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PawPrint, Calendar, AlertTriangle, Target, Clock, Package, TrendingUp } from "lucide-react";
+import { ArrowLeft, PawPrint, Calendar, AlertTriangle, Target, Clock, Package, TrendingUp, Shield, Syringe, MapPin } from "lucide-react";
 import { useLocation } from "wouter";
 import type { CheckinRecord } from "@shared/schema";
 
@@ -17,6 +17,19 @@ interface PetSummary {
   name: string | null;
   breed: string | null;
   temperamentLevel: string | null;
+}
+
+interface VisitSessionSummary {
+  id: number;
+  memberId: number;
+  vaccineStatus: Record<number, { valid: boolean }>;
+  temperamentLevels: Record<number, string | null>;
+  zonePermissions: Record<number, string[]>;
+  usedAt: string | null;
+  expiresAt: string;
+  createdAt: string;
+  todayConcern: string | null;
+  petNames: string[];
 }
 
 interface HistoryResponse {
@@ -167,6 +180,14 @@ export default function CustomerHistory() {
     enabled: !!ownerId,
   });
 
+  const { data: sessionsData } = useQuery<{ success: boolean; sessions: VisitSessionSummary[] }>({
+    queryKey: ["/api/visit-sessions"],
+  });
+
+  const ownerSessions = (sessionsData?.sessions || []).filter(
+    s => String(s.memberId) === ownerId
+  ).slice(0, 10);
+
   const temperamentBadge = (level: string | null) => {
     const map: Record<string, { label: string; color: string }> = {
       A: { label: "A 사회성 양호", color: "bg-green-100 text-green-700" },
@@ -228,6 +249,62 @@ export default function CustomerHistory() {
           )}
         </CardContent>
       </Card>
+
+      {ownerSessions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              방문 신뢰 QR 인증 이력
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {ownerSessions.map((session) => {
+                const isUsed = !!session.usedAt;
+                const isExpired = new Date(session.expiresAt) < new Date();
+                return (
+                  <div key={session.id} className="border rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="w-3 h-3 text-gray-400" />
+                        {new Date(session.createdAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                        <span className="text-gray-400">
+                          {new Date(session.createdAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                      <Badge variant={isUsed ? "default" : isExpired ? "secondary" : "outline"} className="text-xs">
+                        {isUsed ? "체크인 완료" : isExpired ? "만료" : "대기 중"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <PawPrint className="w-3 h-3 text-primary" />
+                      <span>{session.petNames?.join(', ') || '반려동물'}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2 text-xs">
+                      {Object.entries(session.temperamentLevels || {}).map(([petId, level]) => {
+                        if (!level) return null;
+                        const info = temperamentBadge(level as string);
+                        return info ? <span key={petId}>{info}</span> : null;
+                      })}
+                      {Object.values(session.vaccineStatus || {}).some(v => v?.valid) && (
+                        <span className="text-green-600 flex items-center gap-0.5">
+                          <Syringe className="w-3 h-3" /> 접종완료
+                        </span>
+                      )}
+                      {Object.values(session.zonePermissions || {}).flat().length > 0 && (
+                        <span className="text-blue-600 flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3" /> {Object.values(session.zonePermissions || {}).flat().length}개 구역 허용
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

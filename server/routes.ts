@@ -19622,6 +19622,17 @@ export function registerTrainerCertificationRoutes(app: Express) {
         return res.status(400).json({ error: "보호자와 반려동물을 선택해 주세요." });
       }
 
+      if (role !== 'admin') {
+        const [memberVisit] = await db.select({ id: checkinRecords.id })
+          .from(checkinRecords)
+          .where(and(eq(checkinRecords.instituteId, instituteId), eq(checkinRecords.ownerId, memberId)))
+          .limit(1);
+        const [member] = await db.select({ role: users.role }).from(users).where(eq(users.id, memberId));
+        if (!member || member.role !== 'pet-owner') {
+          return res.status(400).json({ error: "유효하지 않은 보호자입니다." });
+        }
+      }
+
       const memberPets = await db.select({
         id: pets.id, name: pets.name, breed: pets.breed,
         temperamentLevel: pets.temperamentLevel, trainingStatus: pets.trainingStatus,
@@ -19633,7 +19644,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
         return res.status(400).json({ error: "유효한 반려동물을 선택해 주세요." });
       }
 
-      const vaccineStatusMap: Record<number, { valid: boolean; vaccines: any[] }> = {};
+      interface VaccineEntry { name: string; status: string; date: string | null; nextDue: string | null }
+      const vaccineStatusMap: Record<number, { valid: boolean; vaccines: VaccineEntry[] }> = {};
       const temperamentMap: Record<number, string | null> = {};
 
       for (const pid of validPetIds) {
@@ -19708,12 +19720,13 @@ export function registerTrainerCertificationRoutes(app: Express) {
         .from(users).where(eq(users.id, memberId)).limit(1);
       const petInfo = memberPets.filter(p => validPetIds.includes(p.id));
 
+      const petNames = petInfo.map(p => p.name || '이름 미등록');
       res.json({
         success: true,
         session: {
           ...session,
           memberName: memberInfo[0]?.name,
-          pets: petInfo,
+          petNames,
         },
         qrUrl: `/visit/${token}`,
       });
