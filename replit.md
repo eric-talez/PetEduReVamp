@@ -59,6 +59,15 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
   - Frontend pages: EmergencyInfoPage, StorePolicyManagement, ConsentManagement, IncidentProtocols
   - Sidebar: 매장 규정 + 동의 관리 + 사고 처리 for institute-admin, 사고 처리 for trainer, 응급 정보 + 동의 관리 for pet-owner
   - Routes: `/institute/store-policies`, `/institute/consent-management`, `/institute/incident-protocols`, `/emergency-info`
+- **Pet Visit Trust QR 인증 시스템 (Apr 15)**:
+  - New `institute_zones` table for zone-based access control (zone type, vaccination requirement, temperament limit, capacity)
+  - New `pet_visit_sessions` table for single-use 10-min session tokens with vaccine status, temperament levels, zone permissions
+  - API endpoints: CRUD `/api/institute/zones`, POST `/api/visit-sessions/generate`, GET `/api/visit-sessions/verify/:token`, POST `/api/visit-sessions/confirm/:token`, GET `/api/visit-sessions`, GET `/api/institute/members`, GET `/api/institute/members/:memberId/pets`
+  - Patent-differentiated design: single-use tokens (auto-destroyed after scan), 10-min expiry, pet-centric trust verification, zone-based permissions
+  - Public verify page at `/visit/:token` - shows institute, member, pet info with vaccine/temperament/zone status
+  - UI pages: VisitSessionManager (QR issuance), ZoneManagement (zone CRUD), VisitVerifyPage (public scan page)
+  - Sidebar integration: 방문 신뢰 QR + 구역 관리 for institute-admin, 방문 신뢰 QR for trainer
+  - Routes: `/institute/visit-sessions`, `/institute/zone-management`, `/visit/:token`
 - **QR 체크인 CRM 시스템 (Apr 12)**:
   - New `institute_qr_codes` table for QR code management per institute
   - New `checkin_records` table for visitor checkin tracking

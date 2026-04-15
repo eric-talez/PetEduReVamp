@@ -800,6 +800,26 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/institute/visit-sessions">
+          {() => {
+            const VisitSessionManager = lazy(() => import('./pages/institute/qr-checkin/VisitSessionManager'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={VisitSessionManager} requiredRoles={['institute-admin', 'admin', 'trainer']} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/zone-management">
+          {() => {
+            const ZoneManagement = lazy(() => import('./pages/institute/qr-checkin/ZoneManagement'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={ZoneManagement} requiredRoles={['institute-admin', 'admin']} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/institute/checkin-dashboard">
           {() => {
             const CheckinDashboard = lazy(() => import('./pages/institute/qr-checkin/CheckinDashboard'));
@@ -1982,6 +2002,18 @@ function CheckinOrAppRoutes({ isAuthenticated }: { isAuthenticated: boolean }) {
         <Route path="/checkin/:token">
           <Suspense fallback={<SimpleLoading />}>
             <CheckinPage />
+          </Suspense>
+        </Route>
+      </Switch>
+    );
+  }
+  if (location.startsWith('/visit/')) {
+    const VisitVerifyPage = lazy(() => import('./pages/institute/qr-checkin/VisitVerifyPage'));
+    return (
+      <Switch>
+        <Route path="/visit/:token">
+          <Suspense fallback={<SimpleLoading />}>
+            <VisitVerifyPage />
           </Suspense>
         </Route>
       </Switch>

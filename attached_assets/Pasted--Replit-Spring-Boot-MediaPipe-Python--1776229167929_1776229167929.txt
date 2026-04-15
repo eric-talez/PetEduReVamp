@@ -1,0 +1,630 @@
+좋습니다. 그럼 바로 **테일즈용 강아지 코 인증 카메라 기능**을
+**Replit + Spring Boot + MediaPipe(또는 Python 비전 서비스) + 모바일 카메라** 기준으로
+실제로 개발 가능한 수준으로 정리해드리겠습니다.
+
+핵심은 하나입니다.
+
+> **QR은 방문 세션 확인**
+> **코 인증은 “진짜 그 강아지인지” 확인**
+
+즉, **2단계 인증 구조**로 가는 것입니다.
+
+---
+
+# 1) 전체 구조
+
+테일즈에서 가장 안전하고 구현 가능한 방식은 **Spring Boot 메인 서버 + Python 비전 마이크로서비스** 분리형입니다.
+
+## 권장 아키텍처
+
+```text
+[모바일 웹/태블릿 카메라]
+        ↓
+[React / Next 프론트]
+        ↓
+[Spring Boot API]
+        ↓
+ ┌───────────────────────┐
+ │  Visit Session 서버   │
+ │  QR 토큰 검증         │
+ │  회원/반려견/예약 관리 │
+ └───────────────────────┘
+        ↓
+[Python Vision Service]
+  - 얼굴/코 ROI 추출
+  - 이미지 품질검사
+  - nose embedding 생성
+  - 유사도 비교
+        ↓
+[DB / Vector 저장소]
+```
+
+---
+
+# 2) 왜 이렇게 나누는가
+
+## Spring Boot가 맡을 일
+
+* 회원/보호자 관리
+* 반려견 등록
+* 예약 관리
+* QR 세션 발급
+* 입장 로그 기록
+* zone 권한 처리
+* 관리자 페이지
+
+## Python 비전 서비스가 맡을 일
+
+* 카메라 이미지 처리
+* 코 영역 추출
+* 정면 프레임 선별
+* 노이즈 제거
+* nose print embedding 생성
+* 기존 등록 이미지와 유사도 비교
+
+이렇게 나누면 나중에 모델만 교체해도 메인 서비스는 그대로 유지됩니다.
+
+---
+
+# 3) 핵심 사용자 흐름
+
+## A. 최초 등록
+
+보호자가 반려견을 등록할 때:
+
+1. 반려견 기본정보 입력
+2. 반려견 등록번호 입력
+3. 접종 정보 입력 또는 연동
+4. 코 사진 5~10장 촬영
+5. 시스템이 가장 좋은 프레임 선별
+6. nose embedding 생성
+7. DB 저장
+
+---
+
+## B. 매장 방문
+
+1. 예약 생성
+2. visit_session_token 발급
+3. QR 생성
+4. 입장 시 QR 스캔
+5. 카메라로 강아지 코 스캔
+6. 등록된 nose embedding과 비교
+7. 일치하면 입장 승인
+
+---
+
+## C. 예외 처리
+
+* QR은 맞지만 코 인증 실패 → 직원 수동 확인
+* 코 인증은 맞지만 접종 만료 → 입장 제한
+* 동일 QR 재사용 → 무효
+* 다른 강아지가 대신 입장 → 차단
+
+---
+
+# 4) 데이터 모델 설계
+
+아래 구조는 바로 Spring Boot 엔티티 설계로 옮길 수 있습니다.
+
+## Pet
+
+```java
+@Entity
+@Table(name = "pets")
+public class Pet {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long ownerId;
+    private String name;
+    private String breed;
+    private LocalDate birthDate;
+    private String registrationNo;
+    private String gender;
+    private Double weightKg;
+
+    private LocalDate rabiesValidUntil;
+    private LocalDate vaccineValidUntil;
+
+    private Boolean active;
+}
+```
+
+---
+
+## PetNoseProfile
+
+```java
+@Entity
+@Table(name = "pet_nose_profiles")
+public class PetNoseProfile {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long petId;
+
+    @Lob
+    private String embeddingJson;   // 벡터를 JSON 문자열로 저장하는 초기 버전
+
+    private String representativeImageUrl;
+    private Double qualityScore;
+    private Integer version;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+}
+```
+
+---
+
+## VisitSession
+
+```java
+@Entity
+@Table(name = "visit_sessions")
+public class VisitSession {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long petId;
+    private Long ownerId;
+
+    @Column(unique = true, nullable = false)
+    private String qrToken;
+
+    private LocalDateTime reservedAt;
+    private LocalDateTime expiresAt;
+    private Boolean singleUse;
+    private Boolean used;
+    private LocalDateTime usedAt;
+
+    private Boolean qrVerified;
+    private Boolean noseVerified;
+
+    private String zonePermissions; // JSON or CSV
+    private String status; // PENDING, APPROVED, DENIED, EXPIRED
+}
+```
+
+---
+
+## NoseVerificationLog
+
+```java
+@Entity
+@Table(name = "nose_verification_logs")
+public class NoseVerificationLog {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long visitSessionId;
+    private Long petId;
+
+    private Double similarityScore;
+    private Boolean matched;
+    private String capturedImageUrl;
+    private String failReason;
+
+    private LocalDateTime verifiedAt;
+}
+```
+
+---
+
+# 5) API 설계
+
+## Spring Boot API
+
+### 1. 반려견 등록
+
+```http
+POST /api/pets
+```
+
+### 2. 코 등록 시작
+
+```http
+POST /api/pets/{petId}/nose/enroll
+```
+
+### 3. 방문 세션 생성
+
+```http
+POST /api/visit-sessions
+```
+
+### 4. QR 검증
+
+```http
+POST /api/visit-sessions/verify-qr
+```
+
+### 5. 코 인증 요청
+
+```http
+POST /api/visit-sessions/{sessionId}/verify-nose
+Content-Type: multipart/form-data
+```
+
+### 6. 최종 입장 승인 확인
+
+```http
+GET /api/visit-sessions/{sessionId}/status
+```
+
+---
+
+# 6) Python 비전 서비스 API
+
+Python은 FastAPI로 가는 것이 가장 좋습니다.
+
+## 엔드포인트
+
+### 1. 코 등록용 임베딩 생성
+
+```http
+POST /vision/nose/enroll
+```
+
+입력:
+
+* pet_id
+* images[] 또는 frame들
+
+출력:
+
+```json
+{
+  "petId": 101,
+  "embedding": [0.12, -0.03, ...],
+  "qualityScore": 0.91,
+  "selectedImageIndex": 3
+}
+```
+
+### 2. 코 인증
+
+```http
+POST /vision/nose/verify
+```
+
+입력:
+
+* captured_image
+* stored_embedding
+
+출력:
+
+```json
+{
+  "matched": true,
+  "similarityScore": 0.87,
+  "qualityScore": 0.89
+}
+```
+
+---
+
+# 7) MediaPipe의 실제 역할
+
+여기서 중요한 점이 있습니다.
+
+MediaPipe를 바로 “강아지 신원 확인 완성품”처럼 쓰기보다,
+**영상에서 좋은 프레임과 코 주변 ROI를 추출하는 전처리 엔진**으로 쓰는 편이 현실적입니다.
+
+즉 역할은 아래처럼 잡으시면 됩니다.
+
+## MediaPipe 담당
+
+* 얼굴 대략 위치 찾기
+* 주둥이/코 중심 프레임 선별
+* 흔들림 적은 프레임 선택
+* 이미지 크롭 보정
+
+## 커스텀 모델 담당
+
+* 코 패턴 특징 추출
+* 임베딩 생성
+* 등록된 개체와 비교
+
+---
+
+# 8) MVP에서는 어떤 모델이 현실적인가
+
+처음부터 대형 AI 모델을 만들 필요는 없습니다.
+
+## 1단계 MVP
+
+* 코 영역 crop
+* grayscale/contrast normalize
+* CNN 임베딩 모델
+* cosine similarity 비교
+
+## 2단계 고도화
+
+* Siamese Network
+* ArcFace 계열 metric learning
+* 위조 사진 탐지
+* 다각도 보정
+
+즉 처음에는:
+
+> **“좋은 프레임 선별 + 코 패턴 벡터화 + 유사도 비교”**
+
+이 정도만 되어도 충분히 MVP가 나옵니다.
+
+---
+
+# 9) 프론트엔드 카메라 UX
+
+테일즈에서는 사용성이 매우 중요합니다.
+강아지가 가만히 있지 않기 때문입니다.
+
+## 촬영 UX 권장
+
+* 화면 중앙에 코 가이드 프레임 표시
+* “조금 더 가까이” / “정면으로 보여주세요” 안내
+* 1초 동안 자동 연속 촬영
+* 가장 품질 좋은 프레임 자동 선택
+* 실패 시 재촬영
+
+## 관리자용 입장 화면
+
+* QR 인식 완료
+* 코 스캔 진행 중
+* 일치율 표시
+* 승인 / 재시도 / 수동승인 버튼
+
+---
+
+# 10) 유사도 판정 기준 예시
+
+초기에는 아주 단순하게 갈 수 있습니다.
+
+```text
+similarity >= 0.85  -> 승인
+0.75 ~ 0.84         -> 재촬영 권장
+< 0.75              -> 불일치
+```
+
+이 기준은 나중에 실데이터 쌓이면 조정하면 됩니다.
+
+---
+
+# 11) 실패 케이스 처리 설계
+
+실서비스에서는 정확도보다 **운영 안정성**이 더 중요합니다.
+
+## 실패 사유 예시
+
+* 조명이 너무 어두움
+* 코가 너무 멀리 있음
+* 코가 흐림
+* 측면 각도 과다
+* 털에 가려짐
+* 물기/반사 과다
+
+따라서 응답값에 반드시 넣어야 하는 필드가 있습니다.
+
+```json
+{
+  "matched": false,
+  "similarityScore": 0.62,
+  "qualityScore": 0.48,
+  "failReason": "NOSE_TOO_BLURRY"
+}
+```
+
+---
+
+# 12) 권한 구조와 연결
+
+이 기능은 단순 인증이 아니라 테일즈 운영 시스템 전체와 연결됩니다.
+
+## 연결 가능한 항목
+
+* 카페존 입장 허용
+* 교육존 입장 허용
+* 배변존 이용 허용
+* 재방문 레벨업 반영
+* VIP 멤버십 입장
+* 접종 만료 시 자동 차단
+
+즉 인증 결과가 곧 운영 권한으로 이어집니다.
+
+---
+
+# 13) 보안 구조
+
+특허 회피 관점에서도 중요합니다.
+
+## 반드시 지켜야 할 점
+
+* QR에는 실제 개인정보 저장 금지
+* 코 원본 이미지는 최소 저장
+* 가능하면 embedding 위주 저장
+* visit session은 1회성
+* 기기/시간/IP 로그 기록
+* 관리자 수동 승인 로그 보존
+
+---
+
+# 14) Replit에서의 현실적 개발 순서
+
+Replit 기준으로는 한 번에 다 하지 말고 4단계로 나누는 것이 좋습니다.
+
+## 1단계
+
+Spring Boot:
+
+* Pet
+* VisitSession
+* QR 발급
+* QR 검증
+* 관리자 승인 화면
+
+Python:
+
+* 이미지 업로드
+* 간단한 crop
+* 수동 비교 테스트
+
+## 2단계
+
+* 자동 코 ROI 탐지
+* embedding 생성
+* similarity 계산
+
+## 3단계
+
+* 모바일 실시간 카메라
+* 정면 프레임 자동 선택
+* 품질 점수 계산
+
+## 4단계
+
+* 위조 탐지
+* 다견 보호자 지원
+* zone 권한 자동 제어
+* 통계 대시보드
+
+---
+
+# 15) 폴더 구조 예시
+
+## Spring Boot
+
+```text
+src/main/java/com/tails
+ ┣ domain/pet
+ ┣ domain/visit
+ ┣ domain/auth
+ ┣ domain/admin
+ ┣ external/vision
+ ┣ common/security
+ ┗ common/config
+```
+
+## Python FastAPI
+
+```text
+vision-service/
+ ┣ app/
+ ┃ ┣ main.py
+ ┃ ┣ routes/
+ ┃ ┃ ┗ nose.py
+ ┃ ┣ services/
+ ┃ ┃ ┣ roi_extractor.py
+ ┃ ┃ ┣ embedding_service.py
+ ┃ ┃ ┣ similarity_service.py
+ ┃ ┃ ┗ quality_checker.py
+ ┃ ┣ models/
+ ┃ ┗ utils/
+ ┗ requirements.txt
+```
+
+---
+
+# 16) Spring Boot ↔ Python 연동 방식
+
+가장 단순한 방식은 REST 호출입니다.
+
+## Spring Boot 서비스 예시
+
+```java
+@Service
+@RequiredArgsConstructor
+public class NoseVerificationService {
+
+    private final RestTemplate restTemplate;
+
+    public NoseVerifyResult verify(Long petId, MultipartFile image, String storedEmbeddingJson) {
+        // multipart/form-data로 Python Vision Service 호출
+        // 결과를 받아 VisitSession 상태 갱신
+        return new NoseVerifyResult(true, 0.89, "OK");
+    }
+}
+```
+
+---
+
+# 17) 특허적으로 더 강하게 만드는 기능
+
+테일즈는 여기서 멈추지 않고 아래를 붙이면 매우 강해집니다.
+
+## 추가 가능 포인트
+
+* 접종 만료일과 코 인증 동시 검증
+* 같은 날 다른 지점 중복 입장 차단
+* 배변존 이용 후 재입장 재검증
+* 훈련 등급별 자동 구역 배정
+* 분실견 식별 모드
+
+---
+
+# 18) MVP 우선순위
+
+가장 먼저 만들어야 하는 것은 아래 3개입니다.
+
+## 반드시 먼저
+
+1. **1회용 QR 방문 세션**
+2. **코 이미지 등록 기능**
+3. **코 이미지 비교 후 승인/실패 처리**
+
+이 세 가지만 있어도
+테일즈의 차별화 포인트는 이미 생깁니다.
+
+---
+
+# 19) 실제 개발 착수용 권장 스펙
+
+## 프론트
+
+* React 또는 Next.js
+* 모바일 카메라 접근
+* 관리자 태블릿 화면
+
+## 백엔드
+
+* Spring Boot
+* MySQL 또는 PostgreSQL
+* Redis 세션 캐시
+
+## 비전
+
+* FastAPI
+* OpenCV
+* MediaPipe 전처리
+* PyTorch 또는 ONNX Runtime
+
+## 저장
+
+* S3 이미지 저장
+* DB에 embedding / 로그 저장
+
+---
+
+# 20) 가장 추천하는 최종 구조
+
+테일즈에는 아래 명칭으로 가는 것이 좋습니다.
+
+### 내부 시스템명
+
+**Tails Pet BioAuth**
+
+### 기능명
+
+**코 인증 체크인**
+또는
+**반려견 실체 인증**
+
+### 특허 명칭 후보
+
+**반려동물 비문 기반 방문 세션 인증 시스템 및 방법**
+
+---
+
+원하시면 다음 단계로 이어서
+**Spring Boot 엔티티/Controller/Service 코드 초안**부터 바로 작성해드리겠습니다.

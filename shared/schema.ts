@@ -2912,6 +2912,48 @@ export const insertCheckinRecordSchema = createInsertSchema(checkinRecords).omit
 export type InsertCheckinRecord = z.infer<typeof insertCheckinRecordSchema>;
 export type CheckinRecord = typeof checkinRecords.$inferSelect;
 
+export const instituteZones = pgTable("institute_zones", {
+  id: serial("id").primaryKey(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  zoneType: varchar("zone_type", { length: 50 }).notNull(),
+  description: text("description"),
+  requiresVaccination: boolean("requires_vaccination").default(false),
+  maxTemperamentLevel: varchar("max_temperament_level", { length: 1 }),
+  minTrainingLevel: varchar("min_training_level", { length: 50 }),
+  capacity: integer("capacity"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertInstituteZoneSchema = createInsertSchema(instituteZones).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertInstituteZone = z.infer<typeof insertInstituteZoneSchema>;
+export type InstituteZone = typeof instituteZones.$inferSelect;
+
+export const petVisitSessions = pgTable("pet_visit_sessions", {
+  id: serial("id").primaryKey(),
+  token: varchar("token", { length: 100 }).notNull().unique(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  memberId: integer("member_id").references(() => users.id).notNull(),
+  petIds: jsonb("pet_ids").notNull(),
+  vaccineStatus: jsonb("vaccine_status"),
+  temperamentLevels: jsonb("temperament_levels"),
+  zonePermissions: jsonb("zone_permissions"),
+  trainerLevel: varchar("trainer_level", { length: 50 }),
+  todayConcern: text("today_concern"),
+  todayGoal: text("today_goal"),
+  singleUse: boolean("single_use").default(true),
+  usedAt: timestamp("used_at"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPetVisitSessionSchema = createInsertSchema(petVisitSessions).omit({ id: true, createdAt: true });
+export type InsertPetVisitSession = z.infer<typeof insertPetVisitSessionSchema>;
+export type PetVisitSession = typeof petVisitSessions.$inferSelect;
+
 // 친구 초대 스키마 및 타입
 export const insertFriendInvitationSchema = createInsertSchema(friendInvitations).omit({ id: true, createdAt: true });
 export type InsertFriendInvitation = z.infer<typeof insertFriendInvitationSchema>;

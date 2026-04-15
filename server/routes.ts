@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { sql, eq, and, isNotNull, desc, or, ilike } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes, instituteQrCodes, checkinRecords, emergencyContacts, storePolicies, consentRecords, incidentProtocols } from "../shared/schema";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes, instituteQrCodes, checkinRecords, emergencyContacts, storePolicies, consentRecords, incidentProtocols, instituteZones, petVisitSessions, vaccinations } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -19481,6 +19481,457 @@ export function registerTrainerCertificationRoutes(app: Express) {
   });
 
   console.log('[운영 정책 API] 응급/안전/동의/사고 처리 API가 등록되었습니다.');
+
+  // =============================================
+  // 반려견 방문 신뢰 QR 인증 시스템 (Pet Visit Trust QR)
+  // =============================================
+
+  // 기관 존(Zone) CRUD
+  app.get("/api/institute/zones", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin', 'trainer'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'trainer' && !instituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+        if (trainerInst) instituteId = trainerInst.instituteId;
+      }
+      if (role === 'admin' && req.query.instituteId) {
+        instituteId = Number(req.query.instituteId);
+      }
+      if (!instituteId) return res.json({ success: true, zones: [] });
+      const zones = await db.select().from(instituteZones)
+        .where(eq(instituteZones.instituteId, instituteId))
+        .orderBy(instituteZones.name);
+      res.json({ success: true, zones });
+    } catch (error) {
+      console.error("존 목록 조회 오류:", error);
+      res.status(500).json({ error: "존 목록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/institute/zones", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) {
+        return res.status(403).json({ error: "기관 관리자만 존을 생성할 수 있습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'admin' && req.body.instituteId) instituteId = Number(req.body.instituteId);
+      if (!instituteId) return res.status(400).json({ error: "소속 기관이 없습니다." });
+      const { name, zoneType, description, requiresVaccination, maxTemperamentLevel, minTrainingLevel, capacity } = req.body;
+      if (!name || !zoneType) return res.status(400).json({ error: "존 이름과 유형은 필수입니다." });
+      const [zone] = await db.insert(instituteZones).values({
+        instituteId, name, zoneType, description,
+        requiresVaccination: requiresVaccination || false,
+        maxTemperamentLevel: maxTemperamentLevel || null,
+        minTrainingLevel: minTrainingLevel || null,
+        capacity: capacity || null,
+      }).returning();
+      res.json({ success: true, zone });
+    } catch (error) {
+      console.error("존 생성 오류:", error);
+      res.status(500).json({ error: "존 생성 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.put("/api/institute/zones/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) return res.status(403).json({ error: "접근 권한이 없습니다." });
+      const id = Number(req.params.id);
+      const [existing] = await db.select().from(instituteZones).where(eq(instituteZones.id, id));
+      if (!existing) return res.status(404).json({ error: "존을 찾을 수 없습니다." });
+      if (role === 'institute-admin' && existing.instituteId !== sessionUser.instituteId) {
+        return res.status(403).json({ error: "소속 기관의 존만 수정할 수 있습니다." });
+      }
+      const updateData: Record<string, any> = { updatedAt: new Date() };
+      if (req.body.name !== undefined) updateData.name = req.body.name;
+      if (req.body.zoneType !== undefined) updateData.zoneType = req.body.zoneType;
+      if (req.body.description !== undefined) updateData.description = req.body.description;
+      if (req.body.requiresVaccination !== undefined) updateData.requiresVaccination = req.body.requiresVaccination;
+      if (req.body.maxTemperamentLevel !== undefined) updateData.maxTemperamentLevel = req.body.maxTemperamentLevel;
+      if (req.body.minTrainingLevel !== undefined) updateData.minTrainingLevel = req.body.minTrainingLevel;
+      if (req.body.capacity !== undefined) updateData.capacity = req.body.capacity;
+      if (req.body.isActive !== undefined) updateData.isActive = req.body.isActive;
+      const [updated] = await db.update(instituteZones).set(updateData).where(eq(instituteZones.id, id)).returning();
+      res.json({ success: true, zone: updated });
+    } catch (error) {
+      console.error("존 수정 오류:", error);
+      res.status(500).json({ error: "존 수정 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.delete("/api/institute/zones/:id", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin'].includes(role)) return res.status(403).json({ error: "접근 권한이 없습니다." });
+      const id = Number(req.params.id);
+      const [existing] = await db.select().from(instituteZones).where(eq(instituteZones.id, id));
+      if (!existing) return res.status(404).json({ error: "존을 찾을 수 없습니다." });
+      if (role === 'institute-admin' && existing.instituteId !== sessionUser.instituteId) {
+        return res.status(403).json({ error: "소속 기관의 존만 삭제할 수 있습니다." });
+      }
+      await db.delete(instituteZones).where(eq(instituteZones.id, id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error("존 삭제 오류:", error);
+      res.status(500).json({ error: "존 삭제 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 방문 세션 QR 발급 (1회용, 10분 유효)
+  app.post("/api/visit-sessions/generate", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin', 'trainer'].includes(role)) {
+        return res.status(403).json({ error: "기관 관리자 또는 훈련사만 방문 세션을 발급할 수 있습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'trainer' && !instituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+        if (trainerInst) instituteId = trainerInst.instituteId;
+      }
+      if (role === 'admin' && req.body.instituteId) instituteId = Number(req.body.instituteId);
+      if (!instituteId) return res.status(400).json({ error: "소속 기관이 없습니다." });
+
+      const { memberId, petIds, todayConcern, todayGoal } = req.body;
+      if (!memberId || !petIds || !Array.isArray(petIds) || petIds.length === 0) {
+        return res.status(400).json({ error: "보호자와 반려동물을 선택해 주세요." });
+      }
+
+      const memberPets = await db.select({
+        id: pets.id, name: pets.name, breed: pets.breed,
+        temperamentLevel: pets.temperamentLevel, trainingStatus: pets.trainingStatus,
+        ownerId: pets.ownerId
+      }).from(pets).where(eq(pets.ownerId, memberId));
+
+      const validPetIds = petIds.filter((pid: number) => memberPets.some(p => p.id === pid));
+      if (validPetIds.length === 0) {
+        return res.status(400).json({ error: "유효한 반려동물을 선택해 주세요." });
+      }
+
+      const vaccineStatusMap: Record<number, { valid: boolean; vaccines: any[] }> = {};
+      const temperamentMap: Record<number, string | null> = {};
+
+      for (const pid of validPetIds) {
+        const pet = memberPets.find(p => p.id === pid);
+        temperamentMap[pid] = pet?.temperamentLevel || null;
+
+        const petVaccines = await db.select({
+          vaccineName: vaccinations.vaccineName,
+          status: vaccinations.status,
+          vaccineDate: vaccinations.vaccineDate,
+          nextDueDate: vaccinations.nextDueDate,
+        }).from(vaccinations).where(eq(vaccinations.petId, pid));
+
+        const today = new Date().toISOString().split('T')[0];
+        const hasOverdue = petVaccines.some(v => v.status === 'overdue' || (v.nextDueDate && v.nextDueDate < today && v.status !== 'completed'));
+        const completedVaccines = petVaccines.filter(v => v.status === 'completed');
+
+        vaccineStatusMap[pid] = {
+          valid: !hasOverdue && completedVaccines.length > 0,
+          vaccines: petVaccines.map(v => ({
+            name: v.vaccineName,
+            status: v.status,
+            date: v.vaccineDate,
+            nextDue: v.nextDueDate,
+          })),
+        };
+      }
+
+      const zones = await db.select().from(instituteZones)
+        .where(and(eq(instituteZones.instituteId, instituteId), eq(instituteZones.isActive, true)));
+
+      const zonePermissions: Record<number, string[]> = {};
+      for (const pid of validPetIds) {
+        const petTemperament = temperamentMap[pid];
+        const petVaccineValid = vaccineStatusMap[pid]?.valid ?? false;
+        const allowedZones: string[] = [];
+
+        for (const zone of zones) {
+          let allowed = true;
+          if (zone.requiresVaccination && !petVaccineValid) allowed = false;
+          if (zone.maxTemperamentLevel && petTemperament) {
+            const temperamentOrder = ['A', 'B', 'C', 'D', 'E'];
+            const petIdx = temperamentOrder.indexOf(petTemperament);
+            const maxIdx = temperamentOrder.indexOf(zone.maxTemperamentLevel);
+            if (petIdx > maxIdx) allowed = false;
+          }
+          if (allowed) allowedZones.push(zone.name);
+        }
+        zonePermissions[pid] = allowedZones;
+      }
+
+      const token = crypto.randomBytes(24).toString('hex');
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+      const [session] = await db.insert(petVisitSessions).values({
+        token,
+        instituteId,
+        memberId,
+        petIds: validPetIds,
+        vaccineStatus: vaccineStatusMap,
+        temperamentLevels: temperamentMap,
+        zonePermissions,
+        trainerLevel: null,
+        todayConcern: todayConcern || null,
+        todayGoal: todayGoal || null,
+        singleUse: true,
+        expiresAt,
+        createdBy: sessionUser.id,
+      }).returning();
+
+      const memberInfo = await db.select({ name: users.name, phone: users.phone })
+        .from(users).where(eq(users.id, memberId)).limit(1);
+      const petInfo = memberPets.filter(p => validPetIds.includes(p.id));
+
+      res.json({
+        success: true,
+        session: {
+          ...session,
+          memberName: memberInfo[0]?.name,
+          pets: petInfo,
+        },
+        qrUrl: `/visit/${token}`,
+      });
+    } catch (error) {
+      console.error("방문 세션 QR 발급 오류:", error);
+      res.status(500).json({ error: "방문 세션 QR 발급 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 방문 세션 QR 검증 (공개 엔드포인트 — 스캔 시 호출)
+  app.get("/api/visit-sessions/verify/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const [session] = await db.select().from(petVisitSessions)
+        .where(eq(petVisitSessions.token, token));
+
+      if (!session) {
+        return res.status(404).json({ success: false, error: "유효하지 않은 방문 세션입니다.", errorCode: "INVALID" });
+      }
+      if (session.usedAt) {
+        return res.status(410).json({ success: false, error: "이미 사용된 방문 세션입니다.", errorCode: "USED" });
+      }
+      if (new Date() > session.expiresAt) {
+        return res.status(410).json({ success: false, error: "만료된 방문 세션입니다. 새 QR을 발급받아 주세요.", errorCode: "EXPIRED" });
+      }
+
+      const [institute] = await db.select({ id: institutes.id, name: institutes.name, address: institutes.address, phone: institutes.phone })
+        .from(institutes).where(eq(institutes.id, session.instituteId));
+      const [member] = await db.select({ id: users.id, name: users.name, phone: users.phone })
+        .from(users).where(eq(users.id, session.memberId));
+
+      const petIdArr = session.petIds as number[];
+      const petList = [];
+      for (const pid of petIdArr) {
+        const [pet] = await db.select({
+          id: pets.id, name: pets.name, breed: pets.breed,
+          species: pets.species, temperamentLevel: pets.temperamentLevel,
+          profileImage: pets.profileImage,
+        }).from(pets).where(eq(pets.id, pid));
+        if (pet) petList.push(pet);
+      }
+
+      res.json({
+        success: true,
+        session: {
+          id: session.id,
+          expiresAt: session.expiresAt,
+          todayConcern: session.todayConcern,
+          todayGoal: session.todayGoal,
+          vaccineStatus: session.vaccineStatus,
+          temperamentLevels: session.temperamentLevels,
+          zonePermissions: session.zonePermissions,
+        },
+        institute,
+        member: member ? { name: member.name, phone: member.phone } : null,
+        pets: petList,
+      });
+    } catch (error) {
+      console.error("방문 세션 검증 오류:", error);
+      res.status(500).json({ error: "방문 세션 검증 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 방문 세션 체크인 확인 (스캔 후 직원이 확인)
+  app.post("/api/visit-sessions/confirm/:token", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin', 'trainer'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+
+      const { token } = req.params;
+
+      let callerInstituteId = sessionUser.instituteId;
+      if (role === 'trainer' && !callerInstituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+        if (trainerInst) callerInstituteId = trainerInst.instituteId;
+      }
+
+      const [updated] = await db.update(petVisitSessions)
+        .set({ usedAt: new Date() })
+        .where(and(
+          eq(petVisitSessions.token, token),
+          sql`${petVisitSessions.usedAt} IS NULL`,
+          sql`${petVisitSessions.expiresAt} > NOW()`
+        ))
+        .returning();
+
+      if (!updated) {
+        const [existing] = await db.select().from(petVisitSessions).where(eq(petVisitSessions.token, token));
+        if (!existing) return res.status(404).json({ error: "유효하지 않은 방문 세션입니다." });
+        if (existing.usedAt) return res.status(410).json({ error: "이미 사용된 방문 세션입니다." });
+        return res.status(410).json({ error: "만료된 방문 세션입니다." });
+      }
+
+      if (role !== 'admin' && callerInstituteId !== updated.instituteId) {
+        await db.update(petVisitSessions).set({ usedAt: null }).where(eq(petVisitSessions.id, updated.id));
+        return res.status(403).json({ error: "소속 기관의 방문 세션만 확인할 수 있습니다." });
+      }
+
+      const petIdArr = updated.petIds as number[];
+      for (const pid of petIdArr) {
+        await db.insert(checkinRecords).values({
+          instituteId: updated.instituteId,
+          ownerId: updated.memberId,
+          petId: pid,
+          todayConcern: updated.todayConcern || null,
+          todayGoal: updated.todayGoal || null,
+          isNewVisitor: false,
+          checkinAt: new Date(),
+        });
+      }
+
+      res.json({ success: true, message: "체크인이 확인되었습니다.", session: updated });
+    } catch (error) {
+      console.error("방문 세션 확인 오류:", error);
+      res.status(500).json({ error: "방문 세션 확인 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 방문 세션 목록 (기관 관리자용)
+  app.get("/api/visit-sessions", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin', 'trainer'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      let instituteId = sessionUser.instituteId;
+      if (role === 'trainer' && !instituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+        if (trainerInst) instituteId = trainerInst.instituteId;
+      }
+      if (role === 'admin' && req.query.instituteId) instituteId = Number(req.query.instituteId);
+      if (!instituteId) return res.json({ success: true, sessions: [] });
+
+      const sessions = await db.select().from(petVisitSessions)
+        .where(eq(petVisitSessions.instituteId, instituteId))
+        .orderBy(desc(petVisitSessions.createdAt))
+        .limit(50);
+
+      const enriched = await Promise.all(sessions.map(async (s) => {
+        const [member] = await db.select({ name: users.name }).from(users).where(eq(users.id, s.memberId));
+        const petIdArr = s.petIds as number[];
+        const petNames: string[] = [];
+        for (const pid of petIdArr) {
+          const [pet] = await db.select({ name: pets.name }).from(pets).where(eq(pets.id, pid));
+          if (pet?.name) petNames.push(pet.name);
+        }
+        const now = new Date();
+        let status = 'active';
+        if (s.usedAt) status = 'used';
+        else if (now > s.expiresAt) status = 'expired';
+        return { ...s, memberName: member?.name, petNames, status };
+      }));
+
+      res.json({ success: true, sessions: enriched });
+    } catch (error) {
+      console.error("방문 세션 목록 조회 오류:", error);
+      res.status(500).json({ error: "방문 세션 목록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 보호자 목록 (방문 세션 발급 시 보호자 검색)
+  app.get("/api/institute/members", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin', 'trainer'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const search = (req.query.search as string || '').trim();
+      let query = db.select({
+        id: users.id, name: users.name, phone: users.phone, email: users.email
+      }).from(users).where(eq(users.role, 'pet-owner'));
+
+      let members;
+      if (search) {
+        members = await db.select({
+          id: users.id, name: users.name, phone: users.phone, email: users.email
+        }).from(users).where(
+          and(eq(users.role, 'pet-owner'), or(ilike(users.name, `%${search}%`), ilike(users.phone, `%${search}%`)))
+        ).limit(20);
+      } else {
+        members = await db.select({
+          id: users.id, name: users.name, phone: users.phone, email: users.email
+        }).from(users).where(eq(users.role, 'pet-owner')).limit(50);
+      }
+
+      res.json({ success: true, members });
+    } catch (error) {
+      console.error("보호자 목록 조회 오류:", error);
+      res.status(500).json({ error: "보호자 목록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 보호자의 반려동물 목록
+  app.get("/api/institute/members/:memberId/pets", requireAuth(), async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) return res.status(401).json({ error: "인증이 필요합니다." });
+      const role = sessionUser.role || sessionUser.userRole;
+      if (!['institute-admin', 'admin', 'trainer'].includes(role)) {
+        return res.status(403).json({ error: "접근 권한이 없습니다." });
+      }
+      const memberId = Number(req.params.memberId);
+      const memberPets = await db.select({
+        id: pets.id, name: pets.name, breed: pets.breed,
+        species: pets.species, temperamentLevel: pets.temperamentLevel,
+        trainingStatus: pets.trainingStatus, profileImage: pets.profileImage,
+      }).from(pets).where(eq(pets.ownerId, memberId));
+
+      res.json({ success: true, pets: memberPets });
+    } catch (error) {
+      console.error("보호자 반려동물 조회 오류:", error);
+      res.status(500).json({ error: "반려동물 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  console.log('[방문 신뢰 QR] Pet Visit Trust QR 인증 시스템 API가 등록되었습니다.');
 
   const httpServer = createServer(app);
   return httpServer;
