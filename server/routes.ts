@@ -19719,48 +19719,69 @@ export function registerTrainerCertificationRoutes(app: Express) {
   app.get("/api/visit-sessions/verify/:token", async (req, res) => {
     try {
       const { token } = req.params;
-      const [session] = await db.select().from(petVisitSessions)
-        .where(eq(petVisitSessions.token, token));
 
-      if (!session) {
-        return res.status(404).json({ success: false, error: "유효하지 않은 방문 세션입니다.", errorCode: "INVALID" });
-      }
-      if (session.usedAt) {
-        return res.status(410).json({ success: false, error: "이미 사용된 방문 세션입니다.", errorCode: "USED" });
-      }
-      if (new Date() > session.expiresAt) {
+      const [consumed] = await db.update(petVisitSessions)
+        .set({ usedAt: new Date() })
+        .where(and(
+          eq(petVisitSessions.token, token),
+          sql`${petVisitSessions.usedAt} IS NULL`,
+          sql`${petVisitSessions.expiresAt} > NOW()`
+        ))
+        .returning();
+
+      if (!consumed) {
+        const [existing] = await db.select().from(petVisitSessions).where(eq(petVisitSessions.token, token));
+        if (!existing) {
+          return res.status(404).json({ success: false, error: "유효하지 않은 방문 세션입니다.", errorCode: "INVALID" });
+        }
+        if (existing.usedAt) {
+          return res.status(410).json({ success: false, error: "이미 사용된 방문 세션입니다.", errorCode: "USED" });
+        }
         return res.status(410).json({ success: false, error: "만료된 방문 세션입니다. 새 QR을 발급받아 주세요.", errorCode: "EXPIRED" });
       }
 
-      const [institute] = await db.select({ id: institutes.id, name: institutes.name, address: institutes.address, phone: institutes.phone })
-        .from(institutes).where(eq(institutes.id, session.instituteId));
-      const [member] = await db.select({ id: users.id, name: users.name, phone: users.phone })
-        .from(users).where(eq(users.id, session.memberId));
+      const [institute] = await db.select({ id: institutes.id, name: institutes.name, address: institutes.address })
+        .from(institutes).where(eq(institutes.id, consumed.instituteId));
 
-      const petIdArr = session.petIds as number[];
+      const memberInitial = await db.select({ name: users.name })
+        .from(users).where(eq(users.id, consumed.memberId)).limit(1);
+      const memberName = memberInitial[0]?.name;
+
+      const petIdArr = consumed.petIds as number[];
       const petList = [];
       for (const pid of petIdArr) {
         const [pet] = await db.select({
           id: pets.id, name: pets.name, breed: pets.breed,
           species: pets.species, temperamentLevel: pets.temperamentLevel,
-          profileImage: pets.profileImage,
         }).from(pets).where(eq(pets.id, pid));
         if (pet) petList.push(pet);
+      }
+
+      for (const pid of petIdArr) {
+        await db.insert(checkinRecords).values({
+          instituteId: consumed.instituteId,
+          ownerId: consumed.memberId,
+          petId: pid,
+          todayConcern: consumed.todayConcern || null,
+          todayGoal: consumed.todayGoal || null,
+          isNewVisitor: false,
+          checkinAt: new Date(),
+        });
       }
 
       res.json({
         success: true,
         session: {
-          id: session.id,
-          expiresAt: session.expiresAt,
-          todayConcern: session.todayConcern,
-          todayGoal: session.todayGoal,
-          vaccineStatus: session.vaccineStatus,
-          temperamentLevels: session.temperamentLevels,
-          zonePermissions: session.zonePermissions,
+          id: consumed.id,
+          expiresAt: consumed.expiresAt,
+          todayConcern: consumed.todayConcern,
+          todayGoal: consumed.todayGoal,
+          vaccineStatus: consumed.vaccineStatus,
+          temperamentLevels: consumed.temperamentLevels,
+          zonePermissions: consumed.zonePermissions,
         },
-        institute,
-        member: member ? { name: member.name, phone: member.phone } : null,
+        institute: institute ? { name: institute.name, address: institute.address } : null,
+        member: memberName ? { name: memberName } : null,
         pets: petList,
       });
     } catch (error) {
@@ -19769,7 +19790,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
-  // 방문 세션 체크인 확인 (스캔 후 직원이 확인)
+  // 방문 세션 상태 조회 (관리자/훈련사용)
   app.post("/api/visit-sessions/confirm/:token", requireAuth(), async (req, res) => {
     try {
       const sessionUser = (req as any).user;
@@ -19780,6 +19801,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
       }
 
       const { token } = req.params;
+      const [session] = await db.select().from(petVisitSessions).where(eq(petVisitSessions.token, token));
+      if (!session) return res.status(404).json({ error: "유효하지 않은 방문 세션입니다." });
 
       let callerInstituteId = sessionUser.instituteId;
       if (role === 'trainer' && !callerInstituteId) {
@@ -19788,41 +19811,15 @@ export function registerTrainerCertificationRoutes(app: Express) {
         if (trainerInst) callerInstituteId = trainerInst.instituteId;
       }
 
-      const [updated] = await db.update(petVisitSessions)
-        .set({ usedAt: new Date() })
-        .where(and(
-          eq(petVisitSessions.token, token),
-          sql`${petVisitSessions.usedAt} IS NULL`,
-          sql`${petVisitSessions.expiresAt} > NOW()`
-        ))
-        .returning();
-
-      if (!updated) {
-        const [existing] = await db.select().from(petVisitSessions).where(eq(petVisitSessions.token, token));
-        if (!existing) return res.status(404).json({ error: "유효하지 않은 방문 세션입니다." });
-        if (existing.usedAt) return res.status(410).json({ error: "이미 사용된 방문 세션입니다." });
-        return res.status(410).json({ error: "만료된 방문 세션입니다." });
-      }
-
-      if (role !== 'admin' && callerInstituteId !== updated.instituteId) {
-        await db.update(petVisitSessions).set({ usedAt: null }).where(eq(petVisitSessions.id, updated.id));
+      if (role !== 'admin' && callerInstituteId !== session.instituteId) {
         return res.status(403).json({ error: "소속 기관의 방문 세션만 확인할 수 있습니다." });
       }
 
-      const petIdArr = updated.petIds as number[];
-      for (const pid of petIdArr) {
-        await db.insert(checkinRecords).values({
-          instituteId: updated.instituteId,
-          ownerId: updated.memberId,
-          petId: pid,
-          todayConcern: updated.todayConcern || null,
-          todayGoal: updated.todayGoal || null,
-          isNewVisitor: false,
-          checkinAt: new Date(),
-        });
+      if (!session.usedAt) {
+        return res.status(400).json({ error: "아직 스캔되지 않은 세션입니다." });
       }
 
-      res.json({ success: true, message: "체크인이 확인되었습니다.", session: updated });
+      res.json({ success: true, message: "체크인이 확인되었습니다.", session });
     } catch (error) {
       console.error("방문 세션 확인 오류:", error);
       res.status(500).json({ error: "방문 세션 확인 중 오류가 발생했습니다." });
@@ -19883,22 +19880,38 @@ export function registerTrainerCertificationRoutes(app: Express) {
       if (!['institute-admin', 'admin', 'trainer'].includes(role)) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
+
+      let callerInstituteId = sessionUser.instituteId;
+      if (role === 'trainer' && !callerInstituteId) {
+        const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+          .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+        if (trainerInst) callerInstituteId = trainerInst.instituteId;
+      }
+
       const search = (req.query.search as string || '').trim();
-      let query = db.select({
-        id: users.id, name: users.name, phone: users.phone, email: users.email
-      }).from(users).where(eq(users.role, 'pet-owner'));
 
       let members;
-      if (search) {
+      if (role === 'admin') {
+        const conditions = [eq(users.role, 'pet-owner')];
+        if (search) {
+          conditions.push(or(ilike(users.name, `%${search}%`), ilike(users.phone, `%${search}%`))!);
+        }
         members = await db.select({
-          id: users.id, name: users.name, phone: users.phone, email: users.email
-        }).from(users).where(
-          and(eq(users.role, 'pet-owner'), or(ilike(users.name, `%${search}%`), ilike(users.phone, `%${search}%`)))
-        ).limit(20);
+          id: users.id, name: users.name, email: users.email
+        }).from(users).where(and(...conditions)).limit(50);
+      } else if (callerInstituteId) {
+        const conditions: any[] = [eq(checkinRecords.instituteId, callerInstituteId)];
+        if (search) {
+          conditions.push(or(ilike(users.name, `%${search}%`), ilike(users.phone, `%${search}%`)));
+        }
+        const rows = await db.selectDistinct({
+          id: users.id, name: users.name, email: users.email
+        }).from(checkinRecords)
+          .innerJoin(users, eq(checkinRecords.ownerId, users.id))
+          .where(and(...conditions)).limit(50);
+        members = rows;
       } else {
-        members = await db.select({
-          id: users.id, name: users.name, phone: users.phone, email: users.email
-        }).from(users).where(eq(users.role, 'pet-owner')).limit(50);
+        members = [];
       }
 
       res.json({ success: true, members });
