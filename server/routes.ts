@@ -19746,8 +19746,63 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
-  // 방문 세션 QR 검증 (공개 엔드포인트 — 스캔 시 호출, 원자적 토큰 소비)
+  // 방문 세션 QR 검증 — GET은 읽기 전용 (봇/프리페치 안전)
   app.get("/api/visit-sessions/verify/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+
+      const [session] = await db.select().from(petVisitSessions).where(eq(petVisitSessions.token, token));
+      if (!session) {
+        return res.status(404).json({ success: false, error: "유효하지 않은 방문 세션입니다.", errorCode: "INVALID" });
+      }
+      if (session.usedAt) {
+        return res.status(410).json({ success: false, error: "이미 사용된 방문 세션입니다.", errorCode: "USED" });
+      }
+      if (new Date(session.expiresAt) <= new Date()) {
+        return res.status(410).json({ success: false, error: "만료된 방문 세션입니다. 새 QR을 발급받아 주세요.", errorCode: "EXPIRED" });
+      }
+
+      const [institute] = await db.select({ id: institutes.id, name: institutes.name, address: institutes.address })
+        .from(institutes).where(eq(institutes.id, session.instituteId));
+
+      const memberInitial = await db.select({ name: users.name })
+        .from(users).where(eq(users.id, session.memberId)).limit(1);
+      const memberName = memberInitial[0]?.name;
+
+      const petIdArr = session.petIds as number[];
+      const petList: Array<{ id: number; name: string | null; breed: string | null; species: string | null; temperamentLevel: string | null }> = [];
+      for (const pid of petIdArr) {
+        const [pet] = await db.select({
+          id: pets.id, name: pets.name, breed: pets.breed,
+          species: pets.species, temperamentLevel: pets.temperamentLevel,
+        }).from(pets).where(eq(pets.id, pid));
+        if (pet) petList.push(pet);
+      }
+
+      res.json({
+        success: true,
+        consumed: false,
+        session: {
+          id: session.id,
+          expiresAt: session.expiresAt,
+          todayConcern: session.todayConcern,
+          todayGoal: session.todayGoal,
+          vaccineStatus: session.vaccineStatus,
+          temperamentLevels: session.temperamentLevels,
+          zonePermissions: session.zonePermissions,
+        },
+        institute: institute ? { name: institute.name, address: institute.address } : null,
+        member: memberName ? { name: memberName } : null,
+        pets: petList,
+      });
+    } catch (error) {
+      console.error("방문 세션 조회 오류:", error);
+      res.status(500).json({ error: "방문 세션 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 방문 세션 QR 확인 — POST로 원자적 토큰 소비 + 체크인 생성 (의도적 액션만)
+  app.post("/api/visit-sessions/confirm/:token", async (req, res) => {
     try {
       const { token } = req.params;
 
@@ -19809,6 +19864,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
 
       res.json({
         success: true,
+        consumed: true,
         session: {
           id: result.id,
           expiresAt: result.expiresAt,
@@ -19823,8 +19879,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
         pets: petList,
       });
     } catch (error) {
-      console.error("방문 세션 검증 오류:", error);
-      res.status(500).json({ error: "방문 세션 검증 중 오류가 발생했습니다." });
+      console.error("방문 세션 확인 오류:", error);
+      res.status(500).json({ error: "방문 세션 확인 중 오류가 발생했습니다." });
     }
   });
 
@@ -19938,15 +19994,15 @@ export function registerTrainerCertificationRoutes(app: Express) {
           id: users.id, name: users.name, email: users.email
         }).from(users).where(and(...conditions)).limit(50);
       } else if (callerInstituteId) {
-        const conditions: any[] = [eq(checkinRecords.instituteId, callerInstituteId)];
-        if (search) {
-          conditions.push(or(ilike(users.name, `%${search}%`), ilike(users.phone, `%${search}%`)));
-        }
+        const baseCondition = eq(checkinRecords.instituteId, callerInstituteId);
+        const whereClause = search
+          ? and(baseCondition, or(ilike(users.name, `%${search}%`), ilike(users.phone, `%${search}%`)))
+          : baseCondition;
         const rows = await db.selectDistinct({
           id: users.id, name: users.name, email: users.email
         }).from(checkinRecords)
           .innerJoin(users, eq(checkinRecords.ownerId, users.id))
-          .where(and(...conditions)).limit(50);
+          .where(whereClause).limit(50);
         members = rows;
       } else {
         members = [];
