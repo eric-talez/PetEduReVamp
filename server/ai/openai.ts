@@ -239,3 +239,157 @@ function calculateFallbackPrice(curriculum: AICurriculum): number {
 }
 
 export { CurriculumModuleSchema, AICurriculumSchema, PricingSuggestionSchema };
+
+const NoseQualitySchema = z.object({
+  overallScore: z.number().min(0).max(100),
+  isNoseVisible: z.boolean(),
+  isFrontal: z.boolean(),
+  isSharp: z.boolean(),
+  isCloseEnough: z.boolean(),
+  failReasons: z.array(z.string()),
+  recommendation: z.string(),
+});
+
+export type NoseQualityResult = z.infer<typeof NoseQualitySchema>;
+
+export async function evaluateNoseImageQuality(
+  imageBase64: string
+): Promise<NoseQualityResult> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5",
+      messages: [
+        {
+          role: "system",
+          content: "당신은 반려견 코 인식 전문가입니다. 반려견 코 사진의 품질을 정확히 평가해주세요. 반드시 JSON 형식으로 응답해주세요."
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `이 이미지가 반려견 코 인증에 적합한지 평가해주세요.
+
+다음 JSON 형식으로 응답해주세요:
+{
+  "overallScore": 0~100 (전체 품질 점수),
+  "isNoseVisible": true/false (코가 명확히 보이는지),
+  "isFrontal": true/false (정면 촬영인지),
+  "isSharp": true/false (선명한지),
+  "isCloseEnough": true/false (충분히 가까이 촬영했는지),
+  "failReasons": ["실패 사유1", "실패 사유2"],
+  "recommendation": "개선 권장 사항"
+}
+
+평가 기준:
+- 코의 주름 패턴이 선명하게 보여야 합니다
+- 정면에서 촬영되어야 합니다
+- 코가 이미지의 중앙에 크게 위치해야 합니다
+- 흐릿하지 않고 선명해야 합니다
+- 적절한 조명이 있어야 합니다`
+            },
+            {
+              type: "image_url",
+              image_url: { url: `data:image/jpeg;base64,${imageBase64}` }
+            }
+          ]
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 512
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    return NoseQualitySchema.parse(result);
+  } catch (error) {
+    console.error('[코 품질 평가] 실패:', error);
+    return {
+      overallScore: 50,
+      isNoseVisible: true,
+      isFrontal: true,
+      isSharp: true,
+      isCloseEnough: true,
+      failReasons: ["AI 분석에 실패하여 기본값으로 평가되었습니다"],
+      recommendation: "재촬영을 권장합니다"
+    };
+  }
+}
+
+const NoseSimilaritySchema = z.object({
+  similarityScore: z.number().min(0).max(100),
+  matched: z.boolean(),
+  confidence: z.number().min(0).max(1),
+  details: z.string(),
+  failReason: z.string().optional(),
+});
+
+export type NoseSimilarityResult = z.infer<typeof NoseSimilaritySchema>;
+
+export async function compareNoseImages(
+  registeredImageBase64: string,
+  capturedImageBase64: string
+): Promise<NoseSimilarityResult> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5",
+      messages: [
+        {
+          role: "system",
+          content: "당신은 반려견 코 생체인식 전문가입니다. 두 반려견 코 사진을 비교하여 동일한 개체인지 판단해주세요. 반드시 JSON 형식으로 응답해주세요."
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `두 반려견 코 사진을 비교해주세요.
+
+첫 번째 이미지: 등록된 코 사진 (기준)
+두 번째 이미지: 방문 시 촬영한 코 사진 (비교 대상)
+
+다음 JSON 형식으로 응답해주세요:
+{
+  "similarityScore": 0~100 (유사도 점수, 85 이상이면 동일 개체),
+  "matched": true/false (동일 개체 여부),
+  "confidence": 0.0~1.0 (판단 신뢰도),
+  "details": "비교 상세 설명",
+  "failReason": "불일치 시 사유 (일치하면 빈 문자열)"
+}
+
+비교 기준:
+- 코 주름의 패턴과 형태
+- 코의 전체적인 모양과 크기 비율
+- 콧구멍의 형태와 간격
+- 코 표면의 질감과 특징적인 무늬
+- similarityScore 85 이상: 자동 승인 (동일 개체)
+- similarityScore 75~84: 재촬영 권장
+- similarityScore 75 미만: 불일치`
+            },
+            {
+              type: "image_url",
+              image_url: { url: `data:image/jpeg;base64,${registeredImageBase64}` }
+            },
+            {
+              type: "image_url",
+              image_url: { url: `data:image/jpeg;base64,${capturedImageBase64}` }
+            }
+          ]
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 512
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    return NoseSimilaritySchema.parse(result);
+  } catch (error) {
+    console.error('[코 비교] 실패:', error);
+    return {
+      similarityScore: 0,
+      matched: false,
+      confidence: 0,
+      details: "AI 분석에 실패했습니다",
+      failReason: "AI 분석 오류가 발생했습니다. 관리자에게 문의하세요."
+    };
+  }
+}

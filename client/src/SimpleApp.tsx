@@ -840,6 +840,26 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/institute/nose-enroll/:petId">
+          {() => {
+            const NoseEnrollment = lazy(() => import('./pages/institute/qr-checkin/NoseEnrollment'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={NoseEnrollment} requiredRoles={['trainer', 'institute-admin', 'admin', 'pet-owner']} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/nose-verify/:sessionToken">
+          {() => {
+            const NoseVerification = lazy(() => import('./pages/institute/qr-checkin/NoseVerification'));
+            return (
+              <Suspense fallback={<SimpleLoading />}>
+                <ProtectedRoute component={NoseVerification} requiredRoles={['trainer', 'institute-admin', 'admin', 'pet-owner']} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/institute/store-policies">
           {() => {
             const StorePolicyManagement = lazy(() => import('./pages/institute/operational-policies/StorePolicyManagement'));

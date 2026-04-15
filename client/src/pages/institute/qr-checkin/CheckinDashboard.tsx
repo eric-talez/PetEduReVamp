@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Calendar, TrendingUp, UserCheck, PawPrint, AlertTriangle, Clock, ChevronRight, Shield, Syringe } from "lucide-react";
+import { Users, Calendar, TrendingUp, UserCheck, PawPrint, AlertTriangle, Clock, ChevronRight, Shield, Syringe, Fingerprint } from "lucide-react";
 import { useLocation } from "wouter";
 import type { CheckinRecord } from "@shared/schema";
 
@@ -42,6 +42,7 @@ interface StatsResponse {
 
 interface VisitSession {
   id: number;
+  token: string;
   memberId: number;
   memberName: string | null;
   petIds: number[];
@@ -49,6 +50,7 @@ interface VisitSession {
   vaccineStatus: Record<number, { valid: boolean }>;
   temperamentLevels: Record<number, string | null>;
   zonePermissions: Record<number, string[]>;
+  noseVerified: boolean;
   usedAt: string | null;
   expiresAt: string;
   createdAt: string;
@@ -59,6 +61,30 @@ interface VisitSession {
 interface VisitSessionListResponse {
   success: boolean;
   sessions: VisitSession[];
+}
+
+interface NoseVerificationLog {
+  id: number;
+  visitSessionId: number | null;
+  petId: number;
+  similarityScore: number | null;
+  matched: boolean | null;
+  failReason: string | null;
+  manualApproval: boolean | null;
+  verifiedAt: string;
+  petName: string | null;
+}
+
+interface NoseLogResponse {
+  success: boolean;
+  logs: NoseVerificationLog[];
+  stats: {
+    total: number;
+    success: number;
+    fail: number;
+    manualApproval: number;
+    successRate: number;
+  };
 }
 
 const TEMPERAMENT_MAP: Record<string, { label: string; color: string }> = {
@@ -91,9 +117,17 @@ export default function CheckinDashboard() {
     queryKey: ["/api/visit-sessions"],
   });
 
+  const { data: noseLogData } = useQuery<NoseLogResponse>({
+    queryKey: ["/api/nose-verification/logs"],
+  });
+
   const stats = statsData?.stats ?? { todayCount: 0, weekCount: 0, monthCount: 0, uniqueVisitors: 0 };
   const checkins = checkinsData?.checkins ?? [];
   const recentSessions = sessionsData?.sessions?.slice(0, 5) ?? [];
+  const noseStats = noseLogData?.stats;
+  const noseLogs = noseLogData?.logs ?? [];
+  const [showAllNoseLogs, setShowAllNoseLogs] = useState(false);
+  const displayedNoseLogs = showAllNoseLogs ? noseLogs : noseLogs.slice(0, 10);
 
   const temperamentBadge = (level: string | null) => {
     if (!level || !TEMPERAMENT_MAP[level]) return null;
@@ -165,6 +199,72 @@ export default function CheckinDashboard() {
         </Card>
       </div>
 
+      {noseStats && noseStats.total > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Fingerprint className="w-5 h-5 text-primary" />
+              코 인증 통계
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold">{noseStats.total}</p>
+                <p className="text-xs text-gray-500">전체 인증</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-green-600">{noseStats.success}</p>
+                <p className="text-xs text-gray-500">성공</p>
+              </div>
+              <div className="bg-red-50 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-red-600">{noseStats.fail}</p>
+                <p className="text-xs text-gray-500">실패</p>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-blue-600">{noseStats.successRate}%</p>
+                <p className="text-xs text-gray-500">성공률</p>
+              </div>
+            </div>
+
+            {noseLogs.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600">인증 이력 ({noseLogs.length}건)</p>
+                {displayedNoseLogs.map((log) => (
+                  <div key={log.id} className="flex items-center justify-between border rounded-lg p-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Fingerprint className={`w-4 h-4 ${log.matched ? 'text-green-500' : 'text-red-500'}`} />
+                      <span>{log.petName || '반려동물'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {log.manualApproval && (
+                        <Badge variant="outline" className="text-xs">수동</Badge>
+                      )}
+                      <Badge className={`text-xs ${log.matched ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {log.matched ? `일치 ${log.similarityScore}%` : `불일치 ${log.similarityScore}%`}
+                      </Badge>
+                      <span className="text-xs text-gray-400">
+                        {new Date(log.verifiedAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {noseLogs.length > 10 && !showAllNoseLogs && (
+                  <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setShowAllNoseLogs(true)}>
+                    전체 보기 ({noseLogs.length}건)
+                  </Button>
+                )}
+                {showAllNoseLogs && noseLogs.length > 10 && (
+                  <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setShowAllNoseLogs(false)}>
+                    접기
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {recentSessions.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
@@ -205,16 +305,39 @@ export default function CheckinDashboard() {
                               <Syringe className="w-3 h-3" /> 접종완료
                             </span>
                           )}
+                          {session.noseVerified && (
+                            <span className="text-xs text-primary flex items-center gap-0.5">
+                              <Fingerprint className="w-3 h-3" /> 코인증
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <Badge variant={isUsed ? "default" : isExpired ? "secondary" : "outline"} className="text-xs">
-                        {isUsed ? "체크인 완료" : isExpired ? "만료됨" : "대기 중"}
-                      </Badge>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {new Date(session.createdAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
-                      </p>
+                    <div className="text-right flex items-center gap-2">
+                      {session.noseVerified ? (
+                        <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
+                          <Fingerprint className="w-3 h-3 mr-0.5" />
+                          코인증
+                        </Badge>
+                      ) : isUsed ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-6 px-2"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/institute/nose-verify/${session.token}`); }}
+                        >
+                          <Fingerprint className="w-3 h-3 mr-1" />
+                          코인증
+                        </Button>
+                      ) : null}
+                      <div>
+                        <Badge variant={isUsed ? "default" : isExpired ? "secondary" : "outline"} className="text-xs">
+                          {isUsed ? "체크인 완료" : isExpired ? "만료됨" : "대기 중"}
+                        </Badge>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(session.createdAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );

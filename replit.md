@@ -72,6 +72,18 @@ TALEZ emphasizes modularity, scalability, and performance, utilizing modern web 
   - UI pages: VisitSessionManager (QR issuance), ZoneManagement (zone CRUD), VisitVerifyPage (public scan page)
   - Sidebar integration: 방문 신뢰 QR + 구역 관리 for institute-admin, 방문 신뢰 QR for trainer
   - Routes: `/institute/visit-sessions`, `/institute/zone-management`, `/visit/:token`
+- **반려견 코 인증 시스템 (Apr 15)**:
+  - New `pet_nose_profiles` table for storing pet nose biometric data (images, quality score, representative image, versioning)
+  - New `nose_verification_logs` table for verification audit trail (similarity score, match result, manual approval, approver)
+  - Added `nose_verified` column to `pet_visit_sessions` table for 2-step verification status
+  - AI functions in `server/ai/openai.ts`: `evaluateNoseImageQuality()` and `compareNoseImages()` using OpenAI Vision gpt-5 with Zod validation
+  - API endpoints: POST `/api/pets/:petId/nose/enroll` (multi-image enrollment with quality evaluation), GET `/api/pets/:petId/nose/profile`, POST `/api/visit-sessions/:sessionId/verify-nose` (AI comparison), POST `/api/visit-sessions/:sessionId/manual-approve-nose` (admin override), GET `/api/nose-verification/logs` (audit trail with stats)
+  - Similarity thresholds: ≥85% auto-approve, 75-84% retry recommended, <75% rejected
+  - Visit confirm endpoint updated to include `hasNoseProfile` per pet and `noseVerified` on session
+  - Frontend: NoseEnrollment.tsx (camera + guide overlay + quality feedback + file upload), NoseVerification.tsx (capture + similarity result + retry + manual approve), VisitVerifyPage.tsx (inline 2-step nose verification after QR scan)
+  - Dashboard: CheckinDashboard.tsx updated with nose verification stats/logs section and per-session nose verification badges
+  - Routes: `/institute/nose-enroll/:petId`, `/institute/nose-verify/:sessionId`
+  - All UI in Korean
 - **QR 체크인 CRM 시스템 (Apr 12)**:
   - New `institute_qr_codes` table for QR code management per institute
   - New `checkin_records` table for visitor checkin tracking

@@ -2949,6 +2949,7 @@ export const petVisitSessions = pgTable("pet_visit_sessions", {
   singleUse: boolean("single_use").default(true),
   usedAt: timestamp("used_at"),
   expiresAt: timestamp("expires_at").notNull(),
+  noseVerified: boolean("nose_verified").default(false),
   createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -3047,4 +3048,36 @@ export const incidentProtocols = pgTable("incident_protocols", {
 export const insertIncidentProtocolSchema = createInsertSchema(incidentProtocols).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertIncidentProtocol = z.infer<typeof insertIncidentProtocolSchema>;
 export type IncidentProtocol = typeof incidentProtocols.$inferSelect;
+
+export const petNoseProfiles = pgTable("pet_nose_profiles", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id).notNull(),
+  images: jsonb("images").notNull(),
+  representativeImageUrl: text("representative_image_url"),
+  qualityScore: integer("quality_score"),
+  version: integer("version").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPetNoseProfileSchema = createInsertSchema(petNoseProfiles).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertPetNoseProfile = z.infer<typeof insertPetNoseProfileSchema>;
+export type PetNoseProfile = typeof petNoseProfiles.$inferSelect;
+
+export const noseVerificationLogs = pgTable("nose_verification_logs", {
+  id: serial("id").primaryKey(),
+  visitSessionId: integer("visit_session_id").references(() => petVisitSessions.id),
+  petId: integer("pet_id").references(() => pets.id).notNull(),
+  similarityScore: integer("similarity_score"),
+  matched: boolean("matched").default(false),
+  capturedImageUrl: text("captured_image_url"),
+  failReason: text("fail_reason"),
+  manualApproval: boolean("manual_approval").default(false),
+  approvedBy: integer("approved_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at").defaultNow(),
+});
+
+export const insertNoseVerificationLogSchema = createInsertSchema(noseVerificationLogs).omit({ id: true, verifiedAt: true });
+export type InsertNoseVerificationLog = z.infer<typeof insertNoseVerificationLogSchema>;
+export type NoseVerificationLog = typeof noseVerificationLogs.$inferSelect;
 

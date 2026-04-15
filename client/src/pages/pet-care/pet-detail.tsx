@@ -20,7 +20,8 @@ import {
   Phone,
   Mail,
   Edit,
-  Plus
+  Plus,
+  Fingerprint
 } from 'lucide-react';
 
 const TEMPERAMENT_BADGE: Record<string, { label: string; color: string }> = {
@@ -96,9 +97,20 @@ export default function PetDetailPage() {
     enabled: !!petId
   });
 
+  const { data: noseProfileData } = useQuery<{ success: boolean; profile: { representativeImageUrl: string; qualityScore: number; version: number } | null }>({
+    queryKey: ["/api/pets", petId, "nose", "profile"],
+    queryFn: async () => {
+      const res = await fetch(`/api/pets/${petId}/nose/profile`, { credentials: "include" });
+      if (!res.ok) return { success: false, profile: null };
+      return res.json();
+    },
+    enabled: !!petId,
+  });
+
   const pet: Pet = petData?.pet;
   const vaccinations: Vaccination[] = vaccinationsData?.vaccinations || [];
   const checkups: HealthCheckup[] = checkupsData?.checkups || [];
+  const noseProfile = noseProfileData?.profile;
 
   if (isPetLoading) {
     return (
@@ -235,6 +247,48 @@ export default function PetDetailPage() {
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* 코 프린트 인증 섹션 */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Fingerprint className="w-5 h-5 text-primary" />
+            코 프린트 인증
+          </CardTitle>
+          <Link href={`/institute/nose-enroll/${petId}`}>
+            <Button size="sm" variant={noseProfile ? "outline" : "default"}>
+              {noseProfile ? "재등록" : "코 등록하기"}
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          {noseProfile ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <Fingerprint className="w-8 h-8 text-green-600" />
+              </div>
+              <div>
+                <p className="font-medium text-green-700">코 프린트 등록 완료</p>
+                <p className="text-sm text-muted-foreground">
+                  품질 점수: {noseProfile.qualityScore}점 · 버전 {noseProfile.version}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                <Fingerprint className="w-8 h-8 text-gray-400" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-600">코 프린트 미등록</p>
+                <p className="text-sm text-muted-foreground">
+                  방문 인증을 위해 코 프린트를 등록해주세요 (3~5장)
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

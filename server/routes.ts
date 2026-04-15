@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { randomBytes } from "crypto";
 import { db } from "./db";
 import { sql, eq, and, isNotNull, desc, or, ilike } from "drizzle-orm";
-import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes, instituteQrCodes, checkinRecords, emergencyContacts, storePolicies, consentRecords, incidentProtocols, instituteZones, petVisitSessions, vaccinations } from "../shared/schema";
+import { products, productCommissions, referralProfiles, referralEarnings, settlements, trainerApplications, instituteApplications, systemSettings, orders, orderItems, events, users, coursePurchases, courseProgress, courses, trainerInstitutes, trainerInstituteApplications, trainerClientAssignments, consultationRecords, pets, institutes, instituteQrCodes, checkinRecords, emergencyContacts, storePolicies, consentRecords, incidentProtocols, instituteZones, petVisitSessions, vaccinations, petNoseProfiles } from "../shared/schema";
 import { validateRequest, createSubstitutePostSchema, updateSubstitutePostSchema, createPaymentIntentSchema } from './middleware/validation';
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
@@ -393,6 +393,7 @@ import { registerAIUsageRoutes } from './routes/ai-usage';
 import { weatherRoutes } from './routes/weather';
 import monetizationRoutes from './routes/monetization';
 import { analyzeCurriculumContent, suggestCurriculumPricing } from './ai/openai';
+import { registerNoseAuthRoutes } from './routes/nose-auth';
 import { extractTextAndTables, validateUploadedFile } from './utils/fileParser';
 import multer from 'multer';
 import path from 'path';
@@ -19853,13 +19854,16 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const memberName = memberInitial[0]?.name;
 
       const petIdArr = result.petIds as number[];
-      const petList: Array<{ id: number; name: string | null; breed: string | null; species: string | null; temperamentLevel: string | null }> = [];
+      const petList: Array<{ id: number; name: string | null; breed: string | null; species: string | null; temperamentLevel: string | null; hasNoseProfile: boolean }> = [];
       for (const pid of petIdArr) {
         const [pet] = await db.select({
           id: pets.id, name: pets.name, breed: pets.breed,
           species: pets.species, temperamentLevel: pets.temperamentLevel,
         }).from(pets).where(eq(pets.id, pid));
-        if (pet) petList.push(pet);
+        if (pet) {
+          const [noseProfile] = await db.select({ id: petNoseProfiles.id }).from(petNoseProfiles).where(eq(petNoseProfiles.petId, pid)).limit(1);
+          petList.push({ ...pet, hasNoseProfile: !!noseProfile });
+        }
       }
 
       res.json({
@@ -19870,6 +19874,7 @@ export function registerTrainerCertificationRoutes(app: Express) {
           expiresAt: result.expiresAt,
           todayConcern: result.todayConcern,
           todayGoal: result.todayGoal,
+          noseVerified: result.noseVerified ?? false,
           vaccineStatus: result.vaccineStatus,
           temperamentLevels: result.temperamentLevels,
           zonePermissions: result.zonePermissions,
@@ -20058,6 +20063,8 @@ export function registerTrainerCertificationRoutes(app: Express) {
       res.status(500).json({ error: "반려동물 조회 중 오류가 발생했습니다." });
     }
   });
+
+  registerNoseAuthRoutes(app);
 
   console.log('[방문 신뢰 QR] Pet Visit Trust QR 인증 시스템 API가 등록되었습니다.');
 

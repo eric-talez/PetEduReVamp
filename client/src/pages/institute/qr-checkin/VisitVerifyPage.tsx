@@ -1,12 +1,15 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import type { LucideIcon } from "lucide-react";
 import {
   Shield, CheckCircle, XCircle, Clock, PawPrint, Building,
-  Syringe, MapPin, AlertTriangle, Loader2
+  Syringe, MapPin, AlertTriangle, Loader2, Fingerprint, Camera,
+  RefreshCw, UserCheck, ShieldCheck
 } from "lucide-react";
 
 interface VerifyResponse {
@@ -19,6 +22,7 @@ interface VerifyResponse {
     expiresAt: string;
     todayConcern: string | null;
     todayGoal: string | null;
+    noseVerified: boolean;
     vaccineStatus: Record<number, { valid: boolean; vaccines: Array<{ name: string; status: string }> }>;
     temperamentLevels: Record<number, string | null>;
     zonePermissions: Record<number, string[]>;
@@ -28,7 +32,17 @@ interface VerifyResponse {
   pets?: Array<{
     id: number; name: string | null; breed: string | null;
     species: string | null; temperamentLevel: string | null;
+    hasNoseProfile?: boolean;
   }>;
+}
+
+interface NoseVerifyResult {
+  success: boolean;
+  status: "approved" | "retry" | "rejected";
+  similarityScore: number;
+  matched: boolean;
+  details: string;
+  failReason?: string;
 }
 
 const TEMPERAMENT_MAP: Record<string, { label: string; color: string; bg: string }> = {
@@ -41,9 +55,18 @@ const TEMPERAMENT_MAP: Record<string, { label: string; color: string; bg: string
 
 export default function VisitVerifyPage() {
   const { token } = useParams<{ token: string }>();
+  const { toast } = useToast();
   const [data, setData] = useState<VerifyResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const calledRef = useRef(false);
+  const [isStaff, setIsStaff] = useState(false);
+
+  const [noseStep, setNoseStep] = useState<"idle" | "camera" | "verifying" | "result">("idle");
+  const [noseResult, setNoseResult] = useState<NoseVerifyResult | null>(null);
+  const [noseVerified, setNoseVerified] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
     if (!token || calledRef.current) return;
@@ -54,6 +77,17 @@ export default function VisitVerifyPage() {
         const res = await apiRequest("POST", `/api/visit-sessions/confirm/${token}`);
         const result: VerifyResponse = await res.json();
         setData(result);
+        if (result.session?.noseVerified) setNoseVerified(true);
+
+        try {
+          const userRes = await fetch("/api/auth/me", { credentials: "include" });
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            if (userData && ['admin', 'institute-admin', 'trainer'].includes(userData.role)) {
+              setIsStaff(true);
+            }
+          }
+        } catch {}
       } catch {
         setData({ success: false, error: "네트워크 오류가 발생했습니다.", errorCode: "NETWORK" });
       } finally {
@@ -61,6 +95,79 @@ export default function VisitVerifyPage() {
       }
     })();
   }, [token]);
+
+  const startCamera = useCallback(async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 960 } },
+      });
+      if (videoRef.current) videoRef.current.srcObject = mediaStream;
+      setStream(mediaStream);
+      setNoseStep("camera");
+    } catch {
+      toast({ title: "카메라를 사용할 수 없습니다", variant: "destructive" });
+    }
+  }, [toast]);
+
+  const stopCamera = useCallback(() => {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      setStream(null);
+    }
+  }, [stream]);
+
+  const captureAndVerify = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current || !data?.session) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0);
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      stopCamera();
+      setNoseStep("verifying");
+
+      try {
+        const formData = new FormData();
+        formData.append("image", new File([blob], "nose-verify.jpg", { type: "image/jpeg" }));
+        const res = await fetch(`/api/visit-sessions/${token}/verify-nose`, {
+          method: "POST",
+          body: formData,
+        });
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+          toast({ title: "코 인증 오류", description: result.error || "인증 실패", variant: "destructive" });
+          setNoseStep("idle");
+          return;
+        }
+        setNoseResult(result as NoseVerifyResult);
+        setNoseStep("result");
+        if (result.status === "approved") {
+          setNoseVerified(true);
+          toast({ title: "코 인증 성공!", description: "반려견 신원이 확인되었습니다." });
+        }
+      } catch {
+        toast({ title: "코 인증 오류", variant: "destructive" });
+        setNoseStep("idle");
+      }
+    }, "image/jpeg", 0.9);
+  }, [data, stopCamera, toast]);
+
+  const manualApprove = useCallback(async () => {
+    if (!data?.session) return;
+    try {
+      await apiRequest("POST", `/api/visit-sessions/${data.session.id}/manual-approve-nose`);
+      setNoseVerified(true);
+      setNoseResult({ success: true, status: "approved", similarityScore: 100, matched: true, details: "관리자 수동 승인" });
+      setNoseStep("result");
+      toast({ title: "수동 승인 완료" });
+    } catch {
+      toast({ title: "수동 승인 실패", variant: "destructive" });
+    }
+  }, [data, toast]);
 
   if (isLoading) {
     return (
@@ -103,6 +210,7 @@ export default function VisitVerifyPage() {
   const vaccineStatus = session.vaccineStatus || {};
   const temperamentLevels = session.temperamentLevels || {};
   const zonePermissions = session.zonePermissions || {};
+  const hasPetsWithNoseProfile = data.pets?.some(p => p.hasNoseProfile);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-background p-4">
@@ -193,6 +301,25 @@ export default function VisitVerifyPage() {
                         )}
                       </div>
 
+                      <div className="flex items-center gap-2">
+                        <Fingerprint className="w-4 h-4" />
+                        <span className="text-sm font-medium">코 인증:</span>
+                        {noseVerified ? (
+                          <Badge className="bg-primary/10 text-primary text-xs">
+                            <ShieldCheck className="w-3 h-3 mr-1" />
+                            인증 완료
+                          </Badge>
+                        ) : pet.hasNoseProfile ? (
+                          <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                            대기 중
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-gray-100 text-gray-600 text-xs">
+                            미등록
+                          </Badge>
+                        )}
+                      </div>
+
                       {petZones.length > 0 && (
                         <div className="flex items-start gap-2">
                           <MapPin className="w-4 h-4 mt-0.5" />
@@ -215,6 +342,111 @@ export default function VisitVerifyPage() {
             </CardContent>
           </Card>
         )}
+
+        {hasPetsWithNoseProfile && !noseVerified && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Fingerprint className="w-5 h-5 text-primary" />
+                2단계: 코 인증
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {noseStep === "idle" && (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    반려견의 코를 촬영하여 등록된 코 프로필과 비교합니다.
+                  </p>
+                  <Button onClick={startCamera} className="gap-2">
+                    <Camera className="w-4 h-4" />
+                    코 인증 시작
+                  </Button>
+                </div>
+              )}
+
+              {noseStep === "camera" && (
+                <div>
+                  <div className="relative">
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full rounded-lg" />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-36 h-36 border-4 border-dashed border-primary/60 rounded-full flex items-center justify-center">
+                        <p className="text-primary text-xs font-bold bg-white/80 px-2 py-1 rounded">
+                          코를 원 안에
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3 justify-center">
+                    <Button onClick={captureAndVerify} className="gap-2">
+                      <Camera className="w-4 h-4" />
+                      촬영 후 인증
+                    </Button>
+                    <Button variant="outline" onClick={() => { stopCamera(); setNoseStep("idle"); }}>
+                      취소
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {noseStep === "verifying" && (
+                <div className="text-center py-6">
+                  <Loader2 className="w-10 h-10 animate-spin mx-auto mb-3 text-primary" />
+                  <p className="font-medium">코 비교 중...</p>
+                  <p className="text-xs text-muted-foreground">AI가 등록된 코와 비교하고 있습니다</p>
+                </div>
+              )}
+
+              {noseStep === "result" && noseResult && !noseVerified && (
+                <div className="text-center py-4">
+                  {noseResult.status === "retry" && (
+                    <>
+                      <AlertTriangle className="w-10 h-10 text-yellow-500 mx-auto mb-2" />
+                      <p className="font-medium text-yellow-700">재촬영 권장</p>
+                      <p className="text-sm text-muted-foreground mb-2">유사도: {noseResult.similarityScore}%</p>
+                      {noseResult.failReason && <p className="text-xs text-yellow-600 mb-3">{noseResult.failReason}</p>}
+                    </>
+                  )}
+                  {noseResult.status === "rejected" && (
+                    <>
+                      <XCircle className="w-10 h-10 text-red-500 mx-auto mb-2" />
+                      <p className="font-medium text-red-700">인증 실패</p>
+                      <p className="text-sm text-muted-foreground mb-2">유사도: {noseResult.similarityScore}%</p>
+                      {noseResult.failReason && <p className="text-xs text-red-600 mb-3">{noseResult.failReason}</p>}
+                    </>
+                  )}
+                  <div className="flex gap-2 justify-center">
+                    <Button onClick={() => { setNoseStep("idle"); setNoseResult(null); startCamera(); }} className="gap-2">
+                      <RefreshCw className="w-4 h-4" />
+                      다시 촬영
+                    </Button>
+                    {isStaff && (
+                      <Button variant="outline" onClick={manualApprove} className="gap-2">
+                        <UserCheck className="w-4 h-4" />
+                        수동 승인
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {noseVerified && noseResult && (
+          <Card className="border-green-300">
+            <CardContent className="py-4 text-center">
+              <div className="flex items-center justify-center gap-2 text-green-700">
+                <ShieldCheck className="w-6 h-6" />
+                <span className="font-bold">코 인증 완료</span>
+                {noseResult.similarityScore > 0 && (
+                  <Badge className="bg-green-100 text-green-700 text-xs">유사도 {noseResult.similarityScore}%</Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <canvas ref={canvasRef} className="hidden" />
 
         {(session.todayConcern || session.todayGoal) && (
           <Card>
