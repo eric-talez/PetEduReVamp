@@ -100,3 +100,7 @@ integrations = [
 GOOGLE_CSE_ID = "f343e762f44de42db"
 GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "f343e762f44de42db"
 VITE_SHOP_URL = "https://store.funnytalez.com/"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 60000
