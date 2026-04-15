@@ -19931,6 +19931,27 @@ export function registerTrainerCertificationRoutes(app: Express) {
         return res.status(403).json({ error: "접근 권한이 없습니다." });
       }
       const memberId = Number(req.params.memberId);
+
+      if (role !== 'admin') {
+        let callerInstituteId = sessionUser.instituteId;
+        if (role === 'trainer' && !callerInstituteId) {
+          const [trainerInst] = await db.select({ instituteId: trainerInstitutes.instituteId })
+            .from(trainerInstitutes).where(eq(trainerInstitutes.trainerId, sessionUser.id)).limit(1);
+          if (trainerInst) callerInstituteId = trainerInst.instituteId;
+        }
+        if (callerInstituteId) {
+          const [memberRecord] = await db.select({ id: checkinRecords.id })
+            .from(checkinRecords)
+            .where(and(eq(checkinRecords.instituteId, callerInstituteId), eq(checkinRecords.ownerId, memberId)))
+            .limit(1);
+          if (!memberRecord) {
+            return res.status(403).json({ error: "소속 기관의 방문 이력이 있는 보호자만 조회할 수 있습니다." });
+          }
+        } else {
+          return res.status(403).json({ error: "기관 소속 정보를 확인할 수 없습니다." });
+        }
+      }
+
       const memberPets = await db.select({
         id: pets.id, name: pets.name, breed: pets.breed,
         species: pets.species, temperamentLevel: pets.temperamentLevel,

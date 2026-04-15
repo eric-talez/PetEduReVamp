@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Calendar, TrendingUp, UserCheck, PawPrint, AlertTriangle, Clock, ChevronRight } from "lucide-react";
+import { Users, Calendar, TrendingUp, UserCheck, PawPrint, AlertTriangle, Clock, ChevronRight, Shield, Syringe } from "lucide-react";
 import { useLocation } from "wouter";
 import type { CheckinRecord } from "@shared/schema";
 
@@ -40,6 +40,35 @@ interface StatsResponse {
   };
 }
 
+interface VisitSession {
+  id: number;
+  memberId: number;
+  memberName: string | null;
+  petIds: number[];
+  petNames: string[];
+  vaccineStatus: Record<number, { valid: boolean }>;
+  temperamentLevels: Record<number, string | null>;
+  zonePermissions: Record<number, string[]>;
+  usedAt: string | null;
+  expiresAt: string;
+  createdAt: string;
+  todayConcern: string | null;
+  todayGoal: string | null;
+}
+
+interface VisitSessionListResponse {
+  success: boolean;
+  sessions: VisitSession[];
+}
+
+const TEMPERAMENT_MAP: Record<string, { label: string; color: string }> = {
+  A: { label: "A 사회성 양호", color: "bg-green-100 text-green-700" },
+  B: { label: "B 흥분 조절", color: "bg-yellow-100 text-yellow-700" },
+  C: { label: "C 짖음/경계", color: "bg-orange-100 text-orange-700" },
+  D: { label: "D 공격성", color: "bg-red-100 text-red-700" },
+  E: { label: "E 분리불안", color: "bg-purple-100 text-purple-700" },
+};
+
 export default function CheckinDashboard() {
   const [, navigate] = useLocation();
   const today = new Date().toISOString().split("T")[0];
@@ -58,19 +87,17 @@ export default function CheckinDashboard() {
     },
   });
 
+  const { data: sessionsData } = useQuery<VisitSessionListResponse>({
+    queryKey: ["/api/visit-sessions"],
+  });
+
   const stats = statsData?.stats ?? { todayCount: 0, weekCount: 0, monthCount: 0, uniqueVisitors: 0 };
   const checkins = checkinsData?.checkins ?? [];
+  const recentSessions = sessionsData?.sessions?.slice(0, 5) ?? [];
 
   const temperamentBadge = (level: string | null) => {
-    const map: Record<string, { label: string; color: string }> = {
-      A: { label: "A 사회성 양호", color: "bg-green-100 text-green-700" },
-      B: { label: "B 흥분 조절", color: "bg-yellow-100 text-yellow-700" },
-      C: { label: "C 짖음/경계", color: "bg-orange-100 text-orange-700" },
-      D: { label: "D 공격성", color: "bg-red-100 text-red-700" },
-      E: { label: "E 분리불안", color: "bg-purple-100 text-purple-700" },
-    };
-    if (!level || !map[level]) return null;
-    const info = map[level];
+    if (!level || !TEMPERAMENT_MAP[level]) return null;
+    const info = TEMPERAMENT_MAP[level];
     return <span className={`text-xs px-2 py-0.5 rounded-full ${info.color}`}>{info.label}</span>;
   };
 
@@ -81,9 +108,14 @@ export default function CheckinDashboard() {
           <h1 className="text-2xl font-bold">체크인 대시보드</h1>
           <p className="text-sm text-gray-500">방문 고객 현황을 실시간으로 확인합니다</p>
         </div>
-        <Button variant="outline" onClick={() => navigate("/institute/qr-codes")}>
-          QR 코드 관리
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate("/institute/visit-sessions")}>
+            방문 신뢰 QR
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/institute/qr-codes")}>
+            QR 코드 관리
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -132,6 +164,65 @@ export default function CheckinDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {recentSessions.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Shield className="w-5 h-5 text-primary" />
+                최근 방문 신뢰 QR 인증
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/institute/visit-sessions")}>
+                전체보기 <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {recentSessions.map((session) => {
+                const isUsed = !!session.usedAt;
+                const isExpired = new Date(session.expiresAt) < new Date();
+                return (
+                  <div key={session.id} className="border rounded-lg p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isUsed ? 'bg-green-100' : isExpired ? 'bg-gray-100' : 'bg-blue-100'}`}>
+                        <Shield className={`w-4 h-4 ${isUsed ? 'text-green-600' : isExpired ? 'text-gray-400' : 'text-blue-600'}`} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{session.memberName || '보호자'}</span>
+                          <span className="text-xs text-gray-400">
+                            {session.petNames?.join(', ') || '반려동물'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {Object.entries(session.temperamentLevels || {}).map(([petId, level]) => (
+                            level && <span key={petId}>{temperamentBadge(level as string)}</span>
+                          ))}
+                          {Object.values(session.vaccineStatus || {}).some(v => v?.valid) && (
+                            <span className="text-xs text-green-600 flex items-center gap-0.5">
+                              <Syringe className="w-3 h-3" /> 접종완료
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant={isUsed ? "default" : isExpired ? "secondary" : "outline"} className="text-xs">
+                        {isUsed ? "체크인 완료" : isExpired ? "만료됨" : "대기 중"}
+                      </Badge>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(session.createdAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="pb-3">
