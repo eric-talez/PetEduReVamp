@@ -19623,13 +19623,16 @@ export function registerTrainerCertificationRoutes(app: Express) {
       }
 
       if (role !== 'admin') {
+        const [member] = await db.select({ role: users.role }).from(users).where(eq(users.id, memberId));
+        if (!member || member.role !== 'pet-owner') {
+          return res.status(400).json({ error: "유효하지 않은 보호자입니다." });
+        }
         const [memberVisit] = await db.select({ id: checkinRecords.id })
           .from(checkinRecords)
           .where(and(eq(checkinRecords.instituteId, instituteId), eq(checkinRecords.ownerId, memberId)))
           .limit(1);
-        const [member] = await db.select({ role: users.role }).from(users).where(eq(users.id, memberId));
-        if (!member || member.role !== 'pet-owner') {
-          return res.status(400).json({ error: "유효하지 않은 보호자입니다." });
+        if (!memberVisit) {
+          return res.status(403).json({ error: "이 기관에 방문 이력이 있는 보호자만 QR을 발급할 수 있습니다." });
         }
       }
 
@@ -19700,6 +19703,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
       const token = crypto.randomBytes(24).toString('hex');
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
+      const petRegInfo = memberPets
+        .filter(p => validPetIds.includes(p.id))
+        .map(p => ({ id: p.id, name: p.name, breed: p.breed, temperament: p.temperamentLevel }));
+
       const [session] = await db.insert(petVisitSessions).values({
         token,
         instituteId,
@@ -19708,6 +19715,9 @@ export function registerTrainerCertificationRoutes(app: Express) {
         vaccineStatus: vaccineStatusMap,
         temperamentLevels: temperamentMap,
         zonePermissions,
+        petRegistrationInfo: petRegInfo,
+        reservationTime: req.body.reservationTime ? new Date(req.body.reservationTime) : null,
+        deviceHash: req.body.deviceHash || null,
         trainerLevel: null,
         todayConcern: todayConcern || null,
         todayGoal: todayGoal || null,
