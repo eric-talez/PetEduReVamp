@@ -83,8 +83,10 @@ router.get('/current', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('날씨 API 오류:', error);
-    
+    const status = (error as any)?.response?.status;
+    const reason = (error as any)?.response?.data?.reason || (error as any)?.message || 'unknown';
+    console.warn(`[Weather] Open-Meteo API 호출 실패 (status=${status ?? 'N/A'}): ${reason} — fallback 데이터 반환`);
+
     // 기본 날씨 데이터 반환 (fallback)
     res.json({
       success: true,
