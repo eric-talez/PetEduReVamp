@@ -7,6 +7,29 @@ import { Express, Request, Response, NextFunction } from 'express';
 import passport from 'passport';
 
 /**
+ * 현재 환경의 공개 도메인을 반환합니다.
+ * 우선순위: OAUTH_CALLBACK_BASE_URL > REPLIT_DEV_DOMAIN > REPLIT_DOMAINS(첫 항목)
+ */
+function getPublicBaseUrl(): string | null {
+  if (process.env.OAUTH_CALLBACK_BASE_URL) {
+    return process.env.OAUTH_CALLBACK_BASE_URL.replace(/\/+$/, '');
+  }
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  }
+  if (process.env.REPLIT_DOMAINS) {
+    const first = process.env.REPLIT_DOMAINS.split(',')[0]?.trim();
+    if (first) return `https://${first}`;
+  }
+  return null;
+}
+
+function buildCallbackUrl(path: string): string {
+  const base = getPublicBaseUrl();
+  return base ? `${base}${path}` : path;
+}
+
+/**
  * 소셜 로그인 전략 설정
  */
 export function setupSocialAuth(app: Express) {
@@ -16,9 +39,7 @@ export function setupSocialAuth(app: Express) {
       new KakaoStrategy(
         {
           clientID: process.env.KAKAO_CLIENT_ID,
-          callbackURL: process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/kakao/callback`
-            : '/api/auth/kakao/callback',
+          callbackURL: buildCallbackUrl('/api/auth/kakao/callback'),
         },
         async (accessToken, refreshToken, profile, done) => {
           try {
@@ -99,9 +120,7 @@ export function setupSocialAuth(app: Express) {
         {
           clientID: process.env.NAVER_CLIENT_ID,
           clientSecret: process.env.NAVER_CLIENT_SECRET,
-          callbackURL: process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/naver/callback`
-            : '/api/auth/naver/callback',
+          callbackURL: buildCallbackUrl('/api/auth/naver/callback'),
         },
         async (accessToken, refreshToken, profile, done) => {
           try {
@@ -194,9 +213,7 @@ export function setupSocialAuth(app: Express) {
         {
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          callbackURL: process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/google/callback`
-            : '/api/auth/google/callback',
+          callbackURL: buildCallbackUrl('/api/auth/google/callback'),
         },
         async (accessToken, refreshToken, profile, done) => {
           try {
