@@ -249,17 +249,19 @@ export function setupSocialAuth(app: Express) {
       )
     );
     
-    // 구글 로그인 라우트
+    // 구글 로그인 라우트 (state CSRF 보호)
     app.get('/api/auth/google', passport.authenticate('google', {
-      scope: ['profile', 'email']
-    }));
+      scope: ['profile', 'email'],
+      state: true,
+    } as any));
     
     // 구글 로그인 콜백 라우트
     app.get(
       '/api/auth/google/callback',
       passport.authenticate('google', {
         failureRedirect: '/auth?error=social-login-failed',
-      }),
+        state: true,
+      } as any),
       (req, res) => {
         const user = req.user as any;
         
